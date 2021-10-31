@@ -525,7 +525,7 @@ System.out.println("程序运行花费的时间为：" + (end - start) + "ms");
 
 ### Arrays工具类
 
-
+![](images/Arrays类.png)
 
 ### 数组涉及的基本算法
 
