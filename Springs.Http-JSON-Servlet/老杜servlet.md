@@ -35,8 +35,8 @@ Servlet = Serv + let，相当于服务器＋小程序，**servlet是服务器与
 我们只需要实现Servlet接口，并把实现好的Java程序类和路径写到配置文件(web.xml)中；web.xml文件：将请求路径和Java小程序绑定。
 
 1. javaweb程序员在编程的时候一直是面向Servlet接口去完成调用，不需要关心Servlet中具体的实现类；
-2. Tomcat服务器是一个实现了Servlet规范和JSP规范的容器；
-3. servlet的运行环境叫做web容器或servlet容器，Tomcat就是一个servlet容器，servlet上下文也是一个servlet容器（单个webapp的专属容器）。
+2. Tomcat服务器是一个实现了Servlet规范和JSP规范的容器，所以也称为servlet容器或jsp容器；
+3. servlet的运行环境叫做web容器或servlet容器，Tomcat就是一个servlet容器；servlet上下文是由Web服务器为每个webapp程序创建的一块共享区域。
 
 # Servlet配置
 
@@ -77,6 +77,14 @@ web.xml的头部：
     
 </web-app>
 ```
+
+# servlet容器的体会-容器的起源
+
+参考文章：[不知道这些Servlet规范、容器，还敢说自己是Java程序员? - 掘金 (juejin.cn)](https://juejin.cn/post/7024417658695057439)。
+
+1997年SUN公司推出Servlet技术。
+
+
 
 # servlet的基本知识
 

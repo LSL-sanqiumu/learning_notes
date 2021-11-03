@@ -1,12 +1,6 @@
 # Spring概述
 
-Spring
-
-IOC（Inversion of Control，即“控制反转”，不是什么技术，而是一种设计思想）、AOP(aspect-oriented programming,面向切面编程)、SpringMVC--->衍生项目。
-
-1.《Spring源码深度解析》前几章
-
-2.《Spring实战》
+IOC（Inversion of Control，即“控制反转”，不是什么技术，而是一种设计思想）、AOP(aspect-oriented programming，面向切面编程)、SpringMVC ===> 衍生项目。
 
 为简化JavaEE应用程序的开发为目的而创建了Spring框架。
 
@@ -30,9 +24,7 @@ Spring是什么？
 
 Spring优缺点？
 
-Spring优点：开源免费的框架(容器)、轻量级非入侵式的框架、控制反转IOC、面向切面编程aop，支持事务的处理和对框架的整合的支持;
-
-缺点：发展太久之后违背了原来的理念，其整合了许多框架，就像一个大杂烩一样；配置十分繁琐，人称“配置地狱”。
+Spring优点：开源免费的框架(容器)、轻量级非入侵式的框架、控制反转IOC、面向切面编程aop，支持事务的处理和对框架的整合的支持;缺点：发展太久之后违背了原来的理念，其整合了许多框架，就像一个大杂烩一样；配置十分繁琐，人称“配置地狱”。
 
 Spring相关
 
@@ -55,7 +47,7 @@ SSH框架：Struct2 + Spring + Hibernate(全自动)；SSM框架：SpringMVC + Sp
 
 # spring的配置
 
-使用spring需要导包，导入spring-webmvc的包，由于maven的特性会帮忙把spring-webmvc的所有依赖到的包都导入，其中就包括了spring-core，也就是spring所需要的包：
+使用spring需要导包，导入spring-webmvc的包，由于maven的特性会帮忙把spring-webmvc的所有依赖到的包都导入，其中就包括了spring-core，也就是spring核心包：
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
@@ -279,13 +271,13 @@ public class UserServiceImpl implements UserService{
 
 上述就是一个IOC的原型；控制反转的思想，从本质上解决了问题，我们程序员不用再去管理对象的创建(程序中不需要实现类的对象创建)，系统的耦合性也大大降低了，可以更加的专注在业务的实现上！
 
-IoC本质：一种设计思想，DI是实现IoC的一种方式。没有IoC的程序，我们使用面向对象编程，对象的创建与对象的依赖关系完全硬编码在程序中，对象的创建由程序自己控制，控制反转后将对象的创建转移给第三方。（狂神说：控制反转就是获得依赖对象的方式反转了）（我感觉也是，依赖对象的获取由程序创建的方式反转到了由第三方创建的方式）。
+IoC本质：一种设计思想，DI是实现IoC的一种方式。没有IoC的程序，我们使用面向对象编程，对象的创建与对象的依赖关系完全硬编码在程序中，对象的创建由程序自己控制，控制反转后将对象的创建转移给第三方。（依赖对象的获取由程序创建的方式反转到了由第三方创建的方式）。
 
 ## Spring与IoC：
 
 IoC是Spring框架的核心内容，Spring使用了多种方式完美的实现了IoC，可以使用XML配置，也可以使用注解，新版本的Spring也可以零配置实现IoC。
 
-实现过程：Spring容器在初始化时先读取配置文件，根据配置文件或元数据创建组织对象存入容器中，程序使用时再从IoC容器中取出需要的对象。
+实现过程：Sprin容器（也称为IoC容器）在初始化时先读取配置文件，根据配置文件或元数据创建组织对象存入容器中，程序使用时再从IoC容器中取出需要的对象。
 
 原理：采用XML方式配置Bean的时候，Bean的定义信息是和实现分离的，而采用注解的方式可以把两者合为一体，Bean的定义信息直接以注解的形式定义在实现类中，从而达到了零配置的目的。
 
@@ -323,8 +315,6 @@ IoC是一种编程思想，将主动的程序变成被动的接收。（通过`n
 要实现不同的操作，就不用再到程序去修改，而是通过修改xml配置文件；简而言之，就是对象由Spring来创建、管理、装配。
 
 spring提供的容器也称为ioc容器。
-
-（是否可以这样理解：Spring是一个大容器，Spring创建的beans都存在大容器里，需要的时候就拿出这些bean）。
 
 # IoC的实现
 
@@ -926,7 +916,7 @@ public class Proxy {
 
 [Comparing Spring AOP and AspectJ | Baeldung](https://www.baeldung.com/spring-aop-vs-aspectj)
 
-***什么是面向切面编程AOP？** - 柳树的回答 - 知乎 https://www.zhihu.com/question/24863332/answer/350410712
+**什么是面向切面编程AOP？** - 柳树的回答 - 知乎 https://www.zhihu.com/question/24863332/answer/350410712
 
 AOP全称Aspect Oriented Programming意为面向切面编程，也叫做面向方法编程，是通过预编译方式和运行期动态代理的方式实现不修改源代码的情况下给程序动态统一添加功能的技术。**这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程。**
 
@@ -1215,11 +1205,19 @@ XML的aop命名空间：
 
 # ---------------------------------------
 
-# 上下文
+# 容器与上下文
 
+Spring容器：负责创建对象、装配它们、配置它们、并管理它们的生命周期。Spring容器不是只有一个，spring容器实现：bean工厂和应用上下文（应用上下文基于BeanFactory构建）。
 
+关于五种常用的应用上下文：
 
+> org.springframework.context.ApplicationContext;  应用上下文由该接口定义
 
+- AnnotationConfigApplicationContext：从一个或多个Java配置类中加载spring应用上下文；
+- AnnotationConfigWebApplicationContext：从一个或多个Java配置类中加载spring web应用上下文；
+- ClassPathXmlConfigApplicationContext：从类路径下一个或多个xml配置文件加载上下文定义，把应用上下文定义文件作为类资源；
+- FileSystemXmlApplicationContext：从文件系统下的一个或多个xml配置文件加载上下文定义；
+- XmlWebApplicationContext：从web应用下的一个或多个xml配置文件加载上下文定义。
 
 
 
@@ -1233,7 +1231,10 @@ XML的aop命名空间：
 
 # bean的生命周期
 
-
+1. spring容器对bean进行实例化；
+2. spring容器将值或bean的引用注入到bean对应的属性中；
+3. 根据bean实现的接口依次调用相关方法
+   1. 如果实现了
 
 
 
