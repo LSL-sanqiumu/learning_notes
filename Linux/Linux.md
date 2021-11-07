@@ -614,8 +614,8 @@ Linux采用“载入”的处理方法；Linux将一个分区和一个目录联�
 
 查看ip配置：
 
-- Windows下：ipconfig；
-- Linux下：ifconfig；
+- Windows下：`ipconfig`；
+- Linux下：`ifconfig`；
 
 测试主机之间的网络连通性：`ping 目的主机`，例如`ping www.baidu.com`。
 
@@ -656,7 +656,7 @@ systemctl指令：CentOS7后很多指令都使用这个管理
 - `systemctl enable 服务名`：设置服务开机自启动（永久生效）；
 - `systemctl disable 服务名`：停止服务开机自启动（永久生效）；
 - `systemctl is-enable 服务名`：查看服务是否是自启动的；
-- 关闭防火墙：firewalld.service，`systemctl disable firewalld.service`；（服务名可不加.service）
+- **关闭防火墙**：firewalld.service，`systemctl disable firewalld.service`；（服务名可不加.service）
 
 firewall指令：
 
@@ -760,13 +760,13 @@ yum：一个shell前端软件包管理器，基于rpm包管理，能够从指定
    - `rpm -qa | grep mari`：查询相关安装包；
    - `rpm -e --nodeps mariadb-libs`：卸载相关安装包；
 4. 安装MySQL5.7：
-5. ![](img/安装数据库.png)
+5. ![](img/installbase.png)
 
 # Shell编程
 
 ## 概述
 
-![](img/shell编程.png)
+![](img/shellcode.png)
 
 ![](img/shell.png)
 

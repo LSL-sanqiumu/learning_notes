@@ -183,9 +183,6 @@ mybatis-config.xml：构建 SqlSessionFactory的配置文件，全局配置文�
 ```
 
 ```xml
-<!-- jdbc.properties文件的key也不能与前面的name一样 -->
-<!-- 即dataSource的property的name 和value="${jdbc.driver}"的大括号里面的值不能一样 -->
-<!-- 否则会报错，这是为啥？？？ -->
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE configuration
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"

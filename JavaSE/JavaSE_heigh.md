@@ -195,7 +195,7 @@ Java中通过Thread类或其子类的对象来创建线程。线程通常要经�
 - 阻滞：在某种特殊情况下，被人为挂起或执行输入输出操作时，让出CPU资源并临时中止自己的执行，进入阻塞状态；
 - 死亡：线程完成了它的全部工作或线程被提前强制性地中止或出现异常导致结束。
 
-![](img\生命周期.png)
+![](images/live.png)
 
 
 
@@ -947,7 +947,7 @@ try {
 }
 ```
 
-![](img/simpledate时间格式.png)
+![](images/simpledate.png)
 
 总结：
 
@@ -1140,8 +1140,6 @@ enum Season implements Info{
 }
 ```
 
-P432
-
 # 注解(Annotation)
 
 ## 概述
@@ -1154,7 +1152,7 @@ P432
 - 在JavaSE中，注解的使用目的比较简单，例如标记过时的功能，忽略警告等。在JavaEE/Android中注解占据了更重要的角色，例如用来配置应用程序的任何切面，代替JavaEE旧版中所遗留的繁冗代码和XML配置等。
 -  未来的开发模式都是基于注解的，JPA是基于注解的，Spring2.5以上都是基于注解的，Hibernate3.x以后也是基于注解的，现在的 Struts2有一部分也是基于注解的了，注解是一种趋势，一定程度上可以说：**框架 = 注解 + 反射 + 设计模式。**
 
-![](img/注解.png)
+![](images/annotation.png)
 
 ## 常见注解示例
 
@@ -1342,7 +1340,7 @@ Java不是动态语言，但Java可以称之为“准动态语言”。即Java�
 
 ## Class-运行时类
 
-![](../../../../../../LSLBlogs/blogs_content/JavaSE/img/类的加载.png)
+![](images/class_load.png)
 
 程序经过javac.exe编译生成字节码文件；字节码文件经过java.exe解释运行到内存中，程序运行时Java运行时系统会为所有对象维护一个被称为运行时的类型标识，可以通过特点方法获取运行时所属类的实例。
 
@@ -2227,7 +2225,7 @@ System.out.println(file1.getAbsolutePath());
 
 ### IO流体系
 
-![](img\IO流体系.png)
+![](images/IO.png)
 
 RandomAccessFile（任意）。
 

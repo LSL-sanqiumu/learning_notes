@@ -966,7 +966,7 @@ public class HttpServlet extends GenericServlet {
 
 所以，我们的Servlet对象继承HttpServlet后，后端需要的是什么请求，那么我们就重写对应的doPost()或doGet()方法，方法内是我们的业务代码，并不需要重写service()方法。（当浏览器发送到请求和后台处理方式不同的话，就会出现405错误）
 
-# 模版方法设计模式
+# 模版方法-设计模式
 
 模板方法举例：
 

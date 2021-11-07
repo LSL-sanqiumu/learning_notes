@@ -279,9 +279,9 @@ IoC是Spring框架的核心内容，Spring使用了多种方式完美的实现�
 
 实现过程：Sprin容器（也称为IoC容器）在初始化时先读取配置文件，根据配置文件或元数据创建组织对象存入容器中，程序使用时再从IoC容器中取出需要的对象。
 
-原理：采用XML方式配置Bean的时候，Bean的定义信息是和实现分离的，而采用注解的方式可以把两者合为一体，Bean的定义信息直接以注解的形式定义在实现类中，从而达到了零配置的目的。
+零配置原理：采用XML方式配置Bean的时候，Bean的定义信息是和实现分离的，而采用注解的方式可以把两者合为一体，Bean的定义信息直接以注解的形式定义在实现类中，从而达到了零配置的目的。
 
-IoC定义：控制反转是一种通过描述(XML或注解)并通过第三方去生产或获取特定对象的方式。在Spring中实现控制反转的是IoC容器，其实现方法是依赖注入(Depengency Injection,DI)
+IoC定义：控制反转是一种通过描述(XML或注解)并通过第三方去生产或获取特定对象的方式。在Spring中实现控制反转的是IoC容器，其实现策略是依赖注入(Depengency Injection,DI)
 
 ## HelloSpring
 
@@ -326,7 +326,7 @@ spring提供的容器也称为ioc容器。
 2. Java中的显示配置，（JavaConfig）；
 3. bean发现机制与自动装配。
 
-## 对象
+## 初识
 
 对象都存在于spring容器里，构成的应用的组件被spring容器使用DI管理，spring容器归为两种类型：bean工厂、应用上下文；较常使用的是应用上下文。对象是由spring容器创建的，我们可以使用xml配置文件、JavaConfig、注解来使spring容器创建特定的对象-bean。
 
@@ -393,9 +393,7 @@ User user = context.getBean("user",User.class);
 
 ## XML显式装配
 
-### 依赖注入（属性注入）
-
-依赖就是指bean对象的创建依赖于Spring容器；而注入就是指bean对象的所有属性值，都通过容器来注入。依赖注入的本质就是装配。
+### 依赖注入
 
 依赖注入有三种方式，分别是构造器注入、set方式注入、其他（拓展方式注入）；构造器注入就是通过构造器参数注入的方式。
 
@@ -742,7 +740,41 @@ sppring4.0之后，必须导入spring的aop的包；加入如下约束：
   <context:annotation-config/>
   ```
 
+# IOC底层原理
 
+IOC基于xml解析、工厂模式、反射实现。IOC思想由IOC容器实现，IOC容器底层就是对象工厂。
+
+IOC容器实现的两种方式：
+
+- BeanFactory：最基本的实现，在获取对象的时候才会去创建对象；
+- ApplicationContext：基于BeanFactory，加载完配置文件后就会把对象都创建。
+
+IOC流程：
+
+```java
+// 场景模拟：User类需要依赖另一个Service类
+/* 解决方案一：在User类内 new一个Service对象 ===》 存在问题：耦合度高 */
+// 为了降低User类与Service的耦合度
+/* 解决方案二：创建一个ClassFactory，转移耦合度（User类不用再负责依赖对象的创建与生命周期），如下： */
+public class ClassFactory {
+    public static Service getService(){
+        return new Service();
+    }
+}
+/* 解决方案三：
+/* 为了进一步降低耦合度：利用xml文件解析与反射 IOC的流程：如下*/
+// 1.通过xml文件配置对象
+// 2.工厂类，service类和dao类
+public class ClassFactory {
+    public static Service getService(){
+        String classValue = class属性值;          // 通过工具解析xml文件
+        Class clazz = Class.forName(classvalue); // 通过反射创建对象
+        return (Service)clazz.newInstance();
+    }
+}
+// 对象的创建、调用过程都交给配置文件控制了---也就是实现了控制反转
+// 而使用控制反转，再次降低了耦合度（对象是否创建的控制权和属性的控制权在配置文件中（bean管理），ClassFactory只有对象的实现权，实现了解耦）
+```
 
 # ---------------AOP------------------
 
