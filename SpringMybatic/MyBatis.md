@@ -152,11 +152,13 @@ JDBC缺点：
 
 ## mybatis-config.xml
 
+![](img/globalconfig.png)
+
 ### 配置数据库
 
 mybatis-config.xml：构建 SqlSessionFactory的配置文件，全局配置文件
 
-配置文件头信息：
+配置文件头信息-dtd约束（规定xml文件标签语法规则）：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -164,32 +166,13 @@ mybatis-config.xml：构建 SqlSessionFactory的配置文件，全局配置文�
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-   
-</configuration>
-```
-
-配置文件内容：（两种方式：通过配置文件或直接配置）
-
-```xml
-<environment id="development">
-     <transactionManager type="JDBC"/>
-     <dataSource type="POOLED">
-     <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
-     <property name="url" value="jdbc:mysql://localhost:3306/jdbctest"/>
-     <property name="username" value="root"/>
-     <property name="password" value="123456"/>
-     </dataSource>
-</environment>
-```
-
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE configuration
-        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-config.dtd">
-<configuration>
-    <properties resource="jdbc.properties"/>
-    <environments default="development">
+    <!-- 引入外部properties配置文件 resource（类路径下） url（网络路径或磁盘路径） -->
+    <properties resource="jdbc.properties"/> 
+    <settings>
+        <!-- 是否开启驼峰命名自动映射，即从经典数据库列名 A_COLUMN 映射到经典 Java 属性名 aColumn -->
+    	<setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+    <environments default="test">
         <environment id="development">
             <transactionManager type="JDBC" />
             <dataSource type="POOLED">
@@ -199,14 +182,29 @@ mybatis-config.xml：构建 SqlSessionFactory的配置文件，全局配置文�
                 <property name="password" value="${jdbc.password}"/>
             </dataSource>
         </environment>
+        <environment id="test">
+            <transactionManager type="JDBC" />
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost/mysqltest?characterUnicoding=utf8"/>
+                <property name="username" value="root"/>
+                <property name="password" value="123456"/>
+            </dataSource>
+        </environment>
     </environments>
+    <!-- 数据库厂商别名 -->
+     <databaseIdProvider type="DB_VENDOR">
+  		<property name="SQL Server" value="sqlserver"/>
+  		<property name="DB2" value="db2"/>
+  		<property name="Oracle" value="oracle" />
+	</databaseIdProvider>
     <mappers>
         <mapper resource="BlogMapper.xml"/>
     </mappers>
 </configuration>
 ```
 
-使用到的jdbc.properties文件：
+jdbc.properties：
 
 ```properties
 driver=com.mysql.cj.jdbc.Driver
@@ -215,30 +213,29 @@ username=root
 password=123456
 ```
 
-为什么要另外使用jdbc.properties文件配置driver等属性值？
-
-${com.mysql.cj.jdbc.Driver}这样的表达式获取不到com.mysql.cj.jdbc.Driver，因为MapperScannerConigurer实际是在解析加载bean定义阶段的，这个时候要是设置sqlSessionFactory的话，会导致提前初始化一些类，这个时候，PropertyPlaceholderConfigurer还没来得及替换定义中的变量，导致把表达式当作字符串复制了，也就是本来加载com.mysql.cj.jdbc.Driver驱动的，变成了加载${com.mysql.cj.jdbc.Driver}驱动，找不到该驱动就出错了；解决方法就是使用properties配置文件，直接在全局配置文件mybatis-config.xml中加载属性值，就不需要在mybatis-config.xml里对数据库连接参数硬编码了。
-
-### 其他设置
+### 其他配置
 
 在Mybatis全局配置文件中可以为某个Java类起别名：(注意配置文件内各标签的顺序有要求)
 
 ```xml
+<!-- 默认类名小写 -->
 <typeAliases>
         <typeAlias type="com.lsl.domain.Student" alias="Student"/>
 </typeAliases>
-```
-
-```xml
-<!--自动为某个包下所有的类起别名，别名默认为简类名-->
+<!--自动为某个包下所有的类起别名，别名默认为类名小写-->
 <typeAliases>
         <package name="com.lsl.domain"/>
 </typeAliases>
+<!-- @Alias注解也可以为类起别名 -->
 ```
 
-全局配置mybatis-config.xml中可以单独指定SQL语句映射配置文件，也可以映射到某个包下全部的SQL语句映射配置文件：
+
+
+指定SQL映射文件：
 
 ```xml
+<!-- resource代表类路径下的 url代表网络路径或磁盘路径 -->
+<!-- class：用来引用接口，接口和配置文件要在同一包并且名字相同，没有配置文件时可以使用注解写SQL语句 -->
 <mappers>
 	<mapper resource="BlogMapper.xml"/>
 </mappers>
@@ -249,15 +246,10 @@ ${com.mysql.cj.jdbc.Driver}这样的表达式获取不到com.mysql.cj.jdbc.Drive
 ```
 
 ```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.lsl.dao.GetService"> <!-- 要指定接口，而且该文件名要和接口名完全一致 -->
+<mapper namespace="com.lsl.dao.GetService"> <!-- 要指定接口，而且该文件名要和接口名完全一致，SQL语句id要和方法名对应 -->
     <select id="getAll" resultType="com.lsl.pojo.Student">
         select `name`,`age` from mysqltest.t_student
     </select>
-
 </mapper>
 ```
 
@@ -279,7 +271,44 @@ ${com.mysql.cj.jdbc.Driver}这样的表达式获取不到com.mysql.cj.jdbc.Drive
 </mapper>
 ```
 
-### SQL简单语句
+### parameterType
+
+parameterType属性：专门用来给SQL语句的占位符传值，翻译为参数类型，占位符必须使用`#{属性名}`；只有当parameterType是简单类型时可以省略不写。简单类型有17个：
+byte short int long double float char boolean
+Byte Short Integer Long Double Float Character Boolean
+String
+
+```xml
+<select id="getById" parameterType="java.lang.String" resultType="com.lsl.domain.Student">
+    select id as sid,name as sname,birth as sbirth
+    from t_student where id=#{fafasfa};
+    <!--当一个SQL语句的占位符只有一个 这时{}内可以随意 -->
+</select>
+```
+
+parameterType专门用来给SQL语句传值的，可以使用javabean（Java含有get、set方法的类）、简单类型、Map等。
+
+```xml
+<!--
+    parameterType="java.util.Map"
+    parameterType="java.util.HasMap"
+    parameterType="Map"
+    parameterType="map"
+-->
+<insert id="putmap" parameterType="map">
+    insert into t_student(id,name,birth) values(#{xh},#{mz},#{sr})
+</insert>
+```
+
+```java
+Map<String, String> map = new HashMap<>();
+map.put("mz","龙舌兰");
+map.put("xh","1001");
+map.put("sr","1999.09.09");
+sqlSession1.insert("putmap", map);
+```
+
+### SQL增删改查
 
 查询语句：
 
@@ -298,6 +327,16 @@ ${com.mysql.cj.jdbc.Driver}这样的表达式获取不到com.mysql.cj.jdbc.Drive
     insert into t_student
         (id, name, birth) values (#{sid}, #{sname}, #{sbirth})
 </insert>
+<!-- 如果要获取自增主键的值： 
+useGeneratedKeys="true" ：使用自增主键获取主键值策略
+keyProperty="id" ：将主键值封装给Javabean的某个属性
+-->
+<insert id="save" parameterType="com.lsl.domain.Student" useGeneratedKeys="true" keyProperty="id" databaseID="mysql">
+    insert into t_student
+        (id, name, birth) values (#{sid}, #{sname}, #{sbirth})
+</insert>
+<!-- Oracle是使用序列生成主键值的 先略过-->
+
 ```
 
 修改语句：
@@ -318,28 +357,284 @@ ${com.mysql.cj.jdbc.Driver}这样的表达式获取不到com.mysql.cj.jdbc.Drive
 </delete>
 ```
 
-### SQL传值
+### 传入参数处理与取值
 
-当传入多个参数时，动态拼接SQL语句，在SQL映射文件里实现动态语句。
+**当传入单个参数：**mybatis不会对其进行任何处理此时使用`#{参数名}`来获取参数对参数名没有什么强制要求；
 
-传入的参数是数组，使用foreach遍历值：
+**传入多个参数：**如果该SQL语句**对应方法**处传入的形参是多个，那么mybatis就会对参数进行处理，将多个参数封装进Map集合里，然后取值时参数名就得是默认的key：`param1、param2、param3、...`，但可以在方法参数使用`@Param("id")`注解指定key，就不用通过默认的key来取值了。
 
-- collection：参数名称，根据Mapper接口的参数名确定，也可以使用@Param注解指定参数名；
+**传入pojo：**如果需要传入的多个参数是业务逻辑的数据模型，可以传入pojo，再通过`#{属性名}`直接取属值。
 
-- item：参数调用名称，通过此属性来获取集合单项的值；
+**传入Map：**如果多个参数不是业务模型中的数据，没有对应的pojo，并且不经常使用的情况下，那么可以使用map传值。
 
-- open：相当于prefix，即在循环前添加前缀；
+**什么情况下使用Map传值？**
 
-- close：相当于suffix，即在循环后添加后缀；
+当javabean不够用的时候；什么时候javabean不够用？一般一张表对应一个javabean，当传值的时候，一些值时A表的，一些值时B表的，而使用select等语句只能传入对象或单个值，这时如果要传入A、B表的值就只能再建一个class，也就是原有的javabean不够用，得再建一个javabean。但单独为一条语句建一个javabean是不明智的，这时就可以使用Map集合传入多个值给语句了。（但如果这数据是经常要用于各种SQL语句之中、经常使用的，可以考虑建pojo）。
 
-- index：索引、下标、key。
+**传入Collection(List、Set)、数组时：**也会把这些数据封装进Map，此时的key为collection（Collection）、list或collection（List）、array（数组）；如果取值就是例如：`#{list[0]}`。
+
+**#{}的丰富用法：** （规定参数规则，jdbcType等）
+
+```java
+// 全局配置中：jdbcTypeForNull=OTHER，而Oracle不支持；两种解决方法：
+#{email,jdbcType=OTHER}
+
+<settings>
+	<setting name="jdbcTypeForNull" value="NULL"/>    
+</settings>
+```
+
+
+
+** `#{}和${}`的区别 **：（都可以取pojo和map的值）
+
+- #{}：以预编译的显式将参数设置到SQL语句中；PreparedStatement。
+- ${}：取出值直接封装进SQL语句中；Statement。（原生jdbc不支持使用占位符的地方就可以使用这个，分表、排序等场景）
+
+参数封装为Map的源码分析（了解）：
+
+
+
+
+
+### Select语句返回值封装
+
+**resultType：**
+
+查询结果封装类型：resultType专门用来指定**查询结果集**封装的数据类型，可以使用javabean（Java含有get、set方法的class）、简单类型、Map等，不能省略，只有select语句有。javabean不够用的情况下使用Map集合封装（跨表的情况下）。
+
+返回值类型是List<Xxx>：resultType要写集合中元素的类型。
+
+返回一条记录的Map：数据字段名就是key，resultType就是map。
+
+返回多条记录的Map<Integer, Employee>：主键为key，resultType为Employee（要在方法上加上`@MapKey("xx")`注解告诉使用哪个属性当主键）。
+
+**resultMap：**（和resultType只能二选一）
+
+用来自定义结果集的封装规则，不指定字段和字段对应属性会自动进行封装，设置时都基本会设置所有的属性与查询结果的对应规则；自定义结果集的类型一般都是自定义的JavaBean，基本都用于联表查询后的数据封装。
+
+```xml
+ <resultMap id="MyStudent" type="com.lsl.pojo.Student">
+<!--        <id column="id" property="id"/>-->
+<!--        <result column="name" property="name"/>-->
+<!--        <result column="age" property="age"/>-->
+    </resultMap>
+    <select id="get" resultMap="MyStudent">
+        select * from info where id = #{xsxas}
+    </select>
+```
+
+应用场景一：联表查询后定义JavaBean中的对象的数据封装
+
+```xml
+<!-- 联表查询：通过级联属性或assocation来封装数据 -->
+<resultMap id="StudentInfo" type="com.lsl.pojo.Student">
+    <id column="id" property="id"/>
+    <result column="name" property="name"/>
+    <result column="nowadays" property="nowadays"/>
+    <result column="pid" property="schools.pid"/>
+    <result column="schoolid" property="schools.schoolid"/>
+    <result column="schoolname" property="schools.schoolname"/>
+    <!--
+    <association property="schools" javaType="com.lsl.pojo.School">
+        <id column="pid" property="pid"/>
+        <result column="schoolid" property="schoolid"/>
+        <result column="schoolname" property="schoolname"/>
+    </association>
+	-->
+</resultMap>
+<select id="getInfo" resultMap="StudentInfo">
+    select i.id id, i.name `name`,i.age age,i.nowadays nowadays,i.pid pid,s.schoolname schoolname,s.schoolid schoolid
+    from info i,school s
+    where i.pid=s.pid and i.id=#{id};
+</select>
+```
+
+分步查询（使用association实现）和懒加载：（懒加载：需要使用到查询的信息时才加载）
+
+```xml
+<!-- 通过association实现分步查询 -->
+<resultMap id="StudentInfoStep" type="com.lsl.pojo.Student">
+    <id column="pid" property="pid"/>
+    <!--  -->
+    <association property="schools" select="step" column="pid">
+    </association>
+</resultMap>
+<select id="getInfoStep" resultMap="StudentInfoStep">
+    select pid from info where id=#{id}
+</select>
+<select id="step" resultType="com.lsl.pojo.School">
+    select * from school where pid=#{pid}
+</select>
+<!-- 配置懒加载，在schools对象的信息没被使用时分步查询step不会进行操作 -->
+<setting name="lazyLoadingEnabled" value="true"/>
+<setting name="aggressiveLazyLoading" value="false"/>
+```
+
+ 应用场景二：联表查询之封装集合：查询多条数据封装进JavaBean中的集合
+
+```xml
+<resultMap id="AllInfo" type="com.lsl.pojo.School">
+    <id column="pid" property="pid"/>
+    <result column="schoolname" property="schoolname"/>
+    <!--  -->
+    <collection property="students" ofType="com.lsl.pojo.Student">
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+        <result column="nowadays" property="nowadays"/>
+    </collection>
+</resultMap>
+<!-- 联表查询：查出特定值的pid在另一张表对应的所有数据 -->
+<select id="getAllInfo" resultMap="AllInfo">
+    select i.name name,i.age age,i.nowadays nowadays,s.schoolname schoolname,s.pid pid
+    from info i left join school s
+    on i.pid=s.pid where i.pid=#{pid}
+</select>
+```
+
+分步加载与懒加载：
+
+```xml
+    <!-- 根据pid查询学校 -->
+<select id="getSchool" resultMap="getByStep" >
+    select pid, schoolname from school where pid=#{id}
+</select>
+    <!-- 根据pid查对应学生 -->
+<select id="getStudent" resultType="com.lsl.pojo.Student">
+    select name,age,nowadays from info where pid=#{pid}
+</select>
+<resultMap id="getByStep" type="com.lsl.pojo.School">
+    <id column="pid" property="pid"/>
+    <result column="schoolname" property="schoolname"/>
+    <collection property="students" select="getStudent" column="pid">
+    </collection>
+</resultMap>
+```
+
+拓展：
+
+- 分步查询可以传递多个值，将多列的值通过Map传递：` column="{key1=column1,key2=column2,...}"`；
+- 开启了懒加载，但还可以在分步查询设置处进行是否需要懒加载的设置：`fethType="lazy"`（lazy：延迟，eager：立即）。
+
+resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的封装行为
+
+```xml
+<!--
+	column：指定判断的字段
+	javaType：指定z
+-->
+<discriminator javaType="string" column="pid">
+    <case value="1" resultType="com.lsl.pojo.School">
+        <collection property="students" select="getStudent" column="pid">
+        </collection>
+    </case>
+    <case value="2" resultType="com.lsl.pojo.School">
+        <result column="schoolname" property="schoolid"/>
+    </case>
+</discriminator>
+```
+
+### 动态SQL语句
+
+传入多个参数用于SQL语句的查询，最后完整的SQL语句由传入参数和自己设定的表达式规则来确定，SQL语句不是一成不变的。
+
+**if判断与OGNL表达式：**
+
+```xml
+<!-- select * from info where pid=#{pid} and name like '__' and nowadays like '2021%'  -->
+<!-- 特殊字符（例如'、>、<、&等）使用转义字符的实体字符，例如"是&quot; -->
+<select id="dynamicIf" resultType="com.lsl.pojo.Student" parameterType="com.lsl.pojo.Student">
+    select * from info where
+    <!-- 当满足if的条件时会拼接 -->
+    <if test="pid!=null">
+        pid=#{pid}
+    </if>
+    <if test="name!=null and name != &quot;&quot;">
+        and name like '__'
+    </if>
+    <if test="nowadays != null">
+        and nowadays like '2021%'
+    </if>
+</select>
+
+```
+
+**where标签：**（set标签和where标签类似，只不过set标签会去掉最后面的多余的字符）
+
+```xml
+<!-- 当上述条件1不满足时而其他条件分支成立时，会导致where后面多出一个and -->
+<!-- 解决办法一： -->
+在where后面加上 `1=1` 之类的条件，if分支里面都使用and
+<!-- 解决办法二 -->
+把where关键字替换成<where></where>，然后把if分支放进去（该标签只能解决前面多出的 and或or）
+<where>
+    <if test="pid!=null">
+        and pid=#{pid}
+    </if>
+    <if test="name!=null and name != &quot;&quot;">
+        and name like '__'
+    </if>
+    <if test="nowadays != null">
+        and nowadays like '2021%'
+    </if>
+ </where>
+```
+
+**trim标签：**
+
+```xml
+<select id="dynamicIf" resultType="com.lsl.pojo.Student" parameterType="com.lsl.pojo.Student">
+    select * from info
+    <!-- 可以设定前缀prefix、后缀suffix，以及去掉整个字符串前面的、后面的多余的字符串 标签属性但是可选 -->
+    <trim prefix="where" prefixOverrides="and" suffix=""  suffixOverrides="and">
+        <if test="pid!=null">
+             and pid=#{pid}
+        </if>
+        <if test="name!=null and name != &quot;&quot;">
+             and name like '__'
+        </if>
+        <if test="nowadays != null">
+             and nowadays like '2021%' and
+        </if>
+    </trim>
+</select>
+```
+
+**choose标签：**（switch-case）
+
+```xml
+<select id="dynamicChoose" resultType="com.lsl.pojo.Student" parameterType="com.lsl.pojo.Student">
+    select * from info where
+    <!-- 按顺序进行判断，几个都成立也只是一个when生效，当都不符合时拼接otherwise内的字符 -->
+    <choose>
+        <when test="pid!=null">
+            pid=#{pid}
+        </when>
+        <when test="name!=null and name != &quot;&quot;">
+            name like '__'
+        </when>
+        <otherwise>
+            1=1
+        </otherwise>
+    </choose>
+</select>
+```
+
+**foreach遍历值：**（传入的参数是数组或集合，也可以循环执行多条语句，只不过要在驱动的url后面设置：`allowMultiQueries=true`）
+
+- collection：参数名称，根据Mapper接口的参数名确定，也可以使用@Param注解指定参数名；（指定要遍历的集合或数组）
+- item：参数调用名称，通过此属性来表示获取到的集合单项的值；（取值）
+- open：相当于prefix，即在循环前添加前缀；（最终拼接好的字符的前缀）
+- close：相当于suffix，即在循环后添加后缀；（最终拼接好的字符的后缀）
+- separator：遍历中每一次的分隔符；
+- index：索引（List）、下标（数组）、key（Map）。（取索引（下标、key）值）
 
 
 ```xml
 <delete id="deleteByIds">
 	delete from t-student where id in 
     	<!-- 在in后实现（值1，值2，值3，...） 值由传入的参数决定-->
-    	<foreach collection="array" open="(" close=")" separator="," item="stuId">
+    	<foreach collection="array" open="(" close=")" separator="," item="stuId" index="i">
     		#{stuId}
     	</foreach>
 </delete>
@@ -354,14 +649,49 @@ ${com.mysql.cj.jdbc.Driver}这样的表达式获取不到com.mysql.cj.jdbc.Drive
 </delete>
 ```
 
-传入的参数类型是List集合时（就是把里面的值传入）：
+**内置参数`_parameter`和`_database ` ：**
 
-```mysql
-INSERT INTO `表`(`字段`,`字段`,`字段`,...) VALUES (数据1,数据2,数据3),(数据1,数据2,数据3),... 
+- `_parameter`：代表当前语句中传入的参数，传入的是一个值时就是代表传入的值，如果是多个值传入则代表封装参数的map；
+- `_databaseId `：数据库厂商的名字，如果配置了databaseIdProvider，则代表数据库厂商的别名。
 
+**bind标签：**
+
+```xml
+<select id="dynamicIf" resultType="com.lsl.pojo.Student" parameterType="com.lsl.pojo.Student">
+    select * from info where
+    <!-- 创建一个变量名为_nowadays的变量来绑定一个值，该变量值可以使用传入的参数变量 -->
+    <bind name="_nowadays" value="'%'+nowadays+'%'" />
+    <if test="nowadays != null">
+         nowadays like #{_nowadays}
+    </if>
+</select>
+```
+
+**sql标签抽取可重用SQL语句片段：**
+
+```xml
+<sql id="insertTest">
+    <if test="_databaseId == mysql">
+        <!-- 不能以#{}取include中的值 -->
+        pid,`name`,nowadays,${age}
+    </if>
+    <if test="_databaseId == oracle">
+        `name`,nowadays
+    </if>
+</sql>
+<insert id="insertStudent" parameterType="com.lsl.pojo.Student">
+    insert into info(
+        <include refid="insertTest">
+            <!-- 可以自定义属性供抽取处来的sql调用 -->
+            <property name="age" value="age"/>
+        </include>
+    ) values (pid,name,nowadays)
+</insert>
 ```
 
 
+
+### else
 
 where和if：什么是分页查询？为什么要有分页查询？
 
@@ -484,82 +814,6 @@ String json = om.writeValueAsStream(java对象);
 
 
 
-### resultType
-
-使用Map类型封装查询结果：resultType专门用来指定**查询结果集**封装的数据类型，可以使用javabean（Java含有get、set方法的class）、简单类型、Map等，不能省略，只有select语句有。javabean不够用的情况下使用Map集合封装（跨表的情况下）。
-
-使用resultType为Map的时候，会自动将查询结构的字段名作为Map的key。
-
-```xml
-<select id="sById" resultType="Map">
-    select s.id,s.name,u.usercode
-    from t_student s join t_user u
-    on s.id=u.id
-    where s.id=#{id}
-</select>
-```
-
-```java
-List<Map<String,String>> sById = sqlSession1.selectList("sById", "1001");
-```
-
-
-
-### parameterType
-
-parameterType属性：专门用来给SQL语句的占位符传值，翻译为参数类型，占位符必须使用`#{属性名}`；只有当parameterType是简单类型时可以省略不写。简单类型有17个：
-byte short int long double float char boolean
-Byte Short Integer Long Double Float Character Boolean
-String
-
-```xml
-<select id="getById" parameterType="java.lang.String" resultType="com.lsl.domain.Student">
-    select id as sid,name as sname,birth as sbirth
-    from t_student where id=#{fafasfa};
-    <!--当一个SQL语句的占位符只有一个 这时{}内可以随意 -->
-</select>
-```
-
-parameterType专门用来给SQL语句传值的，可以使用javabean（Java含有get、set方法的class）、简单类型、Map等。
-
-```xml
-<!--
-    parameterType="java.util.Map"
-    parameterType="java.util.HasMap"
-    parameterType="Map"
-    parameterType="map"
--->
-<insert id="putmap" parameterType="map">
-    insert into t_student(id,name,birth) values(#{xh},#{mz},#{sr})
-</insert>
-```
-
-```java
-Map<String, String> map = new HashMap<>();
-map.put("mz","龙舌兰");
-map.put("xh","1001");
-map.put("sr","1999.09.09");
-sqlSession1.insert("putmap", map);
-```
-
-什么情况下使用Map传值？
-
-当javabean不够用的时候；什么时候javabean不够用？一般一张表对应一个javabean，当传值的时候，一些值时A表的，一些值时B表的，而使用select等语句只能传入对象或单个值，这时如果要传入A、B表的值就只能再建一个class，也就是原有的javabean不够用，得再建一个javabean。但单独为一条语句建一个javabean是不明智的，这时就可以使用Map集合传入多个值给语句了。
-
-### 问题
-
-mybatis中配置文件的路径问题？
-
-Java中加载BlogMapper.xml、BlogMapper.xml映射mybatis-config.xml都是从类的根路径下开始寻找，在maven项目中BlogMapper.xml、mybatis-config.xml放于resources目录下时，直接使用配置文件带后缀的全名称当路径就好；当BlogMapper.xml放于java目录下某个包中时，引用其的路径应该是相对于java目录的路径，例如`<mapper resource="com/lsl/test/BlogMapper.xml"/>`。（普通Java项目的略）
-
-mybatis中配置文件因为没有网络而没有提示？
-
-本地导入ddt约束。mybatis-3-mapper.dtd、mybatis-3-config.dtd，从XML Catalog导入。
-
-
-
-
-
 ##  SqlSessionFactory
 
 每个基于 MyBatis 的应用都是以一个 SqlSessionFactory 的实例为核心的。构建 SqlSessionFactory可以使用Java代码的方式或xml配置的方式，这里用xml配置方式构建 SqlSessionFactory，如下：
@@ -572,11 +826,9 @@ InputStream inputStream = Resources.getResourceAsStream(resource);
 SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 ```
 
-
-
 ## SqlSession
 
-事务开启与业务代码：通过sqlSessionFactory对象的openSession()方法开启会话、事务，该方法会返回一个sqlSession（SqlSession等同于Connection），一个专门用来执行SQL语句的一个会话对象。
+事务开启与业务代码：通过SqlSessionFactory对象的openSession()方法开启会话、事务，该方法会返回一个SqlSession对象（SqlSession等同于Connection），一个专门用来执行SQL语句的一个会话对象。
 
 ```java
 public class MainTest {
@@ -683,6 +935,10 @@ public class MainTest {
 
    2. 获取SqlSession（等同于Connection），通过这个进行事务处理、执行语句等操作。
 
+# MyBatis缓存机制
+
+
+
 # Log4j
 
 mybatis执行SQL语句后打印SQL语句，可以借助第三方的开源的免费的组件：log4j，该组件专门用来负责记录日志，很多的框架都使用了或集成了该组件，例如spring、springMVC、MyBatis、Hibernate等。
@@ -718,7 +974,7 @@ Log4j2：
 
 Log4j1的使用：
 
-- 导入依赖，在类的根路径加入.properties配置文件；
+- 导入依赖，在类的根路径加入xxx.properties配置文件；
 
 ```properties
 log4j.rootLogger=DEBUG,Console
@@ -855,16 +1111,3 @@ SqlMapper配置文件在开发中的存放规范与命名规范：
 ```java
 int save2(String id, String name, String birth);
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-

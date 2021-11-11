@@ -1418,10 +1418,12 @@ Java不是动态语言，但Java可以称之为“准动态语言”。即Java�
      //所以建议都有空参构造器，方便通过反射创建对象和当子类使用super()时能调用父类的空参构造器
      ```
 
-   - 如果没有空参构造器：
+   - 如果没有空参构造器，可通过构造器的newInstance()创建对象：
 
-     ```
-     newInstance()
+     ```java
+     Constructor constructor = clazz.getDeclaredConstructor(String.class, int.class);
+     constructor.setAccessible(true);
+     Person lsl = (Person) constructor.newInstance("LSL", "22");
      ```
 
 
@@ -1485,17 +1487,65 @@ Java不是动态语言，但Java可以称之为“准动态语言”。即Java�
    Constructor[] declaredConstructors = clazz.getDeclaredConstructors();
    ```
 
-4. P652
+4. 父类：
 
-### 四：调用
+   ```java
+   // 获取运行时类的父类
+   clazz.getSuperclass();
+   // 获取运行时类带泛型的父类
+   Type type = clazz.getGenericSuperclass
+   // 获取泛型类型
+   ParameterizedType pt = (ParameterizedType) type;
+   Type[] actualTypeArguments = pt.getActualTypeArguments();
+   ```
 
+5. 接口、包、注解：
 
+   ```java
+   Class[] interfaces1 = clazz.getInterfaces();
+   Class[] interfaces2 = clazz.getSuperclass().getInterfaces();
+   for (Class c : interfaces2) {
+       System.out.println(c);
+   }
+   Package aPackage = clazz.getPackage();
+   Annotation[] annotations = clazz.getAnnotations();
+   ```
 
+   
 
+### 四：调用指定内容
 
+通过反射还可以对指定的对象设置值或取值、调用其方法、构造器。
 
+```java
+Person p = new Person();
+Field name = clazz.getDeclaredField("name");
+name.setAccessible(true); // 设置私有属性可访问
+name.set(p,"lsl");
+System.out.println(name.get(p));
+```
 
-## Properties配置文件
+```java
+private String show(String nation,String age){
+	System.out.println("我的国籍是：" + nation + age);
+	return nation;
+}
+// 获取该类的show方法，后面指定形参类型
+Method show = clazz.getDeclaredMethod("show", String.class,String.class);
+// 设置该私有方法可访问
+show.setAccessible(true);
+// 调用p对象的show方法，并传入形参；返回值
+Object returnValue = show.invoke(p,"zg","12");
+// 如果调用静态方法：xxxmethods.invoke(Xxx.class);
+```
+
+```java
+Constructor constructor = clazz.getDeclaredConstructor(String.class, int.class);
+constructor.setAccessible(true);
+Person lsl = (Person) constructor.newInstance("LSL", "22");
+```
+
+# Properties配置文件
 
 ```java
 public class PropertiesTest {

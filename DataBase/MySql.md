@@ -10,6 +10,8 @@ SQL：（Structure Query Language）结构化查询语言，是一套标准（�
 
 端口号port：任何一个软件或应用都有的，是应用的唯一代表，用来定位计算机上某个应用或服务的，通常和计算机IP地址结合。
 
+《MySQL必知必会》《高性能MySQL》《MySQL技术内幕Innodb存储引擎》
+
 ## 数据库分类
 
 关系型数据库：(SQL)
@@ -241,11 +243,12 @@ Default：设置默认值。
 
 约束种类：
 
-- 非空约束：not null；
-- 唯一性约束：unique； （创建表时在字段后面添加`unique`）
-- 主键约束：primary key（简称PK）；（创建表时在字段后面添加`primary key`）
-- 外键约束：foreign key（FK）；
-- 检查约束：check（MySQL8版本开始支持，Oracle）。
+- 非空约束：not null，指示某列不能存储 NULL 值；
+- 唯一性约束：unique， 保证某列的每行必须有唯一的值； （创建表时在字段后面添加`unique`）
+- 主键约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个列多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。；（创建表时在字段后面添加`primary key`）
+- 外键约束：foreign key（FK），保证一个表中的数据匹配另一个表中的值的参照完整性；
+- 检查约束：check（MySQL8版本开始支持，Oracle）， 保证列中的值符合指定的条件；
+- default；
 
 ## 主键约束
 
@@ -331,7 +334,7 @@ ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`
 最佳时实践：
 
 - 数据库就是单纯的表，只用来存数据，只有行和列；
-- 使用多张表就创建外键去。
+- 使用多张表就创建外键。
 
 # 关于引擎
 
@@ -458,7 +461,7 @@ DESC `table_name`; -- 显示表的结构 （describe table_）
 
 ### 修改表结构
 
-对表的结构层次的修改：
+对表的结构层的修改：
 
 ```mysql
 ALTER TABLE `table-name` RENAME AS `new-tablename`;       -- 修改表名
