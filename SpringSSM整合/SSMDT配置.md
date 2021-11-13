@@ -9,8 +9,9 @@
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-webmvc</artifactId>
-    <version>5.3.7</version>
+    <version>5.3.12</version>
 </dependency>
+
 <!-- 使用AOP时需要导入的包 -->
 <dependency>
     <groupId>org.aspectj</groupId>
@@ -217,7 +218,7 @@ resources目录里的springmvc.xml配置：
 
 # MyBatis配置
 
-## 依赖：
+## 依赖
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
@@ -316,12 +317,14 @@ jdbc.password=123456
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+<!-- 使编写jdbc代码更容易的库 -->
 <dependency>
   <groupId>org.springframework</groupId>
   <artifactId>spring-jdbc</artifactId>
   <version>5.3.8</version>
 </dependency>
 <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<!-- 运行mysql与java程序对话的驱动程 -->
 <dependency>
     <groupId>mysql</groupId>
     <artifactId>mysql-connector-java</artifactId>

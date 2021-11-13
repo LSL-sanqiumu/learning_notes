@@ -53,7 +53,7 @@ site:
 
 ## 关于.yml文件
 
-<img src="D:\LSL\Learning\CS\Java\JavaLearningNote\自顶向下projects\img\错误1.png"  />
+<img src="../img/错误1.png"  />
 
 解决上图问题：
 

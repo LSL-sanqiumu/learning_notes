@@ -118,8 +118,6 @@ jdbc.password=123456
 </mapper>
 ```
 
-
-
 # 概述
 
 MyBatis是什么？MyBatis用来干什么？
@@ -148,7 +146,7 @@ JDBC缺点：
 
 - sql语句编写在java程序中，sql语句不支持配置，所以就会导致后面要修改语句的时候得重新修改源代码，而重新修改后又得重新编译/重新部署等，并且修改java源代码违反了开闭原则OCP。（互联网分布式架构方面的项目，并发量很大，系统需要不断的优化，各方面的优化，其中有一条非常重要的优化是SQL优化）。------SQL语句可以写到配置文件中，此条确定并不那么主要。
 
-# mybatis的使用
+# mybatis的配置
 
 ## mybatis-config.xml
 
@@ -359,9 +357,9 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 ### 传入参数处理与取值
 
-**当传入单个参数：**mybatis不会对其进行任何处理此时使用`#{参数名}`来获取参数对参数名没有什么强制要求；
+**当传入单个参数：**mybatis不会对其进行任何处理，此时使用`#{参数名}`来获取参数（对参数名没有什么强制要求）；
 
-**传入多个参数：**如果该SQL语句**对应方法**处传入的形参是多个，那么mybatis就会对参数进行处理，将多个参数封装进Map集合里，然后取值时参数名就得是默认的key：`param1、param2、param3、...`，但可以在方法参数使用`@Param("id")`注解指定key，就不用通过默认的key来取值了。
+**传入多个参数：**如果该SQL语句**对应方法**处传入的形参是多个，那么mybatis就会对参数进行处理，将多个参数封装进Map集合里，然后取值时参数名就得是默认的key：`param1、param2、param3、...`，但可以在方法参数类型前使用`@Param("id")`注解指定key，就不用通过默认的key来取值了。
 
 **传入pojo：**如果需要传入的多个参数是业务逻辑的数据模型，可以传入pojo，再通过`#{属性名}`直接取属值。
 
@@ -403,15 +401,15 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 查询结果封装类型：resultType专门用来指定**查询结果集**封装的数据类型，可以使用javabean（Java含有get、set方法的class）、简单类型、Map等，不能省略，只有select语句有。javabean不够用的情况下使用Map集合封装（跨表的情况下）。
 
-返回值类型是List<Xxx>：resultType要写集合中元素的类型。
+返回值类型是`List<Xxx>`：resultType要写集合中元素的类型。
 
 返回一条记录的Map：数据字段名就是key，resultType就是map。
 
-返回多条记录的Map<Integer, Employee>：主键为key，resultType为Employee（要在方法上加上`@MapKey("xx")`注解告诉使用哪个属性当主键）。
+返回多条记录的Map<Integer, Employee>：key为主键，resultType为记录封装后的JavaBean（要在接口的SQL映射方法上加上`@MapKey("xx")`注解告诉mybatis封装这个Map时使用哪个属性当主键）。
 
 **resultMap：**（和resultType只能二选一）
 
-用来自定义结果集的封装规则，不指定字段和字段对应属性会自动进行封装，设置时都基本会设置所有的属性与查询结果的对应规则；自定义结果集的类型一般都是自定义的JavaBean，基本都用于联表查询后的数据封装。
+用来自定义结果集的封装规则，不指定字段和字段对应属性会自动根据type进行封装，设置时都基本会设置所有的属性与查询结果字段的对应规则；自定义结果集的类型一般都是自定义的JavaBean，基本都用于联表查询后的数据封装。
 
 ```xml
  <resultMap id="MyStudent" type="com.lsl.pojo.Student">
@@ -812,9 +810,11 @@ ObjectMapper om = new ObjectMapper();
 String json = om.writeValueAsStream(java对象); 
 ```
 
+# mybatis代码操作
 
+## 原生代码操作数据库
 
-##  SqlSessionFactory
+###  SqlSessionFactory
 
 每个基于 MyBatis 的应用都是以一个 SqlSessionFactory 的实例为核心的。构建 SqlSessionFactory可以使用Java代码的方式或xml配置的方式，这里用xml配置方式构建 SqlSessionFactory，如下：
 
@@ -826,7 +826,7 @@ InputStream inputStream = Resources.getResourceAsStream(resource);
 SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 ```
 
-## SqlSession
+### SqlSession
 
 事务开启与业务代码：通过SqlSessionFactory对象的openSession()方法开启会话、事务，该方法会返回一个SqlSession对象（SqlSession等同于Connection），一个专门用来执行SQL语句的一个会话对象。
 
@@ -886,11 +886,15 @@ public class MainTest {
   sqlSession.delete("delete","2"); // 删除，返回造成影响的记录条数
   ```
 
+## 使用数据库连接池操作
 
+可以通过第三方的依赖来获取数据库连接，进而操作数据库。
+
+具体操作见JDBC.md。
 
 ## maven配置导出问题
 
-由于maven的约定大于配置，maven项目的java目录的配置文件默认是不会导出并生效的，解决方案就是在pom/xml文件中加入以下配置，maven项目中都可以加上以下配置防止资源导出失败的问题：
+由于maven的约定大于配置，maven项目的**java目录的配置文件默认是不会导出并生效的**，解决方案就是在pom/xml文件中加入以下配置，maven项目中都可以加上以下配置防止资源导出失败的问题：
 
 ```xml
 <build>
@@ -916,7 +920,7 @@ public class MainTest {
 
 ## 使用总结
 
-1. 熟悉配置：（依赖的话导入mybatis的依赖，因为要连接数据库，所以还要mysql-connector-java依赖）
+1. 熟悉配置：（依赖的话导入mybatis的依赖，因为要连接数据库，所以还要mysql-connector-java驱动依赖）
 
    - mybatis-config.xml：相当于配置数据库驱动、数据库连接，还要映射SQL语句文件；
    - mapper.xml：SQL语句文件，用来声明SQL语句，如何声明见下面；
@@ -935,7 +939,133 @@ public class MainTest {
 
    2. 获取SqlSession（等同于Connection），通过这个进行事务处理、执行语句等操作。
 
+# spring与mybatis
+
+mybatis框架的SqlSessionFactory也好，还是池化技术的数据库连接池也好，程序中的具体实现都体现为各个类的对象的行为，因此可以通过spring的IOC容器来进行统一的管理，需要使用到的时候就通过依赖注入获取相应的对象，进而执行相关操作。
+
+
+
 # MyBatis缓存机制
+
+MyBatis提供了两级缓存：
+
+一级缓存（本地缓存）：与数据库同一次会话期间查询到的数据会放在本地缓存中，后续再要获取相同的数据会直接走缓存，不需要去查询数据库；
+
+- SqlSession级别的缓存，一级缓存默认开启；
+- 如何验证同一次会话期间再次查询相同数据走的是缓存？再次执行完全一致的SQL语句，最后判断两个语句的值是否相等；
+- 一级缓存失效的四种情况：
+  1. SqlSession不同；
+  2. SqlSession相同，但查询的条件不同；
+  3. SqlSession相同，但当前会话中存在增、删、改的操作；（增删改操作可能会改变所要查询的值）
+  4. SqlSession相同，但会话中执行了`sqlSession.clearCache()`来清除缓存。
+
+二级缓存（全局缓存）：基于namespace的缓存，一行namespace对应一个二级缓存
+
+- 工作机制：一个会话内的查询的数据会放到一级缓存，当此会话关闭后查询到的数据就会放到二级缓存，新的会话的查询就可以参考二级缓存；
+
+- 二级缓存的使用：
+
+  1. 开启二级缓存：`<setting name="cacheEnabled" value="true"/>`；
+
+  2. 在mapper.xml中配置二级缓存：
+
+     ```xml
+     <mapper namespace="Hello">
+     	<cache eviction="FIFO" flushInterval="600" readOnly="false" size="1024" type=""></cache>
+     </mapper>
+     <!--    eviction：缓存回收策略
+     	    LRU：最近最少使用的，移除最长时间不被使用的对象（默认）
+     	    FIFO：先进先出，按对象进入缓存的顺序来移除
+     	    SOFT：软引用，移除基于垃圾回收器状态和软引用规则的对象
+     	    WEAK：弱引用，移除基于垃圾收集器状态和弱引用规则的对象-->
+     <!--    flushInterval：缓存刷新间隔，设置一个毫秒值-->
+     <!--    readOnly：是否只读-->
+     <!--    size：缓存存放多少元素-->
+     <!--    type：指定自定义缓存的全类名，Cache接口的实现-->
+     ```
+
+  3. 使用到的pojo需要实现序列化接口。
+
+缓存有关的设置或属性：
+
+- `<setting name="cacheEnabled" value="true"/>`：设置为false只会关闭二级缓存；
+- select语句的useCache属性：属性值为false只会关闭二级缓存；
+- 增删改标签的flushCache属性：设置为true，增删改执行完后就会清楚一级和二级缓存；
+- sqlSession.clearCache()：只会清楚一级缓存；
+- localCacheScope：本地缓存作用域。
+
+整合第三方缓存，以ehcache为例：看文档
+
+# MyBatis逆向工程
+
+MyBatis Generator，简称MBG，专门为MyBatis使用者定制的**代码生成器**，可以快速地根据表生成对应的映射文件、接口以及bean类；支持基本的增删改查以及QBC风格的条件查询，但是表连接、存储过程等这些复杂sql的定义需要我们手工编写。
+
+官方文档：[MyBatis Generator Core – Introduction to MyBatis Generator](http://mybatis.org/generator/)
+
+```xml
+<dependency>
+    <groupId>org.mybatis.generator</groupId>
+    <artifactId>mybatis-generator</artifactId>
+    <version>1.4.0</version>
+</dependency>
+<dependency>
+    <groupId>org.mybatis.generator</groupId>
+    <artifactId>mybatis-generator-maven-plugin</artifactId>
+    <version>1.4.0</version>
+</dependency>
+```
+
+配置文件：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+  <classPathEntry location="/Program Files/IBM/SQLLIB/java/db2java.zip" />
+
+  <context id="DB2Tables" targetRuntime="MyBatis3">
+      <!-- 连接数据库 -->
+    <jdbcConnection driverClass="com.mysql.cj.jdbc.Driver"
+        connectionURL="jdbc:db2:TEST"
+        userId="db2admin"
+        password="db2admin">
+    </jdbcConnection>
+	<!-- 类型解析器 -->
+    <javaTypeResolver >
+      <property name="forceBigDecimals" value="false" />
+    </javaTypeResolver>
+	<!-- javabean生成策略
+ 	targetPackage：目标包 targetProject：目标工程
+	-->
+    <javaModelGenerator targetPackage="test.model" targetProject=".\src">
+      <property name="enableSubPackages" value="true" />
+      <property name="trimStrings" value="true" />
+    </javaModelGenerator>
+	<!-- sql映射生成策略 -->
+    <sqlMapGenerator targetPackage="test.xml"  targetProject=".\config">
+      <property name="enableSubPackages" value="true" />
+    </sqlMapGenerator>
+	<!-- 指定mapper接口所在位置 -->
+    <javaClientGenerator type="XMLMAPPER" targetPackage="test.dao"  targetProject="\MBGTestProject\src">
+      <property name="enableSubPackages" value="true" />
+    </javaClientGenerator>
+	<!-- 指定要逆向分析 -->
+    <table schema="DB2ADMIN" tableName="ALLTYPES" domainObjectName="Customer" >
+      <property name="useActualColumnNames" value="true"/>
+      <generatedKey column="ID" sqlStatement="DB2" identity="true" />
+      <columnOverride column="DATE_FIELD" property="startDate" />
+      <ignoreColumn column="FRED" />
+      <columnOverride column="LONG_VARCHAR_FIELD" jdbcType="VARCHAR" />
+    </table>
+
+  </context>
+</generatorConfiguration>
+```
+
+
 
 
 
@@ -984,13 +1114,11 @@ log4j.appender.Console.layout.ConversionPattern=%d [%t] %-5p [%c] - %m%m
 log4j.appender.org.apache=INFO
 ```
 
-
-
-# web项目中使用
+# ~~在旧时web项目中使用~~
 
 ## mybatis
 
-servlet3.1版本可以使用注解Annotation代替web.xml文件。
+servlet3.1版本可以使用注解代替web.xml文件。
 
 mybatis工具类：SqlSessionUtil，编写其要先了解mybatis核心对象的生命周期：SqlSessionFactory、SqlSessionFactoryBuilder、SqlSession。
 
@@ -1111,3 +1239,8 @@ SqlMapper配置文件在开发中的存放规范与命名规范：
 ```java
 int save2(String id, String name, String birth);
 ```
+
+
+
+
+

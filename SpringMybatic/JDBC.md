@@ -369,7 +369,7 @@ Java数据库连接，（Java Database Connectivity，简称JDBC）是Java语言
    4. 获得返回的结果集；
    5. 释放连接。
 
-## 说明
+## 各个类的说明
 
 DriverManager：
 
