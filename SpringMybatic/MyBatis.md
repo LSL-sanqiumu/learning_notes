@@ -49,7 +49,7 @@ try{
 }
 ```
 
-# mybatis配置
+# mybatis依赖
 
 依赖：
 
@@ -60,6 +60,7 @@ try{
     <artifactId>mybatis</artifactId>
     <version>3.5.6</version>
 </dependency>
+<!-- mysql数据库驱动 -->
 <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 <dependency>
     <groupId>mysql</groupId>
@@ -146,7 +147,7 @@ JDBC缺点：
 
 - sql语句编写在java程序中，sql语句不支持配置，所以就会导致后面要修改语句的时候得重新修改源代码，而重新修改后又得重新编译/重新部署等，并且修改java源代码违反了开闭原则OCP。（互联网分布式架构方面的项目，并发量很大，系统需要不断的优化，各方面的优化，其中有一条非常重要的优化是SQL优化）。------SQL语句可以写到配置文件中，此条确定并不那么主要。
 
-# mybatis的配置
+# mybatis使用配置
 
 ## mybatis-config.xml
 
@@ -888,9 +889,7 @@ public class MainTest {
 
 ## 使用数据库连接池操作
 
-可以通过第三方的依赖来获取数据库连接，进而操作数据库。
-
-具体操作见JDBC.md。
+可以通过第三方的依赖来获取数据库连接，进而操作数据库。具体操作见JDBC.md。
 
 ## maven配置导出问题
 
@@ -923,7 +922,7 @@ public class MainTest {
 1. 熟悉配置：（依赖的话导入mybatis的依赖，因为要连接数据库，所以还要mysql-connector-java驱动依赖）
 
    - mybatis-config.xml：相当于配置数据库驱动、数据库连接，还要映射SQL语句文件；
-   - mapper.xml：SQL语句文件，用来声明SQL语句，如何声明见下面；
+   - mapper.xml：SQL语句文件，用来声明SQL语句；
    - jdbc.properties：为避免mybatis-config.xml失效，将mybatis-config.xml里面的用来配置驱动、连接数据库的值放到这个文件然后再加载到mybatis-config.xml里使用；
 
 2. Java中使用SQL语句：
@@ -939,9 +938,22 @@ public class MainTest {
 
    2. 获取SqlSession（等同于Connection），通过这个进行事务处理、执行语句等操作。
 
-# spring与mybatis
+# spring整合mybatis
 
 mybatis框架的SqlSessionFactory也好，还是池化技术的数据库连接池也好，程序中的具体实现都体现为各个类的对象的行为，因此可以通过spring的IOC容器来进行统一的管理，需要使用到的时候就通过依赖注入获取相应的对象，进而执行相关操作。
+
+使用spring来整合mybatis需要引入mybatis-spring的依赖：
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
+<dependency>
+  <groupId>org.mybatis</groupId>
+  <artifactId>mybatis-spring</artifactId>
+  <version>2.0.6</version>
+</dependency>
+```
+
+
 
 
 
@@ -1064,6 +1076,28 @@ MyBatis Generator，简称MBG，专门为MyBatis使用者定制的**代码生成
   </context>
 </generatorConfiguration>
 ```
+
+# mybatis原理
+
+**mybatis运行流程：**
+
+
+
+
+
+
+
+# mybatis拓展
+
+
+
+
+
+
+
+
+
+
 
 
 

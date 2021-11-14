@@ -978,11 +978,11 @@ Spring提供了四种类型的AOP支持，而且在很多方面都借鉴了Aspec
 
 ```xml
 <dependencies>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
-            <version>1.9.6</version>
-        </dependency>
+    <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjweaver</artifactId>
+        <version>1.9.6</version>
+    </dependency>
 </dependencies>
 ```
 
@@ -1171,13 +1171,14 @@ XML的aop命名空间：
 	</aop:aspect>
 </aop:config>
 
-<!-- 使用切点引用，不用在每处都指定pointcut -->
+<!-- 简化上述，使用切点引用，不用在每处都指定pointcut -->
 <bean id="p" class="com.lsl.pojo.PerformanceImpl"/>
 <bean id="as" class="com.lsl.annotation.Audience"/>
 <aop:config>
 	<aop:aspect ref="as">
         <aop:pointcut id="performance" expression="execution(* com.lsl.pojo.Performance.perform(..))"/>
 		<aop:before method="beforePro" pointcut-ref="performance"/>
+        
 	</aop:aspect>
 </aop:config>
 ```
@@ -1234,6 +1235,8 @@ XML的aop命名空间：
 ## 总结
 
 - AOP的实现无非两个过程：一是创建好能被代理的切面和通知方法、二是使切面生效发挥作用。
+
+# AOP底层原理
 
 # ---------------------------------------
 

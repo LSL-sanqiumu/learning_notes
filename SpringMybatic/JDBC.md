@@ -583,10 +583,6 @@ PreparedStatement用来防止注入漏洞，效率高。其防止注入的本质
 4. 查询
 5. 防止注入
 
-## IDEA连接数据库
-
-需要mysql-connector-java包
-
 ## 事务
 
 
