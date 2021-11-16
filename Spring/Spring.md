@@ -1,49 +1,4 @@
-# Spring概述
 
-IOC（Inversion of Control，即“控制反转”，不是什么技术，而是一种设计思想）、AOP(aspect-oriented programming，面向切面编程)、SpringMVC ===> 衍生项目。
-
-为简化JavaEE应用程序的开发为目的而创建了Spring框架。
-
-|                  |                                    |
-| :--------------: | :--------------------------------: |
-|  企业级JavaBean  |    Enterprise Java Bean （EJB）    |
-|   Java数据对象   |      Java Data Object（JDO）       |
-| 简单老式Java对象 |   Plain Old Java object（POJO）    |
-|     依赖注入     |     Dependency Injection（DI）     |
-|   面向切面编程   | Aspect-Oriented Programming（AOP） |
-|     控制反转     |        Inversion of Control        |
-
-Spring是什么？
-
-2002年，Spring雏形interface21发布，在interface21的基础上经过重新设计，并不断丰富内涵，于2004年3月24号Spring发布1.0版本，其创始人是Rod  Johnson。Spring是一个为了全方位地简化Java开发而创建的开源框架，是一个轻量级的控制反转和面向切面编程的框架；其为了简化Java开发采取了以下四种策略：
-
-- 基于POJO的轻量级和最小侵入式编程；
-- 通过依赖注入和面向接口实现松耦合；
-- 基于切面和惯例进行声明式编程；
-- 通过切面和模板减少样板代码。
-
-Spring优缺点？
-
-Spring优点：开源免费的框架(容器)、轻量级非入侵式的框架、控制反转IOC、面向切面编程aop，支持事务的处理和对框架的整合的支持;缺点：发展太久之后违背了原来的理念，其整合了许多框架，就像一个大杂烩一样；配置十分繁琐，人称“配置地狱”。
-
-Spring相关
-
-官方文档：[Core Technologies (spring.io)](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html)；
-
-GitHub：[Releases · spring-projects/spring-framework (github.com)](https://github.com/spring-projects/spring-framework/releases)。
-
-SSH框架：Struct2 + Spring + Hibernate(全自动)；SSM框架：SpringMVC + Spring + Mybatic(半自动)。
-
- Spring框架的组成：
-
-![](img/spring七大模块.png)
-
-关于Spring的拓展：
-
-- Spring Boot：一个快速开发的脚手架，基于Spring Boot可以快速的开发单个微服务，原则是约定大于配置。
-- Spring Cloud：基于Spring Boot实现的。
-
-【大多数公司使用SpringBoot进行快速开发，学习SpringBoot前要完全掌握Spring及SpringMVC！】
 
 # spring的配置
 
@@ -182,6 +137,55 @@ resources文件夹需要beans.xml等文件，xml约束如下：
 </beans>
 
 ```
+
+
+
+# Spring概述
+
+IOC（Inversion of Control，即“控制反转”，不是什么技术，而是一种设计思想）、AOP(aspect-oriented programming，面向切面编程)、SpringMVC ===> 衍生项目。
+
+为简化JavaEE应用程序的开发为目的而创建了Spring框架。
+
+|                  |                                    |
+| :--------------: | :--------------------------------: |
+|  企业级JavaBean  |    Enterprise Java Bean （EJB）    |
+|   Java数据对象   |      Java Data Object（JDO）       |
+| 简单老式Java对象 |   Plain Old Java object（POJO）    |
+|     依赖注入     |     Dependency Injection（DI）     |
+|   面向切面编程   | Aspect-Oriented Programming（AOP） |
+|     控制反转     |        Inversion of Control        |
+
+Spring是什么？
+
+2002年，Spring雏形interface21发布，在interface21的基础上经过重新设计，并不断丰富内涵，于2004年3月24号Spring发布1.0版本，其创始人是Rod  Johnson。Spring是一个为了全方位地简化Java开发而创建的开源框架，是一个轻量级的控制反转和面向切面编程的框架；其为了简化Java开发采取了以下四种策略：
+
+- 基于POJO的轻量级和最小侵入式编程；
+- 通过依赖注入和面向接口实现松耦合；
+- 基于切面和惯例进行声明式编程；
+- 通过切面和模板减少样板代码。
+
+Spring优缺点？
+
+Spring优点：开源免费的框架(容器)、轻量级非入侵式的框架、控制反转IOC、面向切面编程aop，支持事务的处理和对框架的整合的支持;缺点：发展太久之后违背了原来的理念，其整合了许多框架，就像一个大杂烩一样；配置十分繁琐，人称“配置地狱”。
+
+Spring相关
+
+官方文档：[Core Technologies (spring.io)](https://docs.spring.io/spring-framework/docs/current/reference/html/core.html)；
+
+GitHub：[Releases · spring-projects/spring-framework (github.com)](https://github.com/spring-projects/spring-framework/releases)。
+
+SSH框架：Struct2 + Spring + Hibernate(全自动)；SSM框架：SpringMVC + Spring + Mybatic(半自动)。
+
+ Spring框架的组成：
+
+![](img/spring七大模块.png)
+
+关于Spring的拓展：
+
+- Spring Boot：一个快速开发的脚手架，基于Spring Boot可以快速的开发单个微服务，原则是约定大于配置。
+- Spring Cloud：基于Spring Boot实现的。
+
+【大多数公司使用SpringBoot进行快速开发，学习SpringBoot前要完全掌握Spring及SpringMVC！】
 
 # ---------------IOC------------------
 
@@ -961,18 +965,16 @@ AOP全称Aspect Oriented Programming意为面向切面编程，也叫做面向�
 
 **AOP支持：**
 
-spring实战作者建立过的原则：基于注解的配置优于基于Java的配置，基于Java的配置优于基于xml的配置，当需要声明切面但又不能为通知类添加注解的时候，那么就必须转向XML配置。
-
 Spring提供了四种类型的AOP支持，而且在很多方面都借鉴了AspectJ项目：
 
 - 基于代理的经典SpringAOP；
 - 纯POJO切面（需要XML配置）；
-- @AspectJ注解驱动的切面（依然时基于代理的AOP，借鉴了AspectJ，提供注解驱动的AOP，编程模型和AspectJ几乎完全一致）；
+- @AspectJ注解驱动的切面（依然是基于代理的AOP，借鉴了AspectJ，提供注解驱动的AOP，编程模型和AspectJ几乎完全一致）；
 - 注入式AspectJ切面（适用于spring各版本）。
 
 （前三种都是Spring AOP的变体，Spring AOP构建在动态代理基础上，spring对AOP的支持局限于方法拦截，如果是构造器或属性拦截，则需要使用AspectJ来实现切面）。
 
-切面的实现-由包裹了目标对象的代理类实现，当调用目标对象的方法（被通知方法）时，代理类就会拦截被通知方法，然后执行切面逻辑；将通知类转换为切面也是通过代理来转换。
+切面的实现-由包裹了目标对象的代理类实现，当调用目标对象的方法（被通知方法）时，代理类就会拦截被通知方法，然后执行切面逻辑；将通知类转换为切面也是通过代理来转换。spring框架一般都基于aspectj来实现AOP操作。
 
 使用AOP织入，先要导入一个依赖包：
 
@@ -986,7 +988,7 @@ Spring提供了四种类型的AOP支持，而且在很多方面都借鉴了Aspec
 </dependencies>
 ```
 
-## 使用注解实现
+## 基于注解实现
 
 注解的使用：
 
@@ -1135,7 +1137,7 @@ public class Test {
 如何使用：
 ```
 
-## 使用XML配置实现
+## 基于XML配置实现
 
 XML的aop命名空间：
 
@@ -1197,7 +1199,7 @@ XML的aop命名空间：
 </aop:config>
 ```
 
-## 使用Spring的API接口和XML
+## 基于Spring的API接口和XML
 
 - 定义切面类实现spring的MethodBeforeAdvice或AfterReturningAdvice接口，并重写方法；
 
@@ -1236,6 +1238,22 @@ XML的aop命名空间：
 
 - AOP的实现无非两个过程：一是创建好能被代理的切面和通知方法、二是使切面生效发挥作用。
 
+# ---------AboutDatabase---------
+
+## JdbcTemplate
+
+
+
+
+
+## 事务
+
+
+
+
+
+
+
 # AOP底层原理
 
 # ---------------------------------------
@@ -1270,14 +1288,6 @@ Spring容器：负责创建对象、装配它们、配置它们、并管理它�
 2. spring容器将值或bean的引用注入到bean对应的属性中；
 3. 根据bean实现的接口依次调用相关方法
    1. 如果实现了
-
-
-
-
-
-# 事务隔离级别
-
-
 
 
 

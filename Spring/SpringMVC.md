@@ -552,7 +552,7 @@ springmvc采用全局统一的异常处理，通过面向切面编程思想把�
 
 - `@ControllerAdvice`：控制器增强，给控制器类加上了异常处理功能（异常处理功能由该注解下的类决定），使用该注解要让springmvc该注解所在包名-在springmvc配置文件声明扫描器使注解生效；
 
-- `@ExceptionHandler`：声明异常处理功能（就是异常处理方法，），基本使用如下，声明于方法上：
+- `@ExceptionHandler`：声明异常处理功能（就是异常处理方法），基本使用如下，声明于方法上：
 
   ```java
   @ExceptionHandler(value = NameException.class)
