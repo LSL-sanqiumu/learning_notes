@@ -1716,6 +1716,7 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
 3. web.xml中将过滤器实现类注册到服务器。
 
    ```xml
+   <!-- spring框架的过滤器 -->
    <filter>
        <filter-name>filter</filter-name>
        <filter-class>com.lsl.login.FilterTest</filter-class>
@@ -1728,9 +1729,9 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
        <url-pattern>/login.html</url-pattern>
    </filter-mapping>
    ```
-
+   
    ```xml
-   <!-- 框架的过滤器 -->
+   <!-- spring框架的过滤器 -->
    <filter>
      <filter-name>characterEncodingFilter</filter-name>
      <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>

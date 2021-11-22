@@ -108,7 +108,9 @@ O(1) < O(logn) < O(n) < O(nlogn) < O(n^2) < O(n^3) < O(2^n) < O(n!) < O(n^n)
 
 常用的数据结构：数组（array）、栈（stack）、队列（queue）、链表（linked list）、树（tree）、图（graph）、堆（heap）、散列表（hash）。
 
-# 数组
+# 线性结构
+
+## 数组
 
 **稀疏数组：**
 
@@ -119,13 +121,183 @@ O(1) < O(logn) < O(n) < O(nlogn) < O(n^2) < O(n^3) < O(2^n) < O(n!) < O(n^n)
 
 
 
-# 队列
+## 队列
+
+队列是一个有序列表，遵循先入先出原则，可用数组和链表实现。
+
+### 使用数组实现
+
+**一般实现：**
+
+<img src="img/queue_array.png" style="zoom: 50%;" />
+
+front：用于定位数组的头部，取值-1，头部索引=(front+1)，每取出一次数据front要加1；
+
+rear：用于定位队列的最后一个数据，队列中每加入一个数据rear就加1，实现定位；
+
+maxSize：用于充当队列的最大容量；
+
+队列需要的功能：
+
+1. 创建队列：初始化队列的容量（arr[maxSize]）、初始化“指针”（front、rear）；
+2. 往队列中添加数据：如果队列满载则不能添加；
+3. 从队列中取出数据：要符合先进先出，队列中没有数据时无法取出；
+4. 队列是否满载的判断；
+5. 队列数据是否为空的判断；
+6. 展示队列全部数据、展示队列头部数据。
+
+```java
+public class ArrayQueue {
+    private int rear;
+    private int front;
+    private int maxSize;
+    private int[] arr;
+    public ArrayQueue(int arrayMaxSize){
+        maxSize = arrayMaxSize;
+        arr = new int[maxSize];
+        // 头部前
+        front = -1;
+        // 指向队列最后一个数据
+        rear = -1;
+    }
+    // 判断队列是否已经满
+    public boolean isFull(){
+        return rear == maxSize - 1;
+    }
+    // 判断队列是否为空
+    public boolean isEmpty(){
+        return front == rear;
+    }
+    // 添加数据进队列
+    public void addQueue(int n){
+        if (isFull()){
+            throw new RuntimeException("队列已满！");
+        }
+        rear++;
+        arr[rear] = n;
+    }
+    // 取出队列中数据
+    public int getQueue(){
+        if (isEmpty()){
+            throw new RuntimeException("队列为空！");
+        }
+        front++;
+        return arr[front];
+    }
+    // 显示队列中所有数据
+    public void showQueue(){
+        if (isEmpty()){
+            throw new RuntimeException("队列为空！");
+        }
+        for (int i = 0; i < arr.length;i++){
+            System.out.printf("arr[%d]=%d\n",i,arr[i]);
+        }
+    }
+    // 获取队列的头数据
+    public int showHead(){
+        if (isEmpty()){
+            throw new RuntimeException("队列为空！");
+        }
+        return arr[front+1];
+    }
+}
+```
+
+**使用环形数组实现：**
+
+<img src="img/queue_circle_array.png" style="zoom:50%;" />
+
+使用数据简单实现队列中存在一个问题：就是一个队列满载后，即使取出一些数据把位置“空出来”，但空出来的位置已经是不能复用的了，那怎么才能实现一个当满载后再取出数据后还能往队列添加数据的队列呢？答案就是：在数组中把一个位置当为缓冲区，满载时，当取出一个数据，就把这个缓冲区转化为队列的有效位置，而取出数据后空出来的位置就再次充当缓冲区，这样就能把头尾相连起来了，就实现了一个环形的数组充当的队列。（如果不满载，缓冲区就逐渐后移就好）
+
+具体实现思路：
+
+1. 先要初始化队列（包含数组、front（队列头数据索引）、rear（缓冲区索引）），注意环形数组需要一个容量充当缓冲区，所以实现的队列的有效容量为最大容量减去1；
+2. 考虑maxSize、front、rear的联系（这里利用了它们之间的一些数学关系）。
+
+```java
+public class CircleQueue {
+    // 队列最大容量 注意此时有效容量是(maxSize - 1) 多出来的一个用于实现环形
+    private int maxSize;
+    // front指向队列头
+    private int front;
+    // rear 队列尾部
+    private int rear;
+    // 存放数据的地方
+    private int[] arr;
+
+    public CircleQueue(int maxSize) {
+        this.maxSize = maxSize;
+        front = 0;
+        rear = 0;
+        arr = new int[this.maxSize];
+    }
+    // 队列是否满了
+    public boolean isFull(){
+       return  ((rear + 1) % maxSize) == front;
+    }
+    // 判断队列是否为空
+    public boolean isEmpty(){
+        return rear == front;
+    }
+    // 添加数据 进队列
+    public void addQueue(int n) {
+        if (isFull()) {
+            System.out.println("队列已满，不能添加！");
+            return;
+        }
+        arr[rear] = n;
+        // 一个数除以另一个数，如果被除数比除数小，那么余数就是被除数本身
+        rear = (rear + 1) % maxSize;
+    }
+    // 出队列
+    public void getQueue(){
+        if (isEmpty()){
+            System.out.println("队列为空，不能取数据！");
+            return;
+        }
+        int value = arr[front];
+        front = (front + 1) % maxSize;
+    }
+    // 显示队列数据
+    public void showQueue(){
+        if (isEmpty()){
+            System.out.println("队列为空，没有数据！");
+            return;
+        }
+        for (int i = front; i < front + size(); i++) {
+            System.out.printf("arr[%d]=%d\n",i % maxSize,arr[i % maxSize]);
+        }
+    }
+    // 队列有效个数
+    public int size(){
+        return (rear + maxSize - front) % maxSize;
+    }
+    // 显示头部数据
+    public int showHead(){
+        if (isEmpty()){
+            System.out.println("队列为空，没有数据！");
+            return 0;
+        }
+        return arr[front];
+    }
+}
+```
+
+### 使用链表实现
 
 
 
-# 链表
+## 链表
 
 
+
+# 非线性结构
+
+## 图
+
+
+
+## 树
 
 
 

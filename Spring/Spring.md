@@ -12,10 +12,22 @@
     <version>5.3.7</version>
 </dependency>
 <!-- 使用AOP时需要导入的包 -->
+<!-- AspectJ 运行时包和织入包 -->
 <dependency>
-    <groupId>org.aspectj</groupId>
+	<groupId>org.aspectj</groupId>
+	<artifactId>aspectjrt</artifactId>
+	<version>1.9.6</version>
+</dependency>
+<dependency>
+	<groupId>org.aspectj</groupId>
 	<artifactId>aspectjweaver</artifactId>
 	<version>1.9.6</version>
+</dependency>
+<!-- Cglib包是用来动态代理用的,基于类的代理 -->
+<dependency>
+	<groupId>cglib</groupId>
+	<artifactId>cglib</artifactId>
+	<version>2.1</version>
 </dependency>
 ```
 
@@ -1238,23 +1250,119 @@ XML的aop命名空间：
 
 - AOP的实现无非两个过程：一是创建好能被代理的切面和通知方法、二是使切面生效发挥作用。
 
+# AOP底层原理
+
+
+
 # ---------AboutDatabase---------
 
-## JdbcTemplate
+# JdbcTemplate
 
+spring对JDBC的封装，属于spring-jdbc，定义了操作数据库的方法用来操作数据库。
 
+```xml
+<context:component-scan base-package="com.lsl"/>
+<context:annotation-config/>
+<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="isClosed">
+    <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+    <property name="url" value="jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=Asia/Shanghai"/>
+    <property name="username" value="root"/>
+    <property name="password" value="123456"/>
+</bean>
+<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+```
 
+# 事务
 
+事务：数据库操作基本单元，逻辑上的一组操作，对数据库数据的操作，要么都成功、要么都失败。事务操作有四个原则，ACID原则。
 
-## 事务
+spring中的事务管理操作：
 
+- 两种方式：编程式（代码中编写事务代码）和声明式（常用）。
 
+声明式事务管理：两种方式：基于注解（常用）和基于XML配置文件；使用AOP实现。
 
+spring事务管理API：PlatformTransactionManager，代表事务管理器，针对不同的框架提供了不同的实现类
 
+- jdbc：org.springframework.jdbc.datasource.DataSourceTransactionManager；
 
+## 基于注解
 
+1. spring配置中配置事务管理器、开启注解；
+2. 使用@Transactional注解。
 
-# AOP底层原理
+```xml
+<!-- 配置事务管理器 -->
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <!-- 注入数据源 -->
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+<!-- 开启事务注解 -->
+<tx:annotation-driven transaction-manager="transactionManager"/>
+```
+
+@Transactional：用于类上时表示为所有方法都添加上事务，也可只在方法上使用，其与事务相关的属性：
+
+- propagation：事务传播行为（一个事务方法中调用另一个事务方法（会改变数据库数据的操作），如何管理这个过程中的事务）
+
+  ![](img/事务.png)
+
+- iosltion：事务隔离级别（解决问题：事务都有隔离性，如果不考虑隔离性，在读的时候就会存在脏读、不可重复读、虚（幻）读等问题）
+
+  - |               属性值                |    含义    | 脏读 | 不可重复读 | 幻读 |
+    | :---------------------------------: | :--------: | :--: | :--------: | :--: |
+    |     Isolation.READ_UNCOMMITTED      | 读未提交的 |  有  |     有     |  有  |
+    |      Isolation.READ_COMMITTED       | 读以提交的 |  无  |     有     |  有  |
+    | Isolation.REPEATABLE_READ（默认的） | 可重复读的 |  无  |     无     |  有  |
+    |       Isolation.SERIALIZABLE        |  串行化的  |  无  |     无     |  无  |
+
+- timeout：超时时间，事务在达到超时时间后还没有提交就会回滚，默认值为-1，（单位是秒）；
+
+- readonly：是否只读，设置事务中的操作，如果为true，就只能读取数据而不能进行修改数据的操作；
+
+- rollbackFor：回滚，设置出现哪些异常时进行事务的回滚；（rollbackFor = NullPointerException.class）
+
+- noRollbackFor：回滚，设置出现哪些异常时进行事务的回滚；（noRollbackFor = NullPointerException.class）
+
+##  基于XML
+
+1. spring配置中配置事务管理器；
+2. 配置通知；
+3. 配置切入点和切面。
+4. （需要依赖：spring-tx、以及aop的）
+
+```xml
+<!-- 配置事务管理器 -->
+<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <!-- 注入数据源 -->
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+<!-- 配置通知 -->
+<tx:advice id="txadvice">
+    <!-- 配置事务参数 -->
+    <tx:attributes>
+        <!-- 指定在哪种规则的方法上添加事务 -->
+        <tx:method name="account*" propagation="REQUIRED"/>
+    </tx:attributes>
+</tx:advice>
+<!-- 配置切入点和切面 -->
+<aop:config>
+    <!-- 配置切入点 -->
+    <aop:pointcut id="pt" expression="execution(* com.lsl.service.ClientService.account())"/>
+    <!-- 配置切面 -->
+    <aop:advisor advice-ref="txadvice" pointcut-ref="pt"/>
+</aop:config>
+```
+
+## 基于配置类（全注解）
+
+按配置类的使用方式来创建对应的dataSource、事务管理器。
+
+- `@EnableTransactionManagement`：开启事务；
+- @Transactional：为方法加上事务；
+- `ComponentScan(basePackages="")`：注解扫描。
 
 # ---------------------------------------
 
@@ -1272,8 +1380,6 @@ Spring容器：负责创建对象、装配它们、配置它们、并管理它�
 - FileSystemXmlApplicationContext：从文件系统下的一个或多个xml配置文件加载上下文定义；
 - XmlWebApplicationContext：从web应用下的一个或多个xml配置文件加载上下文定义。
 
-
-
 # Bean Scopes作用域
 
 ![](img/scopes.png)
@@ -1290,6 +1396,8 @@ Spring容器：负责创建对象、装配它们、配置它们、并管理它�
    1. 如果实现了
 
 
+
+# spring5新特性
 
 
 
