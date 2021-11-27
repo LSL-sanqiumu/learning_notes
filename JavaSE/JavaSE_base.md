@@ -1,3 +1,5 @@
+# JavaSE_base
+
 前置
 
 书本的思路、他人的思路、自己的思路。
@@ -163,12 +165,11 @@ DOS：Disk Operating System 磁盘操作系统。常用DOS命令：
 - 八进制：0开头表示八进制；
 - 十六进制：0x或0X开头表示十六进制数。
 
-有符号数的原码、补码、反码：
+有符号数的原码、补码、反码：（使用二进制表示数时都表示的是数的补码）
 
-- 二进制最高位是符号位，0表示正，1表示负；
-- 正数的原码、补码、反码都一样；
-- 负数的反码：原码符号位不变，其余位取反（或者负数的补码 - 1）；
-- 负数的补码：负数的反码 + 1；
+- 计算机使用的是二进制，二进制最高位是符号位，0表示正，1表示负；
+- 正数：原码、补码、反码都一样；
+- 负数：反码：原码符号位不变，其余位取反（或者负数的补码 - 1）；补码：负数的反码 + 1；
 - 0的反码、补码都是0；
 - Java中的数都是有符号数；
 - 计算机运算的时候是以补码的方式来运算的；
@@ -178,20 +179,21 @@ DOS：Disk Operating System 磁盘操作系统。常用DOS命令：
 
 Java中有两种数据类型：基本数据类型、引用数据类型（类、接口和数组）。8种基本数据类型如下：
 
+- 数值取值范围：（-2^n ) ~ (2^n - 1)  （n表示位数，最大值是因为最高位充当了符号位，以char型的-128~127为例，-128可以说是计算机大神们为了解决减法运算的准确性而诞生来的：1 加 -1 按原码的方式加会出错，所以后续就有了反码，使用反码进行减法运算后多出来了一个 -0（使用反码计算1+-1就得到反码1111,1111，反码1111,1111的原码结果就是-0），为了解决这个-0就又发明了补码，规定负数的补码在原来反码的基础上加个1，这样就使得-1 + 1后的原码就是0000,0000，但使用补码之后，-127 ~ 0 ~ 127 的反码都有了相应的原码，那多出来的原码1000,0000表示什么呢？表示-128，并且不会影响运算，至于为什么这么表示，不探讨那么多。）
 - 整型变量：byte1、short2、int4、long8(long在赋予的值的后面要用l或L进行声明)；
 - 浮点型变量：float4(变量值要以F或f结尾) 、double8(d)；
 - 字符型变量: char2（1个字符=2个字节）声明'一个字符'，' 必须放一个'，unicode字符；
 - 布尔型变量：boolean（只能取true或false）；
 - **（运算时，整型常量默认为int型，浮点型常量默认为double型）**。
 
-浮点型常量表示方式：
+浮点型常量表示方式：（注意浮动溢出现象）
 - 十进制数：1.13、1.0f、是零点几的时候，零可以省略（如0.133=.133）；
 - 科学记数法：1.11e2（1.11 * 10^2）1.11E-2（1.11 * 10^-2）。
 
 浮点数精确位：
-- double：小数点后14或16位（所以也叫双精度浮点数）；
-- float：小数点后七位；
-- 对运算结果是小数的运算要小心（例如double result = 8.7 / 3; 的结果只是接近2.7）。
+- double：小数点后14或16、17位（所以也叫双精度浮点数，通常16位）；
+- float：小数点后7位；
+- 对运算结果是小数的运算要小心（例如double result = 8.7 / 3; 的结果只是接近2.9？）。（jdk8验证，的确是2.9；`double result = 1.0 - 0.9 = ;`就会出现精度丢失问题）
 
 **除布尔类型的七种数据类型之间的运算：**
 
@@ -210,9 +212,11 @@ Java中有两种数据类型：基本数据类型、引用数据类型（类、�
 ![](images/operator.png)
 
 ```java
-【注意】：运算后的值和数据类型有关
-	    %取模运算结果的符号和被模数符号相同（被模数%模数）
-	    自增、自减不会改变自身数据类型
+【注意】：运算后的结果和数据类型有关。
+	    %取模运算结果的符号和被模数符号相同（被模数%模数）。
+    	关于运算符`/`：运算的两个数都是整型时才表示整数除法（整除，丢弃小数位），否则就是浮点除法（结果有小数位）。
+    	关于自加和自减：前置时自身先加1，后置时自身先去被使用一次再进行加一；自增、自减不会改变自身数据类型。
+    	
   byte num = 127； num++； 输出结果为-128；byte占一个字节内存，八位，字节第一位为符号位，自加一后进位，符号位也成了1
   1 byte = 8 bit
   1 KB   = 1024 B
@@ -228,7 +232,7 @@ Java中有两种数据类型：基本数据类型、引用数据类型（类、�
 
 如果程序既可以用三元运算符又可以用if-else结构，那么优先选择三元运算符，因为简洁执行效率高。
 
-**赋值运算符：** `+=`、`-=`、`*=`、`/=`、`%=`。
+**赋值运算符：** `+=`、`-=`、`*=`、`/=`、`%=`。（例子： a += 5; 就是 a = a + 5;）
 
 **比较运算符：  boolean型结果**
 
@@ -236,13 +240,13 @@ Java中有两种数据类型：基本数据类型、引用数据类型（类、�
 
 - !=、<=、\>=、>、<。
 
-- instanceof : 检查是否是类的对象，格式【"" instanceof String】
+- instanceof : 检查是否是某个类的对象或其子类对象，格式【"" instanceof String】
 
-**逻辑运算符：** & （与：全1为1）、|（或：有1为1）、!（非）；
+**逻辑运算符：** 
 
 - &&    短路与：运算符左边是true就运行右边，是false就不会执行运算符右边的运算
-- ||      短路或：从左到右做运算，一真全真，全假为假，先遇真才会提前结束逻辑运算
-- ^        逻辑异或：同为假，异为真，二进制运算(有真为真)（m^n^n = m）
+- ||       短路或：从左到右做运算，一真全真，全假为假，先遇真才会提前结束逻辑运算
+- !      （非）
 
 ```java
 //交换位置的三种方法
@@ -262,10 +266,13 @@ num1 = num2 ^ num1;
 
 **位运算符：（操作的都是整型数据，顾名思义是在位上的运算，注意运算的时候是以补码的形式，最后结果还要转换为原码）**
 
-- <<        左移：补0；
-- \>>        右移：最高位是啥拿啥补；
-- \>>>      无符号右移：都用0补；
-- ~           取反运算：0->1，1->0.
+- <<        左移，空出来的都补0；
+- \>>        右移，空出来的，原数据最高位是啥就拿啥补；
+- \>>>      无符号右移：移动时空出来的位都用0补，符号位不变；
+- ~           取反运算：0->1，1->0.；
+- &        （与运算：全1为1）；
+- |         （或运算：有1为1）；
+- ^          异或运算：**同为假，异为真**（m^n^n = m）
 
 ## 流程控制和循环
 
@@ -274,12 +281,13 @@ num1 = num2 ^ num1;
 **分支结构：**根据条件选择性执行，有 if...else 和 switch-case 两种。
 
 ```java
-switch(表达式) {   //表达式只能是byte、short、char、int、枚举类型(JDK5.0新增)、String类型(JDK7.0新增)这六种
+//表达式只能是byte、short、char、int、Character、Short、Byte、Integer、枚举类型(JDK5.0新增)、String类型(JDK7.0新增)这十种
+switch(表达式) {   
     case 常量1:
         执行语句1;
-        break;    // 没有break时：
+        break;    // 没有break时：会从表达式对应的case一直往下执行到底
     ......
-        default:  //可选项，表示默认值，都不满足时执行，相当于if-else中的else
+        default:  //可选项，表示默认值，都不满足时执行（满足但前面都没有break，这个也会执行）
         	执行语句n;
 }
 ```
@@ -335,7 +343,7 @@ for(;;){
 }
 /*
 结束循环方式：
-    方式一：循环条件部分返回false
+    方式一：return; 这个会直接结束方法 （while的死循环可以在循环体中控制条件为false来结束循环）
     方式二：循环体中执行break
     */
 ```
@@ -539,7 +547,7 @@ System.out.println("程序运行花费的时间为：" + (end - start) + "ms");
 
 # 面向对象编程
 
-对编程思想面向对象与面向过程的理解？
+对编程思想面向对象与面向过程的理解、优缺点？
 
 面向对象是一种 **对现实世界理解和抽象的方法**，是计算机编程技术发展到一定阶段后的产物。
 
@@ -585,7 +593,7 @@ System.out.println("程序运行花费的时间为：" + (end - start) + "ms");
 
 ## 关于方法
 
-方法声明：**权限修饰符  返回值类型  方法名(形参列表){  方法体 }**
+方法声明：**权限修饰符 [关键字修饰]  返回值类型  方法名(形参列表){  方法体  }**
 
 - static修饰：表示随着类加载而加载，不用通过对象来进行调用；
 - final修饰：表示该方法不能被重写；
@@ -695,9 +703,220 @@ public InnerClass {
 
 继承：`is-a`，使用extends的父子类继承关系。
 
-聚合（也被称为关联）：`has-a`，意味着类A的对象包含类A的对象。
+聚合（也被称为关联）：`has-a`，意味着聚合类的对象中包含类A的对象。
 
 （核心卷中说聚合所表示的内容被其他的方法学家用关联来代表）。
+
+## 使用文档注释解释类
+
+
+
+[Java文档注释全攻略 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/369072725)
+
+**关于文档注释：**
+
+文档注释主要是用来生成java开发文档 —— javadoc的，生成的开发文档和Java本身的API帮助文档是一样的，也就是对你所写的类进行解释说明，所以它还需要搭配一些文档标记，进行解释说明，而且在文档注释中可以使用HTML语言，jdk源码中有大量的文档注释，所以弄懂文档注释可以帮助你更好的看懂源码。
+
+文档注释通常还会配合HTML标签进行使用，比较常用的标签有`<p> <pre>`等标签，p标签用于表示段落，pre标签可用于显示计算机源码。
+
+【注意】：pre标签中如果有小于号、大于号、例如泛型 在生产javadoc时会报错。
+
+**文档标记：**
+
+1. 通用型，在类、方法、变量和常量上都经常使用的：
+
+   - @link： 用于快速链接到相关代码，使用格式：{@link 包名.类名#方法名(参数类型)}
+
+     ```java
+     // 完全限定的类名*
+     {@link java.util.Collections}
+     
+     // 省略包名，只写类名*
+     {@link String}
+     
+     // 省略类名，表示指向当前的某一个方法*
+     {@link #toString()}
+     
+     // 完全限定方法名，包名.类名.方法名(参数类型)*
+     {@link java.lang.String#charAt(int)}
+     ```
+
+   - @code： 将文本标记为代码样式文本，一般在Javadoc中只要涉及到类名或者方法名，都需要使用@code进行标记，使用格式：{@code text}，其会被解析为` text`
+
+     ```java
+     //标记类名
+     {@code ArrayList}
+     
+     //标记方法名
+     {@code isEmpty}
+     
+     //标记某个代码关键字
+     {@code null}
+     ```
+
+2. 类上常用的：
+
+   - @param：如果一个类支持泛型时，可以通过@param来解释泛型的类型
+
+     ```java
+     /**
+     *@param <E> the type of elements in this list
+     **/
+     ```
+
+   - @author：用来标记作者，如果一段程序是由多个作者来维护，则可以标记多个@author，@author 后面可以跟作者姓名(也可以附带作者邮箱地址)、组织名称(也可以附带组织官网地址)
+
+     ```java
+     // 纯文本作者
+     @author Rod Johnson
+     
+     // 纯文本作者，邮件
+     @author Igor Hersht, igorh@ca.ibm.com
+     
+     // 超链接邮件 纯文本作者
+     @author <a href="mailto:ovidiu@cup.hp.com">Ovidiu Predescu</a>
+     
+     // 纯文本邮件
+     @author shane_curcuru@us.ibm.com
+     
+     // 纯文本 组织
+     @author Apache Software Foundation
+     
+     // 超链接组织地址 纯文本组织
+     @author <a href="https://jakarta.apache.org/turbine"> Apache Jakarta Turbine</a>
+     ```
+
+   - @see ：另请参阅的意思，一般用于标记与本类相关联的类，该标注可以用在类或方法上
+
+     ```java
+     /**
+     * @see IntStream
+     * @see LongStream
+     * @see DoubleStream
+     * @see <a href="package-summary.html">java.util.stream</a>
+     * /
+     ```
+
+   - @since：表示从以下版本开始有这个类，标记文件创建时项目当时对应的版本，后面可以跟版本号或是时间
+
+     ```java
+     //跟版本号，以下是ArrayList类里的标记，说明从jdk1.2开始就有该类了
+     /*
+     * @since 1.2
+     **/
+     //跟时间
+     /**
+     * @since 20 April 2021
+     */
+     ```
+
+   - @version：用于标记当前类版本，默认为1.0
+
+     ```java
+     /**
+     * @version 1.0
+     */
+     ```
+
+     以上是类上常用的文档标注，类上的文档格式如下：
+
+     1. 概要描述：通常用一段话简要的描述该类的基本内容。
+     2. 详细描述：通常用几大段话详细描述该类的功能与相关情况。
+     3. 文档标注：用于标注该类的作者、时间、版本、参略等信息。
+
+3. 方法上常用的的标记：
+
+   - @param：该文档标记后面写方法的参数名，再写参数描述。
+
+     ```java
+     */***
+     ** @param str*
+     ** the {@code CharSequence} to check (may be {@code null})*
+     **/*
+     public static boolean containsWhitespace(@Nullable CharSequence str) {}
+     ```
+
+   - @return：该文档标记后面写返回值得描述。
+
+     ```java
+     */***
+     ** @return {@code true} if the {@code String} is not {@code null}, its*
+     **/*
+     public static boolean hasText(@Nullable String str){}
+     ```
+
+   - @throws：该文档标记后面写异常的类型和异常的描述，用于描述该方法可能抛出的异常。
+
+     ```java
+     */***
+     ** @throws IllegalArgumentException when the given source contains invalid encoded sequences*
+     **/*
+     public static String uriDecode(String source, Charset charset){}
+     ```
+
+   - @exception：该标注用于描述方法签名throws对应的异常。
+
+     ```java
+     */***
+     ** @exception IllegalArgumentException if <code>key</code> is null.*
+     **/*
+     public static Object get(String key) throws IllegalArgumentException {}
+     ```
+
+   - @see：可用在类与方法上，表示参考的类或方法。
+
+     ```java
+     */***
+     ** @see java.net.URLDecoder#decode(String, String)*
+     **/*
+     public static String uriDecode(String source, Charset charset){}
+     ```
+
+     以上是方法上常用的文档标注，方法上的文档格式如下：
+
+     1. 概要描述：通常用一段话简要的描述该方法的基本内容。
+     2. 详细描述：通常用几大段话详细描述该方法的功能与相关情况。
+     3. 文档标注：用于标注该方法的参数、返回值、异常、参略等信息。
+
+4. 变量和常量上的文档规范：变量和常量上用的比较多的文档标记是`@link`和`@code`，主要注释该常量或变量的基本用法和相关内容。
+
+   ```java
+   /**
+   * The value is used for character storage.
+   *
+   * @implNote This field is trusted by the VM, and is a subject to
+   * constant folding if String instance is constant. Overwriting this
+   * field after construction will cause problems.
+   *
+   * Additionally, it is marked with {@link Stable} to trust the contents
+   * of the array. No other facility in JDK provides this functionality (yet).
+   * {@link Stable} is safe here, because value is never null.
+   */
+       private final byte[] value;
+   ```
+
+
+
+**javadoc文档生成：**
+
+1. Windows下cmd命令方式：
+
+   - `javadoc -encoding UTF-8 -charset UTF-8 *.java`：进入要编译的.java文件目录下执行。
+
+2. 使用idea生成javadoc文档：
+
+   1. 打开 idea，点击 Tools-> Generate JavaDoc，这样会打开生成 javadoc 文档的配置页面。
+
+   2. 配置javadoc文档输出详情：
+
+   3. 1. 选择要输出文档的范围，选择是整个项目还是模块还是单个文件。
+      2. 文档要输出路径。
+      3. 选择哪些类型的方法或参数可以生成文档。
+      4. Locale 选择地区，这个决定了文档的语言，中文就是zh_CN。
+      5. 传入JavaDoc的参数，一般写 `-encoding UTF-8 -charset UTF-8`，表示编码格式。
+      6. 点击确定，运行无误后，打开你所选择的文档输出路径后，选择index.html，就是所输出的javadoc文档。
+
+   4. ![](images/javadoc_idea.jpg)
 
 # 递归recursion
 
@@ -1014,8 +1233,8 @@ instanceof关键字：
   - JDK7之前：全局常量和抽象方法；
   - JDK8：新增静态方法、默认方法。
 - **特性**
-  - 不能构造接口对象但能声明接口的变量
-  - 接口中抽象方法自动设为`public abstract`，常量自动设为`public static final`  
+  - 不能构造接口对象但**能声明接口的变量**；
+  - 接口中抽象方法自动设为`public abstract`，常量自动设为`public static final`  。
 
 **接口实现类与实现类的对象：**
 

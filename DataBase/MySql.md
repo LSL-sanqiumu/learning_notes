@@ -27,7 +27,7 @@ SQL：（Structure Query Language）结构化查询语言，是一套标准（�
 DBMS：数据库管理系统
 
 - 数据库的管理软件，科学有效管理数据，维护和获取数据；
-- MySQL。
+- MySQL、Oracle等。
 
 ## MySQL
 
@@ -139,6 +139,8 @@ exit; #退出数据库管理系统
 /**/ #多行注释
 
 ```
+
+# ----------------------main---------------------
 
 # 表
 
@@ -256,7 +258,7 @@ Default：设置默认值。
 
 表中的数据中有些字段信息可能是重复的，为了区分这种重复，就引入了约束，协助身份标识；任何一张表都应该有主键约束，主键约束一张表只能有一个。
 
-主键特征：not null + unique（主键值不能是null，也不能重复）
+作为主键的字段：not null + unique（非空、唯一：主键值不能是null，也不能重复）
 
 ```mysql
 create table `table_name`(
@@ -336,7 +338,7 @@ ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`
 - 数据库就是单纯的表，只用来存数据，只有行和列；
 - 使用多张表就创建外键。
 
-# 关于引擎
+# 了解引擎
 
 INNODB（默认），MyISAM（早些年使用）。
 
@@ -355,14 +357,7 @@ MySQL引擎在物理文件上的区别：
 - InnoDB： 在数据库表中只有一个xxx.frm文件，以及上级目录下的 ibdata1文件；
 - MyISAM ：xxx.frm - 表示结构的定义文件，xxx.MYD -数据文件(data)，xxx.MYI-放索引的(index)。
 
-# 数据库备份
-
-DOS界面执行指令：
-
-- `mysqldump -u root -p密码 -B 数据库1 数据库2 数据库3 ... > 备份数据所在地址/bak.sql`；
-- `source 数据库备份文件`：恢复数据库，要注意访问权限，保证能访问到备份文件，要加转义字符`\`；例如`source D:\\lsl\\dak.sql`；
-
-# 数据库语言
+# ---------------SQL---------------
 
 数据库xx语言：（CURD(create update retrieve delete)	CV	API）
 
@@ -378,11 +373,11 @@ TCL（Transaction Control，事务控制语言）：事务提交commit、事务�
 
 数据库--->数据库中的表--->表中的信息。
 
-## DDL
+# DDL
 
 数据定义语言，DDL语句不用commit。MySQL的关键字不区分大小写，下面用中括号包起来的表示可选。
 
-### 数据库
+## 数据库
 
 1. 创建数据库（使用命令创建不设置字符集时是默认的字符集(不支持中文)）
 
@@ -408,7 +403,7 @@ TCL（Transaction Control，事务控制语言）：事务提交commit、事务�
    show databases -- 查看所有的数据库
    ```
 
-### 创建、删除表
+## 创建、删除表
 
 创建表：
 
@@ -442,12 +437,17 @@ CREATE TABLE [IF NOT NULL] 表名(
 DROP TABLE IF EXISTS `table-name`;       -- 删除表
 ```
 
-常用查看命令：
+## 常用查看命令
 
 ```sql
 SHOW CREATE DATABASE `database_name`; -- 显示创建数据库的语句
 SHOW CREATE TABLE `table_name`; -- 显示创建表的语句
 DESC `table_name`; -- 显示表的结构 （describe table_）
+
+show status; -- 显示广泛的服务器状态信息
+show grants; -- 显示授予用户的安全权限
+show errors; -- 显示错误信息
+show warnings; -- 显示警告信息
 ```
 
 设置数据库表的字符集编码：`CHARSET=utf8`，不设置的话，会是mysql默认的字符集编码~（不支持中文！）。
@@ -459,7 +459,7 @@ DESC `table_name`; -- 显示表的结构 （describe table_）
 
 - 第二种：在my.ini中配置默认的编码：`character-set-server=utf8`。（但不建议使用此种方法，因为第一种是sql上的修改，换台电脑也能运行，但第二种是物理上的修改，如果另一个的数据库ini配置里没有这句话，那就运行不了了）。
 
-### 修改表结构
+## 修改表结构
 
 对表的结构层的修改：
 
@@ -475,11 +475,11 @@ ALTER TABLE `table-name` DROP 字段名;    -- 删除字段
 
 【注意点】：字段名用可``来包裹起来；SQL大小写不敏感，建议使用小写；所有符号都用英文下的。
 
-## DML
+# DML
 
 数据操作语言，insert、update、delete；对表的字段的内容进行操作，需要commit。
 
-### 添加
+## 添加
 
 ```mysql
 INSERT INTO `表`(`字段`) VALUES (),(),(),(),... -- 为某个字段插入多个数据
@@ -502,7 +502,7 @@ date_format函数：将日期转换成特定格式的字符串
 - 例如：`select id,name,date_format(birth,%m/%d/%Y) as birth from t_user;` 
 - 该函数会将日期转换成特定格式的字符串。
 
-### 修改
+## 修改
 
 ```mysql
 -- 更新 表 set:设置字段值 where:条件定位，可使用运算符 
@@ -522,13 +522,13 @@ update `table-name` set `字段1`=新值1,`字段2`=新值2,... where `字段3`=
 |         and         |   相当于&&   |        | false、true |
 |         or          |  相当于\|\|  |        | false、true |
 
-### 删除
+## 删除
 
 ```mysql
 -- delete，delete只删除数据，可以回滚
 delete from `table-name` [where 条件] -- 删除指定数据，没有条件时会删除整张表
 -- truncate
-truncate `table-name`  -- 清空数据库表中的s数据，但表的结构和索引约束不会变
+truncate `table-name`  -- 清空数据库表中的数据，但表的结构和索引约束不会变
 ```
 
 delete和truncate区别：
@@ -543,7 +543,7 @@ delete和truncate区别：
 - InnoDB：自增列会从1开始（自增量存在于内存，重启内存会丢失，自增列重新开始计数）；
 - MyISAM：继续从上一个自增量开始（自增量存在于文件，文件存在就不会丢失自增量）；
 
-## DQL
+# DQL
 
 数据查询语言，DQL基本结构是由SELECT子句，FROM子句，WHERE子句组成的查询块：
 `SELECT <字段名表> FROM <表或视图名> WHERE <查询条件>`。
@@ -563,9 +563,9 @@ FROM table_name [as table_alias]
 	[WITH OWNERACCESS OPTION] 	
 ```
 
-### 单表查询
+## 单表查询
 
-#### 简单查询
+### 简单查询
 
 ```SQL
  -- 查询指定表内所有数据
@@ -601,7 +601,7 @@ SELECT `studentresult`+1 AS 提分后 FROM result;
 
 字段可以使用数学表达式：`select name,sal*12 from table_name`；
 
-#### 条件查询
+### 条件查询
 
 条件操作符：
 
@@ -640,7 +640,7 @@ like，模糊查询，支持%或_匹配：
  where `字段` like '%\_%'; -- 字段值存在`_`的，要使用转义字符`\`
 ```
 
-#### 分组查询
+### 分组查询
 
 实际的应用中，可能有这样的需求，需要先分组再对每一组的数据进行操作，这是需要使用分组查询。
 
@@ -711,7 +711,7 @@ select user_id,the_year,count(price) as '订单数量' from t_order group by use
 
 
 
-#### 单表查询总结
+### 单表查询总结
 
 ```mysql
 -- 执行顺序：from --> where --> group by --> select --> having --> order by
@@ -721,9 +721,9 @@ select ... from ... where ... group by ... having ... order by ...;
 
 
 
-### 联表查询（连接查询）
+## 联表查询（连接查询）
 
-#### 概述
+### 概述
 
 连接查询语法根据年代分为SQL92、SQL99，按照表连接的方式分为三类：
 
@@ -770,7 +770,7 @@ INSERT INTO `SCHool`.`category` (`categoryid`, `pid`, `categoryname`) VALUES (7,
  WHERE a.categoryname =b.categoryname;
 ```
 
-#### 连接查询
+### 连接查询
 
 SQLJoins：可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。
 
@@ -839,7 +839,7 @@ INSERT INTO t_class(s_id,specialty,grade) VALUES
 
 
 
-#### 更多张表的连接
+### 更多张表的连接
 
 ```mysql
 -- 语法  可以使用inner、right等的join
@@ -852,7 +852,7 @@ join d on a和d连接的条件
 
 
 
-### 排序order
+## 排序order
 
 ```SQL
 select 字段 from table_name order by `字段` asc;-- asc：升序；desc：降序
@@ -864,7 +864,7 @@ select 字段1,字段2 from table_name order by 2; -- 查询处理的按照第�
 
 ```
 
-### 子查询
+## 子查询
 
 本质：在where子语句嵌套一个查询语句
 
@@ -883,24 +883,25 @@ select `字段1`,`字段2`,... from `table-name` where `字段` in(
 )
 ```
 
-### 分页limit
+## 分页limit
 
 缓解数据压力，加强体验；一般图片的才使用瀑布流。
 
 ```SQL
--- limit 起始下标,长度;   (n-1)*PageSize：n为页面数，PageSize、PageS为每个页面的记录条数 
-limit 1,5
+-- limit 起始下标,长度n; 从起始下标开始的n条数据  数据条数是从0开始，
+limit 1,5 -- [1,5] 5条j
+-- (n-1)*PageSize：n为页面数，PageSize、PageS为每个页面的记录条数 
 limit (n-1)*PageSize,PageS
 ```
 
-### 分组和过滤
+## 分组和过滤
 
 ```SQL
 group by 字段; -- 通过什么字段来分组
 having 条件字句; -- 过滤，条件字句中可以使用别名
 ```
 
-## DCL
+# DCL
 
 数据控制语言DCL用来授予或回收访问数据库的某种特权，并控制数据库操纵事务发生的时间及效果，对数据库实行监视等。如：
 
@@ -912,7 +913,11 @@ having 条件字句; -- 过滤，条件字句中可以使用别名
 
 4、新建用户（create user）。
 
-## TCL
+# TCL
+
+
+
+# ---------------SQL---------------
 
 # 数据库常用函数
 
@@ -1211,12 +1216,17 @@ DROP USER 用户;
 使用命令行导出：
 
 ```sql
--- mysqldump -h 主机 -u 用户 -p密码 数据库 [表1] [表2] [表3] > 物理磁盘位置/文件名 -- []表示可选
+-- 备份：mysqldump -h 主机 -u 用户 -p密码 数据库 [表1] [表2] [表3] > 物理磁盘位置/文件名 -- []表示可选
 mysqldump -h localhost -u root -p123456 school student
--- 恢复备份资源
+-- 恢复：s
 source 备份文件 -- 登陆了并切换到指定的数据库再执行此命令
 mysql -u 用户 -p密码 库名 < 备份文件
 ```
+
+DOS界面执行指令：
+
+- `mysqldump -u root -p密码 -B 数据库1 数据库2 数据库3 ... > 备份数据所在地址/bak.sql`；
+- `source 数据库备份文件`：恢复数据库，要注意访问权限，保证能访问到备份文件，要加转义字符`\`；例如`source D:\\lsl\\dak.sql`；
 
 # 规范数据库设计
 

@@ -41,6 +41,7 @@
 ```
 
 ```html
+<!-- 在html页面的head标签需加上的 -->
 xmlns:th="http://www.thymeleaf.org"
 ```
 

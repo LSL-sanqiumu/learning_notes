@@ -1,3 +1,5 @@
+# MyBatis
+
 ```java
 Connection conn = null;
 PreparedStatement ps =null;
@@ -49,7 +51,7 @@ try{
 }
 ```
 
-# mybatis依赖
+## 依赖
 
 依赖：
 
@@ -60,12 +62,11 @@ try{
     <artifactId>mybatis</artifactId>
     <version>3.5.6</version>
 </dependency>
-<!-- mysql数据库驱动 -->
-<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<!-- mybatis 整合 spring -->
 <dependency>
-    <groupId>mysql</groupId>
-    <artifactId>mysql-connector-java</artifactId>
-    <version>8.0.25</version>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis-spring</artifactId>
+    <version>2.0.6</version>
 </dependency>
 ```
 
@@ -119,7 +120,7 @@ jdbc.password=123456
 </mapper>
 ```
 
-# 概述
+## 概述
 
 MyBatis是什么？MyBatis用来干什么？
 
@@ -147,23 +148,63 @@ JDBC缺点：
 
 - sql语句编写在java程序中，sql语句不支持配置，所以就会导致后面要修改语句的时候得重新修改源代码，而重新修改后又得重新编译/重新部署等，并且修改java源代码违反了开闭原则OCP。（互联网分布式架构方面的项目，并发量很大，系统需要不断的优化，各方面的优化，其中有一条非常重要的优化是SQL优化）。------SQL语句可以写到配置文件中，此条确定并不那么主要。
 
-# mybatis使用配置
 
-## mybatis-config.xml
+
+
+
+# MyBatic使用步骤
+
+## 一：依赖导入
+
+需要导入mybatis的依赖和数据库驱动的依赖：
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+<dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis</artifactId>
+    <version>3.5.6</version>
+</dependency>
+<!-- 数据库驱动 -->
+<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.21</version>
+</dependency>
+<!-- mybatis 整合 spring的时候需要 -->
+<dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis-spring</artifactId>
+    <version>2.0.6</version>
+</dependency>
+```
+
+
+
+## 二：配置mybatis全局配置文件
+
+MyBatis可以单独使用，当单独使用的时候需要mybatis-config.xml配置文件，该文件为MyBatis的全局配置文件，主要配置MyBatis的数据源（DataSource）、事务管理（TransactionManager）、以及打印SQL语句、开启二级缓存、设置实体类别名等功能。XxxMapper.xml文件：MyBatis是"半自动"的ORM框架，即SQL语句需要开发者自定义，MyBatis的关注点在POJO与SQL之间的映射关系。那么SQL语句在哪里配置自定义呢？就在Mapper.xml中配置。
 
 ![](img/globalconfig.png)
 
-### 配置数据库
+映射器是 MyBatis 中最重要的文件，文件中包含一组 SQL 语句（例如查询、添加、删除、修改），这些语句称为映射语句或映射 SQL 语句。映射器由 Java 接口和 XML 文件（或注解）共同组成。
 
-mybatis-config.xml：构建 SqlSessionFactory的配置文件，全局配置文件
+映射器有以下两种实现方式。
 
-配置文件头信息-dtd约束（规定xml文件标签语法规则）：
+- 通过 XML 文件方式实现，比如我们在 mybatis-config.xml 文件中描述的 XML 文件，用来生成 mapper。
+- 通过注解的方式实现，使用 Configuration 对象注册 Mapper 接口。
+
+
+
+### **mybatis-config.xml**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE configuration
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<!-- 配置文件头信息-dtd约束（规定xml文件标签语法规则） -->
 <configuration>
     <!-- 引入外部properties配置文件 resource（类路径下） url（网络路径或磁盘路径） -->
     <properties resource="jdbc.properties"/> 
@@ -171,6 +212,7 @@ mybatis-config.xml：构建 SqlSessionFactory的配置文件，全局配置文�
         <!-- 是否开启驼峰命名自动映射，即从经典数据库列名 A_COLUMN 映射到经典 Java 属性名 aColumn -->
     	<setting name="mapUnderscoreToCamelCase" value="true"/>
     </settings>
+    <!-- 环境设置 可设置多个数据库环境 default用来选择使用的数据库环境 -->
     <environments default="test">
         <environment id="development">
             <transactionManager type="JDBC" />
@@ -191,12 +233,13 @@ mybatis-config.xml：构建 SqlSessionFactory的配置文件，全局配置文�
             </dataSource>
         </environment>
     </environments>
-    <!-- 数据库厂商别名 -->
+    <!-- 用来数据库厂商别名 -->
      <databaseIdProvider type="DB_VENDOR">
   		<property name="SQL Server" value="sqlserver"/>
   		<property name="DB2" value="db2"/>
   		<property name="Oracle" value="oracle" />
 	</databaseIdProvider>
+    <!-- 映射器配置 -->
     <mappers>
         <mapper resource="BlogMapper.xml"/>
     </mappers>
@@ -212,7 +255,9 @@ username=root
 password=123456
 ```
 
-### 其他配置
+
+
+### 其他配置项说明
 
 在Mybatis全局配置文件中可以为某个Java类起别名：(注意配置文件内各标签的顺序有要求)
 
@@ -228,17 +273,16 @@ password=123456
 <!-- @Alias注解也可以为类起别名 -->
 ```
 
-
-
-指定SQL映射文件：
+告诉mybatis到哪去寻找SQL映射语句的文件（mapper.xml）：
 
 ```xml
-<!-- resource代表类路径下的 url代表网络路径或磁盘路径 -->
+<!-- resource：相对于类路径 -->
+<!-- url：网络路径或磁盘路径，绝对定位 -->
 <!-- class：用来引用接口，接口和配置文件要在同一包并且名字相同，没有配置文件时可以使用注解写SQL语句 -->
 <mappers>
 	<mapper resource="BlogMapper.xml"/>
 </mappers>
-<!--映射到该包下所有的xml文件，使用该方式时对包下的mapper文件和文件的namespace属性有要求-->
+<!-- 映射到该包下所有的xml文件，使用该方式时该包下的mapper文件名要和接口名一致、文件的namespace是接口全限定名 -->
 <mappers>
 	<package resource="com.lsl.blog.dao"/>
 </mappers>
@@ -252,7 +296,13 @@ password=123456
 </mapper>
 ```
 
-## BlogMapper.xml
+
+
+## 三：配置Mapper.xml
+
+### 基本使用
+
+自定义SQL语句的配置文件。基本格式如下：
 
 ```xml
 <!-- 定义SQL语句 -->
@@ -260,7 +310,7 @@ password=123456
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="BlogMapper">
+<mapper namespace="com.lsl.dao.BlogMapper">
     <!--mybatis会自动创建对象并把查询结果放到对象对应的属性上，需要告知resultType-->
     <!--查询结果集的列名一定要和对象的属性名对应，不对应的时候使用as起别名-->
     <!--select语句的id用于标识，通过id可以使用该SQL语句-->
@@ -270,7 +320,17 @@ password=123456
 </mapper>
 ```
 
-### parameterType
+
+
+### 元素与细节
+
+#### namespace
+
+将映射文件与接口绑定，要求接口中声明的方法和映射文件中定义的SQL方法的id一致，使用namespace就可以面向接口编程了。
+
+
+
+#### parameterType
 
 parameterType属性：专门用来给SQL语句的占位符传值，翻译为参数类型，占位符必须使用`#{属性名}`；只有当parameterType是简单类型时可以省略不写。简单类型有17个：
 byte short int long double float char boolean
@@ -307,7 +367,9 @@ map.put("sr","1999.09.09");
 sqlSession1.insert("putmap", map);
 ```
 
-### SQL增删改查
+
+
+#### SQL增删改查
 
 查询语句：
 
@@ -356,7 +418,9 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 </delete>
 ```
 
-### 传入参数处理与取值
+
+
+#### 传入参数处理与取值
 
 **当传入单个参数：**mybatis不会对其进行任何处理，此时使用`#{参数名}`来获取参数（对参数名没有什么强制要求）；
 
@@ -394,9 +458,7 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 
 
-
-
-### Select语句返回值封装
+#### Select语句返回值封装
 
 **resultType：**
 
@@ -533,7 +595,9 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 </discriminator>
 ```
 
-### 动态SQL语句
+
+
+#### 动态SQL语句
 
 传入多个参数用于SQL语句的查询，最后完整的SQL语句由传入参数和自己设定的表达式规则来确定，SQL语句不是一成不变的。
 
@@ -690,7 +754,7 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 
 
 
-### else
+#### else：分页和查询
 
 where和if：什么是分页查询？为什么要有分页查询？
 
@@ -811,25 +875,21 @@ ObjectMapper om = new ObjectMapper();
 String json = om.writeValueAsStream(java对象); 
 ```
 
-# mybatis代码操作
+## 四：mybatis-操作数据库的具体实现
 
-## 原生代码操作数据库
+### 基本操作
 
-###  SqlSessionFactory
-
-每个基于 MyBatis 的应用都是以一个 SqlSessionFactory 的实例为核心的。构建 SqlSessionFactory可以使用Java代码的方式或xml配置的方式，这里用xml配置方式构建 SqlSessionFactory，如下：
+**一：SqlSessionFactory：**每个基于 MyBatis 的应用都是以一个 SqlSessionFactory 的实例为核心的。构建 SqlSessionFactory时可以使用Java代码初始化的方式或使用xml配置初始化方式，这里用xml配置初始化的方式来构建 SqlSessionFactory，如下：
 
 ```java
 String resource = "mybatis-config.xml";
 //加载配置文件
 InputStream inputStream = Resources.getResourceAsStream(resource);
 //通过SqlSessionFactoryBuilder()获得SqlSessionFactory 的实例
-SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream); 
 ```
 
-### SqlSession
-
-事务开启与业务代码：通过SqlSessionFactory对象的openSession()方法开启会话、事务，该方法会返回一个SqlSession对象（SqlSession等同于Connection），一个专门用来执行SQL语句的一个会话对象。
+**二：SqlSession：**事务开启与业务代码：通过SqlSessionFactory对象的openSession()方法开启会话、事务，该方法会返回一个SqlSession对象（SqlSession等同于Connection），一个专门用来执行SQL语句的一个会话对象。
 
 ```java
 public class MainTest {
@@ -865,7 +925,7 @@ public class MainTest {
 }
 ```
 
- sqlSession对象调用语句：
+ 关于sqlSession对象的一些方法说明：
 
 - ```java
   // 增，返回造成影响的记录条数
@@ -879,21 +939,54 @@ public class MainTest {
   ```
 
 - ```java
+  // 查询
   sqlSession.selectOne("getById", "1"); // 查，返回某条数据，后面是传参
   sqlSession.selectList("getAll"); // 查，返回List集合
   ```
-
+  
 - ```java
+  // 删除
   sqlSession.delete("delete","2"); // 删除，返回造成影响的记录条数
   ```
+  
+- ```java
+  // 当Mapper.xml使用命名空间时（命名空间指定要绑定的接口），接口和Mapper.xml文件会绑定，接口的方法对应mapper文件中的sql语句
+  // 此时就可以使用这个得到接口对象，从而调用接口的方法来实现对数据库的操作
+  sqlSession.getMapper(TestMapper.class); 
+  ```
 
-## 使用数据库连接池操作
+  
+
+
+
+### 使用数据库连接池操作
 
 可以通过第三方的依赖来获取数据库连接，进而操作数据库。具体操作见JDBC.md。
 
-## maven配置导出问题
+### 使用总结
 
-由于maven的约定大于配置，maven项目的**java目录的配置文件默认是不会导出并生效的**，解决方案就是在pom/xml文件中加入以下配置，maven项目中都可以加上以下配置防止资源导出失败的问题：
+1. 熟悉配置：（依赖的话导入mybatis的依赖，因为要连接数据库，所以还要mysql-connector-java驱动依赖）
+
+   - mybatis-config.xml：相当于配置数据库驱动、数据库连接，还要映射SQL语句文件；
+   - mapper.xml：SQL语句文件，用来声明SQL语句；
+   - jdbc.properties：为避免mybatis-config.xml失效，将mybatis-config.xml里面的用来配置驱动、连接数据库的值放到这个文件然后再加载到mybatis-config.xml里使用；
+
+2. Java中使用SQL语句：
+
+   1. 通过配置文件mybatis-config.xml来创建SqlSessionFactory（得先加载文件到内存）：
+
+      ```java
+      String resource = "mybatis_config.xml";
+      // 字节输入流 加载文件
+      InputStream ras = Resources.getResourceAsStream(resource); 
+      SqlSessionFactory ssf = new SqlSessionFactoryBuilder().build(ras);
+      ```
+
+   2. 获取SqlSession（等同于Connection），通过这个进行事务处理、执行语句等操作。
+
+# maven-配置导出问题
+
+由于maven的约定大于配置，maven项目的**java目录下的配置文件默认是不会导出并生效的**，解决方案就是在pom/xml文件中加入以下配置，maven项目中都可以加上以下配置防止资源导出失败的问题：
 
 ```xml
 <build>
@@ -917,32 +1010,24 @@ public class MainTest {
 </build>
 ```
 
-## 使用总结
-
-1. 熟悉配置：（依赖的话导入mybatis的依赖，因为要连接数据库，所以还要mysql-connector-java驱动依赖）
-
-   - mybatis-config.xml：相当于配置数据库驱动、数据库连接，还要映射SQL语句文件；
-   - mapper.xml：SQL语句文件，用来声明SQL语句；
-   - jdbc.properties：为避免mybatis-config.xml失效，将mybatis-config.xml里面的用来配置驱动、连接数据库的值放到这个文件然后再加载到mybatis-config.xml里使用；
-
-2. Java中使用SQL语句：
-
-   1. 通过配置文件mybatis-config.xml来创建SqlSessionFactory（得先加载文件到内存）：
-
-      ```java
-      String resource = "mybatis_config.xml";
-      // 字节输入流 加载文件
-      InputStream ras = Resources.getResourceAsStream(resource); 
-      SqlSessionFactory ssf = new SqlSessionFactoryBuilder().build(ras);
-      ```
-
-   2. 获取SqlSession（等同于Connection），通过这个进行事务处理、执行语句等操作。
-
-# spring整合mybatis
+# 整合spring
 
 mybatis框架的SqlSessionFactory也好，还是池化技术的数据库连接池也好，程序中的具体实现都体现为各个类的对象的行为，因此可以通过spring的IOC容器来进行统一的管理，需要使用到的时候就通过依赖注入获取相应的对象，进而执行相关操作。
 
-使用spring来整合mybatis需要引入mybatis-spring的依赖：
+中文文档：[mybatis-spring](http://mybatis.org/spring/zh/getting-started.html)
+
+MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它将允许 MyBatis 参与到 Spring 的事务管理之中，允许创建映射器 mapper 和 `SqlSession` 并注入到 bean 中，以及将 Mybatis 的异常转换为 Spring 的 `DataAccessException`。
+
+**spring与mybatis的整合：**
+
+1. 依赖；
+2. spring容器配置：数据源、SqlSessionFactory、MapperScannerConfigurer、开启注解扫描、事务配置等；
+3. mybatis的全局配置文件，数据源已经交由spring管理故不需要再配置；
+4. dao、mapper.xml、service的实现。之后初始化spring容器后就可以通过service实现类的对象的行为来实现功能了。
+
+**一：导入整合需要的依赖**
+
+使用spring来整合mybatis需要引入mybatis-spring、spring、springjdbc的依赖：
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
@@ -951,13 +1036,73 @@ mybatis框架的SqlSessionFactory也好，还是池化技术的数据库连接�
   <artifactId>mybatis-spring</artifactId>
   <version>2.0.6</version>
 </dependency>
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.3.8</version>
+</dependency>
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid</artifactId>
+    <version>1.1.8</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-jdbc</artifactId>
+    <version>5.3.8</version>
+</dependency>
 ```
 
+**二：spring容器配置**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.name}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <property name="mapperLocations" value="classpath:mapper.xml"/>
+
+    </bean>
+    <!-- 为了解决MapperFactoryBean繁琐而生的，有了MapperScannerConfigurer就不需要我们去为每个映射接口去声明一个bean了。
+	大大缩减了开发的效率 -->
+    <!-- 自动扫描 将Mapper接口生成代理注入到Spring -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <property name="basePackage" value="com.lsl.dao"/>
+    </bean>
+    <context:component-scan base-package="com.lsl.service"/>
+
+</beans>
+```
+
+**三：映射文件、接口、service层**
+
+- 映射文件通过namespace与接口绑定，实现接口方法与SQL语句的绑定；
+- service层，注入mapper映射的接口的实现类并调用实现类方法实现与SQL语句的绑定;
+- 整合后需要根据配置初始化IOC容器，那样才能使用注册进去的组件。
 
 
 
-
-# MyBatis缓存机制
+# 缓存机制
 
 MyBatis提供了两级缓存：
 
@@ -1087,7 +1232,7 @@ MyBatis Generator，简称MBG，专门为MyBatis使用者定制的**代码生成
 
 
 
-# mybatis拓展
+# 拓展
 
 
 

@@ -209,7 +209,7 @@ springmvc.xml里配置好后：mv.setViewName("show")  ===>  return mv后相当�
 
 也可以使用thymeleaf的解析器，使用thymeleaf来渲染页面。
 
-# 处理器方法
+# 处理器方法内容
 
 以下是一个处理器方法，声明了请求映射路径，处理方法有其主要的常用的几个返回值，可以接收一定的请求参数。
 
@@ -308,9 +308,9 @@ RESTful风格的URI：
 
 
 
-## 参数接收
+## 表单参数接收
 
-处理器方法的参数用来对用户表单请求提交的数据进行接收，参数类型可以是`HttpServletRequest request`、`HttpServletResponse response`、`HttpSession session`这几个类型，也可以是string、int类型的，等等。
+处理器方法的参数用来对**用户表单请求提交的数据**进行接收，参数类型可以是`HttpServletRequest request`、`HttpServletResponse response`、`HttpSession session`这几个类型，也可以是string、int类型的，等等。
 
 ### 自动全局接收
 
@@ -396,11 +396,7 @@ public ModelAndView doOb(Student student) {
 }
 ```
 
-### 注解的使用
-
-** `@RequestParam`：**
-
-用来处理**逐个接收数据时**请求参数名（name）和方法参数名不一致的情况。
+** `@RequestParam`：** 请求参数，用来处理**逐个接收数据时**请求参数名（name）和方法参数名不一致的情况。
 
 ```java
 @RequestMapping(value = "/re.do", method = RequestMethod.POST)
@@ -416,11 +412,13 @@ public ModelAndView doRe(@RequestParam(value = "rname", required = false) String
 - 如果方法参数名和请求参数名（name）不一致，则会报空指针异常；
 - 处理这种不一致的情况使用@RequestParam注解，如上，
   - value：指定请求参数名（name）；
-  - required：如果required为false，请求参数名（name）可以不是value的值，但得是和后面的参数名一致；如果是默认的true，name与value必须对应）。
+  - required：如果required为false，表单请求参数名（name）可以不是value的值，但得是和后面的参数名一致；如果是默认的true，name与value必须对应）。
 
 springmvc处理器方法的形参还可以以Map、List、数组等方式接收，不过前端显示过程比较复杂，不常用。
 
-参数接收相关注解：
+## 路径等参数接收
+
+
 
 
 
@@ -495,6 +493,18 @@ public String returnStringView(HttpServletRequest request, String name, String a
 先会基本的对象-json的转换处理，再去使用框架返回Object对象自动完成json转换，（至于底层原理，看心情吧）。
 
 ### Object
+
+
+
+
+
+# 注解总结
+
+
+
+
+
+
 
 
 
