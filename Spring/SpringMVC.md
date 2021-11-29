@@ -103,19 +103,6 @@ springmvc的使用步骤：
     </servlet-mapping>
 ```
 
-```xml
-<!--springmvc.xml-->
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-        https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
-	<!--开启注解扫描-->
-    <context:component-scan base-package="com.lsl.controller"/> 
-</beans>
-```
-
 在tomcat服务器启动后创建DispatcherServlet对象实例，为什么要这样？创建该实例的过程中会同时创建springmvc容器对象，并读取springmvc的配置文件，把这个配置文件中对象都创建好，当用户发起请求就可直接使用controller对象。DispatcherServlet对象就是一个servlet，当其创建时执行init()方法，会进行初始化
 
 ```java
@@ -200,7 +187,7 @@ springmvc.xml里配置好后：mv.setViewName("show")  ===>  return mv后相当�
 
 ```xml
 <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
-    <!--前缀：视图文件路径-->
+    <!--前缀：视图文件路径 相对于webapp-->
     <property name="prefix" value="/WEB-INF/view/"/>
     <!--后缀：视图文件的拓展名-->
     <property name="suffix" value=".jsp"/>
@@ -208,6 +195,39 @@ springmvc.xml里配置好后：mv.setViewName("show")  ===>  return mv后相当�
 ```
 
 也可以使用thymeleaf的解析器，使用thymeleaf来渲染页面。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+    <!-- 组件扫描器，使注解生效 -->
+    <context:component-scan base-package="com.lsl.crowd.controller"/>
+    <!-- 视图器的配置，为了简化控制器的视图路径 -->
+
+    <!-- thymeleaf的视图解析器 会与冲突ContentNegotiatingViewResolver-->
+    <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
+        <property name="characterEncoding" value="UTF-8"/>
+        <property name="templateEngine" ref="templateEngine"/>
+    </bean>
+    <!-- 模板引擎 -->
+    <bean id="templateEngine" class="org.thymeleaf.spring5.SpringTemplateEngine">
+        <property name="templateResolver" ref="templateResolver"/>
+    </bean>
+    <!-- 模板解析器 -->
+    <bean id="templateResolver" class="org.thymeleaf.templateresolver.ServletContextTemplateResolver">
+        <constructor-arg ref="servletContext"/>
+        <property name="prefix" value="/WEB-INF/view/"/>
+        <property name="suffix" value=".html"/>
+        <property name="templateMode" value="HTML5"/>
+        <property name="cacheable" value="false"/>
+        <property name="characterEncoding" value="UTF-8"/>
+    </bean>
+
+</beans>
+```
 
 # 处理器方法内容
 
@@ -224,9 +244,7 @@ public ModelAndView doOther() {
 }
 ```
 
-## 请求映射
-
-### @RequestMapping
+## 请求映射@RequestMapping
 
 `@RequestMapping(value = "/some.do")`修饰的方法称为处理器方法或控制器方法，将映射路径与方法绑定达到处理对应请求并响应的目的。
 
@@ -250,61 +268,6 @@ RequestMapping的method属性，决定映射什么样的请求方法：
 @RequestMapping(value = {"/some.do", "/first.do"}, method = RequestMethod.GET)
 //如果不指定method则没有限制
 ```
-
-### RESTFul风格
-
-**RESTFul是什么**
-
-以下都摘录自：[理解RESTful架构 - 阮一峰的网络日志 (ruanyifeng.com)](https://www.ruanyifeng.com/blog/2011/09/restful.html)
-
-REST：Representational State Transfer，表现层资源状态转移。Fielding将他对互联网软件的**架构原则**，定名为REST，即Representational State Transfer的缩写。如果一个架构符合REST原则，就称它为RESTful架构。RESTful架构，就是目前最流行的一种互联网软件架构。它结构清晰、符合标准、易于理解、扩展方便，所以正得到越来越多网站的采用。
-
-**资源（Resources）**：网络上的具体信息，可通过URI来进行标识和访问，URI代表了一个资源的实体；
-
-**表现层（Representation）**："资源"（Resources）的"表现层"，**我们把"资源"具体呈现出来的形式，叫做它的"表现层"（Representation）**，比如文本的各种格式、图片使用的的各种格式的表现等；
-
-**状态转化（State Transfer）**：访问一个网站，就代表了客户端和服务器的一个互动过程。在这个过程中，势必涉及到数据和状态的变化。
-
-互联网通信协议HTTP协议，是一个无状态协议。这意味着，所有的状态都保存在服务器端。因此，**如果客户端想要操作服务器，必须通过某种手段，让服务器端发生"状态转化"（State Transfer）。而这种转化是建立在表现层之上的，所以就是"表现层状态转化"。**
-
-客户端用到的手段，只能是HTTP协议。具体来说，就是HTTP协议里面，四个表示操作方式的动词：GET、POST、PUT、DELETE。它们分别对应四种基本操作：**GET用来获取资源，POST用来新建资源（也可以用于更新资源），PUT用来更新资源，DELETE用来删除资源。**
-
-RESTful架构：
-
-　　（1）每一个URI代表一种资源；
-
-　　（2）客户端和服务器之间，传递这种资源的某种表现层；
-
-　　（3）客户端通过四个HTTP动词，对服务器端资源进行操作，实现"表现层状态转化"。
-
-**SpringMVC中对RESTful架构的实现：**
-
-RESTful风格的URI：
-
-四个表示操作方式的动词的使用：
-
-- put请求和delete请求只有部分浏览器支持，所以springmvc提过了一个过滤器：HiddenHttpMethodFilter
-
-  ```xml
-  <!-- 该过滤器会获取请求参数，所以要在编码设置的过滤器后再加载该过滤器-->
-  <filter>
-    <filter-name>HiddenHttpMethodFilter</filter-name>
-    <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
-  </filter>
-  <filter-mapping>
-    <filter-name>HiddenHttpMethodFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-  ```
-
-  ```html
-  <!--  -->
-  <form action="/user" method="post">
-      <input type="hidden" name="_method" value="PUT"/>
-  </form>
-  ```
-
-  
 
 
 
@@ -416,9 +379,9 @@ public ModelAndView doRe(@RequestParam(value = "rname", required = false) String
 
 springmvc处理器方法的形参还可以以Map、List、数组等方式接收，不过前端显示过程比较复杂，不常用。
 
-## 路径等参数接收
+## 路径参数接收
 
-
+使用路径变量时，通过接收路径参数来完成一些数据的获取。
 
 
 
@@ -498,7 +461,7 @@ public String returnStringView(HttpServletRequest request, String name, String a
 
 
 
-# 注解总结
+# 参数接收注解总结
 
 
 
@@ -506,7 +469,91 @@ public String returnStringView(HttpServletRequest request, String name, String a
 
 
 
+# RESTFul风格
 
+## RESTFul是什么
+
+以下都摘录自：[理解RESTful架构 - 阮一峰的网络日志 (ruanyifeng.com)](https://www.ruanyifeng.com/blog/2011/09/restful.html)
+
+REST：Representational State Transfer，表现层资源状态转移。Fielding将他对互联网软件的**架构原则**，定名为REST，即Representational State Transfer的缩写。如果一个架构符合REST原则，就称它为RESTful架构。RESTful架构，就是目前最流行的一种互联网软件架构。它结构清晰、符合标准、易于理解、扩展方便，所以正得到越来越多网站的采用。
+
+**资源（Resources）**：网络上的具体信息，可通过URI来进行标识和访问，URI代表了一个资源的实体；
+
+**表现层（Representation）**："资源"（Resources）的"表现层"，**我们把"资源"具体呈现出来的形式，叫做它的"表现层"（Representation）**，比如文本的各种格式、图片使用的的各种格式的表现等；
+
+**状态转化（State Transfer）**：访问一个网站，就代表了客户端和服务器的一个互动过程。在这个过程中，势必涉及到数据和状态的变化。
+
+互联网通信协议HTTP协议，是一个无状态协议。这意味着，所有的状态都保存在服务器端。因此，**如果客户端想要操作服务器，必须通过某种手段，让服务器端发生"状态转化"（State Transfer）。而这种转化是建立在表现层之上的，所以就是"表现层状态转化"。**
+
+客户端用到的手段，只能是HTTP协议。具体来说，就是HTTP协议里面，四个表示操作方式的动词：GET、POST、PUT、DELETE。它们分别对应四种基本操作：**GET用来获取资源，POST用来新建资源（也可以用于更新资源），PUT用来更新资源，DELETE用来删除资源。**
+
+RESTful架构：
+
+　　（1）每一个URI代表一种资源；
+
+　　（2）客户端和服务器之间，传递这种资源的某种表现层；
+
+　　（3）客户端通过四个HTTP动词，对服务器端资源进行操作，实现"表现层状态转化"。
+
+## SpringMVC中使用
+
+**SpringMVC中对RESTful架构的实现：**
+
+RESTful风格的URI：从前到后使用斜杠分开，不使用问号键值对方式携带请求参数，而是将发送给服务器的数据作为URI的一部分。
+
+```html
+<!-- 标准格式 -->
+http(s)://server.com/app-name/{version}/{domain}/{rest-convention}
+```
+
+- {version}：api接口版本号。
+- {domain}：定义任何技术的区域或者业务上的原因（例如：同样的功能在同一个前缀之下）。
+- {rest-convention}：代表这个域(domain)下，约定的rest接口集合。
+
+一些其他规范：
+
+- 规则1：URI结尾不应包含（/）
+- 规则2：正斜杠分隔符（/）必须用来指示层级关系
+- 规则3：应使用连字符（ - ）来提高URI的可读性
+- 规则4：不得在URI中使用下划线（_）
+- 规则5：URI路径中全都使用小写字母
+
+四个表示操作方式的动词的使用：
+
+- put请求和delete请求只有部分浏览器支持，为了使用这两个动词，springmvc提过了一个过滤器：HiddenHttpMethodFilter
+
+  ```xml
+  <!-- 该过滤器会获取请求参数，所以要在编码设置的过滤器后再加载该过滤器-->
+  <filter>
+    <filter-name>HiddenHttpMethodFilter</filter-name>
+    <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>HiddenHttpMethodFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  ```
+
+  需要借助表单：
+
+  ```html
+  <!-- put和delete的使用，必须是post请求，使用和下面类似  -->
+  <form action="/user" method="post">
+      <input type="hidden" name="_method" value="PUT"/>
+  </form>
+  ```
+
+- controller举例：
+
+  ```java
+  @RequestMapping(value = "/test/{id}", method = RequestMethod.DELETE)
+  public String testDelete(@PathVariable(value = "id") Integer id){
+      adminService.deleteById(id);
+      return "hello";
+  }
+  ```
+
+- 如果需要链接和表单绑定，那就使用ajax来发送各种方法请求的请求。
 
 # 静态资源处理
 
@@ -517,7 +564,7 @@ Tomcat有一个默认的servlet（conf的web.xml中），服务器启动时创�
 - springmvc.xml中加入`<mvc:default-servlet-handler/>`：原理是加入这个标签，由框架创建控制器对象DefaultHttpServletRequestHangler，通过这个对象实现把接收的请求转发给Tomcat中默认的servlet，从而实现对静态资源的访问。
   - `<mvc:default-servlet-handler/>`和@RequestMapping注解存在冲突，需要加上`<mvc:annotation-driven/>`来解决冲突。
 
-**处理静态资源的方法二：（常用）**
+**处理静态资源的方法二：**
 
 - springmvc.xml中加入`<mvc:resources mapping="" location=""/>`： 
   - mapping：访问静态资源的uri地址，使用通配符`**`， `mapping="images/**"`；

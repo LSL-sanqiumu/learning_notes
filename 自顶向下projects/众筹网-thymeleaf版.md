@@ -15,11 +15,11 @@
 辅助模块：
 
 1. atcrowdfunding04-common-util：工具类管理，工具类也可直接放在主模块中，这样就不用再创建这个项目。
-2. atcrowdfunding05-common-reverse：mybatis的逆向工程，用于生成数据库表的实体类、mapper接口、mapper.xml等，因为我们只用到生成的这些文件，所以抽出来单独使用。
+2. atcrowdfunding05-common-reverse：mybatis的逆向工程，用于生成数据库表的实体类、mapper接口、mapper.xml等，因为项目中我们只用到生成的这些文件，所以抽出来单独使用。
 
 ## 2.依赖选择与管理
 
-父项目使用dependencyManagement来管理依赖，具体项目模块再引入所需的。
+父项目使用dependencyManagement来管理依赖，具体项目模块需要哪些就引入哪些。
 
 ### 使用spring涉及的相关依赖：
 
@@ -113,7 +113,7 @@
 
 ```xml
 <!-- 日志系统搭建需要的依赖 start -->
-<!-- 日志：log4j -->
+<!-- 日志：log4j，实际引入前两个 -->
 <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 <dependency>
     <groupId>org.slf4j</groupId>
@@ -595,7 +595,7 @@ atcrowdfunding01-admin-webui的依赖：
         <!-- 分页插件的使用 -->
 
     </bean>
-    <!-- 自动扫描 将Mapper接口生成代理注入到Spring -->
+    <!-- 自动扫描 为Mapper接口生成代理注入到Spring -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
         <!-- 扫描该包下的接口 然后创建各自接口的动态代理类 -->
@@ -706,6 +706,7 @@ public class CrowdTest {
 
 1. 确定所需依赖都已导入；（spring-orm中就已经包括了spring-tx的包）
 2. spring的事务，创建spring容器初始化配置spring-tx.xml，配置事务管理器和切面、切点、通知等；
+3. 测试。（可以插入 1/0 之类的或抛出异常，查看日志是否会回滚）
 
 代码：
 
@@ -794,15 +795,15 @@ SpringMVC是基于模型-视图-控制器（model、view、controller）模式�
 
 **SpringMVC与Servlet：**
 
-Servlet：性能最好，处理Http请求的标准。SpringMVC：开发效率高（好多共性的东西都封装好了，是对Servlet的封装，核心的DispatcherServlet最终继承自HttpServlet）这两者的关系，就如同MyBatis和JDBC，一个性能好，一个开发效率高，是对另一个的封装。（复习servlet、springmvc的核心）
+Servlet：性能最好，处理Http请求的标准。SpringMVC：开发效率高（好多共性的东西都封装好了，是对Servlet的封装，核心的DispatcherServlet最终继承自HttpServlet）这两者的关系，就如同MyBatis和JDBC，一个性能好，一个开发效率高，是对另一个的封装。（复习servlet、springmvc的核心技术）
 
 
 整合步骤：
 
 1. 依赖导入（这里页面使用thymeleaf模板引擎来渲染，需要导入thymeleaf的依赖）；
-2. SpringMVC的全局配置文件，spring-init-mvc.xml，配置视图解析器、开启注解支持、配置拦截器；
-3. Tomcat的web.xml的配置（配置servlet（中央调度器）、处理字符编码问题的过滤器、以及初始化IOC容器）；
-4. 测试。
+2. SpringMVC的全局配置文件spring-init-mvc.xml，用来配置视图解析器、开启注解支持、配置拦截器（后面再配）等；
+3. Tomcat的web.xml配置（配置servlet（中央调度器）、处理字符编码问题的过滤器、以及初始化IOC容器）；
+4. 测试。（要学习thymeleaf的语法，测试各个功能）
 
 spring-init-mvc.xml：
 
@@ -850,12 +851,12 @@ web.xml：
 
   <display-name>Archetype Created Web Application</display-name>
 
-  <!-- Tomcat加载Spring的配置文件，根据Spring的配置文件初始化 IOC 容器。  -->
+ <!-- IOC容器配置定位 -->
   <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>classpath:spring-init-*.xml</param-value>
   </context-param>
-  <!-- 注册spring的监听器 -->
+  <!-- 注册spring的监听器 作用是加载Spring的配置文件，根据Spring的配置文件初始化IOC容器-->
   <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
   </listener>
@@ -901,23 +902,65 @@ web.xml：
   </servlet>
   <servlet-mapping>
     <servlet-name>springDispatcherServlet</servlet-name>
-    <url-pattern>*.do</url-pattern>
-    <url-pattern>*.json</url-pattern>
+    <url-pattern>/</url-pattern>
+    <url-pattern>/*.json</url-pattern>
   </servlet-mapping>
 </web-app>
 ```
 
+## 10.RESTFul风格使用
 
+RESTFul风格提倡的URI风格：从前到后使用斜杠分开，不使用问号键值对方式携带请求参数，而是将发送给服务器的数据作为URI的一部分。
 
+使用操作动词表示操作方式：GET（获取）、POST（新建）、PUT（修改）、DELETE（删除）。
 
+具体操作：
 
+1.中央调度器的url-pattern不能再使用`*.do`的方式，而是使用`/`，因为Tomcat的servlet处理静态资源的servlet也是/，所以会导致被覆盖从而没有servlet来处理静态资源了，因此需要在SpringMVC全局配置文件加入以下内容：（静态资源统一放入一个static目录）
 
+```xml
+<!-- 开启mvc注解驱动 解决mvc:resources和@RequestMapping注解的冲突 -->
+<mvc:annotation-driven/>
+<!-- 加入此配置后框架会自动创建一个处理器对象（ResourceHttpServletRequestHangler），这个处理器对象用来处理静态资源的访问 -->
+<mvc:resources mapping="/static/**" location="/static/"/>
+```
 
+【注意】：Tomcat有一个名为default的servlet的url-pattern也是/，当设置中央调度器的url-pattern也为/时，tomcat将会失效，此时也将不能使用welcome-file-list标签（因为中央调度器没有处理静态资源的能力），不过处理静态资源有另一种方式就是是使用`<mvc:annotation-driven/>`和`<mvc:default-servlet-handler/>`可以解决这时的welcome-file-list标签失效的问题，这时是由框架生成了一个handler来转发给tomcat的默认servlet。
 
+2.因为要使用到HTTP的一些动词（PUT、DELETE），而一些浏览器不支持，所以使用springmvc框架的一个过滤器：
 
+```xml
+<!-- 该过滤器会获取请求参数，所以要在编码设置的过滤器后再加载该过滤器 -->
+<filter>
+  <filter-name>HiddenHttpMethodFilter</filter-name>
+  <filter-class>org.springframework.web.filter.HiddenHttpMethodFilter</filter-class>
+</filter>
+<filter-mapping>
+  <filter-name>HiddenHttpMethodFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
 
+3.配置好后controller配置method属性。
 
+后面再补充
 
+## 11.Ajax与JSON
+
+前端发送过来，后端要处理的请求有两种： 
+
+1. 普通请求：后端处理完成后返回页面，浏览器使用使用页面替换整个窗口中的内容 。
+2. Ajax 请求：后端处理完成后通常返回 JSON 数据，jQuery 代码使用JSON 数据对页面局部更新。
+
+目标：Ajax请求与返回json格式的数据
+
+思路：Ajax请求可以使用jQuery来实现，json格式支持需要依赖，使用注解@ResponseBody或@RestController。ajax请求发送数据有多种方式，测试选择最合适的。
+
+代码：
+
+1.依赖：atcrowdfunding02-admin-component中已经引入了json支持的相关依赖。
+
+2.ajax复习（不用管ajax最原始的实现方式，直接使用框架，复习ajax请求相关知识、能做哪些数据实现）。
 
 
 

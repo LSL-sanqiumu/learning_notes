@@ -158,6 +158,14 @@ btns[1].onclick =  function(){ // 事件触发函数，当触发时就运行x.ab
 }
 ```
 
+# 不使用node.js来学习ajax
+
+
+
+
+
+# 框架的使用
+
 ## jQuery发送ajax请求
 
 
@@ -165,6 +173,8 @@ btns[1].onclick =  function(){ // 事件触发函数，当触发时就运行x.ab
 
 
 ## Axios发送请求
+
+
 
 
 
