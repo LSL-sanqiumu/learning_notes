@@ -2,7 +2,7 @@
 
 # 一.环境搭建
 
-## 1.项目骨架搭建：
+## 1.项目骨架搭建
 
 ![](img/项目骨架.png)
 
@@ -952,15 +952,230 @@ RESTFul风格提倡的URI风格：从前到后使用斜杠分开，不使用问�
 1. 普通请求：后端处理完成后返回页面，浏览器使用使用页面替换整个窗口中的内容 。
 2. Ajax 请求：后端处理完成后通常返回 JSON 数据，jQuery 代码使用JSON 数据对页面局部更新。
 
-目标：Ajax请求与返回json格式的数据
+目标：Ajax请求与服务端处理请求返回json格式的数据，实现页面的局部数据更新。
 
-思路：Ajax请求可以使用jQuery来实现，json格式支持需要依赖，使用注解@ResponseBody或@RestController。ajax请求发送数据有多种方式，测试选择最合适的。
+思路：Ajax请求可以使用jQuery，json格式支持需要依赖，使用注解@ResponseBody或@RestController。ajax请求发送数据有多种方式，根据需求选择最合适的。整个过程分为：ajax请求发起-服务器端响应回json数据-ajax接收并处理响应数据-页面渲染数据-更新完成）。
 
 代码：
 
 1.依赖：atcrowdfunding02-admin-component中已经引入了json支持的相关依赖。
 
 2.ajax复习（不用管ajax最原始的实现方式，直接使用框架，复习ajax请求相关知识、能做哪些数据实现）。
+
+对ajax请求返回结果进行统一（封装），请求结果包括请求结果（成功或失败）、返回数据、异常信息。
+
+```java
+public class ResultEntity<T> {
+
+    public static final String SUCCESS = "SUCCESS";
+    public static final String FAILED = "FAILED";
+    private String result;
+    private String message;
+    private T data;
+    /**
+     * 请求处理成功而且不需要返回数据时使用的方法
+     * @return
+     * */
+    public static <Type> ResultEntity<Type> successWithoutData() {
+        return new ResultEntity<Type>(SUCCESS,null,null);
+    }
+    /**
+     * 请求处理成功且需要返回数据时使用的方法
+     *  @param data
+     * @return
+     * */
+    public static <Type> ResultEntity<Type> successWithData(Type data) {
+        return new ResultEntity<Type>(SUCCESS,null,data);
+    }
+    /**
+     * 请求处理失败后使用的方法
+     * @param message
+     * @return
+     * */
+    public static <Type> ResultEntity<Type> failed(String message) {
+        return new ResultEntity<Type>(FAILED,message,null);
+    }
+
+
+    public ResultEntity() {
+    }
+
+    public ResultEntity(String result, String message, T data) {
+        this.result = result;
+        this.message = message;
+        this.data = data;
+    }
+}
+```
+
+## 12.静态资源引入
+
+![](img/staticSource.png)
+
+## 13.请求异常处理
+
+目标：请求的异常处理，请求分为普通的请求和ajax请求，普通请求的异常返回错误页面，ajax请求的异常返回json数据。
+
+思路：springmvc采用全局统一的异常处理，通过面向切面编程思想把异常集中到一个地方，实现逻辑代码和业务代码的分离，完成解耦合，其提供了基于XML和基于注解的两种异常处理方式。
+
+1. 基于XML的和基于注解的，基于注解的用于处理一些自定义的异常。
+2. 异常处理要分请求，所以异常处理前先要判断是普通请求还是ajax请求。
+
+代码：
+
+1.基于XML的：
+
+```xml
+<!-- 基于XML的异常映射 -->
+<bean id="simpleMappingExceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+    <!-- 配置异常类型和具体视图之间的关系 -->
+    <property name="exceptionMappings">
+        <props>
+            <!-- key属性指定异常全类名 -->
+            <!-- 标签体写对应的视图（该视图会经视图解析器） -->
+            <prop key="java.lang.Exception">system-error</prop>
+        </props>
+    </property>
+</bean>
+```
+
+2.基于注解的：
+
+1. 判断请求的工具类（没必要自己写，直接找个来用就行了）
+
+   ```java
+   public class CrowdUtil {
+       /**
+        * 判断当前请求是否为Ajax请求
+        * @param request 请求对象
+        * @return
+        *      true：是Ajax请求
+        *      false：不是Ajax请求
+        * */
+       public static boolean judgeRequestType(HttpServletRequest request) {
+           // 获取请求消息头
+           String acceptHeader = request.getHeader("Accept");
+           String xRequestHeader = request.getHeader("X-Request-With");
+           // 判断
+           return  ((acceptHeader !=null && acceptHeader.contains("application/json"))
+                   ||
+                   (xRequestHeader != null && xRequestHeader.equals("XMLHttpRequest")));
+       }
+   
+       /**
+        * 对明文字符串进行md5加密
+        * @param source 传入的明文字符串
+        * @return 加密结果
+        * */
+   
+       public static String md5(String source) {
+           if (source == null && source.length() == 0) {
+               throw new RuntimeException(CrowdConstant.MESSAGE_STRING_INVALIDATE);
+           }
+   
+           try {
+               String algorithm = "md5";
+               MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
+               // 获取字符串对应字节
+               byte[] input = source.getBytes();
+               // 执行加密
+               byte[] output = messageDigest.digest(input);
+   
+               int signum = 1;
+               BigInteger bigInteger = new BigInteger(signum, output);
+               // 按16进制将值转换为字符串
+               int radix = 16;
+               String encoded = bigInteger.toString(radix).toUpperCase();
+               return encoded;
+           } catch (NoSuchAlgorithmException e) {
+               e.printStackTrace();
+           }
+           return null;
+       }
+   }
+   ```
+
+2. 异常处理器类（@ControllerAdvice、@ExceptionHandler的使用，应用思路：异常自动捕获、绑定视图跳转、视图层展示异常信息）
+
+   ```java
+   @ControllerAdvice
+   public class CrowdExceptionResolver {
+       @ExceptionHandler(value = ArithmeticException.class)
+       public ModelAndView resolveMathException(ArithmeticException exception, HttpServletRequest request, HttpServletResponse response) throws IOException {
+           String viewName = "system-error";
+           return commonResolve(viewName,exception,request,response);
+       }
+   
+       @ExceptionHandler(value = NullPointerException.class)
+       // 实际捕获对象与当前请求对象
+       public ModelAndView resolveNullPointerException(NullPointerException exception, HttpServletRequest request, HttpServletResponse response) throws IOException {
+           /*// 1.判断
+           boolean judgeRequest = CrowdUtil.judgeRequestType(request);
+           // 2.如果是Ajax请求
+           if (judgeRequest) {
+               // 创建对象
+               ResultEntity<Object> resultEntity = ResultEntity.failed(exception.getMessage());
+               // 4.创建Gson
+               Gson gson = new Gson();
+               // 5.将resultEntity转换为json字符串
+               String json = gson.toJson(resultEntity);
+               response.getWriter().write(json);
+               return null;
+           }
+           ModelAndView modelAndView = new ModelAndView();
+           modelAndView.addObject("exception",exception);
+           modelAndView.setViewName("system-error");
+           return modelAndView;*/
+           String viewName = "system-error";
+           return commonResolve(viewName,exception,request,response);
+       }
+       /* 优化：上面注释的部分封装 */
+       private ModelAndView commonResolve(String viewName,Exception exception,HttpServletRequest request,HttpServletResponse response) throws IOException {
+           // 1.判断
+           boolean judgeRequest = CrowdUtil.judgeRequestType(request);
+           // 2.如果是Ajax请求
+           if (judgeRequest) {
+               // 创建对象
+               ResultEntity<Object> resultEntity = ResultEntity.failed(exception.getMessage());
+               // 4.创建Gson
+               Gson gson = new Gson();
+               // 5.将resultEntity转换为json字符串
+               String json = gson.toJson(resultEntity);
+               response.getWriter().write(json);
+               return null;
+           }
+           ModelAndView modelAndView = new ModelAndView();
+           modelAndView.addObject(CrowdConstant.ATTR_NAME_EXCEPTION,exception);
+           modelAndView.setViewName(viewName);
+           return modelAndView;
+       }
+   }
+   ```
+
+## 14.常量类
+
+```java
+public class CrowdConstant {
+
+    public static final String MESSAGE_LOGIN_FAILED = "登录失败！请确认账号密码是否正确！";
+    public static final String MESSAGE_ACCESS_FORBIDDEN = "请登陆后再访问！";
+    public static final String MESSAGE_LOGIN_ACCT_IN_USE = "抱歉，这个账号已经被使用！";
+    public static final String MESSAGE_STRING_INVALIDATE = "你输入了非法的字符串，请不要输入空字符串！";
+    public static final String MESSAGE_SYSTEM_ERROR_LOGIN_NOT_UNIQUE = "系统错误：登录账号不唯一";
+
+    public static final String ATTR_NAME_LOGIN_ADMIN = "loginAdmin";
+    public static final String ATTR_NAME_EXCEPTION = "exception";
+    public static final String ATTR_NAME_PAGE_INFO = "pageInfo";
+}
+```
+
+## 15.admin-login.html页面
+
+## 16.system-error.html页面
+
+# 需求
+
+## 需求一：登录实现
 
 
 

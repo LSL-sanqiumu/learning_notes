@@ -681,11 +681,31 @@ public ModelAndView redirectTest(String name, String age){
 
 ## 异常处理
 
+### 基于XML
+
+```xml
+<!-- 基于XML的异常映射 -->
+<bean id="simpleMappingExceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+    <!-- 配置异常类型和具体视图之间的关系 -->
+    <property name="exceptionMappings">
+        <props>
+            <!-- key属性指定异常全类名 -->
+            <!-- 标签体写对应的视图（该视图会经视图解析器） -->
+            <prop key="java.lang.Exception">system-error</prop>
+        </props>
+    </property>
+</bean>
+```
+
+
+
+### 基于注解
+
 springmvc采用全局统一的异常处理，通过面向切面编程思想把异常集中到一个地方，实现逻辑代码和业务代码的分离，完成解耦合。
 
 异常处理的两个注解：
 
-- `@ControllerAdvice`：控制器增强，给控制器类加上了异常处理功能（异常处理功能由该注解下的类决定），使用该注解要让springmvc该注解所在包名-在springmvc配置文件声明扫描器使注解生效；
+- `@ControllerAdvice`：控制器增强，给控制器类加上了异常处理功能（异常处理功能由该注解下的类决定），使用该注解要声明注解扫描；
 
 - `@ExceptionHandler`：声明异常处理功能（就是异常处理方法），基本使用如下，声明于方法上：
 

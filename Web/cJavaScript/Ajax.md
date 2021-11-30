@@ -1,4 +1,4 @@
-# Ajax请求
+# 原生Ajax请求
 
 ## 概述
 
@@ -158,8 +158,6 @@ btns[1].onclick =  function(){ // 事件触发函数，当触发时就运行x.ab
 }
 ```
 
-# 不使用node.js来学习ajax
-
 
 
 
@@ -167,6 +165,165 @@ btns[1].onclick =  function(){ // 事件触发函数，当触发时就运行x.ab
 # 框架的使用
 
 ## jQuery发送ajax请求
+
+### 通用方法
+
+例子：
+
+```html
+<script type="text/javascript">
+    /* 发送数组的方式一 */
+    $(function(){
+        $("#btn1").click(function (){
+            $.ajax({
+                "url":"send/array1.html", // 请求目标资源地址
+                "type":"post", // 请求方法
+                "data":{"array":[1,9,9,9]}, // 发送的请求参数
+                "dataType":"text", // 如何对待服务器返回数据
+                "success":function (response){ // 服务器成功处理请求后：调用回调参数,response是响应体数据
+                    alert(response)
+                },
+                "error":function (response){ // 服务器处理请求失败后：调用的回调参数
+                    alert(response)
+                }
+            });
+        });
+    });
+    /* 发送数组的方式二 */
+    $(function(){
+        $("#btn2").click(function (){
+            $.ajax({
+                "url":"send/array2.html", // 请求目标资源地址
+                "type":"post", // 请求方法
+                "data":{       // 发送的请求参数
+                    "array[0]": 1,
+                    "array[1]": 1,
+                    "array[2]": 1,
+                    "array[3]": 1
+                },
+                "dataType":"text", // 如何对待服务器返回数据
+                "success":function (response){ // 服务器成功处理请求后：调用回调参数,response是响应体数据
+                    alert(response)
+                },
+                "error":function (response){ // 服务器处理请求失败后：调用的回调参数
+                    alert(response)
+                }
+            });
+        });
+    });
+    /* 发送数组的方式三 */
+    $(function(){
+        $("#btn3").click(function (){
+            var array = [1,9,9,9]
+            var requestBody = JSON.stringify(array);
+            console.log(requestBody.length);
+            $.ajax({
+                "url":"send/array3.html", // 请求目标资源地址
+                "type":"post", // 请求方法
+                "contentType":"application/json;charset=utf-8", // 设置请求内容的具体类型，告诉服务器端本次请求的请求体是json类型
+                "data": requestBody, // 发送的请求参数
+                "dataType":"text", // 如何对待服务器返回数据
+                "success":function (response){ // 服务器成功处理请求后：调用回调参数,response是响应体数据
+                    alert(response)
+                },
+                "error":function (response){ // 服务器处理请求失败后：调用的回调参数
+                    alert(response)
+                }
+            });
+        });
+    });
+    /* 发送复杂对象 */
+    $(function(){
+        $("#btn4").click(function (){
+            var student = {
+                "stuId":6,
+                "stuName":"Tom",
+                "address":{
+                    "province":"浙江",
+                    "city":"杭州",
+                    "street":"学源街"
+                },
+                "subjectList":[
+                    {
+                        "subjectName":"数据结构和算法",
+                        "subjectScore":999
+                    },
+                    {
+                        "subjectName":"计算机组成原理",
+                        "subjectScore":999
+                    }
+                ],
+                "map":{
+                    "k1":"v1",
+                    "k2":"v2",
+                }
+            };
+            var requestBody = JSON.stringify(student);
+            console.log(requestBody.length);
+            $.ajax({
+                "url":"send/compose/object.html", // 请求目标资源地址
+                "type":"post", // 请求方法
+                "contentType":"application/json;charset=utf-8", // 设置请求内容的具体类型，告诉服务器端本次请求的请求体是json类型
+                "data": requestBody, // 发送的请求参数
+                "dataType":"text", // 如何对待服务器返回数据
+                "success":function (response){ // 服务器成功处理请求后：调用回调参数,response是响应体数据
+                    alert(response)
+                },
+                "error":function (response){ // 服务器处理请求失败后：调用的回调参数
+                    alert(response)
+                }
+            });
+        });
+    });
+    /* 工具类 */
+    $(function(){
+        $("#btn5").click(function (){
+            var student = {
+                "stuId":6,
+                "stuName":"Tom",
+                "address":{
+                    "province":"浙江",
+                    "city":"杭州",
+                    "street":"学源街"
+                },
+                "subjectList":[
+                    {
+                        "subjectName":"数据结构和算法",
+                        "subjectScore":999
+                    },
+                    {
+                        "subjectName":"计算机组成原理",
+                        "subjectScore":999
+                    }
+                ],
+                "map":{
+                    "k1":"v1",
+                    "k2":"v2",
+                }
+            };
+            var requestBody = JSON.stringify(student);
+            console.log(requestBody.length);
+            $.ajax({
+                "url":"send/compose/object.json", // 请求目标资源地址
+                "type":"post", // 请求方法
+                "contentType":"application/json;charset=utf-8", // 设置请求内容的具体类型，告诉服务器端本次请求的请求体是json类型
+                "data": requestBody, // 发送的请求参数
+                "dataType":"json", // 如何对待服务器返回数据
+                "success":function (response){ // 服务器成功处理请求后：调用回调参数,response是响应体数据
+                    alert(response)
+                },
+                "error":function (response){ // 服务器处理请求失败后：调用的回调参数
+                    alert(response)
+                }
+            });
+        });
+        $("#btn6").click(function (){
+            layer.msg("layer的弹框");
+        });
+    });
+
+</script>
+```
 
 
 
