@@ -394,7 +394,7 @@ generatorConfig.xml：
 
 
 
-最后生成如上图的类、接口和含SQL命令的xml文件，把文件移到项目的entity、dao包下。
+最后生成如上图的类、接口和含SQL命令的xml文件，把文件移到主项目的entity、dao包下。
 
 ## 5.子项目依赖配置
 
@@ -555,9 +555,9 @@ atcrowdfunding01-admin-webui的依赖：
 
 ## 6.spring整合mybatis
 
-目标：进行数据库的增删改查操作。
+**目标：**进行数据库的增删改查操作。
 
-思路：传统的jdbc编程太过繁琐、耦合高，使用spring、mybatis框架来连接、操作数据库更加方便、快捷；数据库连接池、SqlSessionFactory等交由spring的IOC容器管理。整合具体步骤：
+**思路：**传统的jdbc编程太过繁琐、耦合高，使用spring、mybatis框架来连接、操作数据库更加方便、快捷；数据库连接池、SqlSessionFactory等交由spring的IOC容器管理。整合具体步骤：
 
 1. 确定mybatis和spring的依赖都导入完毕；
 2. 确定好映射文件、映射接口所在目录并创建；
@@ -565,7 +565,7 @@ atcrowdfunding01-admin-webui的依赖：
 4. 编写mybatis的全局配置文件，数据源已经交由spring管理了，所以这里不需要配数据源，其它的按需配置；
 5. 单元测试。
 
-代码：
+**代码：**
 
 1.只用来管理mybatis的spring配置文件：spring-init-mybatis.xml
 
@@ -612,7 +612,9 @@ jdbc.name=root
 jdbc.password=123456
 ```
 
-2.映射器（接口和SQL映射文件）准备好、service层准备好后进行单元测试：
+## 单元测试
+
+项目的test目录和其他test目录下带test的类都是用来进行单元测试的。
 
 ```java
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -698,9 +700,9 @@ public class CrowdTest {
 
 ## 8.spring声明式事务搭建
 
-目标：由 Spring 来全面接管数据库事务。用声明式代替编程式。
+**目标：**由 Spring 来全面接管数据库事务。用声明式代替编程式。
 
-思路：spring的事务使用了AOP思想，面向切面来为数据库操作添加事务处理。（复习spring的AOP思想与实现）
+**思路：**spring的事务使用了AOP思想，面向切面来为数据库操作添加事务处理。（复习spring的AOP思想与实现）
 
 具体实现步骤：
 
@@ -708,7 +710,7 @@ public class CrowdTest {
 2. spring的事务，创建spring容器初始化配置spring-tx.xml，配置事务管理器和切面、切点、通知等；
 3. 测试。（可以插入 1/0 之类的或抛出异常，查看日志是否会回滚）
 
-代码：
+**代码：**
 
 需要的依赖spring、spring-tx、aop的：
 
@@ -815,7 +817,8 @@ spring-init-mvc.xml：
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
     <!-- 组件扫描器，使注解生效 -->
-    <context:component-scan base-package="com.lsl.crowd.controller"/>
+    <context:component-scan base-package="com.lsl.crowd.test"/>
+    <context:component-scan base-package="com.lsl.crowd.mvc"/>
 
     <!-- thymeleaf的视图解析器 会与冲突：ContentNegotiatingViewResolver-->
     <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
@@ -941,7 +944,7 @@ RESTFul风格提倡的URI风格：从前到后使用斜杠分开，不使用问�
 </filter-mapping>
 ```
 
-3.配置好后controller配置method属性。
+3.配置好后controller配置method属性，URI不应有动词。
 
 后面再补充
 
@@ -952,17 +955,17 @@ RESTFul风格提倡的URI风格：从前到后使用斜杠分开，不使用问�
 1. 普通请求：后端处理完成后返回页面，浏览器使用使用页面替换整个窗口中的内容 。
 2. Ajax 请求：后端处理完成后通常返回 JSON 数据，jQuery 代码使用JSON 数据对页面局部更新。
 
-目标：Ajax请求与服务端处理请求返回json格式的数据，实现页面的局部数据更新。
+**目标：**Ajax请求与服务端处理请求返回json格式的数据，实现页面的局部数据更新。
 
-思路：Ajax请求可以使用jQuery，json格式支持需要依赖，使用注解@ResponseBody或@RestController。ajax请求发送数据有多种方式，根据需求选择最合适的。整个过程分为：ajax请求发起-服务器端响应回json数据-ajax接收并处理响应数据-页面渲染数据-更新完成）。
+**思路：**Ajax请求可以使用jQuery，json格式支持需要依赖，使用注解@ResponseBody或@RestController。ajax请求发送数据有多种方式，根据需求选择最合适的。整个过程分为：ajax请求发起-服务器端响应回json数据-ajax接收并处理响应数据-页面渲染数据-更新完成）。
 
-代码：
+**代码：**
 
 1.依赖：atcrowdfunding02-admin-component中已经引入了json支持的相关依赖。
 
 2.ajax复习（不用管ajax最原始的实现方式，直接使用框架，复习ajax请求相关知识、能做哪些数据实现）。
 
-对ajax请求返回结果进行统一（封装），请求结果包括请求结果（成功或失败）、返回数据、异常信息。
+对ajax请求返回结果进行统一（封装），请求封装包括请求结果（成功或失败）、返回数据、异常信息。
 
 ```java
 public class ResultEntity<T> {
@@ -1014,14 +1017,14 @@ public class ResultEntity<T> {
 
 ## 13.请求异常处理
 
-目标：请求的异常处理，请求分为普通的请求和ajax请求，普通请求的异常返回错误页面，ajax请求的异常返回json数据。
+**目标：**请求的异常处理，请求分为普通的请求和ajax请求，普通请求的异常返回错误页面，ajax请求的异常返回json数据。
 
-思路：springmvc采用全局统一的异常处理，通过面向切面编程思想把异常集中到一个地方，实现逻辑代码和业务代码的分离，完成解耦合，其提供了基于XML和基于注解的两种异常处理方式。
+**思路：**springmvc采用全局统一的异常处理，通过面向切面编程思想把异常集中到一个地方，实现逻辑代码和业务代码的分离，完成解耦合，其提供了基于XML和基于注解的两种异常处理方式。
 
 1. 基于XML的和基于注解的，基于注解的用于处理一些自定义的异常。
 2. 异常处理要分请求，所以异常处理前先要判断是普通请求还是ajax请求。
 
-代码：
+**代码：**
 
 1.基于XML的：
 
@@ -1145,7 +1148,7 @@ public class ResultEntity<T> {
                return null;
            }
            ModelAndView modelAndView = new ModelAndView();
-           modelAndView.addObject(CrowdConstant.ATTR_NAME_EXCEPTION,exception);
+           modelAndView.addObject(CrowdConstant.ATTR_NAME_EXCEPTION,exception.getMessage());
            modelAndView.setViewName(viewName);
            return modelAndView;
        }
@@ -1169,13 +1172,387 @@ public class CrowdConstant {
 }
 ```
 
-## 15.admin-login.html页面
+## 15.引入admin-login.html页面
 
-## 16.system-error.html页面
+## 16.引入system-error.html页面
 
-# 需求
+# 二.需求
 
-## 需求一：登录实现
+## 需求一：登录实现与退出
+
+**目标：**用户通过账号密码登录后台管理系统，并在登出前保持登录状态。
+
+**思路：**用户输入账号和密码提交到后端，后端接收到数据并根据查询到对应用户，如果对应用户存在则将提交的密码进行MD5加密后与查询到的用户的加密密码对比，如果一致则将查询到的用户信息存入session域（用于保持登录状态），并跳转到后台页面；如果用户不存在或者比对密码时不一致则抛出一个自定义异常，在异常处理处设置对自定义异常的处理-一抛出该异常就返回首页并抛出密码错误的提示信息。
+
+<img src="img/login.png" style="zoom: 33%;" />
+
+**代码：**
+
+1.创建MD5加密工具类，存储的密码为MD5加密后的，所以密码比对时也用到该工具类；
+
+2.创建自定义异常与异常处理中心配置异常处理——跳转回登录页，并在登录页加入`<p th:text="${exception}"></p>`来显示异常提示；
+
+3.功能实现：根据账号获取数据并校验密码
+
+AdminMapper.xml：
+
+```xml
+<!-- 根据账号查询用户 -->
+<select id="selectAdminByAcct" resultType="com.lsl.crowd.entity.Admin" parameterType="java.lang.String">
+  select *
+  from t_admin where login_acct = #{loginAcct}
+</select>
+```
+
+Admin、AdminService、AdminServiceImpl：
+
+```java
+// 根据账户查询用户
+List<Admin> selectByLoginAcct(String loginAcct);
+```
+
+```java
+// 根据账户查询用户
+Admin selectByLoginAcct(String loginAcct,String userPswd);
+```
+
+```java
+public Admin selectByLoginAcct(String loginAcct,String userPswd) {
+    List<Admin> list = adminMapper.selectByLoginAcct(loginAcct);
+    // 用户不存在
+    if (list == null || list.size() == 0) {
+        throw new LoginFailedException(CrowdConstant.MESSAGE_LOGIN_FAILED);
+    }
+    // 查到多个用户
+    if (list.size() > 1 ){
+        throw new RuntimeException(CrowdConstant.MESSAGE_SYSTEM_ERROR_LOGIN_NOT_UNIQUE);
+    }
+    // 用户唯一存在
+    Admin admin = list.get(0);
+    if (admin == null) {
+        throw new RuntimeException(CrowdConstant.MESSAGE_LOGIN_FAILED);
+    }
+    String userPswdDB = admin.getUserPswd();
+    String userPswdForm = CrowdUtil.md5(userPswd);
+    System.out.println(userPswdForm);
+    // 密码校验
+    if (!Objects.equals(userPswdDB,userPswdForm)){
+        throw new LoginFailedException(CrowdConstant.MESSAGE_LOGIN_FAILED);
+    }
+    return admin;
+}
+```
+
+5.前端控制器方法处理：接收参数并调用校验方法
+
+```java
+@Controller
+public class AdminLoginController {
+
+    @Autowired
+    AdminService adminService;
+
+    @RequestMapping(value = "/admin/login", method = RequestMethod.POST)
+    public String login(@RequestParam(value = "userPswd") String userPswd,
+                        @RequestParam(value = "loginAcct" ) String loginAcct,
+                        HttpServletRequest session
+                        ){
+        // 校验
+        Admin loginAdmin = adminService.selectByLoginAcct(loginAcct, userPswd);
+        session.setAttribute(CrowdConstant.ATTR_NAME_LOGIN_ADMIN,loginAdmin);
+        return "redirect:/admin/page/main";
+    }
+    @RequestMapping(value = "/admin/page/main", method = RequestMethod.GET)
+    public String mainPage(){
+        return "admin-main";
+    }
+}
+```
+
+引入admin-main.html页面，thymeleaf的模板页面设置不成功，不去折腾简化页面了。
+
+为什么登录成功后要重定向到后台页面？登录成功后转到后台页面，如果此时刷新会重新提交表单。
+
+登录退出：
+
+```java
+@RequestMapping(value = "/admin/loginout")
+public String loginout(HttpSession session){
+    session.invalidate();
+    // 重定向回登录页
+    return "redirect:/";
+}
+/* 登录退出处理 end */
+```
+
+
+
+## 需求二：登录检测，控制资源访问
+
+目标：后台管理系统的资源是需要登录后才能访问并进行操作的，所以需要登录检查来决定是否开放访问后台。
+
+思路：SpringMVC的拦截器可以控制资源的放行，当访问公共资源时就放行，访问受保护的资源时就经过拦截器，检测到登录后再放行资源。
+
+<img src="img/login_status.png" style="zoom: 50%;" />
+
+代码：
+
+1.创建实现拦截器接口`HandlerInterceptor`的类，重写方法并设置登录验证规则。
+
+```java
+public class LoginInterceptor implements HandlerInterceptor {
+
+    @Override
+    // 在controller方法执行前（发起请求后）执行,返回false将拦截该请求，停止后续程序的执行
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 获取session
+        HttpSession session = request.getSession();
+        // 从session域获取资源
+        Admin admin = (Admin) session.getAttribute(CrowdConstant.ATTR_NAME_LOGIN_ADMIN);
+        if (admin == null){
+            throw new AccessForbiddenException(CrowdConstant.MESSAGE_ACCESS_FORBIDDEN);
+        }
+        // Admin不为空则已经登录，可以执行后续操作
+        return true;
+    }
+}
+```
+
+2.注册拦截器进springmvc容器。
+
+```xml
+<!-- 注册拦截器，拦截并决定是否要对该路径进行处理，如果不处理则无法执行相关处理程序 -->
+<mvc:interceptors>
+    <mvc:interceptor>
+        <!-- 拦截的路径 -->
+        <mvc:mapping path="/**"/>
+        <!-- 拦截的同时允许程序对这些路径进行处理 -->
+        <mvc:exclude-mapping path="/admin/login"/>
+        <mvc:exclude-mapping path="/"/>
+        <mvc:exclude-mapping path="/admin/loginout"/>
+        <!-- 声明拦截器 -->
+        <bean class="com.lsl.crowd.mvc.interceptor.LoginInterceptor"/>
+    </mvc:interceptor>
+</mvc:interceptors>
+```
+
+## thymeleaf-使用模板简化页面
+
+使用thymeleaf的都需要在页面的html标签处加上`xmlns:th="http://www.thymeleaf.org"`。
+
+```html
+<!-- 简单定义模板引用片段，模板文件_fragments.html -->
+<head th:fragment="head">
+    引用片段内容
+</head>
+<nav th:fragment="nav">
+</nav>
+<div th:fragment="sidebar">
+</div>
+```
+
+```html
+<!-- 引用替换方式一：把该标签替换为引用片段全部 -->
+<head th:replace="_fragments :: head"></head>
+<!-- 引用替换方式二：在该标签中插入引用片段的内容 -->    
+<head th:insert="_fragments :: head"></head>
+<!-- 引用替换方式三：和insert一样 --> 
+<head th:include="_fragments :: head"></head>
+```
+
+
+
+## 需求三：用户维护功能
+
+### 分页显示数据
+
+数据分页需要使用到limit，这里使用pagehelper来实现数据分页，利用jQuery来生成分页导航栏。步骤如下：
+
+1.分页插件pagehelper的注册：
+
+```xml
+<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+    <property name="dataSource" ref="dataSource"/>
+    <property name="configLocation" value="classpath:mybatis/mybatis-config.xml"/>
+    <!-- mapper.xml文件 -->
+    <property name="mapperLocations" value="classpath:mybatis/mapper/*Mapper.xml"/>
+    <!-- 分页插件的使用 -->
+    <property name="plugins">
+        <array>
+            <bean class="com.github.pagehelper.PageHelper">
+                <property name="properties">
+                    <props>
+                        <!-- 配置页码的合理化修正 在1~总页数之间修正页码 -->
+                        <prop key="reasonable">true</prop>
+                    </props>
+                </property>
+            </bean>
+        </array>
+    </property>
+</bean>
+```
+
+2.dao-service，功能方法的实现：
+
+```xml
+<!-- 关键字查询操作 -->
+<select id="selectAdminByKeyword" resultMap="BaseResultMap">
+  select id,login_acct,user_pswd,user_name,email,create_time
+  from t_admin
+  <if test="keyword != null || keyword != ''">
+    where
+    login_acct like concat('%',#{keyword},'%') or
+    user_name like concat('%',#{keyword},'%') or
+    email like concat('%',#{keyword},'%')
+  </if>
+</select>
+```
+
+```java
+// dao接口 SQL映射方法声明
+List<Admin> selectAdminByKeyword(String keyword);
+```
+
+```java
+// service接口 分页功能声明 
+PageInfo<Admin> getPageInfo(String keyword, Integer pageNum, Integer pageSize);
+```
+
+```java
+// service实现类 具体功能实现
+public PageInfo<Admin> getPageInfo(String keyword, Integer pageNum, Integer pageSize) {
+    /* 1.调用pagehelper的静态方法开启分页功能 */
+    PageHelper.startPage(pageNum,pageSize);
+    /* 2.执行查询 */
+    List<Admin> adminList = adminMapper.selectAdminByKeyword(keyword);
+    /* 3.封装到pageinfo对象 */
+    return new PageInfo<>(adminList);
+}
+```
+
+3.前端控制器处理请求，调用并返回数据至页面
+
+```java
+/* 分页显示全部用户数据 */
+@RequestMapping(value = "/admin/users")
+public String getPageInfo(@RequestParam(value = "keyword",defaultValue = "") String keyword,
+                          @RequestParam(value = "pageNum",defaultValue = "1") Integer pageNum,
+                          @RequestParam(value = "pageSize",defaultValue = "10") Integer pageSize,
+                          ModelMap modelMap
+){
+    // 调用service方法获取
+    PageInfo<Admin> pageInfo = adminService.getPageInfo(keyword, pageNum, pageSize);
+    modelMap.addAttribute(CrowdConstant.ATTR_NAME_PAGE_INFO,pageInfo);
+    // 是否没有查询到数据
+    if (pageInfo.getList() == null || pageInfo.getList().size() == 0){
+        modelMap.addAttribute("flag","true");
+    }else {
+        modelMap.addAttribute("flag","false");
+    }
+    modelMap.addAttribute("keyword",keyword);
+    return "admin-page";
+}
+```
+
+4.页面编写，使用thymeleaf渲染
+
+```html
+<tbody>
+<!-- 没有查到数据时flag为true -->
+<tr th:if="${flag}">
+    <td colspan="6">抱歉！没有查询到任何数据！</td>
+</tr>
+<tr th:each="user : ${pageInfo.list}">
+    <td th:text="${userStat.count}">1</td>
+    <td><input type="checkbox"></td>
+    <td th:text="${user.loginAcct}">Lorem</td>
+    <td th:text="${user.userName}">ipsum</td>
+    <td th:text="${user.email}">dolor</td>
+    <td>
+        <button type="button" class="btn btn-success btn-xs"><i class=" glyphicon glyphicon-check"></i></button>
+        <a href="admin/to/edit/page.html?adminId=${admin.id}&pageNum=${requestScope.pageInfo.pageNum}&keyword=${param.keyword}" class="btn btn-primary btn-xs"><i class=" glyphicon glyphicon-pencil"></i></a>
+        <a class="btn btn-danger btn-xs" href="admin/remove/${admin.id}/${requestScope.pageInfo.pageNum}/${param.keyword}.html"><i class=" glyphicon glyphicon-remove"></i></a>
+    </td>
+</tr>
+</tbody>
+```
+
+5.分页导航条的设置-使用jquery.pagination.js和pagination.css，jquery.pagination.js需要jquery-2.1.1.min.js支持
+
+先在页面导入css和js文件：
+
+```jsp
+<link rel="stylesheet" href="css/pagination.css" th:href="">
+<script type="text/javascript" src="jquery/jquery.pagination.js" th:scr=""></script>
+```
+
+导航条所在位置加上这个，会由js生成：
+
+```jsp
+<div id="Pagination" class="pagination">
+
+</div>
+```
+
+使用jquery.pagination.js的功能来生成导航条：
+
+```javascript
+<script type="text/javascript" th:inline="javascript">
+    $(function(){
+        // 调用专门的函数初始化分页导航条
+        initPagination();
+    })
+    // 声明一个函数用于初始化 Pagination
+    function initPagination() {
+        // 获取分页数据中的总记录数
+        var totalRecords = [[${pageInfo.total}]];
+        // 声明 Pagination 设置属性的 JSON 对象
+        var properties = {
+            num_edge_entries: 3, // 边缘页数
+            num_display_entries: 5, // 主体页数
+            callback: pageSelectCallback, // 用户点击“翻页”按钮之后执行翻页操作的回调函数
+            current_page: [[${pageInfo.pageNum-1}]], // 当前页，pageNum 从 1 开始，必须-1 后才可以赋值
+            prev_text: "上一页",
+            next_text: "下一页",
+            items_per_page:[[${pageInfo.pageSize}]] // 每页显示多少
+        };
+        // 调用分页导航条对应的 jQuery 对象的 pagination()方法生成导航条pagination(totalRecord, properties);
+        $("#Pagination").pagination(totalRecords,properties);
+    }
+    // 翻页过程中执行的回调函数
+    // 点击“上一页”、“下一页”或“数字页码”都会触发翻页动作，从而导致当前函数被调用
+    // pageIndex 是用户在页面上点击的页码数值
+    function pageSelectCallback(pageIndex, jQuery) {
+        // pageIndex 是当前页页码的索引，相对于 pageNum 来说，pageIndex 比 pageNum 小 1
+        var pageNum = pageIndex + 1;
+        // 执行页面跳转也就是实现“翻页” http://localhost:8083/crowd/admin/get/page.html
+        window.location.href = "admin/users?pageNum="+pageNum+"&keyword="+[[${keyword}]];
+        // 取消当前超链接的默认行为
+        return false;
+    }
+</script>
+```
+
+最后还需要修改jquery.pagination.js文件，在文件末尾处注释掉回调函数：
+
+```js
+// 所有初始化完成，绘制链接
+drawLinks();
+// 回调函数
+// opts.callback(current_page, this);
+```
+
+如果不注释则会发生死循环：
+
+<img src="img/callback.png" style="zoom:33%;" />
+
+
+
+
+
+
+
+
 
 
 

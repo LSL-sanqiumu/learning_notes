@@ -757,7 +757,9 @@ springmvc采用全局统一的异常处理，通过面向切面编程思想把�
 
 ## 拦截器
 
-- 拦截器：实现HandlerInterceptor接口的实现类；拦截器也体现aop思想；
+**概述：**
+
+- 拦截器是实现HandlerInterceptor接口的实现类；拦截器也体现aop思想；
 - 过滤器用来过滤请求参数、设置编码字符集等工作，**拦截器则用来拦截请求、对请求做判断处理的**；
 
 - 拦截器是全局的，可以对多个Controller做拦截，可以有多个拦截器；
@@ -767,9 +769,9 @@ springmvc采用全局统一的异常处理，通过面向切面编程思想把�
   - controller方法执行后执行拦截；
   - 请求处理完成后执行拦截。
 
-拦截器的使用：
+**拦截器的使用：**
 
-1. 实现HandlerInterceptor接口，在springmvc中声明；springmvc中声明拦截器，先声明的先执行，实际上在框架中保存多个是用ArrayList集合
+1. 创建实现HandlerInterceptor接口的拦截器类，然后在springmvc中声明拦截器，先声明的先执行，实际上在框架中保存多个拦截器是用ArrayList集合来保存
 
    ```xml
    <mvc:interceptors>
@@ -777,6 +779,8 @@ springmvc采用全局统一的异常处理，通过面向切面编程思想把�
        <mvc:interceptor>
            <!--path为拦截请求的uri地址，`/`表示根，通配符`**`表示任意字符-->
            <mvc:mapping path="/**"/>
+           <!-- 配置放行的资源 -->
+           <mvc:exclude-mapping path="/"/>
            <bean class="com.lsl.handler.MyInterceptor"/>
        </mvc:interceptor>
        ......
@@ -806,35 +810,35 @@ public void afterCompletion(HttpServletRequest request, HttpServletResponse resp
 2. 第二个：后处理方法，在controller方法执行后执行，ModelAndView是controller方法返回值，修改ModelAndView中的视图和参数能影响到最后的执行结果；该方法主要用来对原来的结果进行二次修改；
 3. 第三个：最后执行的方法，请求处理完成后执行（框架规定，视图处理完成后并对视图执行了forward后，就认为请求处理完成），Exception是程序中出现的异常；该方法一般做资源回收工作，程序请求过程中创建的对象在这里可以删除，回收占用内存。
 
-```
+```java
 //一个拦截器执行顺序
-拦截器的preHandle方法
-===controller的一个方法===
-拦截器的postHandle方法
-拦截器的afterCompletion方法
+1.拦截器的preHandle方法
+2.===controller的一个方法===
+3.拦截器的postHandle方法
+4.拦截器的afterCompletion方法
 ```
 
 
 
-```
+```java
 //多个拦截时的执行顺序，1、2的preHandle都返回true时
+1.拦截器1的preHandle方法
+2.拦截器2的preHandle方法
+3.===controller的一个方法===
+4.拦截器2的postHandle方法
+5.拦截器1的postHandle方法
+6.拦截器2的afterCompletion方法
+7.拦截器的1afterCompletion方法
+```
+
+```java
+//多个拦截时的执行顺序，1的preHandle返回true，2的返回false
 111拦截器的preHandle方法
 222拦截器的preHandle方法
-===controller的一个方法===
-222拦截器的postHandle方法
-111拦截器的postHandle方法
-222拦截器的afterCompletion方法
 111拦截器的afterCompletion方法
 ```
 
-```
-//多个拦截时的执行顺序，1的preHandle返回true，、2的返回false
-111拦截器的preHandle方法
-222拦截器的preHandle方法
-111拦截器的afterCompletion方法
-```
-
-```
+```java
 //多个拦截时的执行顺序，1preHandle返回false，
 111拦截器的preHandle方法
 ```

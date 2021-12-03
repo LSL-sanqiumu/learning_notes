@@ -289,7 +289,19 @@ public class CircleQueue {
 
 # 链表LinkedList
 
+链式存储实现的线性表。链表使用节点来存储数据，所谓节点，只不过是一个这样的类的对象：包含要存储的信息和其他存储着相同类型信息的对象的地址。
+
+```java
+// 一个简单的节点类
+class Node{
+    private String info;
+    private Node next;
+}
+```
+
 ## 单向链表
+
+单向链表的节点只能单向指向下一个节点。
 
 
 
