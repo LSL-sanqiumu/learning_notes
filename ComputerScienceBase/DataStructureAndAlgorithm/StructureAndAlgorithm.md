@@ -289,13 +289,14 @@ public class CircleQueue {
 
 # 链表LinkedList
 
-链式存储实现的线性表。链表使用节点来存储数据，所谓节点，只不过是一个这样的类的对象：包含要存储的信息和其他存储着相同类型信息的对象的地址。
+链式存储实现的线性表。链表使用节点来存储数据，所谓节点，只不过是一个包含这些信息的类的对象：包含要存储的信息和其他存储着相同类型信息的节点对象的地址。
 
 ```java
 // 一个简单的节点类
 class Node{
-    private String info;
-    private Node next;
+    private String info; // 存储的信息
+    private Node next; // 节点对象
+    其他方法...
 }
 ```
 
@@ -303,7 +304,157 @@ class Node{
 
 单向链表的节点只能单向指向下一个节点。
 
+**1.确定节点要存储的信息：**
 
+```java
+class HeroNode {
+    // 节点要存储的信息
+    public int no;
+    public String name;
+    public String nickname;
+    // 指向下一个节点
+    public HeroNode next;
+    // 已经忽略节点的构造方法和toString方法
+}
+```
+
+**2.链表的实现：**
+
+```java
+// 单向链表
+class SingleLinkedList {
+    // 链表头部不存储数据，只用于定位首个节点有无
+    private HeroNode head = new HeroNode(0,"","");
+    // 显示链表所有数据
+    public void show(){
+        if (head.next == null) {
+            System.out.println("链表为空");
+            return;
+        }
+        HeroNode temp = head.next;
+        while (true){
+            System.out.println(temp.toString());
+            if (temp.next == null){
+                break;
+            }
+            temp = temp.next;
+        }
+    }
+}
+```
+
+a.链表操作：简单的节点添加操作
+
+```java
+// 添加节点：遍历到列表的最后一个数据，加上引用完成节点添加
+public void add(HeroNode heroNode){
+    HeroNode temp = head;
+    // 如果遍历到最后一个节点，退出循环
+    while (true){
+        if (temp.next == null) {
+            break;
+        }
+        temp = temp.next;
+    }
+    // 添加节点
+    temp.next = heroNode;
+}
+```
+
+b.链表操作：节点存储信息带序号，要求链表中节点按序号排序并且序号不重复
+
+```java
+// 有编号的节点，按编号顺序添加
+public void addByOrder(HeroNode heroNode){
+    HeroNode temp = head;
+    // 判断是否有已经有相同编号的标志位
+    boolean falg = false;
+    // 遍历查询
+    while (true) {
+        // 如果遍历到末尾，说明可以直接在末尾添加节点
+        if (temp.next == null){
+            break;
+        }
+        // 判断是否存在重复的编号
+        if (temp.next.no > heroNode.no){
+            break;
+        }else if (temp.next.no == heroNode.no){
+            falg = true;
+            break;
+        }
+        // 指针后移，实现遍历
+        temp = temp.next;
+    }
+    // 添加操作，flag为true表示存在相同编号的节点，不能再进行添加操作
+    if (falg) {
+        System.out.println("存在相同编号的数据，不能再添加！");
+    }else {
+        heroNode.next = temp.next;
+        temp.next = heroNode;
+    }
+}
+```
+
+c.链表操作：根据传入的节点来修改节点的信息
+
+```java
+// 修改节点信息
+public void update(HeroNode newNode){
+    HeroNode temp = head.next;
+    if (temp == null){
+        System.out.println("没有节点！");
+        return;
+    }
+    // 标志位，存在相同编号的节点即视为能进行修改操作
+    boolean flag = false;
+    while (true) {
+        if (temp == null) {
+            System.out.println("已经遍历完全部节点。");
+            break;
+        }
+        if (temp.no == newNode.no){
+            flag = true;
+            break;
+        }
+        temp = temp.next;
+    }
+    if (flag) {
+        temp.name = newNode.name;
+        temp.nickname = newNode.nickname;
+    }else {
+        System.out.println("该节点不存在，无法更改！");
+    }
+}
+```
+
+d.链表操作：根据编号删除节点，失去引用的节点会被垃圾回收
+
+```java
+// 删除节点
+public void delete(int no) {
+    HeroNode temp = head;
+    boolean flag =false;
+    if (temp.next == null){
+        System.out.println("链表为空！");
+        return;
+    }
+    while (true){
+        if (temp.next == null){
+            break;
+        }
+        if (temp.next.no == no){
+            flag = true;
+            break;
+        }
+        temp = temp.next;
+    }
+    if (flag){
+        temp.next = temp.next.next;
+    }else {
+        System.out.println("要删除的节点不存在！");
+    }
+}
+```
 
 
 

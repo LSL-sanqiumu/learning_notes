@@ -150,8 +150,6 @@ exit; #退出数据库管理系统
 
 ## 字段类型
 
-column：纵行。（字段）；row：横行。（）
-
 关于`数据类型(M)`：
 
 - 对于char型，M指定该字段的字符数（指定值不能超过char允许的范围），存储的时候必然按M个字符进行存储，不够的时候用空格补。在检索的时候（我理解是查询的时候），取出的值尾部空格被删除，存储的时候尾部的空格可以认为没有做处理；
@@ -246,19 +244,23 @@ Default：设置默认值。
 约束种类：
 
 - 非空约束：not null，指示某列不能存储 NULL 值；
-- 唯一性约束：unique， 保证某列的每行必须有唯一的值； （创建表时在字段后面添加`unique`）
-- 主键约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个列多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。；（创建表时在字段后面添加`primary key`）
+- 唯一性约束：unique， 保证某列的每行的值唯一；
+- 主键约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个列多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。；
 - 外键约束：foreign key（FK），保证一个表中的数据匹配另一个表中的值的参照完整性；
-- 检查约束：check（MySQL8版本开始支持，Oracle）， 保证列中的值符合指定的条件；
-- default；
+- 检查约束：check（MySQL8版本开始支持，Oracle也支持）， 保证列中的值符合指定的条件；
+- default。
 
-## 主键约束
+## 添加唯一性约束
+
+
+
+## 添加主键约束
 
 主键字段是添加了主键约束的字段，主键字段的每一个值叫作主键值。主键值是每一行记录的唯一标识，主键值是每一行记录的身份证。
 
 表中的数据中有些字段信息可能是重复的，为了区分这种重复，就引入了约束，协助身份标识；任何一张表都应该有主键约束，主键约束一张表只能有一个。
 
-作为主键的字段：not null + unique（非空、唯一：主键值不能是null，也不能重复）
+作为主键的字段：not null + unique（非空、唯一：主键值不能是null，也不能重复）；添加主键约束的操作如下：
 
 ```mysql
 create table `table_name`(
@@ -280,54 +282,73 @@ create table `table_name`(
 - 自然主键：主键值是一个自然数，和业务没关系；（开发中使用更多）
 - 业务主键：主键值和业务紧密关联；（例如拿银行账号作主键值）
 
-## 外键约束
+## 添加外键约束
+
+MySQL的外键约束用来在两个表数据之间建立链接，其中一张表的一个字段被另一张表中对应的字段约束。也就是说，设置外键约束至少要有两种表，被约束的表叫做从表（子表），另一张叫做主表（父表），属于主从关系；其中主表中的关联字段叫做主键，从表中的关联字段叫做外键。外键约束主要作用就是能够让表与表之间的数据建立关联，使数据更加完整，关联性更强
 
 业务背景：设计数据库表，描述班级和学生的信息
 
-- 都存放于一张表（每个学生的班级和班级代号可能会重复，造成数据冗余）；
-- 班级表、学生表，学生表引用班级表；（添加外键约束）
+- 方案一：数据都存放于一张表；（每个学生的班级信息和班级代号信息可能会重复，造成数据冗余）
+- 方案二：班级表、学生表分表存储不同数据，学生表引用班级表；（添加外键约束，减少数据冗余）
 
-添加外键：创建表时在最后加上
+**外键的创建方式一：在创建表的同时添加外键约束**
 
 ```mysql
-foreign key(子表字段) references 外表(外表的字段);
+create table 表名(
+字段定义...
+主键定义...
+constraint `外键名称` foreign key (`字段`) references `主表名`(主键字段) 属性
+)engine=innodb default charset=utf8；
+-- constraint ：用于设置外键约束名称，可以省略
+-- foreign key：外键设置，用于指定从表的外键字段
+-- references：主表及主键设置，用于指定主表和主键
+-- 属性可选，属性说明：
+	-- CASCADE：主表删除或修改记录时，从表也会对关联记录的外键字段进行修改。
+	-- RESTRICT：删除或修改主表记录，子表中若有关联记录，则不允许主表删除或修改。
+	-- SET NULL：主表删除或修改主表记录时，从表会将关联记录的外键字段设为null。
+	-- ON UPDATE CASCADE：主表修改记录时，从表关联记录的外键字段也会修改。（将CASCADE改为RESTRICT，意思相反）
+	-- ON DELETE CASCADE：主表删除记录时，从表关联记录的外键字段也会删除。（将CASCADE改为RESTRICT，意思相反）
+```
+
+实例演示：	
+
+```mysql
+-- 主表 
+CREATE TABLE `t_class1` (
+  `id` INT(10) NOT NULL AUTO_INCREMENT COMMENT '学生id',
+  `s_id` INT(10) NOT NULL DEFAULT '1001' COMMENT '学号',
+  `specialty` CHAR(255) DEFAULT NULL,
+  `grade` CHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
+-- 从表，被约束的表-创建外键的表，也可以看做为某个字段外扩了一些关联数据
+CREATE TABLE `t_student1`(
+  `id` INT(10) NOT NULL AUTO_INCREMENT COMMENT '学生id',
+  `s_id` INT(10) NOT NULL DEFAULT '1001' COMMENT '学号',
+  `name` CHAR(10) DEFAULT NULL COMMENT '学生姓名',
+  `sex` CHAR(2) DEFAULT NULL COMMENT '性别',
+  `n_place` CHAR(255) DEFAULT NULL COMMENT '籍贯',
+  `age` INT(3) NOT NULL DEFAULT '18' COMMENT '年龄',
+  `g_level` CHAR(10) NOT NULL DEFAULT '无' COMMENT '级别',
+  `phone` CHAR(255) DEFAULT NULL COMMENT '联系电话',
+  PRIMARY KEY (`id`),
+  CONSTRAINT `FK_id` FOREIGN KEY (`s_id`) REFERENCES `t_class1`(`id`)
+)ENGINE=INNODB DEFAULT CHARSET=utf8;
 ```
 
 
 
-创建表时添加约束：
-
-```mysql
-CREATE TABLE `grade`(
-`gradeid` INT(4) NOT NULL AUTO_INCREMENT COMMENT '年级id',
-`gradename` VARCHAR(20) NOT NULL COMMENT '年级',
-PRIMARY KEY (`gradeid`)
-)ENGINE=INNODB DEFAULT CHARSET=utf8;
-
-
-CREATE TABLE IF NOT EXISTS `students`(
-`id` INT(4) NOT NULL AUTO_INCREMENT COMMENT '学号',
-`name` VARCHAR(30) NOT NULL DEFAULT '匿名' COMMENT '姓名',
-`pwd` VARCHAR(20) NOT NULL DEFAULT '123456' COMMENT '密码',
-`sex` VARCHAR(2) NOT NULL DEFAULT '女' COMMENT '性别',
-`gradeid` INT(4) NOT NULL COMMENT '年级id',
-`birthday` DATETIME DEFAULT NULL COMMENT '生日',
-`address` VARCHAR(100) DEFAULT NULL COMMENT '地址',
-`email` VARCHAR(20) DEFAULT NULL COMMENT '邮箱',
-PRIMARY KEY(`id`), -- primary：主要，基本的
-KEY `FK_gradeid` (`gradeid`), -- 定义外键
-CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`) -- 为外键添加约束
-)ENGINE=INNODB DEFAULT CHARSET=utf8;
-```
-
-创建表完成后再添加约束constraint：
+**外键的创建方式二：在创建表完成之后再添加外键约束**
 
 ```MYSQL
-ALTER TABLE XXX 
-ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`);
+-- 添加一个叫FK_gradeid的外键约束，外键约束字段为`gradeid`，指向的表为`grade`，和该表的`gradeid`形成关联
+-- 从表的`gradeid`的值的选项被主表`grade`的`gradeid`的值限定住
+ALTER TABLE XXX ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`);
 ```
 
-- 删除有外键关系的表：先删除有引用其他表的表（从表），然后再删除被引用的表（主表）；
+**其他注意的点：**
+
+- 删除有外键关系的表：先再删除被引用的表，然后删除有引用其他表的表；
 - 外键值可以为null；
 - 外键引用主表中的某个字段，被引用的字段不一定是主键，但至少具有唯一性。
 
@@ -612,12 +633,12 @@ SELECT `studentresult`+1 AS 提分后 FROM result;
 | between ... and ...  | 在某个闭区间 |              [x，y]              |
 |         and          |   相当于&&   |              全1为1              |
 |          or          |  相当于\|\|  |              有1为1              |
-|         not          |   相当于！   |                                  |
+|         not          |   相当于！   |                非                |
 |       is null        |  是否为null  |         null不能用=比较          |
 |     is not null      |   不是null   |                                  |
 |         like         |  含有某个值  |      模糊查询，结合%或_使用      |
 |   in(xx,xx,xx,...)   |   里面的值   | 用来查询某字段值有在in里面的数据 |
-| not in(xx,xx,xx,...) |              | 某字段值不在这几个值当中的是数据 |
+| not in(xx,xx,xx,...) | 不在里面的值 | 某字段值不在这几个值当中的是数据 |
 
 select语句：
 
@@ -629,7 +650,11 @@ where 逻辑判断语句; -- 查询符合该逻辑的数据，可用括号()决�
 where `字段` in (110,120); -- 查询某字段值存在该集合里某个值的数据
 ```
 
-like，模糊查询，支持%或_匹配：
+### 模糊查询
+
+like，模糊查询，支持使用通配符`%`或`_`匹配：
+
+（%不能匹配值为null的数据，如果有其他可以替代通配符的就不用通配符，通配符搜索的处理需要时间较长。）
 
 ```sql
  -- 查询字段中有某个字的数据，%：表示0到任意个字符，_：表示一个字符
@@ -711,7 +736,7 @@ select user_id,the_year,count(price) as '订单数量' from t_order group by use
 
 
 
-### 单表查询总结
+## 指令执行顺序
 
 ```mysql
 -- 执行顺序：from --> where --> group by --> select --> having --> order by
@@ -860,8 +885,9 @@ select 字段 from table_name order by `字段` asc;-- asc：升序；desc：降
 -- 也就是说字段1的值都是相等的情况下，才会按照字段2进行排序
 select 字段1,字段2 from table_name order by `字段1` asc,`字段2` asc;  
 -- 根据字段的位置进行排序，不建议使用（因为列的顺序很容易发生改变）
-select 字段1,字段2 from table_name order by 2; -- 查询处理的按照第二个字段进行排序  
-
+select 字段1,字段2 from table_name order by 2; -- 对第二个字段进行排序  
+-- 按多个列进行排列
+select 字段 from 表 order by 字段1，字段二; -- 按字段1进行排序，当有多个字段1的的值相同的时候，相同值数据才会按字段2排序
 ```
 
 ## 子查询

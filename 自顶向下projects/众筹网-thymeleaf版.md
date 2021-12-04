@@ -113,7 +113,7 @@
 
 ```xml
 <!-- 日志系统搭建需要的依赖 start -->
-<!-- 日志：log4j，实际引入前两个 -->
+<!-- 日志：log4j，实际项目工程里引入前两个 -->
 <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
 <dependency>
     <groupId>org.slf4j</groupId>
@@ -217,7 +217,7 @@
 <!--  thyme leaf的依赖 end -->
 ```
 
-### 权限管理，SpringSecurity：
+### 权限管理-SpringSecurity：
 
 ```xml
 <lsl.spring.security.version>5.5.3</lsl.spring.security.version>
@@ -911,7 +911,9 @@ web.xml：
 </web-app>
 ```
 
-## 10.RESTFul风格使用
+## ~~10.RESTFul风格使用~~
+
+**（后面实现的时候，发现传入多参数时还遵循restful规范并不好使，而且也把握不住，所以就没有去遵循restful规范了，这一步也就没有意义了，不过在静态资源的处理的时候出现的问题还是有意义的，这里最主要的就是对静态资源的处理，过滤器可以不用设置）**
 
 RESTFul风格提倡的URI风格：从前到后使用斜杠分开，不使用问号键值对方式携带请求参数，而是将发送给服务器的数据作为URI的一部分。
 
@@ -1184,6 +1186,8 @@ public class CrowdConstant {
 
 **思路：**用户输入账号和密码提交到后端，后端接收到数据并根据查询到对应用户，如果对应用户存在则将提交的密码进行MD5加密后与查询到的用户的加密密码对比，如果一致则将查询到的用户信息存入session域（用于保持登录状态），并跳转到后台页面；如果用户不存在或者比对密码时不一致则抛出一个自定义异常，在异常处理处设置对自定义异常的处理-一抛出该异常就返回首页并抛出密码错误的提示信息。
 
+【注意】：使用SpringMVC的异常处理机制有XML和注解两种方式，使用注解方式时记得开启注解扫描。
+
 <img src="img/login.png" style="zoom: 33%;" />
 
 **代码：**
@@ -1366,7 +1370,11 @@ public class LoginInterceptor implements HandlerInterceptor {
 
 ### 分页显示数据
 
-数据分页需要使用到limit，这里使用pagehelper来实现数据分页，利用jQuery来生成分页导航栏。步骤如下：
+目标：访问用户维护页面时将数据库中的用户数据取出在页面上显示。
+
+思路：当点击链接时转到前端控制器方法来执行用户数据获取的方法并放入Model，再使用模板引擎将数据渲染出来。考虑到数据分页，所以访问数据时需要传入参数来对查询到的数据进行分页，确定页数和每页数据量；再者考虑到关键字查询，所以还需要有保存关键字的请求参数。
+
+代码：数据分页需要使用到limit，这里使用pagehelper来实现数据分页，利用jQuery来生成分页导航栏。步骤如下：
 
 1.分页插件pagehelper的注册：
 
@@ -1546,9 +1554,191 @@ drawLinks();
 
 <img src="img/callback.png" style="zoom:33%;" />
 
+### 关键字查询
+
+目标：输入关键字来查询包含关键字的用户数据。
+
+思路：分页显示数据中已经考虑好关键字查询所需要传入的请求参数的接收，所以只需要在关键字查询处的表单设置一下表单项就可以了。
+
+代码：input的name设置为keyword，提交按钮设置为submit。
 
 
 
+### 单条删除
+
+目标：单击删除按钮实现目标用户数据的删除。
+
+思路：按钮替换成超链接，当点击超链接时把当前分页数据和关键字以及目标用户的id带上，然后交由到控制器方法进行处理，目标用户id用于删除操作，使用重定向来带上关键字、分页数据，重新回到原来的删除前的页面（此时删除的数据已经不会显示了，被删除了）。还要确认删除的是否是当前登陆的用户，不能把登陆的账户给删了。
+
+（删除还有一种假删除，只在逻辑层面上删除，而不是物理删除，也就是为数据增加一个表示状态的数据，删除时候只改变这个状态量就可以了。）
+
+代码：
+
+```java
+/* 单条数据的删除 */
+@RequestMapping(value = "/admin/remove")
+public String removeAdmin(@RequestParam(value = "id") Integer id,
+                          @RequestParam(value = "keyword") String keyword,
+                          @RequestParam(value = "pageNum") Integer pageNum,
+                          HttpSession session
+                          ){
+    Admin loginAdmin = (Admin) session.getAttribute(CrowdConstant.ATTR_NAME_LOGIN_ADMIN);
+    if (!loginAdmin.getId().equals(id)){
+        adminService.removeAdmin(id);
+    }else {
+        throw new RuntimeException("不能删除当前登陆的用户");
+    }
+    return "redirect:/admin/users?pageNum="+pageNum+"&keyword="+keyword;
+}
+```
+
+```html
+<a class="btn btn-danger btn-xs" href="" th:href="@{admin/remove(pageNum=${pageNum},keyword=${keyword},id=${user.id})}"><i class=" glyphicon glyphicon-remove"></i></a>
+```
+
+### 新增用户
+
+目标：新增用户数据并保存到数据库，要求账号不能重复，用户的密码要加密存储。
+
+思路：
+
+<img src="img/addAdmin.png" style="zoom:33%;" />
+
+代码：
+
+1.添加唯一性约束，就不用通过程序处理账号是否重复的问题了。
+
+```mysql
+-- 为表的账户字段添加唯一性约束
+alter table `xxx` add unique (``);
+```
+
+2.前端页面的处理：超链接和表单。
+
+3.前端控制器：
+
+```java
+/* 新增用户 start */
+@RequestMapping(value = "/admin/add-page")
+public String addPage(){
+    return "admin-add";
+}
+@RequestMapping(value = "/admin/save")
+public String saveAdmin(Admin admin){
+    adminService.saveAdmin(admin);
+    return "redirect:/admin/users?pageNum="+Integer.MAX_VALUE;
+}
+/* 新增用户 end */
+```
+
+4.唯一性异常的处理：自定义异常LoginAcctInUseException，SpringMVC注解方式处理异常：
+
+```java
+@ExceptionHandler(value = LoginAcctInUseException.class)
+public ModelAndView resolveLoginFailedException(LoginAcctInUseException exception, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String viewName = "admin-add";
+    return commonResolve(viewName,exception,request,response);
+}
+```
+
+### 更新用户信息
+
+目标：修改用户信息，但不修改用户的密码和用户创建的时间。
+
+思路：提交更新指定用户的请求时，请求路径带上用户的id、页面数据、关键字等参数，前端控制器处理完请求再跳转到用于更改信息的页面，跳转前已经把用户数据、页面数据、关键字等数据送入模型层，并在更改信息的页面显示用户的数据，当修改提交请求发起后保存数据，再根据面数据、关键字参数重定向回原页面。
+
+代码：
+
+1.处理链接
+
+```html
+<!-- admin-info.html -->
+<a href="" th:href="@{admin/update(pageNum=${pageNum},keyword=${keyword},id=${user.id})}"  class="btn btn-primary btn-xs"><i class=" glyphicon glyphicon-pencil"></i></a>
+```
+
+```html
+<!-- admin-update.html 表单处理-->
+<form action="admin/commit" method="post" role="form">
+    ...
+</form>
+```
+
+2.SQL
+
+```mysql
+<update id="updateByPrimaryKeySelective" parameterType="com.lsl.crowd.entity.Admin">
+  update t_admin
+  <set>
+    <if test="loginAcct != null">
+      login_acct = #{loginAcct,jdbcType=VARCHAR},
+    </if>
+    <if test="userPswd != null">
+      user_pswd = #{userPswd,jdbcType=CHAR},
+    </if>
+    <if test="userName != null">
+      user_name = #{userName,jdbcType=VARCHAR},
+    </if>
+    <if test="email != null">
+      email = #{email,jdbcType=VARCHAR},
+    </if>
+    <if test="createTime != null">
+      create_time = #{createTime,jdbcType=CHAR},
+    </if>
+  </set>
+  where id = #{id,jdbcType=INTEGER}
+</update>
+```
+
+```java
+public void update(Admin admin) {
+    try {
+        adminMapper.updateByPrimaryKeySelective(admin);
+    }catch (Exception e){
+        e.printStackTrace();
+        if (e instanceof DuplicateKeyException){
+            throw new LoginAcctInUseForUpdateException(CrowdConstant.MESSAGE_LOGIN_ACCT_IN_USE);
+        }
+    }
+}
+```
+
+3.异常处理
+
+```java
+@ExceptionHandler(value = LoginAcctInUseForUpdateException.class)
+public ModelAndView resolveLoginFailedException(LoginAcctInUseForUpdateException exception, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    String viewName = "system-error";
+    return commonResolve(viewName,exception,request,response);
+}
+```
+
+4.前端控制器
+
+```java
+/* 用户更新 start */
+@RequestMapping(value = "/admin/update")
+public String updatePage(@RequestParam(value = "id") Integer id,
+                         @RequestParam(value = "keyword",defaultValue = "") String keyword,
+                         @RequestParam(value = "pageNum",defaultValue = "1") Integer pageNum,
+                         Model model){
+    Admin admin = adminService.getAdmin(id);
+    model.addAttribute("admin",admin);
+    model.addAttribute("keyword",keyword);
+    model.addAttribute("pageNum",pageNum);
+    return "admin-update";
+}
+@RequestMapping(value = "/admin/commit")
+public String updateAdmin(Admin admin,
+                          @RequestParam(value = "keyword",defaultValue = "") String keyword,
+                          @RequestParam(value = "pageNum",defaultValue = "1") Integer pageNum){
+    System.out.println(admin);
+    adminService.update(admin);
+    return "redirect:/admin/users?pageNum="+pageNum+"&keyword="+keyword;
+}
+/* 用户更新 end */
+```
+
+## 需求四：权限管理
 
 
 
