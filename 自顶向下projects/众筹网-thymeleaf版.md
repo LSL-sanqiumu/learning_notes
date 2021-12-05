@@ -1738,7 +1738,447 @@ public String updateAdmin(Admin admin,
 /* 用户更新 end */
 ```
 
-## 需求四：权限管理
+
+
+## RBAC模型
+
+权限控制：“权力”+“限制”，目标就是管理用户行为，保护系统功能。如何进行权力控制？创建资源、权限、角色、用户之间的关联来控制用户对资源的行为。
+
+RBAC（Role-Based Access Control），即基于角色的权限控制。通过角色关联用户，角色关联权限的方式间接赋予用户权限。
+
+RBAC模型可以分为：RBAC0、RBAC1、RBAC2、RBAC3 四种，RBAC0是最简单的，相当于底层逻辑，RBAC1、RBAC2、RBAC3都是以RBAC0为基础的升级。
+
+- RBAC0模型又分为两种：
+  1. 用户和角色是多对一关系，即：一个用户只充当一种角色，一种角色可以有多个用户担当。
+  2. 用户和角色是多对多关系，即：一个用户可同时充当多种角色，一种角色可以有多个用户担当。
+- RBAC1：相对于RBAC0模型，增加了子角色，引入了继承概念，即子角色可以继承父角色的所有权限。
+- RBAC2：基于RBAC0模型，增加了对角色的一些限制：角色互斥、基数约束、先决条件角色等。
+  1. **角色互斥：**同一用户不能分配到一组互斥角色集合中的多个角色，互斥角色是指权限互相制约的两个角色。案例：财务系统中一个用户不能同时被指派给会计角色和审计员角色。
+  2. **基数约束：**一个角色被分配的用户数量受限，它指的是有多少用户能拥有这个角色。例如：一个角色专门为公司CEO创建的，那这个角色的数量是有限的。
+  3. **先决条件角色：**指要想获得较高的权限，要首先拥有低一级的权限。例如：先有副总经理权限，才能有总经理权限。
+  4. **运行时互斥：**例如，允许一个用户具有两个角色的成员资格，但在运行中不可同时激活这两个角色。
+- RBAC3 ：称为统一模型，它包含了RBAC1和RBAC2，利用传递性，也把RBAC0包括在内，综合了RBAC0、RBAC1和RBAC2的所有特点。
+
+## AJAX
+
+
+
+
+
+## 需求四：角色维护功能（大量使用JavaScript）
+
+```mysql
+-- t_role 建表
+CREATE TABLE `t_role` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` char(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+```
+
+使用mybatis逆向工程生成实体类、接口、mysql映射文件等。
+
+### 分页显示
+
+目标：使用ajax请求实现角色信息页的数据显示。
+
+思路：
+
+<img src="img/useAjax.png" style="zoom: 33%;" />
+
+当跳转到指定页面时触发脚本的执行，初始化脚本数据后，通过ajax请求从后端获取到响应的json数据，当响应成功时再取出数据拼接上标签，最后嵌入到HTML页面中完成数据的显示。分页导航条生成函数参考pagination的初始化和回调函数。
+
+代码：
+
+1.后端ajax响应返回json数据
+
+```mysql
+<!-- 关键字查询操作 -->
+<select id="selectRoleByKeyword" resultMap="BaseResultMap" parameterType="java.lang.String">
+  select `id`,`name`
+  from t_role
+  where `name` like concat('%',#{keyword},'%')
+</select>
+```
+
+```java
+// serviceImpl
+@Override
+public PageInfo<Role> getPageInfo(String keyword, Integer pageNum, Integer pageSize) {
+    /* 1.调用pagehelper的静态方法开启分页功能 */
+    PageHelper.startPage(pageNum,pageSize);
+    /* 2.执行查询 */
+    List<Role> roleList = roleMapper.selectRoleByKeyword(keyword);
+    /* 3.封装到pageinfo对象 */
+    return new PageInfo<>(roleList);
+}
+```
+
+```java
+@ResponseBody
+@RequestMapping(value = "/admin/roles")
+public ResultEntity<PageInfo<Role>> getRolesInfo(@RequestParam(value = "keyword",defaultValue = "") String keyword,
+                                       @RequestParam(value = "pageNum",defaultValue = "1") Integer pageNum,
+                                       @RequestParam(value = "pageSize",defaultValue = "15") Integer pageSize,
+                                       ModelMap modelMap){
+    PageInfo<Role> pageInfo = roleService.getPageInfo(keyword, pageNum, pageSize);
+    return ResultEntity.successWithData(pageInfo);
+}
+```
+
+2.id设置
+
+```html
+<!-- 显示数据处 -->
+<tbody id="rolePageBody"></tbody>
+```
+
+```html
+<!-- 分页导航栏处 -->
+<div id="Pagination" class="pagination"></div>
+```
+
+3.脚本
+
+```JavaScript
+<script type="text/javascript" th:inline="javascript">
+   $(function (){
+      window.pageNum=1;
+      window.pageSize=15;
+      window.keyword="";
+   });
+   // 执行my-roles.js中的生成函数
+   generatePage();
+   // 给查询按钮绑定单击函数
+   $("#searchBtn").click(function (){
+      // 更改关键词
+      window.keyword = $("#keywordInput").val();
+      // 再执行分页函数来刷新页面
+      generatePage();
+   });
+</script>
+```
+
+my-roles.js：
+
+```javascript
+// 执行分页，生成分页效果，只要调用该函数就重新加载页面
+function generatePage(){
+    // 1.获取分页数据
+    var pageInfo = getPageInfoRemote();
+    // 2.填充表格
+    fillTableBody(pageInfo);
+}
+// 访问服务器获取pageInfo数据
+function getPageInfoRemote(){
+    // ajax请求返回的json数据-特殊格式的字符串
+    var  ajaxResult = $.ajax({
+        "url":"admin/roles", // 请求目标资源地址
+        "type":"post", // 请求方法
+        "data":{"pageNum":window.pageNum,
+        "pageSize":window.pageSize,
+        "keyword":window.keyword
+        },
+        "async":false,
+        "dataType":"json" // 如何对待服务器返回数据
+    });
+    console.log(ajaxResult);
+    // 判断当前响应状态码是否为 200
+    var statusCode = ajaxResult.status;
+    // 如果当前响应状态码不是 200，说明发生了错误或其他意外情况，显示提示消息，让当前函数停止执行
+    if(statusCode != 200) {
+        layer.msg("失败！响应状态码="+statusCode+" 说明信息="+ajaxResult.statusText);
+        return null;
+    }
+    // 如果响应状态码是 200，说明请求处理成功，获取 pageInfo
+    var resultEntity = ajaxResult.responseJSON;
+    // 从 resultEntity 中获取 result 属性
+    var result = resultEntity.result;
+    // 判断 result 是否成功
+    if(result == "FAILED") {
+        layer.msg(resultEntity.message);
+        return null;
+    }
+    // 确认 result 为成功后获取 pageInfo
+    var pageInfo = resultEntity.data;
+    // 返回 pageInfo
+    return pageInfo;
+}
+// 填充数据
+function fillTableBody(pageInfo){
+
+    // 清楚旧数据
+    $("#rolePageBody").empty();
+    $("#Pagination").empty();
+
+    // 判断数据有效性
+    if(pageInfo == null || pageInfo ==undefined || pageInfo.list == null || pageInfo.list.length == 0){
+        $("#rolePageBody").append("<tr><td colspan='4'>抱歉，没有查询到您要搜索的数据！</td></tr>");
+        return;
+    }
+    // 遍历填充pageInfo的数据进标签
+    for (var i = 0; i < pageInfo.list.length; i++){
+        var role = pageInfo.list[i];
+        var roleId = role.id;
+        var roleName = role.name;
+        var numberTd = "<td>"+(i+1)+"</td>";
+        var checkboxTd = "<td><input type='checkbox'></td>";
+        var roleNameTd = "<td>"+ roleName +"</td>";
+
+        var checkBtn = "<button type='button' class='btn btn-success btn-xs'><i class=' glyphicon glyphicon-check'></i></button>";
+        var pencilBtn = "<button type='button' class='btn btn-primary btn-xs'><i class=' glyphicon glyphicon-pencil'></i></button>";
+        var removeBtn = "<button type='button' class='btn btn-danger btn-xs'><i class=' glyphicon glyphicon-remove'></i></button>";
+
+        var buttonTd = "<td>"+ checkBtn + " " + pencilBtn + " " + removeBtn +"</td>";
+
+        var tr = "<tr>"+ numberTd + checkboxTd + roleNameTd+buttonTd + "</tr>";
+        // 在id为rolePageBody的标签处追加tr的内容
+        $("#rolePageBody").append(tr);
+    }
+    // 调用生成页码导航条的函数
+    generateNavigator(pageInfo);
+}
+// 生成页码导航条，使用到jQuery、pagination
+function generateNavigator(pageInfo){
+    // 获取总记录数
+    var totalRecord = pageInfo.total;
+    // 获取相关属性声明
+    var properties = {
+        "num_edge_entries": 3, // 边缘页数
+        "num_display_entries": 5, // 主体页数
+        "callback": paginationCallBack, // 用户点击“翻页”按钮之后执行翻页操作的回调函数
+        "items_per_page":pageInfo.pageSize, // 每页显示多少
+        current_page: pageInfo.pageNum - 1, // 当前页，pageNum 从 1 开始，必须-1 后才可以赋值
+        prev_text: "上一页",
+        next_text: "下一页",
+    };
+    $("#Pagination").pagination(totalRecord,properties);
+}
+// 生成分页时的回调函数
+function paginationCallBack(pageIndex,JQuery){
+    // 修改window对象的pageNum属性
+    window.pageNum = pageIndex + 1;
+    // 调用分页函数，生成指定页的数据
+    generatePage();
+    // 取消超链接默认行为
+    return false;
+}
+```
+
+
+
+### 关键字搜索
+
+目标：输入关键字来获取数据。
+
+思路：
+
+![](img/roleSearch.png)
+
+代码：
+
+```javascript
+$("#searchBtn").click(function (){
+   // 更改关键词
+   window.keyword = $("#keywordInput").val();
+   // 再执行分页函数来刷新页面
+   generatePage();
+});
+```
+
+### 角色保存
+
+目标：通过在打开的模态框中输入角色名称，执行对新角色的保存。
+
+思路：
+
+<img src="img/saveAjax.png" style="zoom: 50%;" />
+
+代码：
+
+1.引入bootstrap的弹窗，弹窗默认被隐藏。
+
+```html
+<!-- 弹窗 -->
+<div id="addModal" class="modal fade" tabindex="-1" role="dialog" th:fragment="addModel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">尚筹网系统弹窗：添加角色</h4>
+            </div>
+            <div class="modal-body">
+                <form class="form-signin" role="form">
+                    <div class="form-group has-success has-feedback">
+                        <input type="text" name="roleName" class="form-control" id="inputSuccess4" placeholder="请输入角色名称" autofocus>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="saveRoleBtn" type="button" class="btn btn-primary"> 保 存
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+```
+
+2.新增按钮绑定单击事件，弹出弹窗
+
+```JavaScript
+// 4.点击新增按钮打开模态框
+$("#showAddModalBtn").click(function(){
+   $("#addModal").modal("show");
+});
+```
+
+3.弹窗的保存按钮绑定单击事件，用于向后端发送Ajax请求
+
+```JavaScript
+// 5.弹窗的单击响应
+$("#saveRoleBtn").click(function(){
+   // ①获取弹窗中输入的值
+   var roleName = $("#addModal [name=roleName]").val();
+   // ②发送Ajax请求
+   $.ajax({
+      "url": "role/save",
+      "type":"post",
+      "data": { "name": roleName},
+      "dataType": "json",
+      "success":function(response){
+         var result = response.result;
+         if(result == "SUCCESS") {
+            layer.msg("success!");
+            // 将页码定位到最后一页
+            window.pageNum = 99999999;
+            // 重新加载分页数据
+            generatePage();
+         }
+         if(result == "FAILED") {
+            layer.msg("操作失败！"+response.message);
+         }
+      },
+      "error":function(response){
+         layer.msg(response.status+" "+response.statusText);
+      }
+      });
+   // 关闭模态框
+   $("#addModal").modal("hide");
+   // 清理模态框
+   $("#addModal [name=roleName]").val("");
+});
+```
+
+3.后端处理Ajax请求。
+
+```java
+// RoleServiceImpl
+public void addRole(Role role) {
+    roleMapper.insert(role);
+}
+```
+
+```java
+/* 新增角色保存 start */
+@ResponseBody
+@RequestMapping("/role/save")
+public ResultEntity<String> saveRole(Role role) {
+    roleService.addRole(role);
+    return ResultEntity.successWithoutData();
+}
+/* 新增角色保存 edn */
+```
+
+### 更改角色名称
+
+目标：更改角色的名称。
+
+思路：
+
+1.按钮单击事件：弹出更改窗口；
+
+2.实现更改窗口的数据回显；
+
+3.Ajax请求发送角色id和角色名称；
+
+4.后端处理请求。
+
+代码：
+
+```JavaScript
+// 6.单击响应函数：更新角色的
+// $(".pencilBtn").click(function (){
+//     alert("aaa");
+// });
+// 上面直接绑定class会在数据翻页后失效，使用jQuery的on()函数解决
+// on(事件,要绑定,事件响应函数)
+$("#rolePageBody").on("click",".pencilBtn",function (){
+   // 打开弹窗
+   $("#updateModal").modal("show");
+   // 获取显示数据中当前行的角色名称
+   var roleName = $(this).parent().prev().text();
+   // 获取当前角色的id
+   window.roleId = this.id;
+   // 回显
+   $("#updateModal [name=roleName]").val(roleName);
+});
+// 7.更新请求
+$("#updateRoleBtn").click(function (){
+   var roleName = $("#updateModal [name=roleName]").val();
+   $.ajax({
+      "url":"role/update",
+      "type":"post",
+      "data":{
+         "id":window.roleId,
+         "name":roleName
+      },
+      "dataType":"json",
+      "success":function (response){
+         var result = response.result;
+         if(result == "SUCCESS") {
+            layer.msg("操作成功!");
+            // 重新加载分页数据
+            generatePage();
+         }
+      },
+      "error":function (response){
+         layer.msg(response.status+" "+response.statusText);
+      }
+   });
+   $("#updateModal").modal("hide");
+});
+```
+
+```java
+/* 角色更新 start */
+@ResponseBody
+@RequestMapping("/role/update")
+public ResultEntity<String> updateRole(Role role) {
+    roleService.updateRole(role);
+    return ResultEntity.successWithoutData();
+}
+/* 角色更新 edn */
+```
+
+### 删除角色
+
+目标：前端的“单条删除”和“批量删除”在后端合并为同一套操作。合并的依据是：单 条删除时 id 也放在数组中，后端完全根据 id 的数组进行删除。
+
+思路：
+
+![](img/deleteWithAjax.png)
+
+代码：
+
+
+
+
+
+
+
+
 
 
 
