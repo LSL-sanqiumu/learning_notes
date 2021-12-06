@@ -2164,15 +2164,205 @@ public ResultEntity<String> updateRole(Role role) {
 
 ### 删除角色
 
-目标：前端的“单条删除”和“批量删除”在后端合并为同一套操作。合并的依据是：单 条删除时 id 也放在数组中，后端完全根据 id 的数组进行删除。
+目标：前端的“单条删除”和“批量删除”在后端合并为同一套操作。合并的依据是：单条删除时 id 也放在数组中，后端完全根据 id 的数组进行删除。
 
-思路：
+思路：点击事件 ===> 打开模态框 ===> 信息回显、点击事件(ajax请求) ===> 后端接收并处理。
 
 ![](img/deleteWithAjax.png)
 
-代码：
+## 需求五：菜单结构显示
+
+建表与插入数据
+
+```mysql
+CREATE TABLE t_menu(
+id INT(11) NOT NULL AUTO_INCREMENT, pid INT(11), `name` VARCHAR(200), url VARCHAR(200),
+icon VARCHAR(200), PRIMARY KEY (id)
+)ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('1',NULL,'系统权限菜单','glyphicon
+glyphicon-th-list',NULL);
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('2','1',' 控 制 面 板 ','glyphicon
+glyphicon-dashboard','main.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('3','1','权限管理','glyphicon glyphicon
+glyphicon-tasks',NULL);
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('4','3',' 用 户 维 护 ','glyphicon
+glyphicon-user','user/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('5','3',' 角 色 维 护 ','glyphicon
+glyphicon-king','role/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('6','3',' 菜 单 维 护 ','glyphicon
+glyphicon-lock','permission/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('7','1',' 业 务 审 核 ','glyphicon
+glyphicon-ok',NULL);
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('8','7',' 实 名 认 证 审 核 ','glyphicon
+glyphicon-check','auth_cert/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('9','7',' 广 告 审 核 ','glyphicon
+glyphicon-check','auth_adv/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('10','7',' 项 目 审 核 ','glyphicon
+glyphicon-check','auth_project/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('11','1',' 业 务 管 理 ','glyphicon
+glyphicon-th-large',NULL);
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('12','11',' 资 质 维 护 ','glyphicon
+glyphicon-picture','cert/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('13','11',' 分 类 管 理 ','glyphicon
+glyphicon-equalizer','certtype/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('14','11',' 流 程 管 理 ','glyphicon
+glyphicon-random','process/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('15','11',' 广 告 管 理 ','glyphicon
+glyphicon-hdd','advert/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('16','11',' 消 息 模 板 ','glyphicon
+glyphicon-comment','message/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('17','11',' 项 目 分 类 ','glyphicon
+glyphicon-list','projectType/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('18','11',' 项 目 标 签 ','glyphicon
+glyphicon-tags','tag/index.htm');
+INSERT INTO `t_menu` (`id`, `pid`, `name`, `icon`, `url`) VALUES('19','1',' 参 数 管 理 ','glyphicon
+glyphicon-list-alt','param/index.htm');
+```
+
+### 页面显示树形结构
+
+目标：将数据库中查询得到的菜单数据在页面上显示出来。
+
+思路：数据库查询全部→Java 对象组装→页面上使用 zTree 显示。
+
+后端代码：
+
+1.逆向生成`t_menu`的相关类和SQL映射文件，为使用zTree，Menu实体类需要再添加上以下属性：
+
+```java
+public class Menu {
+// 存储子节点的集合，初始化是为了避免空指针异常
+private List<Menu> children = new ArrayList<>();
+// 控制节点是否默认为打开装，设置为 true 表示默认打开
+private Boolean open = true;
+}
+```
+
+```java
+// serviceImpl
+@Override
+public List<Menu> getAll() {
+    return menuMapper.selectByExample(new MenuExample());
+}
+```
+
+2.跳转到页面的前端控制器方法和返回前端需要的数据的控制器方法
+
+```java
+@RequestMapping(value = "/admin/menu/page")
+public String menuPage(){
+
+    return "menu-info";
+}
+
+/* 获取菜单信息 start */
+@ResponseBody
+@RequestMapping("/menu/get/whole/tree")
+public ResultEntity<Menu> getWholeTreeNew() {
+    // 1.查询全部的 Menu 对象
+    List<Menu> menuList = menuService.getAll();
+    // 2.声明一个变量用来存储找到的根节点
+    Menu root = null;
+    // 3.创建 Map 对象用来存储 id 和 Menu 对象的对应关系便于查找父节点
+    Map<Integer, Menu> menuMap = new HashMap<>();
+    // 4.遍历 menuList 填充 menuMap
+    for (Menu menu : menuList) {
+        Integer id = menu.getId();
+        menuMap.put(id, menu);
+    }
+    // 5.再次遍历 menuList 查找根节点、组装父子节点
+    for (Menu menu : menuList) {
+        // 6.获取当前 menu 对象的 pid 属性值
+        Integer pid = menu.getPid();
+        // 7.如果 pid 为 null，判定为根节点
+        if (pid == null) {
+            root = menu;
+            // 8.如果当前节点是根节点，那么肯定没有父节点，不必继续执行
+            continue;
+        }
+        // 9.如果 pid 不为 null，说明当前节点有父节点，那么可以根据 pid 到 menuMap 中查找对应的 Menu 对象
+        Menu father = menuMap.get(pid);
+        // 10.将当前节点存入父节点的 children 集合
+        father.getChildren().add(menu);
+    }
+    // 11.经过上面的运算，根节点包含了整个树形结构，返回根节点就是返回整个树
+    return ResultEntity.successWithData(root);
+}
+/* 获取菜单信息 start */
+```
+
+前端代码：
+
+ajax请求：
+
+```JavaScript
+<script type="text/javascript">
+    // 1.准备生成树形结构的 JSON 数据，数据的来源是发送 Ajax 请求得到
+    $.ajax({
+        "url": "menu/get/whole/tree",
+        "type":"post",
+        "dataType":"json",
+        "success":function(response){
+            var result = response.result;
+            if(result == "SUCCESS") {
+                // 2.创建 JSON 对象用于存储对 zTree 所做的设置
+                var setting = {
+                    "view":{
+                        "addDiyDom":myAddDiyDom,
+                        "addHoverDom": myAddHoverDom,
+                        "removeHoverDom": myRemoveHoverDom
+                    },
+                    "data":{
+                        "key":{"url":"wangwang"} // 找不到该属性就不会跳转
+                    }
+                };
+                // 3.从响应体中获取用来生成树形结构的 JSON 数据
+                var zNodes = response.data;
+                // 4.初始化树形结构
+                $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+            }
+            if(result == "FAILED") {
+                layer.msg(response.message);
+            }
+        }
+    });
+</script>
+```
+
+其他都在my-ztree.js。
+
+### 添加子节点
+
+目标：给当前节点添加子节点，保存到数据库并刷新树形结构的显示。
+
+思路：
+
+![](img/addMenu.png)
 
 
+
+### 更新节点
+
+目标：修改当前节点的基本属性。不更换父节点。
+
+思路：
+
+![](img/updateMenuNode.png)
+
+
+
+### 删除子节点
+
+目标：删除当前节点。
+
+思路：
+
+![](img/removeMenuNode.png)
+
+# 三.权限管理
+
+## 1.用户的角色分配
 
 
 
