@@ -2362,6 +2362,19 @@ ajax请求：
 
 # 三.权限管理
 
+中间表：
+
+```mysql
+CREATE TABLE `project_crowd`.`inner_admin_role` ( 
+    `id` INT NOT NULL AUTO_INCREMENT, 
+    `admin_id` INT, 
+    `role_id` INT, 
+    PRIMARY KEY (`id`) 
+)engine=innodb default ;
+```
+
+
+
 ## 1.用户的角色分配
 
 
