@@ -2,7 +2,7 @@
 
 # spring的配置
 
-使用spring需要导包，导入spring-webmvc的包，由于maven的特性会帮忙把spring-webmvc的所有依赖到的包都导入，其中就包括了spring-core，也就是spring核心包：
+使用spring需要导包，导入spring-webmvc的包，由于maven的特性会帮忙把spring-webmvc的所有依赖到的包都导入，其中就包括了spring-core，也就是spring的核心包：
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
@@ -125,27 +125,30 @@ resources文件夹需要beans.xml等文件，xml约束如下：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    //上面两个是基础IOC的约束，必备
+<beans 
+    //---上面两个是基础IOC的约束，必备
+    xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    //---开启注解管理Bean对象的约束
     xmlns:context="http://www.springframework.org/schema/context"
-    //上面一个是开启注解管理Bean对象的约束
+	//---aop的注解约束
     xmlns:aop="http://www.springframework.org/schema/aop"
-    //aop的注解约束
+    //---事务的约束
     xmlns:tx="http://www.springframework.org/schema/tx"
-    //事务的约束
+    //---基础IOC的约束，必备
     xsi:schemaLocation="http://www.springframework.org/schema/beans 
     http://www.springframework.org/schema/beans/spring-beans.xsd
-    //上面两个是基础IOC的约束，必备
+    
     http://www.springframework.org/schema/context
+    //---开启注解管理Bean对象的约束
     http://www.springframework.org/schema/context/spring-context.xsd
-    //上面一个是开启注解管理Bean对象的约束
+    //---aop的注解约束
     http://www.springframework.org/schema/aop
     http://www.springframework.org/schema/aop/spring-aop.xsd
-    //aop的注解约束
+    //---事务的约束
     http://www.springframework.org/schema/tx
     http://www.springframework.org/schema/tx/spring-tx.xsd">
-    //事务的约束
+    
 </beans>
 
 ```
@@ -1366,7 +1369,7 @@ spring事务管理API：PlatformTransactionManager，代表事务管理器，针
 - @Transactional：为方法加上事务；
 - `ComponentScan(basePackages="")`：注解扫描。
 
-# ---------------------------------------
+# ------------else------------------
 
 # 容器与上下文
 

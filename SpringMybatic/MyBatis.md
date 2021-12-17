@@ -1,6 +1,7 @@
 # MyBatis
 
 ```java
+// jdbc 六步骤
 Connection conn = null;
 PreparedStatement ps =null;
 Result rs = null;
@@ -70,7 +71,7 @@ try{
 </dependency>
 ```
 
-resources目录下的配置：mybatis-config.xml、jdbc.properties、BlogMapper.xml
+resources目录下的配置：mybatis-config.xml（全局配置）、jdbc.properties（配置信息）、BlogMapper.xml（SQL映射文件）
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -111,7 +112,7 @@ jdbc.password=123456
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="BlogMapper">
-    <!--mybatis会自动创建对象并把查询结果放到对象对应的属性上，需要告知resultType-->
+    <!--mybatis会自动创建对象并把查询结果放到对象对应的属性上，需要告知resultType（结果的数据类型）-->
     <!--查询结果集的列名一定要和对象的属性名对应，不对应的时候使用as起别名-->
     <!--select语句的id用于标识，通过id可以使用该SQL语句-->
     <select id="getAll" resultType="com.lsl.domain.Student">
@@ -148,10 +149,6 @@ JDBC缺点：
 
 - sql语句编写在java程序中，sql语句不支持配置，所以就会导致后面要修改语句的时候得重新修改源代码，而重新修改后又得重新编译/重新部署等，并且修改java源代码违反了开闭原则OCP。（互联网分布式架构方面的项目，并发量很大，系统需要不断的优化，各方面的优化，其中有一条非常重要的优化是SQL优化）。------SQL语句可以写到配置文件中，此条确定并不那么主要。
 
-
-
-
-
 # MyBatic使用步骤
 
 ## 一：依赖导入
@@ -182,7 +179,7 @@ JDBC缺点：
 
 
 
-## 二：配置mybatis全局配置文件
+## 二：mybatis全局配置文件
 
 MyBatis可以单独使用，当单独使用的时候需要mybatis-config.xml配置文件，该文件为MyBatis的全局配置文件，主要配置MyBatis的数据源（DataSource）、事务管理（TransactionManager）、以及打印SQL语句、开启二级缓存、设置实体类别名等功能。XxxMapper.xml文件：MyBatis是"半自动"的ORM框架，即SQL语句需要开发者自定义，MyBatis的关注点在POJO与SQL之间的映射关系。那么SQL语句在哪里配置自定义呢？就在Mapper.xml中配置。
 
@@ -194,8 +191,6 @@ MyBatis可以单独使用，当单独使用的时候需要mybatis-config.xml配�
 
 - 通过 XML 文件方式实现，比如我们在 mybatis-config.xml 文件中描述的 XML 文件，用来生成 mapper。
 - 通过注解的方式实现，使用 Configuration 对象注册 Mapper 接口。
-
-
 
 ### **mybatis-config.xml**
 
@@ -961,7 +956,7 @@ public class MainTest {
 
 ### 使用数据库连接池操作
 
-可以通过第三方的依赖来获取数据库连接，进而操作数据库。具体操作见JDBC.md。
+可以通过第三方的依赖来获取数据库连接，进而操作数据库。具体操作见文件：JDBC.md。
 
 ### 使用总结
 
@@ -1020,10 +1015,10 @@ MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它
 
 **spring与mybatis的整合：**
 
-1. 依赖；
+1. 添加依赖；
 2. spring容器配置：数据源、SqlSessionFactory、MapperScannerConfigurer、开启注解扫描、事务配置等；
 3. mybatis的全局配置文件，数据源已经交由spring管理故不需要再配置；
-4. dao、mapper.xml、service的实现。之后初始化spring容器后就可以通过service实现类的对象的行为来实现功能了。
+4. dao、mapper.xml、service的实现。之后**初始化spring容器后**就可以通过service实现类的对象的行为来实现功能了。
 
 **一：导入整合需要的依赖**
 
@@ -1082,8 +1077,8 @@ MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它
         <property name="mapperLocations" value="classpath:mapper.xml"/>
 
     </bean>
-    <!-- 为了解决MapperFactoryBean繁琐而生的，有了MapperScannerConfigurer就不需要我们去为每个映射接口去声明一个bean了。
-	大大缩减了开发的效率 -->
+    <!-- 为了解决MapperFactoryBean繁琐而生的，有了MapperScannerConfigurer就不需要
+	我们去为每个映射接口去声明一个bean了。大大缩减了开发的效率 -->
     <!-- 自动扫描 将Mapper接口生成代理注入到Spring -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
@@ -1096,9 +1091,9 @@ MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它
 
 **三：映射文件、接口、service层**
 
-- 映射文件通过namespace与接口绑定，实现接口方法与SQL语句的绑定；
-- service层，注入mapper映射的接口的实现类并调用实现类方法实现与SQL语句的绑定;
-- 整合后需要根据配置初始化IOC容器，那样才能使用注册进去的组件。
+- 映射文件通过namespace与接口绑定，继而实现接口方法与SQL语句的绑定（接口方法和SQL语句id要一致，方法传入参数的类型、返回值类型要和SQL一致）；
+- service层，面向功能的实现，注入mapper映射的接口的实现类并调用实现类方法来完成需要的功能;
+- 注意：整合后需要根据配置来初始化IOC容器后，才能使用注册进去的组件。
 
 
 

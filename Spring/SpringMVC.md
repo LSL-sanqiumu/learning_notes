@@ -65,7 +65,7 @@ resources目录里的springmvc.xml配置，用来配置视图解析器和注解�
 
 ## 概述
 
-SpringMVC，也叫Spring web MVC，是spring框架的一部分，是轻量级的框架。基于模型-视图-控制器（model、view、controller）模式实现，用于构建灵活、松耦合的web应用程序。学习使用SpringMVC主要在于学习Controller的制作部分，另外还要理解SpringMVC的整个运行逻辑。简单来说，**模型包括了你的数据模型(pojo或bean之类的东西)和业务模型（比如登陆，注册操作等），用来从后台封装数据到页面的，Controller则是将model层可以在view层显示出来。**
+SpringMVC，也叫Spring web MVC，是spring框架的一部分，是轻量级的框架。基于模型-视图-控制器（model、view、controller）模式实现，用于构建灵活、松耦合的web应用程序。学习使用SpringMVC主要在于学习Controller的制作部分，另外还要理解SpringMVC的整个运行逻辑。简单来说，**模型包括了你的数据模型(pojo或bean之类的东西)和业务模型（比如登陆，注册操作等）），用来从后台封装数据到页面的；Controller则是将model层可以在view层显示出来。**
 
 对于springMVC的学习，需要掌握中央调度器、前端控制器、视图解析器，理解各自的作用，知道它们的一个工作流程，要熟练使用前端控制器的处理方法（请求处理和请求参数的接收，以及返回值），而方法的使用的关键就是各种注解了。
 
@@ -103,7 +103,7 @@ springmvc的使用步骤：
     </servlet-mapping>
 ```
 
-在tomcat服务器启动后创建DispatcherServlet对象实例，为什么要这样？创建该实例的过程中会同时创建springmvc容器对象，并读取springmvc的配置文件，把这个配置文件中对象都创建好，当用户发起请求就可直接使用controller对象。DispatcherServlet对象就是一个servlet，当其创建时执行init()方法，会进行初始化
+在tomcat服务器启动后创建DispatcherServlet对象实例，为什么要这样？创建该实例的过程中会同时创建springmvc容器对象，并读取springmvc的配置文件，把这个配置文件中对象都创建好，当用户发起请求就可直接使用controller对象。DispatcherServlet对象就是一个servlet，当其创建时执行init()方法，会进行初始化：
 
 ```java
 init(){
@@ -207,7 +207,7 @@ springmvc.xml里配置好后：mv.setViewName("show")  ===>  return mv后相当�
     <context:component-scan base-package="com.lsl.crowd.controller"/>
     <!-- 视图器的配置，为了简化控制器的视图路径 -->
 
-    <!-- thymeleaf的视图解析器 会与冲突ContentNegotiatingViewResolver-->
+    <!-- thymeleaf的视图解析器 会与ContentNegotiatingViewResolver冲突 -->
     <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
         <property name="characterEncoding" value="UTF-8"/>
         <property name="templateEngine" ref="templateEngine"/>
@@ -765,9 +765,9 @@ springmvc采用全局统一的异常处理，通过面向切面编程思想把�
 - 拦截器是全局的，可以对多个Controller做拦截，可以有多个拦截器；
 - 常用于：用户登录处理、权限检查、记录日志；
 - 拦截器执行时间（三个时间点都会执行，对应有着三个方法）：
-  - 在controller方法执行前执行拦截；
-  - controller方法执行后执行拦截；
-  - 请求处理完成后执行拦截。
+  - 在controller方法执行前执行拦截----preHandle()；
+  - controller方法执行后执行拦截---postHandle()；
+  - 请求处理完成后执行拦截---afterCompletion()。
 
 **拦截器的使用：**
 
@@ -808,20 +808,20 @@ public void afterCompletion(HttpServletRequest request, HttpServletResponse resp
 
 1. 第一个：预处理方法，在controller方法执行前（发起请求后）执行，项目的入口、门户，返回false将截止； Object handler是被拦截的controller对象该方法常用来获取用户请求信息、验证请求是否符合要求、验证用户是否登录、验证用户是否有权限访问某个链接地址等；如果验证失败就截断请求，请求不能被处理；
 2. 第二个：后处理方法，在controller方法执行后执行，ModelAndView是controller方法返回值，修改ModelAndView中的视图和参数能影响到最后的执行结果；该方法主要用来对原来的结果进行二次修改；
-3. 第三个：最后执行的方法，请求处理完成后执行（框架规定，视图处理完成后并对视图执行了forward后，就认为请求处理完成），Exception是程序中出现的异常；该方法一般做资源回收工作，程序请求过程中创建的对象在这里可以删除，回收占用内存。
+3. 第三个：最后执行的方法，请求处理完成后执行（框架规定，视图处理完成后并对视图执行了forward（转发）后，就认为请求处理完成），Exception是程序中出现的异常；该方法一般做资源回收工作，程序请求过程中创建的对象在这里可以删除，回收占用内存。
+
+**拦截器的执行顺序：**
 
 ```java
-//一个拦截器执行顺序
+// 一个拦截器执行顺序
 1.拦截器的preHandle方法
 2.===controller的一个方法===
 3.拦截器的postHandle方法
 4.拦截器的afterCompletion方法
 ```
 
-
-
 ```java
-//多个拦截时的执行顺序，1、2的preHandle都返回true时
+// 有多个拦截时的执行顺序，1、2的preHandle()都返回true时
 1.拦截器1的preHandle方法
 2.拦截器2的preHandle方法
 3.===controller的一个方法===
@@ -832,20 +832,20 @@ public void afterCompletion(HttpServletRequest request, HttpServletResponse resp
 ```
 
 ```java
-//多个拦截时的执行顺序，1的preHandle返回true，2的返回false
+// 有多个拦截：拦截器1的preHandle()返回true，拦截器2的返回false时的执行顺序
 111拦截器的preHandle方法
 222拦截器的preHandle方法
 111拦截器的afterCompletion方法
 ```
 
 ```java
-//多个拦截时的执行顺序，1preHandle返回false，
+//多个拦截时的执行顺序，拦截器1的preHandle()返回false，
 111拦截器的preHandle方法
 ```
 
-结论：多个拦截器就像一个链条串在一起，只要有一个的preHandle返回false，controller方法就不能执行。
+**结论：多个拦截器就像一个链条串在一起，只要有一个的preHandle()返回false，controller方法就不能执行。**
 
-拦截器、过滤器的区别：
+**拦截器、过滤器的区别：**
 
 - 过滤器是servlet中实现Filter接口的对象，拦截器是框架中实现HandlerInterceptor接口的对象；
 - 过滤器是tomcat服务器创建的对象，拦截器是springmvc容器中创建的对象；

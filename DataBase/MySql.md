@@ -58,7 +58,7 @@ MySQL 是最流行的关系型数据库管理系统之一，在 WEB 应用方面
      datadir=D:\Environment\mysql-5.7.34\data\
      #data文件夹自动生成，存放数据信息
      port=3306
-     ship-grant-tables
+     skip-grant-tables
      ```
 
 3. 安装：启动管理员模式下的cmd，进入bin目录：`cd /d D:\Environment\mysql-5.7.34\bin`，执行`mysqld -install`安装服务；

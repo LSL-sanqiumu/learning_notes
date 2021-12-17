@@ -302,7 +302,7 @@ class Node{
 
 ## 单向链表
 
-单向链表的节点只能单向指向下一个节点。
+单向链表的节点只能单向指向下一个节点，也可以通过节点存储的信息确定存储的顺序。
 
 **1.确定节点要存储的信息：**
 
@@ -318,10 +318,10 @@ class HeroNode {
 }
 ```
 
-**2.链表的实现：**
+**2.链表功能的实现：**
 
 ```java
-// 单向链表
+// 这是一个单向链表
 class SingleLinkedList {
     // 链表头部不存储数据，只用于定位首个节点有无
     private HeroNode head = new HeroNode(0,"","");
@@ -459,6 +459,136 @@ public void delete(int no) {
 
 
 ## 双向链表
+
+双向链表即在单链表的每个节点，再设置一个指向其前驱节点的指针域。
+
+**1.确定节点要存储的信息**
+
+```java
+class Node {
+    // 节点要存储的信息
+    public int no;
+    public String name;
+    public String nickname;
+    // 指向下一个节点
+    public Node next;
+    // 指向前一个节点
+    public Node pre;
+}
+```
+
+**2.链表功能的实现**
+
+```java
+public class DoubleLinkedList {
+    // 链表头
+    private Node head = new Node(0,"","");
+    // 返回头节点
+    public Node returnHeadNode(){
+        return head;
+    }
+```
+
+功能1：显示全部节点信息
+
+```java
+public void show(){
+    if (head.next == null){
+        System.out.println("链表为空！");
+        return ;
+    }
+    Node temp = head.next;
+    while (true){
+        if (temp == null){
+            break;
+        }
+        System.out.println(temp);
+        temp = temp.next;
+    }
+}
+```
+
+功能2：添加节点进链表
+
+```java
+public void add(Node node){
+    Node temp = head;
+    while (true){
+        if (temp.next == null){
+            break;
+        }
+        temp = temp.next;
+    }
+    temp.next = node;
+    node.pre = temp;
+}
+```
+
+功能3：修改指定节点
+
+```java
+public void update(Node node){
+    if (head.next == null){
+        System.out.println("链表为空！");
+        return;
+    }
+    Node temp = head.next;
+    boolean flag = false;
+    // 遍历寻找要修改的节点
+    while (true){
+        if (temp == null){
+            System.out.println("已经遍历完全部链表！");
+            break;
+        }
+        if (temp.no == node.no){
+            flag = true;
+            break;
+        }
+        temp = temp.next;
+    }
+    if (flag){
+        temp.name = node.name;
+        temp.nickname = node.nickname;
+    }else {
+        System.out.println("不存在");
+    }
+}
+```
+
+功能4：删除指定节点
+
+```java
+public void delete(int no) {
+    Node temp = head.next;
+    boolean flag =false;
+    if (temp.next == null){
+        System.out.println("链表为空！");
+        return;
+    }
+    // 遍历：找到要删除的节点 temp.next
+    while (true){
+        if (temp == null){
+            System.out.println("已经遍历全部节点！");
+            break;
+        }
+        if (temp.no == no){
+            flag = true;
+            break;
+        }
+        temp = temp.next;
+    }
+    if (flag){
+        temp.pre.next = temp.next;
+        if (temp.next != null){
+            temp.next.pre = temp.pre;
+        }
+    }else {
+        System.out.println("要删除的节点不存在！");
+    }
+}
+```
+
+## 环形链表
 
 
 

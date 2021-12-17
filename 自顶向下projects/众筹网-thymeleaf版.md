@@ -2360,9 +2360,13 @@ ajax请求：
 
 ![](img/removeMenuNode.png)
 
+
+
 # 三.权限管理
 
-中间表：
+## 1.用户的角色分配
+
+用户和角色关联：使用一个独立的表，表中存储用户id和对应的角色id。中间表如下：
 
 ```mysql
 CREATE TABLE `project_crowd`.`inner_admin_role` ( 
@@ -2370,12 +2374,69 @@ CREATE TABLE `project_crowd`.`inner_admin_role` (
     `admin_id` INT, 
     `role_id` INT, 
     PRIMARY KEY (`id`) 
-)engine=innodb default ;
+)engine=innodb default charset=utf8;
+```
+
+目标：实现中间表的增删查，也就完成了角色的分配。
+
+### a：页面显示-查
+
+
+
+### b：为用户添加角色-增
+
+
+
+
+
+### c：用户角色移除-删
+
+
+
+
+
+## 2.角色的权限分配
+
+权限：
+
+```mysql
+CREATE TABLE `t_auth` (
+`id` INT(11) NOT NULL AUTO_INCREMENT, 
+`name` VARCHAR(200) DEFAULT NULL, 
+`title` VARCHAR(200) DEFAULT NULL,
+`category_id` INT(11) DEFAULT NULL, 
+PRIMARY KEY (`id`)
+)ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(1,'','用户模块',NULL);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(2,'user:delete','删除',1);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(3,'user:get','查询',1);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(4,'','角色模块',NULL);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(5,'role:delete','删除',4);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(6,'role:get','查询',4);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(7,'role:add','新增',4);
 ```
 
 
 
-## 1.用户的角色分配
+创建角色到权限之间关联关系的中间表：
+
+```mysql
+CREATE TABLE `project_crowd`.`inner_role_auth` ( 
+`id` INT NOT NULL AUTO_INCREMENT, 
+`role_id` INT, 
+`auth_id` INT, 
+PRIMARY KEY (`id`) 
+)ENGINE=INNODB DEFAULT CHARSET=utf8;
+```
+
+
+
+
+
+
+
+
 
 
 
