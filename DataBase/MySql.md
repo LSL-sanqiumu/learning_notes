@@ -84,24 +84,54 @@ MySQL 是最流行的关系型数据库管理系统之一，在 WEB 应用方面
 
 ## 安装MySQL8:
 
-安装了MySQL5的情况下安装MySQL8，先停止MySQL服务。
+安装了MySQL5的情况下安装MySQL8，先停止启动了的MySQL服务。
 
-1. 数据库主目录创建my.ini文件，用来配置data目录；
-2. 管理员模式在命令行进入MySQL的bin目录，执行`mysqld --initialize --console`，该命令会初始化my.ini文件，构建data目录以及其他设置。用鼠标选中界面中root@localhost:后的（全部字符）密码，按ctrl+c复制，`LJ>Fusj7QHKs`。 **这里注意，如果后续my.ini文件有修改，而重启mysql后不生效，需要删除data目录，删除mysql服务，命令`sc delete 服务名`，然后重新执行该命令**；
-3. 安装：`mysqld --install` mysql8；（安装并把MySQL服务名定义为mysql8）
-4. 打开注册表，找到HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\mysql8,修改ImagePath参数，更正mysql2服务相关路径（修改imagePath），`D:\Environment\mysql-8.0.26-winx64\bin\mysqld MySQL8`。
+ my.ini 文件内容：
+
+```ini
+# 设置3306端口
+port=3306
+# 设置mysql的安装目录D:\Environment\mysql-8.0.26-winx64
+basedir=D:\Environment\mysql-8.0.26-winx64
+# 设置mysql数据库的数据的存放目录
+datadir=D:\Environment\mysql-8.0.26-winx64\data
+# 允许最大连接数
+max_connections=200
+# 允许连接失败的次数。
+max_connect_errors=10
+# 服务端使用的字符集默认为UTF8
+character-set-server=utf8mb4
+# 创建新表时将使用的默认存储引擎
+default-storage-engine=INNODB
+# 默认使用“mysql_native_password”插件认证
+#mysql_native_password
+default_authentication_plugin=mysql_native_password
+sql_mode= STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+[mysql]
+# 设置mysql客户端默认字符集
+#  utf8 最多只能存 3 字节长度的字符，不能存放 4 字节的生僻字或者表情符号，因此打算迁移到 utf8mb4。
+default-character-set=utf8mb4
+[client]
+# 设置mysql客户端连接服务端时默认使用的端口,3307会怎样？是不是要修改防火墙策略？
+port=3306
+default-character-set=utf8mb4
+```
+
+1. 数据库管理系统主目录创建my.ini文件，用来配置data目录；
+2. 管理员模式运行命令行，并进入MySQL的bin目录，执行`mysqld --initialize --console`；
+   - 作用：该命令会根据my.ini文件进行数据库的初始化，构建data目录以及配置好其他设置。
+   - 保存密码：用鼠标选中命令行界面中出现的`root@localhost:`后的（全部字符）密码，按ctrl+c复制（例`LJ>Fusj7QHKs`）。 
+   - **这里注意，如果后续my.ini文件有修改，而重启mysql后没有生效，那就需要删除data目录，删除mysql服务（命令`sc delete 服务名`），然后重新执行`mysqld --initialize --console`**；
+3. 安装：`mysqld --install` mysql8；（执行安装并把MySQL服务的名字定义为`mysql8`，Windows系统下大小写是不区分的）
+4. 打开注册表，找到HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\mysql8，修改ImagePath参数，更正`mysql8`服务相关路径（修改imagePath为`D:\Environment\mysql-8.0.26-winx64\bin\mysqld MySQL8`）。
 5. 启动服务：`net start mysql8`；
-6. 登陆：`mysql -u root -p`，如果出现错误，`ERROR 1045 (28000): Access denied for user ‘root’@‘localhost’ (using password: YES)`，则先关掉服务器`net stop mysql8`，执行下面操作：
-   - 在my.ini所在目录新建一个txt文件，文件内容为`ALTER USER 'root'@'localhost' IDENTIFIED BY '123456';`；
+6. 登陆：`mysql -u root -p`（密码为第2步时复制的字符），如果出现错误：`ERROR 1045 (28000): Access denied for user ‘root’@‘localhost’ (using password: YES)`，则先执行`net stop mysql8`关掉服务，然后执行下面操作：
+   - 在my.ini所在目录新建一个`.txt`为后缀的文件，文件内容为`ALTER USER 'root'@'localhost' IDENTIFIED BY '123456';`；
    - 然后执行`mysqld --init-file=D:\Environment\mysql-8.0.26-winx64\mysqlc.txt --console`；
-   - 执行完毕后关掉DOS窗口，再管理员运行一个新DOS窗口，打开服务；
+   - 执行完毕后关掉DOS窗口，再管理员模式运行一个新的DOS窗口，执行`net start mysql8`打开服务；
    - 再执行登陆，登陆密码为123456。
-7. 安装完成去修改密码，执行：`alter user root@localhost identified by 'root'; `enter键后成功改密码为root，这里sql语句后面的分号不要丢；
-8. 设置常用的服务属性为自动，不常用的为手动，需要用哪个就打开哪个，记得要关闭一个再开启另一个。
-
-
-
-
+7. 安装完成去修改密码，执行：`alter user root@localhost identified by 'root'; `执行后就把密码改为了`root`，这里sql语句后面的分号不要丢；
+8. 服务设置：因为已经有了`mysql5`的服务，设置常用的一个服务的属性为自动，不常用的就设为手动，需要用哪个版本数据库就打开哪个服务，记得要关闭一个再开启另一个。
 
 ## 安装SQLyog
 
@@ -139,8 +169,6 @@ exit; #退出数据库管理系统
 /**/ #多行注释
 
 ```
-
-# ----------------------main---------------------
 
 # 表
 
