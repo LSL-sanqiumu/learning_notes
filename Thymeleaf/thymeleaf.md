@@ -17,6 +17,15 @@
     <artifactId>thymeleaf-spring5</artifactId>
     <version>3.0.11.RELEASE</version>
 </dependency>
+<!-- servlet容器相关依赖 start -->
+<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
+</dependency>
+<!-- servlet容器相关依赖 end -->
 ```
 
 配置thymeleaf视图解析器：

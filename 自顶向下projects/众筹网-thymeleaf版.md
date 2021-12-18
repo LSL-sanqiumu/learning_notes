@@ -2360,8 +2360,6 @@ ajax请求：
 
 ![](img/removeMenuNode.png)
 
-
-
 # 三.权限管理
 
 ## 1.用户的角色分配
@@ -2375,7 +2373,10 @@ CREATE TABLE `project_crowd`.`inner_admin_role` (
     `role_id` INT, 
     PRIMARY KEY (`id`) 
 )engine=innodb default charset=utf8;
+-- 一个用户可以是多个角色
 ```
+
+![](img/用户角色.png)
 
 目标：实现中间表的增删查，也就完成了角色的分配。
 
@@ -2417,7 +2418,9 @@ INSERT INTO t_auth(id,`name`,title,category_id) VALUES(6,'role:get','查询',4);
 INSERT INTO t_auth(id,`name`,title,category_id) VALUES(7,'role:add','新增',4);
 ```
 
-
+- name 字段：给资源分配权限或给角色分配权限时使用的具体值，将来做权限验证也是使用 name 字段的值来进行比对。建议使用英文。 name 字段中值的格式：中间的“:”没有任何特殊含义。不论是我们自己写的代码 还是将来使用的框架都不会解析“:”。如果不用“:”，用“%、@、&、*、-”等等这样 的符号也都是可以的。
+- title 字段：在页面上显示，让用户便于查看的值。建议使用中文。 
+- category_id 字段：关联到当前权限所属的分类。这个关联不是到其他表关联，而是就在当前表内部进行关联，关联其他记录。所以说，t_auth 表中是依靠 category_id 字段建立了“节点”之间的父子关系。
 
 创建角色到权限之间关联关系的中间表：
 
@@ -2430,9 +2433,174 @@ PRIMARY KEY (`id`)
 )ENGINE=INNODB DEFAULT CHARSET=utf8;
 ```
 
+### 为角色添加权限
 
 
 
+
+
+
+
+## 3.权限实现
+
+### 1.SpringSecurity环境配置
+
+1.atcrowdfunding02-admin-component里加入springsecurity的依赖：
+
+```xml
+<!-- SpringSecurity start -->
+    <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-web -->
+    <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-web</artifactId>
+    </dependency>
+    <!-- SpringSecurity 配置 -->
+    <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-config</artifactId>
+    </dependency>
+    <!-- SpringSecurity 标签库 -->
+    <!-- https://mvnrepository.com/artifact/javax.servlet/jstl -->
+    <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-taglibs</artifactId>
+    </dependency>
+    <!-- SpringSecurity end -->
+</dependencies>
+```
+
+2.web.xml配置DelegatingFilterProxy：
+
+```xml
+<!-- SpringSecurity 的 Filter start-->
+<filter>
+  <filter-name>springSecurityFilterChain</filter-name>
+  <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+</filter>
+<filter-mapping>
+  <filter-name>springSecurityFilterChain</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+<!-- SpringSecurity 的 Filter end-->
+```
+
+SpringSecurity会根据DelegatingFilterProxy的filter-name到IOC容器中查找所需要的bean，所以该filter-name必须是`springSecurityFilterChain`。
+
+3.com.lsl.crowd.mvc.config包下添加配置类：
+
+```java
+@Configuration
+// 启用web环境下权限控制功能
+@EnableWebSecurity
+public class WebAppSecurityConfig extends WebSecurityConfigurerAdapter {
+
+}
+```
+
+4.IOC容器加载配置类
+
+如果使用SpringMVC的IOC容器加载：
+
+- SpringSecurity会对controller处理的路径都生效，也就是说如果要对浏览器请求进行权限控制就使用SpringMVC来扫描WebAppSecurityConfig配置类。
+- 衍生问题：DelegatingFilterProxy的初始化时需要到IOC容器查找到一个bean，而这个bean所在的容器有扫描了配置类的IOC容器决定，也就是说哪个IOC容器扫描了配置类，filter需要的bean就在哪个IOC容器。
+
+会出现该bean找不到的异常，提供了两种解决方案，一种是更改源码，这里使用另一种——由springmvc加载所有的IOC容器配置，也就是只创建一个IOC容器，步骤如下：
+
+1. web.xml中注释掉以下：
+
+   ```xml
+   <!-- IOC容器配置定位 -->
+   	<!--  <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:spring-init-*.xml</param-value>
+    </context-param>-->
+   <!-- 注册spring的监听器 作用是加载Spring的配置文件，根据Spring的配置文件初始化IOC容器-->
+   	<!--  <listener>
+     	<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+   	 </listener>-->
+     <!--注册字符集过滤器-->
+   ```
+
+2. 中央调度器配置的param-value更改为如下：
+
+   ```xml
+   <param-value>classpath:spring-*.xml</param-value>
+   ```
+
+P230-P235
+
+### 2.放行资源
+
+WebAppSecurityConfig配置类中设置。
+
+**目标1：放行登录页和静态资源**
+
+```java
+@Override
+protected void configure(HttpSecurity security) throws Exception {
+
+    security
+            .authorizeRequests() // 对请求进行授权
+            .antMatchers("/") // 针对登录页
+            .permitAll()               // 无条件访问
+            .antMatchers("/static/**") // 针对静态资源
+            .permitAll()
+            .anyRequest()
+            .authenticated();
+}
+```
+
+目标2：登录测试
+
+1. 把admin-login.html页面的表单的action属性值更改为`/security/admin/login`，再进行配置。
+
+2. 把spring-web-mvc.xml中的拦截器配置去掉。
+
+3. 把_fragments.html中的`th:text="${#session.getAttribute('loginAdmin').getUserName}"`全部去掉。
+
+   ```html
+   <span th:text="${#session.getAttribute('loginAdmin').getUserName}">张三</span> 
+   ```
+
+4. 配置类中：
+
+   ```java
+   @Configuration
+   // 启用web环境下权限控制功能
+   @EnableWebSecurity
+   public class WebAppSecurityConfig extends WebSecurityConfigurerAdapter {
+       @Override
+       protected void configure(AuthenticationManagerBuilder builder) throws Exception {
+   
+           builder.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder()).withUser("333").password(new BCryptPasswordEncoder().encode("123456")).roles("ADMIN");
+           // 临时使用内存方式测试代码
+       }
+       @Override
+       protected void configure(HttpSecurity security) throws Exception {
+   
+           security
+                   .authorizeRequests() // 对请求进行授权
+                   .antMatchers("/") // 针对登录页
+                   .permitAll()               // 无条件访问
+                   .antMatchers("/static/**") // 针对静态资源
+                   .permitAll()
+                   .anyRequest() // 其他任意请求
+                   .authenticated()  // 认证后访问
+                   .and()
+                   .csrf()  // 防跨站请求伪造功能
+                   .disable() // 禁用
+                   .formLogin() // 开启表单功能
+                   .loginPage("/") // 指定登录页面
+                   .loginProcessingUrl("/security/admin/login") // 指定处理登录请求的地址
+                   .defaultSuccessUrl("/admin/page/main") // 登录成功要去的页面
+                   .usernameParameter("loginAcct") // 账号请求参数名
+                   .passwordParameter("userPswd") // 密码请求参数
+                   ;
+       }
+   }
+   ```
+
+5. 
 
 
 
