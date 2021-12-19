@@ -262,7 +262,7 @@ create database IF NOT EXISTS `project_crowd1` CHARACTER SET utf8 COLLATE utf8_g
 create table if not exists `t_admin`(
 id int not null auto_increment comment '主键', 
 login_acct varchar(255) not null comment '登录账号',
-user_pswd char(32) not null comment '登录密码',
+user_pswd char(255) not null comment '登录密码',
 user_name varchar(255) not null comment '昵称',
 email varchar(255) not null comment '邮件地址',
 create_time char(19) comment '创建时间', 
@@ -2550,7 +2550,7 @@ protected void configure(HttpSecurity security) throws Exception {
 }
 ```
 
-目标2：登录测试
+**目标2：登录测试**
 
 1. 把admin-login.html页面的表单的action属性值更改为`/security/admin/login`，再进行配置。
 
@@ -2602,25 +2602,197 @@ protected void configure(HttpSecurity security) throws Exception {
 
 5. 
 
+**目标3：退出登录**
 
+在目标2的基础上加上：
 
+```java
+.and()
+.logout() // 开启退出功能
+.logoutUrl("/security/admin/logout") // 指定退出登录地址
+.logoutSuccessUrl("/") // 退出成功后前往的地址
+```
 
+### 3.具体实现
 
+![](img/securityimpl.png)
 
+**操作1：根据admin的ID查询已分配的角色**
 
+已经写好。
 
+**操作2：根据admin的id查询已分配的权限**
 
+```java
+// auth的接口
+List<String> getAssignedAuthNameByAdminId(Integer adminId);
+```
 
+```xml
+<select id="getAssignedAuthNameByAdminId" resultType="string">
+  select t_auth.name
+  from t_auth
+      left join inner_role_auth on t_auth.id=inner_role_auth.auth_id
+      left join inner_admin_role on inner_admin_role.id = inner_role_auth.role_id
+  where inner_admin_role.id=#{adminId} and t_auth.name != '' and t_auth.name is not null
+</select>
+```
 
+**操作3：创建SecurityAdmin类继承org.springframework.security.core.userdetails.User:**
 
+```java
+public class SecurityAdmin extends User {
 
+    private static final long serialVersionUID = 1l;
+    private Admin originalAdmin;
+    // 传入原始的Admin对象，authorities：创建角色、权限信息的集合
+    public SecurityAdmin(Admin originalAdmin, List<GrantedAuthority> authorities) {
+        super(originalAdmin.getLoginAcct(),originalAdmin.getUserPswd(),authorities);
+        this.originalAdmin = originalAdmin;
+    }
 
+    public Admin getOriginalAdmin() {
+        return originalAdmin;
+    }
 
+    public void setOriginalAdmin(Admin originalAdmin) {
+        this.originalAdmin = originalAdmin;
+    }
+}
+```
 
+**操作4：根据账户查询Admin，在AdminServiceImpl创建方法**
 
+```java
+public Admin getAdminByLoginAcct(String username) {
 
+    AdminExample adminExample = new AdminExample();
+    AdminExample.Criteria criteria = adminExample.createCriteria();
+    criteria.andLoginAcctEqualTo(username);
+    List<Admin> list = adminMapper.selectByExample(adminExample);
+    return list.get(0);
+}
+```
 
+操作5：创建CrowdUserDetailsService类
 
+```java
+@Component
+public class CrowdUserDetailsService implements UserDetailsService {
+    @Autowired
+    private AdminService adminService;
+    @Autowired
+    private RoleService roleService;
+    @Autowired
+    private AuthService authService;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // 1.根据账户名称查询Admin对象
+        Admin admin = adminService.getAdminByLoginAcct(username);
+        // 2.获取admin的id
+        Integer adminId = admin.getId();
+        // 3.根据id查询角色信息
+        List<Role> assignedRoleList = roleService.getAssignedRole(adminId);
+        // 4.根据admin的id查询权限信息
+        List<String> authNameList = authService.getAssignedAuthNameByAdminId(adminId);
+        // 5.创建集合的对象用来存储GrantedAuthority
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        // 6.遍历assignedRoleList存入角色信息
+        for (Role role : assignedRoleList) {
+            // 前缀不要忘
+            String roleName = "ROLE_" + role.getName();
+            SimpleGrantedAuthority authority = new SimpleGrantedAuthority(roleName);
+
+            authorities.add(authority);
+        }
+        // 7.遍历authNameList来存入权限信息
+        for (String authName : authNameList) {
+            // 前缀不要忘
+            SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authName);
+
+            authorities.add(simpleGrantedAuthority);
+        }
+        // 8.封装SecurityAdmin
+        return new SecurityAdmin(admin,authorities);
+    }
+}
+```
+
+**操作6：	在配置类中使用userDetailsService**
+
+```java
+@Autowired
+private UserDetailsService userDetailsService;
+@Override
+protected void configure(AuthenticationManagerBuilder builder) throws Exception {
+    // 临时使用内存方式测试代码
+    //builder.inMemoryAuthentication().passwordEncoder(new 				BCryptPasswordEncoder()).withUser("333").password(new BCryptPasswordEncoder().encode("123456")).roles("ADMIN");
+    // 正式功能：获取数据库数据进行认证
+    builder.userDetailsService(userDetailsService);
+
+}
+```
+
+运行会出现错误：`There is no PasswordEncoder mapped for the id "null"`，操作7时解决。
+
+错误原因：Spring security 5.0中新增了多种加密方式,也改变了默认的密码格式.
+
+```java
+// 解决方式
+auth.userDetailsService(userService).passwordEncoder(new BCryptPasswordEncoder());
+```
+
+**操作7：加密**
+
+WebAppSecurityConfig配置类准备BCryptPasswordEncoder对象：
+
+```java
+@Bean
+public BCryptPasswordEncoder getPasswordEncoder(){
+    return new BCryptPasswordEncoder();
+}
+```
+
+configure方法中修改成：
+
+```java
+builder.userDetailsService(userDetailsService).passwordEncoder(getPasswordEncoder());
+```
+
+此时就解决了`There is no PasswordEncoder mapped for the id "null"`的异常，注意保存的密码也应该是BCryptPasswordEncoder方式加密保存。
+
+**操作8：修改保存Admin时的密码加密方式**
+
+AdminServiceImpl中注入：
+
+```
+@Autowired
+private BCryptPasswordEncoder passwordEncoder;
+```
+
+修改AdminServiceImpl中的saveAdmin密码加密部分，如下，注释部分的代码为修改前的加密的代码：
+
+```java
+// 密码加密
+// String password = CrowdUtil.md5(admin.getUserPswd());
+// 使用spring security后的加密方式
+String password = passwordEncoder.encode(admin.getUserPswd());
+```
+
+测试：获得密码的加密字符存储进数据库，再进行测试
+
+```java
+public static void main(String[] args) {
+	BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    String encode = passwordEncoder.encode("444");
+	System.out.println(encode);
+   }
+```
+
+### 4.用户昵称的显示
+
+不会。
 
 
 
