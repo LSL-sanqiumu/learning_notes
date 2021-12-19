@@ -2412,10 +2412,11 @@ PRIMARY KEY (`id`)
 INSERT INTO t_auth(id,`name`,title,category_id) VALUES(1,'','用户模块',NULL);
 INSERT INTO t_auth(id,`name`,title,category_id) VALUES(2,'user:delete','删除',1);
 INSERT INTO t_auth(id,`name`,title,category_id) VALUES(3,'user:get','查询',1);
-INSERT INTO t_auth(id,`name`,title,category_id) VALUES(4,'','角色模块',NULL);
-INSERT INTO t_auth(id,`name`,title,category_id) VALUES(5,'role:delete','删除',4);
-INSERT INTO t_auth(id,`name`,title,category_id) VALUES(6,'role:get','查询',4);
-INSERT INTO t_auth(id,`name`,title,category_id) VALUES(7,'role:add','新增',4);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(4,'user:save','保存',1);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(5,'','角色模块',NULL);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(6,'role:delete','删除',5);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(7,'role:get','查询',5);
+INSERT INTO t_auth(id,`name`,title,category_id) VALUES(8,'role:add','新增',5);
 ```
 
 - name 字段：给资源分配权限或给角色分配权限时使用的具体值，将来做权限验证也是使用 name 字段的值来进行比对。建议使用英文。 name 字段中值的格式：中间的“:”没有任何特殊含义。不论是我们自己写的代码 还是将来使用的框架都不会解析“:”。如果不用“:”，用“%、@、&、*、-”等等这样 的符号也都是可以的。
@@ -2613,7 +2614,7 @@ protected void configure(HttpSecurity security) throws Exception {
 .logoutSuccessUrl("/") // 退出成功后前往的地址
 ```
 
-### 3.具体实现
+### 3.权限分配环境准备
 
 ![](img/securityimpl.png)
 
@@ -2628,13 +2629,15 @@ protected void configure(HttpSecurity security) throws Exception {
 List<String> getAssignedAuthNameByAdminId(Integer adminId);
 ```
 
+AuthMapper.xml：
+
 ```xml
-<select id="getAssignedAuthNameByAdminId" resultType="string">
+<select id="getAssignedAuthNameByAdminId" resultType="java.lang.String">
   select t_auth.name
   from t_auth
-      left join inner_role_auth on t_auth.id=inner_role_auth.auth_id
-      left join inner_admin_role on inner_admin_role.id = inner_role_auth.role_id
-  where inner_admin_role.id=#{adminId} and t_auth.name != '' and t_auth.name is not null
+  left join inner_role_auth on t_auth.id=inner_role_auth.auth_id
+  left join inner_admin_role on inner_admin_role.role_id = inner_role_auth.role_id
+  where inner_admin_role.admin_id=#{adminId} and t_auth.name != '' and t_auth.name is not null
 </select>
 ```
 
@@ -2794,7 +2797,86 @@ public static void main(String[] args) {
 
 不会。
 
+### 5.权限分配实现
+
+**a：设置测试数据**
+
+t_admin，设置测试用户：
+
+![](img/t_admin.png)
+
+t_role，设置角色：
+
+![](img/t_role.png)
+
+登录后，按下述为用户分配角色和权限：
+
+- adminOperator：经理、经理操作者；（对应权限：保存用户）
+- roleOperator：部长、部长操作者。（对应权限：删除角色）
+
+**b：权限生效的设置**
+
+```java
+// 配置类中设置
+.antMatchers("/admin/users") // 针对显示所有的admin数据设定权限要求
+.hasRole("经理")  // 要求具备经理的角色
+```
+
+使用注解的方式：
+
+1. 配置类加上注解：
+
+   ```java
+   // 启用全局方法权限功能，并设置prePostEnabled = true，保证注解生效
+   @EnableGlobalMethodSecurity(prePostEnabled = true)
+   ```
+
+2. 对应controller加上以下注解：
+
+   ```java
+   /* 角色删除 start */
+   @PreAuthorize("hasRole('部长')")
+   @ResponseBody
+   @RequestMapping("/role/remove/by/id/array")
+   public ResultEntity<String> removeRole(@RequestBody List<Integer> roleList) {
+       roleService.removeRole(roleList);
+       return ResultEntity.successWithoutData();
+   }
+   /* 角色删除 edn */
+   ```
+
+**c：无权限时跳转至禁止访问页面**
+
+在WebAppSecurityConfig.java配置类里配置：
+
+```java
+antMatchers("/admin/users") // 针对显示所有的admin数据设定权限要求
+.hasRole("经理")  // 要求具备经理的角色
+.anyRequest() // 其他任意请求
+.authenticated()  // 认证后访问
+.and()
+.exceptionHandling() // 不具备经理的角色而访问一些无权限资源时的异常处理
+.accessDeniedHandler(new AccessDeniedHandler() {
+    @Override
+    public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException e) throws IOException, ServletException {
+        request.setAttribute("exception",new Exception(CrowdConstant.MESSAGE_ACCESS_DENIED));
+        request.getRequestDispatcher("/system-error").forward(request,response);
+    }
+})
+```
+
+添加好`/system-error`映射：
+
+```java
+@RequestMapping(value = "/system-error")
+public String errorPage(){
+    return "system-error";
+}
+```
+
+其他权限分配可参考b、c的操作。
 
 
 
+该项目就到此为止，没有使用到SpringSecurity的标签，后续再学习SpringSecurity的时候再回来完善。
 
