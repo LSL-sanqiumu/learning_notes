@@ -1,14 +1,26 @@
+
+
+
+
 # 依赖管理
 
+**关于spring-boot-starter-parent：**
+
 ```xml
-<!-- spring-boot-starter-parent几乎声明了所有开发中常用的依赖的版本号,自动版本仲裁机制 -->
+<!-- spring-boot-starter-parent的父项目几乎声明了所有开发中常用的依赖的版本号 -->
 <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
     <version>2.5.5</version>
     <relativePath/> <!-- lookup parent from repository -->
 </parent>
-<!-- 导入starter场景启动器 spring-boot-starter是所有场景启动器最底层的依赖 -->
+```
+
+**关于spring-boot-starter：**
+
+spring-boot-starter是所有场景启动器最底层的依赖、最基本的， 包含了对自动配置的支持、日志、yaml，是不可缺少的，其他的所有starter都会引入有该starter，例如spring-boot-starter-web里第一个导入的依赖就是spring-boot-starter。
+
+```xml
 <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
 <dependency>
     <groupId>org.springframework.boot</groupId>
@@ -17,9 +29,11 @@
 </dependency>
 ```
 
-自动仲裁机制：引入的依赖默认都可以不写版本号（Maven的继承特性），引入非版本仲裁的jar依赖，要写版本号；
+**关于自动仲裁机制：**
 
-修改依赖的默认版本号：
+由于spring-boot-starter-parent的父项目几乎声明了所有开发中常用的依赖的版本号，所以引入的依赖默认都可以不写版本号（Maven的继承特性），引入非版本仲裁（spring-boot-starter-parent的父项目没有声明的）的jar依赖则要写版本号。
+
+**关于修改依赖的默认版本号：**
 
 ```xml
 <!-- 1、查看spring-boot-starter-parent 里的 spring-boot-dependencies，里面规定了依赖版本对应的key-->
@@ -29,20 +43,20 @@
     </properties>
 ```
 
-starter场景启动器：
+**starter场景启动器：**
 
-1、见到很多 spring-boot-starter-* ： *就是指某种场景
-2、只要引入starter，这个场景的所有常规需要的依赖我们都自动引入
-3、SpringBoot所有支持的场景有：https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-starter
+1、见到很多 spring-boot-starter-* ： *就是指某种场景。
+2、只要引入starter，这个场景的所有常规需要的依赖都会自动引入。
+3、SpringBoot所有支持的场景有：https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-starter。
 4、见到的  *-spring-boot-starter： 第三方为我们提供的简化开发的场景启动器。
-
-
 
 # 自动配置
 
-### 自动配置特性
+## 自动配置特性
 
-1. 自动配好Tomcat： 引入Tomcat依赖、配置Tomcat
+根据引入的场景启动器，会自动配置引入场景下的所需要配置。
+
+1. 引入starter-tomcat场景后，自动配置好Tomcat： （引入Tomcat依赖并配置好Tomcat）
 
    ```xml
    <dependency>
@@ -53,15 +67,16 @@ starter场景启动器：
    </dependency>
    ```
 
-2. 自动配好SpringMVC：引入SpringMVC全套组件、自动配好SpringMVC常用组件（功能）；
+2. 引入starter-web场景：
 
-3. 自动配好Web常见功能，如：字符编码问题， SpringBoot帮我们配置好了所有web开发的常见场景；
+   - 自动配置好SpringMVC：引入SpringMVC全套组件、自动配好SpringMVC常用组件（功能）；
+   - 自动配置好Web常见功能，如：字符编码问题，所有web开发的常见场景配置；
 
-4. 默认的包结构：
+3. 配置了默认的包结构：
 
-   - 主程序所在包及其下面的所有子包里面的组件都会被默认扫描进来，无需以前的包扫描配置；
+   - 主程序所在包及其下面的所有子包里面的组件都会被默认扫描进来，无需以前spring的包扫描配置；
 
-   - 可以使用`@SpringBootApplication(scanBasePackages="com.lsl")`或者`@ComponentScan `改变扫描路径；
+   - 可以使用`@SpringBootApplication(scanBasePackages="com.lsl")`或者`@ComponentScan `改变包扫描路径；
 
      ```java
      @SpringBootApplication 等同于下面三个注解的功能集合体
@@ -70,16 +85,40 @@ starter场景启动器：
      @ComponentScan // 包扫描，默认扫描当前包和子包，使spring注解生效
      ```
 
-5. 各种配置拥有默认值：默认配置最终都是映射到某个类上，如：MultipartProperties；配置文件的值最终会绑定每个类上，这个类会在容器中创建对象；
+4. 自动配置好的各种配置拥有默认值：
 
-6. 可以按需加载所有自动配置项：
+   - 比如配置好Tomcat，Tomcat的默认端口也就有了一个默认值；
 
-7.  非常多的starter：
+   - 默认配置最终都是映射到某个类上，如：MultipartProperties；配置文件的值最终会绑定在某个类上，这个类会在容器中创建对象；
+   - 以后要对默认配置进行修改，就使用yaml文件或properties文件。
 
-   - 引入了哪些场景，哪些场景的自动配置就会开启；
-   - SpringBoot所有的自动配置功能都在 spring-boot-autoconfigure 包里面。
+5. 按需加载所有自动配置项：
 
-### 源码解析
+   - SpringBoot所有的自动配置功能都在 spring-boot-autoconfigure jar包里面；
+
+   - 自动配置项所在的spring-boot-autoconfigure包会加载进来，但不引入场景是不会生效的；
+
+   - 通过非常多的starter来开启自动配置，引入了哪些starter场景，哪些场景的自动配置才会开启。
+
+查看自动配置了哪些东西和数量：
+
+```java
+@SpringBootApplication
+public class SpringBootMainConfigClass {
+    public static void main(String[] args) {
+//        SpringApplication.run(SpringBootMainConfigClass.class, args);
+        ConfigurableApplicationContext run = SpringApplication.run(SpringBootMainConfigClass.class, args);
+        int count = run.getBeanDefinitionCount();
+        String[] names = run.getBeanDefinitionNames();
+        for (String name : names) {
+            System.out.println(name);
+        }
+        System.out.println(count);
+    }
+}
+```
+
+## 源码解析自动配置
 
 1.主配置类的@SpringBootApplication：
 
@@ -157,39 +196,58 @@ xxxxxAutoConfiguration ---> 组件  ---> xxxxProperties里面拿值  ----> appli
 
 
 
-# 注解
+# 底层注解
 
 ## 组件注解
 
-spring的注解于bean的创建。@Configuration、@Bean、@Component、@Controller、@Service、@Repository、@ComponentScan、@Import、@Conditional
+spring的注解：@Configuration、@Bean、@Component、@Controller、@Service、@Repository、@ComponentScan、@Import、@Conditional
 
 ### @Configuration
 
-`@Configuration(proxyBeanMethods = true)`：注册组件，最佳实践：如果是不被依赖的使用false。
+使用这个注解的类称为配置类（配置了也是组件），相当于bean.xml文件，用于注册bean，其内返回的对象的方法使用@Bean来将返回的对象注册进容器。
+
+`@Configuration(proxyBeanMethods = true)`：注册组件，
+
+- proxyBeanMethods是代理bean的方法，是true表示是会被代理，用于决定是否保持组件的单实例。
+- 最佳实践：如果是不被依赖bean，就使用false，用到就创建新对象，不存于容器。
 
 ### @Import
 
-`@Import(xxx.class, xxx.class, ...)`：注册组件，默认注册组件的名默认为全类名。
+导入组件，用于给容器自动创建出某些类的对象并放入容器。用于注册进容器的类上。
+
+`@Import(xxx.class, xxx.class, ...)`：注册组件，使用该注解注册进容器的组件的默认名为其全类名。
 
 ### @Conditional
 
-条件装配，用于满足指定条件时进行组件注入。有许多拓展注解。
+用于类上，表示条件装配，用于满足指定条件时进行组件的注册。其有许多拓展注解，例如：
+
+- `@ConditionalOnBean`：当容器中有某个bean的时候才能执行某些操作。
+- `@ConditionalOnMissingBean`：当容器中没有某个bean的时候才能执行某些操作。
+- `@ConditionalOnClass`：当容器中有某个类的时候才能执行某些操作。
+- `@ConditionalOnClass`：当容器中有没某个类的时候才能执行某些操作。
+- `@ConditionalOnResource`：当类路径存在某些资源的时候才能干什么。
+- `@ConditionalOnProperty`：当配置文件里配置了某些属性的时候才能干什么。
+- ......
 
 ### @ImporeResource
 
-`@ImporeResource("classpath:beans.xml")`：允许导入通过传统的bean.xml文件来创建的组件。
+用于配置类上，当配置类生效，此注解也就生效，生效时就会通过指定的配置文件来往容器注册配置文件中定义好的组件。
+
+`@ImporeResource("classpath:beans.xml")`：通过传统的bean.xml文件来注册组件并将其注册到容器中。
 
 ## 配置绑定注解
 
+使用Java读取到properties文件中的某部分内容并封装到JavaBean中，JavaBean要注册在容器中。
+
 1.@ConfigurationProperties + @Component
 
-@ConfigurationProperties(prefix="xxx")将注册进容器的组件的属性绑定，和配置文件**application.properties**的带有前缀的绑定（xxx.属性名）。
+@ConfigurationProperties(prefix="xxx")将注册进容器的组件的属性和配置文件中的属性值绑定（和配置文件**application.properties**的带有某个前缀的进行绑定，properties文件中的key是`xxx.属性名`的形式，属性名是类的属性名）。
 
 ```java
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Component
+@Component // 注册进容器
 @ConfigurationProperties(prefix="cat")
 public class Cat {
     private String name;
@@ -199,7 +257,7 @@ public class Cat {
 
 2.@EnableConfigurationProperties(xxx.class) + @ConfigurationProperties 
 
-用于在1的方式中不能使用@Conponet的情况下，配置类上加入@EnableConfigurationProperties(xxx.class)，实现配置绑定功能和组件自动注册进容器。
+用于在1的方式中不能使用@Conponet的情况下，配置类上加入@EnableConfigurationProperties(xxx.class)，实现配置绑定功能和组件自动注册进容器。如下（前面几个注解是小辣椒的）：
 
 ```java
 @Data
@@ -213,16 +271,14 @@ public class Cat {
 ```
 
 ```java
-@Configuration(proxyBeanMethods = false)
+@Configuration(proxyBeanMethods = false) // 配置类
 // 开启Cat.class的配置绑定功能
-// 并把Car这个组件自动注册到容器 注册进去的组件名格式为：cat-com.lsl.pojo.Cat （类名小写-q
+// 并把Car这个组件自动注册到容器 注册进去的组件名格式为：cat-com.lsl.pojo.Cat （`类名小写-全类名`）
 @EnableConfigurationProperties(Cat.class)
 public class Config {
 
 }
 ```
-
-
 
 # 配置文件-yml
 
@@ -315,7 +371,7 @@ person:
 </build>
 ```
 
-# 最佳实践
+# springboot最佳实践
 
 1. 根据所需引入——场景starter和其他依赖：引入场景的artifactId见【https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-starter】。
 2. 可以查看自动配置（XxxAutoConfigure）做了哪些功能（选做）：

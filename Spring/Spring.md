@@ -202,9 +202,7 @@ SSH框架：Struct2 + Spring + Hibernate(全自动)；SSM框架：SpringMVC + Sp
 
 【大多数公司使用SpringBoot进行快速开发，学习SpringBoot前要完全掌握Spring及SpringMVC！】
 
-# ---------------IOC------------------
-
-# Spring的IOC理论
+# 理解IOC理论
 
 ## IOC理论推导
 
@@ -795,9 +793,9 @@ public class ClassFactory {
 // 而使用控制反转，再次降低了耦合度（对象是否创建的控制权和属性的控制权在配置文件中（bean管理），ClassFactory只有对象的实现权，实现了解耦）
 ```
 
-# ---------------AOP------------------
 
-# 代理模式
+
+# 理解代理模式
 
 代理模式，AOP的底层，面试常见【SpringAOP和SpringMVC】；代理模式：将复杂事务转移到一处专门处理这类复杂事务的功能模块。
 
@@ -1257,13 +1255,9 @@ XML的aop命名空间：
 
 
 
-
-
-# ---------AboutDatabase---------
-
 # JdbcTemplate
 
-spring对JDBC的封装，属于spring-jdbc，定义了操作数据库的方法用来操作数据库。
+JdbcTemplate，spring对JDBC的封装，属于spring-jdbc，定义了操作数据库的方法用来操作数据库。
 
 ```xml
 <context:component-scan base-package="com.lsl"/>
@@ -1279,7 +1273,7 @@ spring对JDBC的封装，属于spring-jdbc，定义了操作数据库的方法�
 </bean>
 ```
 
-# 事务
+# spring事务处理
 
 事务：数据库操作基本单元，逻辑上的一组操作，对数据库数据的操作，要么都成功、要么都失败。事务操作有四个原则，ACID原则。
 
@@ -1369,7 +1363,7 @@ spring事务管理API：PlatformTransactionManager，代表事务管理器，针
 - @Transactional：为方法加上事务；
 - `ComponentScan(basePackages="")`：注解扫描。
 
-# ------------else------------------
+
 
 # 容器与上下文
 
