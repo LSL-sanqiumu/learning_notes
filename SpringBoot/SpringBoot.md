@@ -1,6 +1,8 @@
+# SpringBoot概述
 
+Spring Boot是由Pivotal团队提供的全新框架，其设计目的是用来简化新Spring应用的初始搭建以及开发过程。该框架使用了特定的方式来进行配置，从而使开发人员不再需要定义样板化的配置。
 
-
+简而言之，SpringBoot项目也就是一个Maven项目，只不过其是spring-boot-starter-parent的依赖和其他的场景启动器、依赖组成，由spring-boot-starter-parent来进行依赖的管理，spring-boot-starter来提供自动配置等。Spring Boot框架的核心就在于依赖管理和自动配置。
 
 # 依赖管理
 
@@ -118,12 +120,14 @@ public class SpringBootMainConfigClass {
 }
 ```
 
-## 源码解析自动配置
+## 源码解析自动配置原理
 
-1.主配置类的@SpringBootApplication：
+### 1.引导加载自动配置类
+
+主配置类的注解`@SpringBootApplication`，其相当于三个注解的集合体：
 
 ```java
-@SpringBootConfiguration // 代表配置类
+@SpringBootConfiguration // 代表是一个配置类
 @EnableAutoConfiguration // 自动配置
 @ComponentScan(         // 包扫描，默认扫描当前包和子包，使spring注解生效
     excludeFilters = {@Filter(
@@ -137,10 +141,10 @@ public class SpringBootMainConfigClass {
 public @interface SpringBootApplication {}
 ```
 
-2.@EnableAutoConfiguration：
+**最重要的角色`@EnableAutoConfiguration`注解：**
 
 ```java
-// EnableAutoConfiguration
+// @EnableAutoConfiguration
 @AutoConfigurationPackage
 @Import({AutoConfigurationImportSelector.class})
 public @interface EnableAutoConfiguration {}
@@ -158,9 +162,14 @@ static class Registrar implements ImportBeanDefinitionRegistrar, DeterminableImp
         }
 ```
 
- @AutoConfigurationPackage ：自动配置包，利用Registrar导入主配置类的包及自包下所有的组件；
+ @AutoConfigurationPackage ：自动配置包注解，利用Registrar导入主配置类的包及自包下所有的组件；
 
 @Import({AutoConfigurationImportSelector.class})：
+
+1. 利用`getAutoConfigurationEntry(annotationMetadata)`给容器导入一些组件；
+2. 通过 `List<String> configurations = this.getCandidateConfigurations(annotationMetadata, attributes); `获取要导入到 容器中的配置类；
+3. 利用工厂加载`Map<String,List<String>> loadSpringFactories(@Nullable ClassLoader classLoader)`得到所有组件；
+4. 加载文件：`META-INF/spring.factories`。
 
 ```java
 // 给容器批量导入组件
@@ -173,28 +182,23 @@ public String[] selectImports(AnnotationMetadata annotationMetadata) {
     }
 }
 
-// 通过 List<String> configurations = this.getCandidateConfigurations(annotationMetadata, attributes); 获取要导入到
-// 容器中的配置类
+// 通过 List<String> configurations = this.getCandidateConfigurations(annotationMetadata, attributes); 获取要导入到 容器中的配置类
 ```
 
 ![](img/config.png)
 
-该文件写死了springboot启动就默认加载的所有配置类，最终是按需配置（按照条件装配规则）。
+spring.factories文件，写死了springboot启动就默认加载的所有配置类，但最终是按需配置（按照条件装配规则（按需加载的注解），导入了相关场景才会生效）。
 
-3.按需开启自动配置
+### 2.自动配置流程：
 
-自动配置流程：
+1. 先加载所有的自动配置类（xxxAutoConfigConfiguration.class）；
+2. 每个自动配置类按照条件进行生效，其属性值默认都会绑定配置文件中指定的值（xxxxProperties.class里面拿，xxxProperties.class和配置文件进行了绑定）；
+3. 生效的配置类就会给容器中装配很多组件，只要容器中有这些组件，相当于这些功能就有了；
+4. 定制化配置操作
+  - 用户通过配置类直接自己@Bean往容器注册组件来替换底层的组件；
+  - 用户去看这个组件是获取配置文件中的什么值就去修改，通过application文件（yaml文件或properties文件）修改。
 
-- 先加载所有的自动配置类：xxxAutoConfigConfiguration；
-- 每个自动配置类按照条件进行生效，默认都会绑定配置文件指定的值。xxxxProperties里面拿。xxxProperties和配置文件进行了绑定；
-- 生效的配置类就会给容器中装配很多组件，只要容器中有这些组件，相当于这些功能就有了；
-- 定制化配置
-  - 用户直接自己@Bean替换底层的组件；
-  - 用户去看这个组件是获取的配置文件什么值就去修改。
-
-xxxxxAutoConfiguration ---> 组件  ---> xxxxProperties里面拿值  ----> application.properties
-
-
+流程：xxxxxAutoConfiguration ---> 组件  ---> xxxxProperties.class里面拿值  ----> 从application.properties配置文件拿值
 
 # 底层注解
 
@@ -280,7 +284,17 @@ public class Config {
 }
 ```
 
-# 配置文件-yml
+# SpringBoot
+
+## 开发步骤
+
+1. 创建SpringBoot项目，引入需要的场景；
+2. application.yml，根据需要进行一定的配置；
+3. 各种整合操作。
+
+
+
+## 配置文件-yml
 
 YAML 是 "YAML Ain't Markup Language"（意为 YAML 不是一种标记语言）的递归缩写。在开发的这种语言时，YAML 的意思其实是："Yet Another Markup Language"（仍是一种标记语言）。 非常适合用来做以数据为中心的配置文件。
 
@@ -371,22 +385,30 @@ person:
 </build>
 ```
 
-# springboot最佳实践
+## 最佳实践
 
-1. 根据所需引入——场景starter和其他依赖：引入场景的artifactId见【https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-starter】。
-2. 可以查看自动配置（XxxAutoConfigure）做了哪些功能（选做）：
+1. 根据所需引入starter场景和其他依赖；
+   - 引入starter场景的artifactId见【https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-starter】。
+2. 【选做】可以查看自动配置（XxxAutoConfigure）做了哪些功能：
    - 方法一：自己分析自动配置类（引入场景对应的自动配置一般都生效了）；
    - 方法二：配置文件中debug=true开启自动配置报告（Negative（不生效）\ Positive（生效））。
 3. 是否需要定制或修改一些功能：
    - 参照文档修改配置文件 [Common Application Properties (spring.io)](https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties)；
    - 自己分析xxxxProperties绑定了哪些可以在配置文件中配置的。
+   - `spring.banner.image.location: classpath:banner.gif`，设置spring boot启动的banner图。
 4. 自定义加入或者替换组件：
    - @Bean、@Component等；
    - 自定义器  **XXXXXCustomizer**。
 
-开发技巧：
+## 开发技巧
 
-idea中搜索安装lombok插件，并在springboot项目中引入Lombok插件来简化JavaBean，使用@Data注解生成getset方法，@ToString生成tostring方法，@NoArgsConstructor，@AllArgsConstructor，生成无参有参构造器，@EqualsAndHashCode重写equals和hashcode方法，@Slf4j日志记录器：
+idea中搜索安装lombok插件，并在springboot项目中引入Lombok插件来简化JavaBean：
+
+- @Data：生成getset方法；
+- @ToString：tostring方法；
+- @NoArgsConstructor、@AllArgsConstructor：生成无参或有参构造器；
+- @EqualsAndHashCode：重写equals和hashcode方法；
+- @Slf4j：日志记录器。
 
 ```xml
 <dependency>
@@ -421,7 +443,7 @@ dev-tools：ctrl + f9 重启
     </dependency>
 ```
 
-为了能够在配置文件中有提示，processor：
+为了使配置文件中有提示，添加spring-boot-configuration-processor：
 
 ```xml
 <dependency>
@@ -447,25 +469,30 @@ dev-tools：ctrl + f9 重启
 </plugin>
 ```
 
-SpringInitializr：项目初始化向导，选择场景快速创建spring boot项目。
+使用SpringInitializr：项目初始化向导，选择场景并快速创建spring boot项目。
 
 # web开发场景
 
 ## 静态资源
 
-springboot默认会在classpath路径下的**默认静态资源路径** ` /static (or /public or /resources or /META-INF/resources)`里寻找对应的静态资源文件，当访问某些资源时，映射路径不经controller处理就默认来静态资源路径下寻找。
+SpringBoot项目默认情况下在classpath路径下有几个目录为**默认的静态资源存放目录** ：` /static `、`/public `、`/resources `、` /META-INF/resources`，当访问某些资源时，映射路径不经controller处理就默认来静态资源目录下寻找。
 
-原理：`静态映射/**`
+原理：静态映射的是`/**`。请求进来先寻找controller是否能进行处理，不能处理的所有请求就交给了静态资源处理器来处理，如果找不到资源就报404错误。 
 
-请求进来先寻找controller是否能进行处理，不能处理的所有请求就交给了静态资源处理器来处理，如果找不到资源就404错误。      
+对静态资源的设置：     
+
+- static-path-pattern：设置静态资源的映射前缀（默认是`static-path-pattern: /**`）
+  - 例1：`localhost:8888/a.png`就是在几个静态资源目录下寻找，找到就能显示a.png了；
+  - 例2：`localhost:8888/r/a.png`就是在几个静态资源目录下的`r`目录下寻找，找到就能显示a.png了；
+  - 例3：设置static-path-pattern: /res/**，那么就得加上res，`localhost:8888/res/r/a.png`。
+- static-locations：默认的为[classpath:/static/,classpath:/public/,classpath:/resources/,classpath:/META-INF/resources/]
 
 ```yaml
 spring:
   mvc:
-    # 改变静态资源的映射前缀，默认没有前缀 "localhost:port/res/xxx"
     static-path-pattern: /res/**
   web:
-    # 修改默认静态资源路径，修改后原默认静态资源路径失效
+    # 修改默认静态资源路径，修改后原默认静态资源目录失效
     resources:
       static-locations: [classpath:/newstatic/,classpath:/newtemplates/]
       #static-locations: classpath:/newstatic/
@@ -482,102 +509,25 @@ spring:
 ```
 访问地址：http://localhost:8080/webjars/jquery/3.5.1/jquery.js   后面地址要按照依赖里面的包路径。
 
-静态资源路径下的index.html可以作为欢迎页面，访问会自动跳转指这个页面，但是是在没有配置静态资源前缀的前提下。
+静态资源路径（这里说路径即目录）下的index.html可以作为欢迎页面，访问`localhost:port/`会自动跳转至这个页面，但是是在没有配置静态资源前缀的前提下。
 
 静态资源路径下的favicon.ico图标可以作为页面标签图，当没有配置静态资源路径前缀的时候才有效。
 
 ## 请求处理
 
-### Rest风格
+前端控制器的请求映射路径最前面的`/`不再是代表`localhost:port/webappName/`，而是代表`localhost:port/`。
 
-以前使用（/getUser   获取用户     /deleteUser 删除用户    /editUser  修改用户       /saveUser 保存用户）为映射名称来表示对资源的操作。
+也可以加上一个前置路径，以后所有的访问都要加上该前置路径，在application.yml中设置：
 
-现在使用Rest风格：Rest风格是使用HTTP请求方式动词来表示对资源的操作（/user    GET-获取用户    DELETE-删除用户     PUT-修改用户  POST-保存用户），表单需要提交隐藏参数。使用Rest风格的表单和RequestMapping映射如下设置：
-
-```java
-public class RestController {
-    @GetMapping(value = "/user")
-//    @RequestMapping(value = "/user", method = RequestMethod.GET)
-    public String get() {
-        return "get获取用户";
-    }
-    @DeleteMapping("/user")
-//    @RequestMapping(value = "/user", method = RequestMethod.DELETE)
-    public String delete() {
-        return "delete删除用户";
-    }
-    @PutMapping(value = "/user")
-//    @RequestMapping(value = "/user", method = RequestMethod.PUT)
-    public String modify() {
-        return "put修改用户";
-    }
-    @PostMapping("/user")
-//    @RequestMapping(value = "/user", method = RequestMethod.POST)
-    public String save() {
-        return "post保存用户";
-    }
-}
+```yml
+server:
+	servlet:
+		content-path: /webapp
 ```
 
-```html
-<form action="/user" method="get">
-    <input name="_method" type="hidden" value="GET"/>
-    <input type="submit" value="获取">
-</form>
-<form action="/user" method="post">
-    <input name="_method" type="hidden" value="PUT"/>
-    <input type="submit" value="修改">
-</form>
-<form action="/user" method="post">
-    <input name="_method" type="hidden" value="DELETE"/>
-    <input type="submit" value="删除">
-</form>
-<form action="/user" method="post">
-    <input name="_method" type="hidden" value="POST"/>
-    <input type="submit" value="保存">
-</form>
-```
+设置好`/`也就代表了`localhost:port/webapp/`
 
-【注意】默认不开启Rest风格，需要手动开启，兼容的PUT、DELETE、PATCH的在表单必须是post请求，不影响表单原生get、post请求：
-
-```yaml
-spring:
-  mvc:
-    hiddenmethod:
-      filter:
-        enabled: true # 选择性开启表单rest风格
-```
-
-定制`_method`：创建配置类往容器注册HiddenHttpMethodFilter组件
-
-```java
-@Configuration(proxyBeanMethods = false)
-public class WebConfig {
-    @Bean
-    public HiddenHttpMethodFilter hiddenHttpMethodFilter(){
-        HiddenHttpMethodFilter methodFilter = new HiddenHttpMethodFilter();
-        methodFilter.setMethodParam("_m");
-        return methodFilter;
-    }
-}
-```
-
-关于rest风格的原理，见该类：
-
-```java
-  @Bean
-  @ConditionalOnMissingBean(HiddenHttpMethodFilter.class)
-  @ConditionalOnProperty(prefix = "spring.mvc.hiddenmethod.filter", name = "enabled", matchIfMissing = false)
-  public OrderedHiddenHttpMethodFilter hiddenHttpMethodFilter() {
-    return new OrderedHiddenHttpMethodFilter();
-  }
-```
-
-请求映射原理：
-
-所有的请求映射都在HanderMapping中...
-
-### 普通参数注解
+### 普通参数接收
 
 - @PathVariable：获取路径变量，可以指定key来获取某一个，也可以直接获取全部变量值；
 - @RequestParam：获取请求参数；
@@ -667,7 +617,7 @@ public class Common {
 
 @MatrixVariable：获取矩阵变量（springboot默认不开启矩阵变量功能）
 
-- 在请求路径后面携带信息：`/act/3/lsl?age=18&inters=coding&inters=read`；
+- 在请求路径后面携带信息，queryString：`/act/3/lsl?age=18&inters=coding&inters=read`；
 - 通过矩阵变量携带信息：`/index/{id;name;age;inters}`。
 
 开启矩阵变量功能两个方法：一是继承WebMvcConfigurer并重写configurePathMatch方法；二是向容器中注册重写了configurePathMatch方法的组件WebMvcConfigurer。
@@ -730,7 +680,7 @@ public Map<String, Object> test(@MatrixVariable(value = "age", pathVar = "path1"
 
 @ModelAttribute：获取
 
-### 复杂参数
+### 复杂参数接收
 
 **Map**、**Model（map、model里面的数据会被放在request的请求域（跳转前放入）  相当于request.setAttribute）**、**RedirectAttributes（ 重定向携带数据）**、**ServletResponse（response）**、Errors/BindingResult、SessionStatus、UriComponentsBuilder、ServletUriComponentsBuilder。
 
@@ -768,13 +718,102 @@ public WebMvcConfigurer webMvcConfigurer(){
 }
 ```
 
+### Rest风格请求
+
+以前使用（/getUser   获取用户     /deleteUser 删除用户    /editUser  修改用户       /saveUser 保存用户）为映射名称来表示对资源的操作。
+
+现在使用Rest风格：Rest风格是使用HTTP请求方式动词来表示对资源的操作（/user    GET-获取用户    DELETE-删除用户     PUT-修改用户  POST-保存用户），表单需要提交隐藏参数。使用Rest风格的表单和RequestMapping映射如下设置：
+
+```java
+public class RestController {
+    @GetMapping(value = "/user")
+//    @RequestMapping(value = "/user", method = RequestMethod.GET)
+    public String get() {
+        return "get获取用户";
+    }
+    @DeleteMapping("/user")
+//    @RequestMapping(value = "/user", method = RequestMethod.DELETE)
+    public String delete() {
+        return "delete删除用户";
+    }
+    @PutMapping(value = "/user")
+//    @RequestMapping(value = "/user", method = RequestMethod.PUT)
+    public String modify() {
+        return "put修改用户";
+    }
+    @PostMapping("/user")
+//    @RequestMapping(value = "/user", method = RequestMethod.POST)
+    public String save() {
+        return "post保存用户";
+    }
+}
+```
+
+```html
+<form action="/user" method="get">
+    <input name="_method" type="hidden" value="GET"/>
+    <input type="submit" value="获取">
+</form>
+<form action="/user" method="post">
+    <input name="_method" type="hidden" value="PUT"/>
+    <input type="submit" value="修改">
+</form>
+<form action="/user" method="post">
+    <input name="_method" type="hidden" value="DELETE"/>
+    <input type="submit" value="删除">
+</form>
+<form action="/user" method="post">
+    <input name="_method" type="hidden" value="POST"/>
+    <input type="submit" value="保存">
+</form>
+```
+
+【注意】默认不开启Rest风格，需要手动开启，兼容的PUT、DELETE、PATCH的在表单必须是post请求，不影响表单原生get、post请求：
+
+```yaml
+spring:
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true # 选择性开启表单rest风格
+```
+
+定制`_method`：创建配置类往容器注册HiddenHttpMethodFilter组件
+
+```java
+@Configuration(proxyBeanMethods = false)
+public class WebConfig {
+    @Bean
+    public HiddenHttpMethodFilter hiddenHttpMethodFilter(){
+        HiddenHttpMethodFilter methodFilter = new HiddenHttpMethodFilter();
+        methodFilter.setMethodParam("_m");
+        return methodFilter;
+    }
+}
+```
+
+关于rest风格的原理，见该类：
+
+```java
+  @Bean
+  @ConditionalOnMissingBean(HiddenHttpMethodFilter.class)
+  @ConditionalOnProperty(prefix = "spring.mvc.hiddenmethod.filter", name = "enabled", matchIfMissing = false)
+  public OrderedHiddenHttpMethodFilter hiddenHttpMethodFilter() {
+    return new OrderedHiddenHttpMethodFilter();
+  }
+```
+
+请求映射原理：
+
+所有的请求映射都在HanderMapping中...
+
 ## 响应处理
 
 响应分为响应页面和响应数据。
 
-响应数据===》内容协商功能：根据客户端接收能力不同，返回不同媒体类型的数据。
+响应数据 ===》内容协商功能：根据客户端接收能力不同，返回不同媒体类型的数据。
 
-springboot内容协商的实现-springboot底层已经实现好了，当支持：
+springboot内容协商的实现——springboot底层已经实现好了，当支持：
 
 json支持xml的模块依赖（springboot底层利用MessageConverters会实现内容协商，根据请求头来决定发送json数据或者xml等数据，前提是springboot项目里支持各种数据）：
 
@@ -795,10 +834,10 @@ spring:
       favor-parameter: true # 开启请求参数的内容协商模式
 ```
 
-开启后在请求路径中携带format=json来指定响应返回的数据：
+开启后在请求路径中携带format=json来指定响应返回的数据类型：
 
-- http://localhost:8888/test?format=json；
-- [localhost:8888/test?format=xml&xxxx](http://localhost:8888/test?format=xml&xxxx)。
+- `http://localhost:8888/test?format=json`；
+- `localhost:8888/test?format=xml&xxxx`。
 
 如果想要返回其他的类型，比如pdf等，就可以通过自定义协商管理器来实现，实现多协议数据兼容，步骤：
 
@@ -896,6 +935,32 @@ public class WebConfig implements WebMvcConfigurer{
 
 通过：[localhost:8888/test?format=ll](http://localhost:8888/test?format=ll)   访问返回自定义类型成功。
 
+## thyme leaf引入
+
+引入场景启动器：
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+```
+
+已经自动配置好了thymeleaf，其中的两个配置如下：
+
+```java
+public static final String DEFAULT_PREFIX = "classpath:/templates/";
+public static final String DEFAULT_SUFFIX = ".html";
+```
+
+页面资源要放在templates路径下，返回的页面路径经视图解析器添加上前缀和后缀，然后渲染后再经浏览器显示。
+
+HTML页面要引入thyme leaf的名称空间：
+
+```html
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+```
+
 
 
 ## 拦截器
@@ -948,6 +1013,10 @@ public class InterceptorConfig implements WebMvcConfigurer {
     }
 }
 ```
+
+## 跨域
+
+
 
 ## 文件上传
 
@@ -1011,7 +1080,7 @@ spring:
 
 ## 错误页面
 
-默认情况下，Spring Boot提供/error处理所有错误的映射，对于机器客户端，它将生成JSON响应，其中包含错误，HTTP状态和异常消息的详细信息。对于浏览器客户端，响应一个“ whitelabel”错误视图，以HTML格式呈现相同的数据。
+默认情况下，Spring Boot提供`/error`处理所有错误的映射，对于机器客户端，它将生成JSON响应，其中包含错误，HTTP状态和异常消息的详细信息。对于浏览器客户端，响应一个“ whitelabel”错误视图，以HTML格式呈现相同的数据。
 
 静态资源路径下的`error/`路径下的4xx.html、5xx.html会自动被解析。
 
@@ -1048,7 +1117,7 @@ Servlet、Filter、Listener
 
 
 
-# 数据
+# 数据操作
 
 ## jdbc场景
 
@@ -1225,7 +1294,7 @@ mybatis-config全局配置文件：
 </configuration>
 ```
 
-这个config-location: classpath:mybatis/mybatis-config.xml和configuration不能共存，要么使用mybatis-config配置，要么使用configuration（建议：使用configuration来进行mybatis全局配置）：
+这个config-location: classpath:mybatis/mybatis-config.xml和configuration不能共存，要么使用mybatis-config.xml配置，要么使用configuration（建议：使用configuration来进行mybatis全局配置）：
 
 ```yaml
 mybatis:
@@ -1269,7 +1338,7 @@ public class TController {
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-注解模式Mybatis：
+注解模式整合Mybatis：
 
 ```java
 @Mapper
