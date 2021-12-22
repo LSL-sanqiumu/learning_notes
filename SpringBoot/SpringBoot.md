@@ -471,7 +471,14 @@ dev-tools：ctrl + f9 重启
 
 使用SpringInitializr：项目初始化向导，选择场景并快速创建spring boot项目。
 
-# web开发场景
+# web开发场景操作
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
 
 ## 静态资源
 
@@ -1119,11 +1126,14 @@ Servlet、Filter、Listener
 
 # 数据操作
 
-## jdbc场景
+## 使用jdbc场景
 
-jdbc场景导入和数据库驱动导入：
+### 操作步骤
+
+**1.jdbc场景导入和数据库驱动导入：**
 
 ```xml
+<!-- 导入场景和驱动包 -->
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-jdbc</artifactId>
@@ -1134,21 +1144,21 @@ jdbc场景导入和数据库驱动导入：
     <artifactId>mysql-connector-java</artifactId>
     <version>5.1.46</version> <!-- 利用maven的就近依赖修改版本 -->
 </dependency>
-<!-- 修改版本号的方法2 -->
+<!-- 修改版本号的方法2：依赖不指定版本号，在properties指定 -->
 <properties>
     <java.version>1.8</java.version>
     <mysql.version>5.1.46</mysql.version>
 </properties>
 ```
 
-jdbc场景导入内容：HikariCP（数据库连接池）、spring-jdbc。官方不知道要使用哪些数据库，所以数据库驱动没有安装进去，但数据库驱动的版本仲裁还是存在的。
+jdbc场景导入内容有：HikariCP（数据库连接池）、spring-jdbc、spring-tx。但没有导入数据库驱动（因此需要另外声明依赖导入），为什么呢？因为官方不知道要使用哪些数据库，所以数据库驱动没有安装进去，但数据库驱动的版本仲裁还是存在的。
 
-jdbc场景的自动配置：
+jdbc场景的自动配置有：
 
 1. DataSourceAutoConfiguration ： 数据源的自动配置：
-   - 修改数据源相关的配置：**spring.datasource****；
+   - 修改数据源相关的配置：**spring.datasource**；
    - 数据库连接池的配置，是当自己容器中没有DataSource才自动配置的；
-   - **底层配置好的连接池是：**HikariDataSource**。
+   - **底层配置好的连接池是：HikariDataSource**。
 2. DataSourceTransactionManagerAutoConfiguration： 事务管理器的自动配置；
 
 3. JdbcTemplateAutoConfiguration： springboot自带的**JdbcTemplate**，其自动配置，可以来对数据库进行crud：
@@ -1158,7 +1168,7 @@ jdbc场景的自动配置：
 
 5. XADataSourceAutoConfiguration： 分布式事务相关的。
 
-修改配置项：
+**2.修改配置项：**
 
 ```yaml
 spring:
@@ -1170,9 +1180,34 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
 ```
 
-## 连接池与操作
+**测试：**直接在项目的test目录里测试。
 
-配置数据库连接池，以druid（[alibaba/druid: 阿里云计算平台DataWorks(https://help.aliyun.com/document_detail/137663.html) 团队出品，为监控而生的数据库连接池 (github.com)](https://github.com/alibaba/druid)）为例：
+```java
+@Slf4j
+@SpringBootTest
+class SpringbootFileApplicationTests {
+
+    @Autowired
+    // 使用JdbcTemplate来进行SQL操作
+    JdbcTemplate template;
+    
+    @Test
+    void contextLoads() {
+        List<Map<String, Object>> maps = template.queryForList("select  * from info");
+        for (int i = 0; i < maps.size(); i++) {
+            System.out.println(maps.get(i));
+        }
+    }
+}
+```
+
+### 使用其他连接池
+
+如果不使用默认的数据源，配置其他的数据库连接池，以druid（[alibaba/druid: 阿里云计算平台DataWorks(https://help.aliyun.com/document_detail/137663.html) 团队出品，为监控而生的数据库连接池 (github.com)](https://github.com/alibaba/druid)）为例，两种配置方式：
+
+**自定义引入：**
+
+1.导入依赖：
 
 ```xml
 <dependency>
@@ -1182,11 +1217,13 @@ spring:
 </dependency>
 ```
 
+2.往容器注册组件，容器中存在数据源时，就不会使用默认的数据源。
+
 ```java
 @Component
 public class MyDataSources {
-    // 将数据源装配进容器 自动配置默认先判断容器有没有数据源，如果没有就使用默认的数据源
-    // 数据绑定配置项
+    // 将数据源装配进容器 自动配置会默认先判断容器中有没有数据源，如果没有就使用默认的数据源
+    // 数据绑定配置项(与返回对象绑定)，绑定后就可以在yml文件配置url、driver等 spring： database: url:
     @ConfigurationProperties(prefix = "spring.datasource")
     @Bean
     public DataSource dataSource() {
@@ -1196,7 +1233,23 @@ public class MyDataSources {
 }
 ```
 
-连接池starter引入方式：
+3.yml中配置：
+
+```yaml
+spring:
+  mvc:
+    static-path-pattern: /resource/**
+  datasource:
+    url: jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+```
+
+**starter方式引入：**
+
+1.声明导入场景：
 
 ```xml
 <dependency>
@@ -1206,9 +1259,25 @@ public class MyDataSources {
 </dependency>
 ```
 
-druid配置：[github.com](https://github.com/alibaba/druid/tree/master/druid-spring-boot-starter)
+2.配置：
 
+引入数据源场景后，就可以直接在yml配置文件配置了；如果要使用 druid数据库连接池的功能，可以在yaml中对druid进行配置，如何配置见：[github.com](https://github.com/alibaba/druid/tree/master/druid-spring-boot-starter)。
 
+```yaml
+spring:
+  mvc:
+    static-path-pattern: /resource/**
+  datasource:
+    url: jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+```
+
+----------------------------------------------------------------------------------------------------
+
+**测试：**直接在项目的test目录里测试。
 
 使用JdbcTemplate对数据库数据进行操作：
 
@@ -1242,9 +1311,11 @@ class SpringbootFileApplicationTests {
 
 ## 整合mybatis
 
+### **1.整合步骤：**
+
 参考官方：[GitHub - mybatis/spring-boot-starter: MyBatis integration with Spring Boot](https://github.com/mybatis/spring-boot-starter)
 
-1、依赖：
+1、场景引入：
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
@@ -1255,17 +1326,59 @@ class SpringbootFileApplicationTests {
 </dependency>
 ```
 
-2、配置
+引入场景做了的自动配置如下：
+
+- 导入了jdbc、mybatis-spring、spring-tx、HikariCP等。
+- SqlSessionFactory、SqlSessionFactoryBean：自动配置好；
+- DataSource：数据源，由jdbc和连接池操作可以配置要使用的数据源决定；
+- MybatisProperties：mybatis配置绑定类；
+- SqlSessionTemplate：自动配置有，组合了SqlSession。
+
+2、数据源配置
+
+具体见jdbc场景和连接池操作；添加数据库连接池的场景或依赖、添加数据库驱动的依赖，然后配置：
+
+```yaml
+spring:
+  mvc:
+    static-path-pattern: /resource/**
+  datasource:
+    url: jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+```
+
+**测试是否配置成功：**直接在项目的test目录里测试。
 
 ```java
-// Dao层
-@Mapper
-public interface InfoMapper {
-    public Student getStudent(Long id);
+@Slf4j
+@SpringBootTest
+class SpringbootFileApplicationTests {
+
+    @Autowired
+    // 使用JdbcTemplate来进行SQL操作
+    JdbcTemplate template;
+
+    @Autowired
+    DataSource dataSource;
+    @Test
+    void contextLoads() {
+        log.info("数据源类型：{}",dataSource.getClass());
+        List<Map<String, Object>> maps = template.queryForList("select  * from info");
+        for (int i = 0; i < maps.size(); i++) {
+            System.out.println(maps.get(i));
+        }
+    }
 }
 ```
 
-SQL映射文件，namespace绑定xxxMapper接口，SQL语句id要和对应接口方法的名字一致：
+### 2.1使用-配置文件版
+
+1.准备好SQL映射文件和接口：
+
+XxxMapper.xml：SQL映射文件，namespace绑定xxxMapper接口，SQL语句id要和对应接口方法的名字一致：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -1279,7 +1392,9 @@ SQL映射文件，namespace绑定xxxMapper接口，SQL语句id要和对应接口
 </mapper>
 ```
 
-mybatis-config全局配置文件：
+2.准备mybatis-config全局配置文件和在yaml配置文件中的配置设置：
+
+mybatis-config.xml：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -1287,14 +1402,14 @@ mybatis-config全局配置文件：
         PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-    <!-- 开启驼峰命名 表中字段 t_user -》 t-->
+    <!-- 开启驼峰命名 表中字段 t_user -》 tUser -->
     <settings>
         <setting name="mapUnderscoreToCamelCase" value="true"/>
     </settings>
 </configuration>
 ```
 
-这个config-location: classpath:mybatis/mybatis-config.xml和configuration不能共存，要么使用mybatis-config.xml配置，要么使用configuration（建议：使用configuration来进行mybatis全局配置）：
+application.yml：
 
 ```yaml
 mybatis:
@@ -1302,43 +1417,20 @@ mybatis:
   # config-location: classpath:mybatis/mybatis-config.xml
   mapper-locations: classpath:mybatis/mapper/*.xml
   configuration:
-    map-underscore-to-camel-case: true
+    map-underscore-to-camel-case: true # 开启驼峰命名
 ```
 
-service层：
+【注意】：这个`config-location: classpath:mybatis/mybatis-config.xml`和`configuration`不能共存，要么使用mybatis-config.xml来配置，要么使用configuration（建议：使用configuration来进行mybatis全局配置，如上）。
 
-```java
-@Service
-public class StudentService {
-    @Autowired
-    InfoMapper infoMapper;
-    public Student getStudentById(Long id) {
-        return infoMapper.getStudent(id);
-    }
-}
-```
-
-使用：
-
-```java
-@Controller
-public class TController {
-//    @Autowired
-//    JdbcTemplate jdbcTemplate;
-    @Autowired
-    StudentService studentService;
-
-    @GetMapping(value = "get")
-    @ResponseBody
-    public Student getById(@RequestParam("id") Long id) {
-        return studentService.getStudentById(id);
-    }
-}
-```
+3.测试
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-注解模式整合Mybatis：
+### **2.2使用-注解版：**
+
+`@Mapper`：用于接口映射器；语句相关：`@Insert`、`@Select`、 @Options、...
+
+批量设置：`@MapperScan("com.lsl.xxx")`，用于主配置类上。
 
 ```java
 @Mapper
@@ -1346,18 +1438,21 @@ public interface AnnoInfoMapper {
     @Select(value = "select name,age,school,nowadays from info where id=#{id}")
     public Student getByIds(Long id);
 }
+// 然后可以在service直接注入AnnoInfoMapper来调用方法了
 ```
 
 ```xml
-<!-- useGeneratedKeys="true" keyProperty="id" 作用在于插入完成后返回数据库中自增的id 会放进 -->
+<!-- useGeneratedKeys="true" keyProperty="id" 的作用在于插入完成后返回数据库中自增的id值，只对insert有效 -->
+<!-- 返回的值放入传参对象的id属性，如下insert语句（keyProperty控制返回给哪个属性） -->
 <insert id="addStudent" useGeneratedKeys="true" keyProperty="id">
     insert into info(name,age,school) values (#{name},#{age},#{school})
 </insert>
-<!-- 注解方式 -->
+
+<!-- 上面SQL语句的注解方式 -->
 @Insert(value = "insert into info(name,age,school) values (#{name},#{age},#{school})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     public boolean addStudent(Student student);
-<!-- 最后返回的student的id属性值不再是null -->
+<!-- 最后返回的student的id属性值不再是null，如下可测试 -->
 @PostMapping(value = "/add")
     @ResponseBody
     public Student addStudent(Student student) {
@@ -1366,17 +1461,18 @@ public interface AnnoInfoMapper {
     }
 ```
 
-混合模式：注解与映射文件相结合（简单的方法使用注解，复杂的方法使用映射文件）
+关于混合模式的使用：注解与映射文件相结合（简单的方法就使用注解，复杂的SQL方法就使用映射文件）。
 
+### 总结：最佳实战：
 
+步骤：
 
-最佳实战：
-● 引入mybatis-starter；
-● 在application.yaml中配置，指定mapper-location位置即可；
-● 编写Mapper接口并标注@Mapper注解；
-● 简单方法直接注解方式；
-● 复杂方法编写mapper.xml进行绑定映射；
-● 在主配置类使用@MapperScan("com.atguigu.admin.mapper") 简化，其他的接口就可以不用标注@Mapper注解。
+1. 引入mybatis-starter；
+2. 在application.yaml中配置，指定mapper-location位置、数据源配置即可；
+3. 编写Mapper接口并标注@Mapper注解；
+4. 简单方法直接使用注解方式；
+5. 复杂方法编写mapper.xml进行绑定映射；
+6. 在主配置类使用@MapperScan("com.atguigu.admin.mapper") 简化，其他的接口就可以不用标注@Mapper注解。
 
 ## 整合MybatisPlus
 
