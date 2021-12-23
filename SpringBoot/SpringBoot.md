@@ -942,9 +942,9 @@ public class WebConfig implements WebMvcConfigurer{
 
 通过：[localhost:8888/test?format=ll](http://localhost:8888/test?format=ll)   访问返回自定义类型成功。
 
-## thyme leaf引入
+## thymeleaf引入
 
-引入场景启动器：
+**1.引入场景启动器：**
 
 ```xml
 <dependency>
@@ -960,12 +960,24 @@ public static final String DEFAULT_PREFIX = "classpath:/templates/";
 public static final String DEFAULT_SUFFIX = ".html";
 ```
 
+**2.使用：**
+
 页面资源要放在templates路径下，返回的页面路径经视图解析器添加上前缀和后缀，然后渲染后再经浏览器显示。
 
-HTML页面要引入thyme leaf的名称空间：
+HTML页面要引入thymeleaf的名称空间：
 
 ```html
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+```
+
+自定义配置：
+
+```yaml
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    ca
 ```
 
 
@@ -1172,12 +1184,18 @@ jdbc场景的自动配置有：
 
 ```yaml
 spring:
+  mvc:
+    static-path-pattern: /resource/**
   datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
     url: jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
     username: root
     password: 123456
-    type: # 数据库连接池 默认的是com.zaxxer.hikari.HikariDataSource
-    driver-class-name: com.mysql.jdbc.Driver
+# 开启日志功能
+logging:
+  level:
+    com.lsl.mappper: debug
 ```
 
 **测试：**直接在项目的test目录里测试。
@@ -1315,7 +1333,7 @@ class SpringbootFileApplicationTests {
 
 参考官方：[GitHub - mybatis/spring-boot-starter: MyBatis integration with Spring Boot](https://github.com/mybatis/spring-boot-starter)
 
-1、场景引入：
+1、场景引入：（还需添加数据库连接池的场景或依赖、添加数据库驱动的依赖）
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
@@ -1336,18 +1354,22 @@ class SpringbootFileApplicationTests {
 
 2、数据源配置
 
-具体见jdbc场景和连接池操作；添加数据库连接池的场景或依赖、添加数据库驱动的依赖，然后配置：
+具体见jdbc场景和连接池操作，然后配置：
 
 ```yaml
 spring:
   mvc:
     static-path-pattern: /resource/**
   datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
     url: jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
     username: root
     password: 123456
-    type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: com.mysql.jdbc.Driver
+# 开启日志功能
+logging:
+  level:
+    com.lsl.mappper: debug
 ```
 
 **测试是否配置成功：**直接在项目的test目录里测试。
@@ -1430,7 +1452,7 @@ mybatis:
 
 `@Mapper`：用于接口映射器；语句相关：`@Insert`、`@Select`、 @Options、...
 
-批量设置：`@MapperScan("com.lsl.xxx")`，用于主配置类上。
+批量设置：`@MapperScan("com.lsl.xxx")`，用于主配置类上，用来扫描Mapper接口所在包，然后才能对Mapper接口进行装配。
 
 ```java
 @Mapper
@@ -1477,7 +1499,11 @@ public interface AnnoInfoMapper {
 ## 整合MybatisPlus
 
 MyBatis-Plus（简称 MP）是一个 MyBatis 的增强工具，在 MyBatis 的基础上只做增强不做改变，为简化开发、提高效率而生。
-[简介 | MyBatis-Plus (baomidou.com)](https://baomidou.com/guide/)，建议安装 MybatisX 插件 。
+[简介 | MyBatis-Plus (baomidou.com)](https://baomidou.com/guide/)，建议idea中安装 MybatisX 插件 。
+
+**整合步骤：**
+
+1.引入场景、驱动依赖：
 
 ```xml
 <!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter -->
@@ -1486,9 +1512,59 @@ MyBatis-Plus（简称 MP）是一个 MyBatis 的增强工具，在 MyBatis 的�
     <artifactId>mybatis-plus-boot-starter</artifactId>
     <version>3.4.3.4</version>
 </dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.46</version>
+</dependency>
 ```
 
+mybatis-plus-boot-starter的自动配置：
+
+- MybatisPlusProperties：配置项绑定，在yaml配置文件中`mybatis-plus: xxx`就是对mybatis-plus的定制。
+- 自动配置好了SqlSessionFactory、SqlSessionTemplate。
+- mapperLocations自动配置好了，默认值是`classpath*:/mapper/**/*.xml`。表示：任意**包的类路径**下的mapper文件夹下的任意路径下的xml文件，都是SQL映射文件。
+- `@Mapper`接口标注的接口会被自动扫描生效。（建议使用`@MapperScan()`）
+- 数据源是从容器中获取，给容器放啥就是啥。
+
+2.数据源的配置：和jdbc、数据库连接池的配置一样
+
+**开发使用：**
+
+1. 创建对应表的实体类，实体类和表的名称映射默认开启驼峰命名方式；
+
+2. 映射接口继承BaseMapper接口：
+
+   ```java
+   // 泛型指定的类型，也决定了SQL语句调用哪个表，如下的接口就是操作`test`表
+   // 继承后就可使用接口中的方法进行操作了，也可以再使用映射文件拓展其他的复杂的SQL语句
+   @Mapper
+   public interface TestMapper extends BaseMapper<Test> {
+   
+   }
+   ```
+
+3. 测试：
+
+   ```java
+   @Slf4j
+   @SpringBootTest
+   class SpringbootFileApplicationTests {
+       @Autowired
+       TestMapper testMapper;
+       @Test
+       void plus(){
+           Test test = testMapper.selectById(1);
+           System.out.println(test.getAcct());
+       }
+   }
+   ```
+
+4. 如果需要其他的SQL语句，可以在`resources`目录下新建`mapper`文件夹，该文件夹下的SQL映射文件会被自动扫描生效。
+
 ## 整合Redis
+
+**1.场景开启：**
 
 ```xml
 <dependency>
@@ -1497,12 +1573,16 @@ MyBatis-Plus（简称 MP）是一个 MyBatis 的增强工具，在 MyBatis 的�
 </dependency>
 ```
 
+**2.配置redis地址和端口：**
+
 ```yaml
 spring:
   redis:
     host: 192.168.137.129
     port: 6379
 ```
+
+**3.往容器添加该组件：**用于自定义序列化方式，几乎包含了所有场景。
 
 ```java
 @Configuration
@@ -1531,24 +1611,27 @@ public class RedisConfig {
 }
 ```
 
-使用：
+**4.测试：**
 
 ```java
+@Slf4j
 @SpringBootTest
-@ComponentScan("com.lsl")
 class SpringbootFileApplicationTests {
     @Autowired
     @Qualifier("redisTemplate")
     RedisTemplate redisTemplate;
     @Test
     void testRedis() {
+        // 对String类型数据的操作的对象
         ValueOperations<String, String> operations = redisTemplate.opsForValue();
         operations.set("hello","hello world");
     }
 }
 ```
 
-切换使用jedis：
+**切换使用jedis：**（jedis就是基于java语言的redis客户端，集成了redis的命令操作，提供了连接池管理。）
+
+1.添加依赖
 
 ```xml
 <dependency>
@@ -1556,6 +1639,8 @@ class SpringbootFileApplicationTests {
     <artifactId>jedis</artifactId>
 </dependency>
 ```
+
+2.配置：
 
 ```yaml
 spring:
@@ -1565,9 +1650,177 @@ spring:
       client-type: jedis
 ```
 
+3.测试
+
+```java
+@Slf4j
+@SpringBootTest
+class SpringbootFileApplicationTests {
+    @Test
+	void jedisTest(){
+    	Jedis j = new Jedis("192.168.137.129",6379);
+    	System.out.println(j.ping("连接成功"));
+	}
+}
+```
+
 # JUnit5
 
+## 概述
+
 官方文档：[JUnit 5 User Guide](https://junit.org/junit5/docs/current/user-guide/)
+
+Spring Boot 2.2.0 版本开始引入 JUnit 5 作为单元测试默认库，作为最新版本的JUnit框架，JUnit5与之前版本的Junit框架有很大的不同。由三个不同子项目的几个不同模块组成：JUnit 5 = JUnit Platform + JUnit Jupiter + JUnit Vintage。
+
+- JUnit Platform: Junit Platform是在JVM上启动测试框架的基础，不仅支持Junit自制的测试引擎，其他测试引擎也都可以接入。
+- JUnit Jupiter: JUnit Jupiter提供了JUnit5的新的编程模型，是JUnit5新特性的核心。内部 包含了一个**测试引擎**，用于在Junit Platform上运行。
+- JUnit Vintage: 由于JUint已经发展多年，为了照顾老的项目，JUnit Vintage提供了兼容JUnit4.x,Junit3.x的测试引擎。
+
+![](img/Junit5.jpg)
+
+【注意】：SpringBoot 2.4 以上版本移除了默认对 Vintage 的依赖。如果需要兼容junit4则需要自行引入（也就是不能使用junit4的@Test，只能使用Junit5的），如果需要继续兼容junit4需要自行引入vintage：
+
+```xml
+<!-- 兼容Junit4 -->
+<dependency>
+    <groupId>org.junit.vintage</groupId>
+    <artifactId>junit-vintage-engine</artifactId>
+    <scope>test</scope>
+    <exclusions>
+        <exclusion>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+区分是Junit4的还是Junit5的：`import org.junit.jupiter.api.Test;`——Junit5；`import org.junit.api.Test;`——Junit4。
+
+## 使用
+
+### 环境
+
+以前SpringBoot中单元测试：`@SpringBootTest + @RunWith(SpringTest.class)`；
+
+SpringBoot整合Junit以后：
+
+- 编写测试方法：`@Test`标注（注意需要使用junit5版本的注解，`import org.junit.jupiter.api.Test;`）
+- Junit类具有Spring的功能：`@Autowired`、比如 `@Transactional` 标注测试方法，测试完成后自动回滚。
+
+1.场景
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+</dependency>
+```
+
+2.test目录下。
+
+### 常用注解
+
+JUnit5的注解与JUnit4的注解有所变化：`https://junit.org/junit5/docs/current/user-guide/#writing-tests-annotations`。
+
+- @Test ：表示方法是测试方法。但是与JUnit4的@Test不同，他的职责非常单一不能声明任何属性，拓展的测试将会由Jupiter提供额外测试。
+- @DisplayName :为测试类或者测试方法设置展示名称。
+- @BeforeEach :表示在每个单元测试之前执行。
+- @AfterEach :表示在每个单元测试之后执行。
+- @BeforeAll :表示在所有单元测试之前执行。
+- @AfterAll :表示在所有单元测试之后执行。
+- @Tag :表示单元测试类别，类似于JUnit4中的@Categories。
+- @Disabled :表示测试类或测试方法不执行，类似于JUnit4中的@Ignore。
+- @Timeout :表示测试方法运行如果超过了指定时间将会返回错误。
+- @ExtendWith :为测试类或测试方法提供扩展类引用。
+- @ParameterizedTest ：表示方法是参数化测试。
+- @RepeatedTest：表示方法可重复执行。
+
+`@SpringBootTest`注解包含的Junit5注解：（使用`@SpringBootTest`就可以使用容器功能了）
+
+```java
+@BootstrapWith(SpringBootTestContextBootstrapper.class)
+@ExtendWith({SpringExtension.class})
+```
+
+```java
+@DisplayName("Junit5功能测试类")
+// @SpringBootTest 以SpringBoot启动的方式测试
+public class Junit5Test {
+
+    @DisplayName("为该方法设置的展示名称：单元测试1")
+    @Test
+    void testDisplayName(){
+        System.out.println("单元测试1");
+    }
+    @Disabled // 禁用单元测试方法或单元测试类
+    @DisplayName("为该方法设置的展示名称：单元测试2")
+    @Test
+    void test2(){
+        System.out.println("单元测试2");
+    }
+    // 超过多少时间就认为超时，并抛出TimeoutException
+    @Timeout(value = 500, unit = TimeUnit.MILLISECONDS)
+    @Test
+    void testTimeOut() throws InterruptedException {
+        Thread.sleep(500);
+    }
+    // @RepeatedTest(2)：重复测试2次
+
+    // @Test
+    @RepeatedTest(2)
+    void testRepeatedTest(){
+        System.out.println("重复...");
+    }
+    // @BeforeEach：在每个单元测试执行前执行
+    @BeforeEach
+    void testBeforeEach(){
+        System.out.println("测试方法开始执行：");
+    }
+    // @BeforeEach：在每个单元测试执行后执行
+    @AfterEach
+    void testAfterEach(){
+        System.out.println("测试方法执行结束！");
+    }
+
+    // @BeforeEach：在所有单元测试执行前执行
+    @BeforeAll
+    static void testBeforeAll(){
+        System.out.println("所有测试方法开始执行：");
+    }
+    // @BeforeEach：在所有单元测试执行后执行
+    @AfterAll
+    static void testAfterAll(){
+        System.out.println("所有测试方法结束！");
+    }
+}
+```
+
+## 断言
+
+断言（assertions）是测试方法中的核心部分，用来对测试需要满足的条件进行验证。这些断言方法都是 org.junit.jupiter.api.Assertions 的静态方法。
+
+断言就是用来检查业务逻辑返回的数据是否合理。使用断言的好处是——所有的测试运行结束以后，会有一个详细的测试报告。
+
+JUnit 5 内置的断言可以分成六大类：简单断言、数组断言、组合断言、异常断言、超时断言、快速失败。
+
+### 简单断言
+
+用来对单个值进行简单的验证。如：
+
+| 方法            | 说明                                     |
+| --------------- | ---------------------------------------- |
+| assertEquals    | 判断两个对象或两个原始**类型**是否相等   |
+| assertNotEquals | 判断两个对象或两个原始**类型**是否不相等 |
+| assertSame      | 判断两个对象**引用**是否指向同一个对象   |
+| assertNotSame   | 判断两个对象**引用**是否指向不同的对象   |
+| assertTrue      | 判断给定的**布尔值**是否为 true          |
+| assertFalse     | 判断给定的**布尔值**是否为 false         |
+| assertNull      | 判断给定的**对象引用**是否为 null        |
+| assertNotNull   | 判断给定的**对象引用**是否不为 null      |
+
+
 
 # 指标监控
 

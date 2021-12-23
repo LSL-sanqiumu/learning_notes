@@ -60,7 +60,11 @@ xmlns:th="http://www.thymeleaf.org"
 
 ## 资源引入
 
-th:href、th:src：通过@{...}表达式，Thymeleaf 可以帮助我们拼接上web应用访问的全路径，同时我们可以通过（）进行参数的拼接
+`th:href`、`th:src`：通过`@{...}`表达式，Thymeleaf可以帮助我们拼接上web应用的前置路径，同时我们可以通过`（）`进行参数的拼接，如下：
+
+```html
+<base th:href="'http://localhost:8880' + ${#request.getContextPath()} + '/'">
+```
 
 ```html
 <a th:href="@{/product/comments(prodId=${prod.id})}" >查看</a>

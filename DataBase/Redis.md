@@ -334,9 +334,9 @@ try {
 
 # springboot整合
 
-springboot2版本之后，Jedis改为lettuce；二者有何区别？
+springboot2版本之后，Jedis改为Lettuce；二者有何区别？
 
-依赖：
+场景启用：
 
 ```xml
 <dependency>
@@ -345,7 +345,7 @@ springboot2版本之后，Jedis改为lettuce；二者有何区别？
 </dependency>
 ```
 
-配置：
+配置redis所在地址、端口：
 
 ```yaml
 spring:
@@ -353,6 +353,8 @@ spring:
     host: 192.168.137.129
     port: 6379
 ```
+
+测试：
 
 ```java
 @SpringBootTest
@@ -415,7 +417,7 @@ public class RedisConfig {
 }
 ```
 
-redis工具类：RedisUtil
+redis工具类：RedisUtil，见RedisUtil.md。
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 

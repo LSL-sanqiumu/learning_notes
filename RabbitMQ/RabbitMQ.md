@@ -2,7 +2,7 @@
 
 **MQ（message queue）：**
 
-MQ本质是个遵循FIFO原则的队列(First Input First Output，先入先出)，只不过队列中的内容是消息（message），还是一种跨进程的通信机制，用于上下游传递消息。
+MQ本质是个遵循FIFO原则的队列(First Input First Output，先入先出)，只不过队列中的内容是消息（message），MQ还是一种跨进程的通信机制，用于上下游传递消息。
 
 **流量消峰：**
 
@@ -72,9 +72,9 @@ RabbitMQ，一个消息中间件，负责消息数据的接收、存储和转发
 - 生产者：产生数据发送消息的程序是生产者。
 - 交换机：负责接收消息并把消息推送进队列。
 - 队列：本质是大的消息缓冲区。
-- 消费者：
+- 消费者：等待接收信息的程序。
 
-## 安装
+## Linux下安装
 
 erlang下载：[el/8/erlang-24.1-1.el8.x86_64.rpm - rabbitmq/erlang · packagecloud](https://packagecloud.io/rabbitmq/erlang/packages/el/8/erlang-24.1-1.el8.x86_64.rpm)
 
@@ -86,9 +86,9 @@ rabbitMQ下载，下载rpm包：[Release RabbitMQ 3.9.8 · rabbitmq/rabbitmq-ser
 2. `yum -y install ncurses-devel`：安装ncurses；
 3. `tar -zxvf otp_src_18.2.1.tar.gz `：解压（http://erlang.org/download/otp_src_23.2.tar.gz：下载安装压缩包）；
 4. `cd otp_src_24.1`：进入目录；
-5. `./configure --prefix=/usr/local/erlang --with-ssl --enable-threads --enable-smp-support --enable-kernel-poll --enable-hipe --without-javac`：执行该命令设定安装规则；（我是直接`./configure`）
-6. `make && make install`：安装（我是直接`make install`）；
-7. `erl`：检查是否安装成功。（` erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell`可查出版本号）。
+5. `./configure --prefix=/usr/local/erlang --with-ssl --enable-threads --enable-smp-support --enable-kernel-poll --enable-hipe --without-javac`：执行该命令设定安装规则；（我是直接执行`./configure`）
+6. `make && make install`：安装（我是直接执行`make install`）；
+7. `erl`：检查是否安装成功。（执行` erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().'  -noshell`可查出版本号）。
 
 **rabbitMQ安装：**
 
@@ -120,7 +120,9 @@ else：
 - `rabbitmqctl reset`：清除；
 - `rabbitmqctl start_app`：重启。
 
-# 简单队列
+# HelloRabbitMQ
+
+
 
 ```xml
 <dependencies>
