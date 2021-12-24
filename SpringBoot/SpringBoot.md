@@ -122,7 +122,7 @@ public class SpringBootMainConfigClass {
 
 ## 源码解析自动配置原理
 
-### 1.引导加载自动配置类
+### 1.引导加载自动配置类：
 
 主配置类的注解`@SpringBootApplication`，其相当于三个注解的集合体：
 
@@ -1697,9 +1697,7 @@ Spring Boot 2.2.0 版本开始引入 JUnit 5 作为单元测试默认库，作�
 
 区分是Junit4的还是Junit5的：`import org.junit.jupiter.api.Test;`——Junit5；`import org.junit.api.Test;`——Junit4。
 
-## 使用
-
-### 环境
+## 使用环境
 
 以前SpringBoot中单元测试：`@SpringBootTest + @RunWith(SpringTest.class)`；
 
@@ -1718,9 +1716,9 @@ SpringBoot整合Junit以后：
 </dependency>
 ```
 
-2.test目录下。
+2.test目录下等。
 
-### 常用注解
+## 常用注解
 
 JUnit5的注解与JUnit4的注解有所变化：`https://junit.org/junit5/docs/current/user-guide/#writing-tests-annotations`。
 
@@ -1797,50 +1795,255 @@ public class Junit5Test {
 }
 ```
 
-## 断言
+## 使用断言
 
 断言（assertions）是测试方法中的核心部分，用来对测试需要满足的条件进行验证。这些断言方法都是 org.junit.jupiter.api.Assertions 的静态方法。
 
 断言就是用来检查业务逻辑返回的数据是否合理。使用断言的好处是——所有的测试运行结束以后，会有一个详细的测试报告。
 
-JUnit 5 内置的断言可以分成六大类：简单断言、数组断言、组合断言、异常断言、超时断言、快速失败。
+JUnit 5 内置的断言可以分成六大类：简单断言、数组断言、组合断言、异常断言、超时断言、快速失败。某个测试中某次断言失败后，该测试方法之后的代码都不会被执行。
 
 ### 简单断言
 
 用来对单个值进行简单的验证。如：
 
-| 方法            | 说明                                     |
-| --------------- | ---------------------------------------- |
-| assertEquals    | 判断两个对象或两个原始**类型**是否相等   |
-| assertNotEquals | 判断两个对象或两个原始**类型**是否不相等 |
-| assertSame      | 判断两个对象**引用**是否指向同一个对象   |
-| assertNotSame   | 判断两个对象**引用**是否指向不同的对象   |
-| assertTrue      | 判断给定的**布尔值**是否为 true          |
-| assertFalse     | 判断给定的**布尔值**是否为 false         |
-| assertNull      | 判断给定的**对象引用**是否为 null        |
-| assertNotNull   | 判断给定的**对象引用**是否不为 null      |
+| 方法            | 说明                                   |
+| --------------- | -------------------------------------- |
+| assertEquals    | 判断两个对象或两个基本类型值是否相等   |
+| assertNotEquals | 判断两个对象或两个基本类型值是否不相等 |
+| assertSame      | 判断两个对象**引用**是否指向同一个对象 |
+| assertNotSame   | 判断两个对象**引用**是否指向不同的对象 |
+| assertTrue      | 判断给定的**布尔值**是否为 true        |
+| assertFalse     | 判断给定的**布尔值**是否为 false       |
+| assertNull      | 判断给定的**对象引用**是否为 null      |
+| assertNotNull   | 判断给定的**对象引用**是否不为 null    |
 
+### 数组断言
 
+通过 assertArrayEquals 方法来判断两个对象或原始类型的数组是否相等：
 
-# 指标监控
+```java
+@DisplayName("测试数组断言")
+@Test
+void testArrayAssertions(){
+    // (期望值，实际值)
+    Assertions.assertArrayEquals(new int[]{1, 2}, new int[] {1, 2});
+    System.out.println();
+}
+```
 
+### 组合断言
 
+assertAll 方法接受多个 org.junit.jupiter.api.Executable 函数式接口的实例作为要验证的断言，可以通过 lambda 表达式很容易的提供这些断言。
+
+```java
+@Test
+@DisplayName("assert all")
+public void all() {
+    Assertions.assertAll("Math",
+            () -> Assertions.assertEquals(2, 1 + 1),
+            () -> Assertions.assertTrue(1 > 0)
+    );
+}
+```
+
+### 异常断言
+
+在JUnit4时期，想要测试方法的异常情况时，需要用**@Rule**注解的ExpectedException变量还是比较麻烦的。而JUnit5提供了一种新的断言方式**Assertions.assertThrows()** ，配合函数式编程就可以进行使用。
+
+```java
+@Test
+@DisplayName("异常断言")
+void testException(){
+    // 断定业务逻辑出现异常 预期-实际
+    Assertions.assertThrows(ArithmeticException.class,() -> {
+        int i = 10 / 0;},"业务逻辑居然正常运行");
+}
+```
+
+### 超时断言
+
+Junit5还提供了**Assertions.assertTimeout()** 为测试方法设置了超时时间。
+
+```java
+@Test
+@DisplayName("超时测试")
+public void timeoutTest() {
+    //如果测试方法时间超过1s将会异常
+    Assertions.assertTimeout(Duration.ofMillis(1000), () -> Thread.sleep(500));
+}
+```
+
+### 快速失败
+
+通过 fail 方法直接使得测试失败。
+
+```java
+@Test
+@DisplayName("fail")
+public void shouldFail() {
+    if (2 == 2){
+        Assertions.fail("This should fail");
+    }
+}
+```
+
+## 前置条件
+
+JUnit 5 中的前置条件（assumptions【假设】）类似于断言，不同之处在于：**断言预期与实际不符合会使得测试方法失败**，而**前置条件不满足只会使得测试方法的执行终止**。前置条件可以看成是测试方法执行的前提，当该前提不满足时，就没有继续执行该单元测试的必要。
+
+```java
+@DisplayName("测试前置条件")
+@Test
+void testAssumptions(){
+    // 前置条件不满足，该测试方法失效，相对于满足条件时就@Disabled一样
+    Assumptions.assumeTrue(false,"结果不是true");
+    System.out.println("前置条件Assumptions");
+}
+```
+
+## 嵌套测试
+
+JUnit 5 可以通过 Java 中的**内部类**和`@Nested`注解实现嵌套测试，从而可以更好的把相关的测试方法组织在一起。在内部类中可以使用@BeforeEach 和@AfterEach 注解，而且嵌套的层次没有限制。
+
+```java
+@DisplayName("嵌套测试")
+class TestingAStackDemo {
+
+    Stack<Object> stack;
+
+    @Test
+    @DisplayName("is instantiated with new Stack()")
+    void isInstantiatedWithNew() {
+        new Stack<>();
+    }
+
+    @Nested
+    @DisplayName("when new")
+    class WhenNew {
+
+        @BeforeEach
+        void createNewStack() {
+            stack = new Stack<>();
+        }
+
+        @Test
+        @DisplayName("is empty")
+        void isEmpty() {
+            assertTrue(stack.isEmpty());
+        }
+
+        @Test
+        @DisplayName("throws EmptyStackException when popped")
+        void throwsExceptionWhenPopped() {
+            assertThrows(EmptyStackException.class, stack::pop);
+        }
+
+        @Test
+        @DisplayName("throws EmptyStackException when peeked")
+        void throwsExceptionWhenPeeked() {
+            assertThrows(EmptyStackException.class, stack::peek);
+        }
+
+        @Nested
+        @DisplayName("after pushing an element")
+        class AfterPushing {
+
+            String anElement = "an element";
+
+            @BeforeEach
+            void pushAnElement() {
+                stack.push(anElement);
+            }
+
+            @Test
+            @DisplayName("it is no longer empty")
+            void isNotEmpty() {
+                assertFalse(stack.isEmpty());
+            }
+
+            @Test
+            @DisplayName("returns the element when popped and is empty")
+            void returnElementWhenPopped() {
+                assertEquals(anElement, stack.pop());
+                assertTrue(stack.isEmpty());
+            }
+
+            @Test
+            @DisplayName("returns the element when peeked but remains not empty")
+            void returnElementWhenPeeked() {
+                assertEquals(anElement, stack.peek());
+                assertFalse(stack.isEmpty());
+            }
+        }
+    }
+}
+```
+
+## 参数化测试
+
+参数化测试是JUnit5很重要的一个新特性，它使得**用不同的参数多次运行测试**成为了可能，也为我们的单元测试带来许多便利。
+
+利用**@ValueSource**等注解，指定入参，我们将可以使用不同的参数进行多次单元测试，而不需要每新增一个参数就新增一个单元测试，省去了很多冗余代码。（入参：参数传入）
+
+- **@ValueSource**: 为参数化测试指定入参来源，支持八大基础类以及String类型，Class类型。
+- **@NullSource**: 表示为参数化测试提供一个null的入参。
+- **@EnumSource**: 表示为参数化测试提供一个枚举入参。
+- **@CsvFileSource**：表示读取指定CSV文件内容作为参数化测试入参。
+- **@MethodSource**：表示读取指定方法的返回值作为参数化测试入参(注意方法返回需要是一个流)。
+
+当然如果参数化测试仅仅只能做到指定普通的入参还达不到让我觉得惊艳的地步。让我真正感到他的强大之处的地方在于他可以支持外部的各类入参。如：CSV、YML、JSON 文件甚至方法的返回值也可以作为入参。只需要去实现**ArgumentsProvider**接口，任何外部文件都可以作为它的入参。
+
+```java
+@ParameterizedTest
+@ValueSource(strings = {"one", "two", "three"})
+@DisplayName("参数化测试1")
+public void parameterizedTest1(String string) {
+    System.out.println(string);
+    Assertions.assertTrue(StringUtils.isNotBlank(string));
+}
+@ParameterizedTest
+@MethodSource("method")    //指定方法名
+@DisplayName("方法返回值入参")
+public void testWithExplicitLocalMethodSource(String name) {
+    System.out.println(name);
+    Assertions.assertNotNull(name);
+}
+
+static Stream<String> method() {
+    return Stream.of("apple", "banana");
+}
+```
 
 # 高级特性
 
+## Profile功能
 
+为了方便多环境适配，springboot简化了profile功能，使得可以快速切换环境。
 
+**application-profile功能使用：**
 
+- 默认配置文件：application.yaml，在任何时候都会加载。
 
+- 环境配置文件指定的规定：
 
+  - application-{env}.yaml，环境标识名`{env}`随便写。
 
+- 激活指定环境
 
+  - 在默认配置文件中激活，激活方式`spring.profiles.active=环境标识名`。
+  - 命令行激活：java -jar xxx.jar --**spring.profiles.active=Xxx环境标识名 --xxxx=xxx**
+    - 命令行启动SpringBoot项目jar包文件时可以指定配置文件中的配置项的值，运行时会覆盖原来的值。
 
+- 指定好环境配置，默认配置与环境配置会同时生效，当有同名配置项时，profile配置优先（环境配置中优先）。
 
+- 也可以在默认配置中配置多个环境：
 
+  ```properties
+  spring.profiles.group.myprod[0]=pdd
+  ```
 
-
-
+  
 
 
 

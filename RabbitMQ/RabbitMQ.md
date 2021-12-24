@@ -96,14 +96,15 @@ rabbitMQ下载，下载rpm包：[Release RabbitMQ 3.9.8 · rabbitmq/rabbitmq-ser
 
 **启动服务：**
 
-- `systemctl list-unit-files | grep rabbitmq-server`：查看服务是否开机自启动；
-- `/sbin/service rabbitmq-server start`：启动服务；（启动过程要一点时间）
-- `/sbin/service rabbitmq-server status`：查看服务状态；
-- `/sbin/service rabbitmq-server stop`：停止服务。
+- `systemctl list-unit-files | grep rabbitmq-server`：查看rabbitmq-server服务是否是开机自启动；
+- `/sbin/service rabbitmq-server start`：启动rabbitmq-server服务；（启动过程要一点时间）
+  - `/bin/systemctl/ start rebbitmq.service`。
+- `/sbin/service rabbitmq-server status`：查看rabbitmq-server服务状态；
+- `/sbin/service rabbitmq-server stop`：停止rabbitmq-server服务。
 
 **开启 web 管理插件：**
 
-- `rabbitmq-plugins enable rabbitmq_management`；（开启服务也能安装的嘛）
+- 启动：`rabbitmq-plugins enable rabbitmq_management`；（开启服务也能安装的嘛）
 - 访问：[RabbitMQ Management地址](http://192.168.137.129:15672/)；（15672端口），默认用户名密码都是`guest`，登陆不上是因为这个用户没有设置权限。
 
 **新建用户与权限设置：**
@@ -118,6 +119,7 @@ else：
 
 - `rabbitmqctl stop_app`：关闭；
 - `rabbitmqctl reset`：清除；
+- `rabbitmqctl status`：查看服务状态；
 - `rabbitmqctl start_app`：重启。
 
 # HelloRabbitMQ

@@ -660,6 +660,11 @@ systemctl指令：CentOS7后很多指令都使用这个管理
 
 firewall指令：
 
+- 打开端口：`firewall-cmd --permanent --add-port=端口号/协议`。
+- 关闭端口：`firewall-cmd --permanent --remove-port=端口号/协议`。
+- 重新载入，使打开或关闭端口生效：`firewall-cmd --reload`。
+- 查询端口开发状态：`firewall-cmd --query-port=端口/协议`。
+
 ![](img/firewalld.png)
 
 Windows的telnet需要在Windows功能里开启 Telnet Client。
