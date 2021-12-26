@@ -651,12 +651,14 @@ chkconfig指令：与服务在哪个运行级别的自启动/关闭有关
 systemctl指令：CentOS7后很多指令都使用这个管理
 
 - `systemctl [start | stop | restart | status] 服务名`：对服务进行管理(立即生效但只是暂时的)，开启、停止、重启、查看状态；
-- 其管理的服务在/usr/lib/systemd/system下查看；
+- 其管理的服务在`/usr/lib/systemd/system`下查看；
 - `systemctl list-unit-files [| grep 服务名]`：查看服务开机自启动状态，可使用grep进行过滤；
 - `systemctl enable 服务名`：设置服务开机自启动（永久生效）；
 - `systemctl disable 服务名`：停止服务开机自启动（永久生效）；
 - `systemctl is-enable 服务名`：查看服务是否是自启动的；
-- **关闭防火墙**：firewalld.service，`systemctl disable firewalld.service`；（服务名可不加.service）
+- **关闭防火墙**：firewalld.service
+  - `systemctl disable firewalld.service`：开启自启动中移除；（服务名可不加.service）
+  - `systemctl stop firewalld.service`：关闭防火墙服务。
 
 firewall指令：
 
