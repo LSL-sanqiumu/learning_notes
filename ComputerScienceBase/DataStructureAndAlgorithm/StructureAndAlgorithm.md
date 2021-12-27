@@ -119,10 +119,6 @@ O(1) < O(logn) < O(n) < O(nlogn) < O(n^2) < O(n^3) < O(2^n) < O(n!) < O(n^n)
 - 使用场景：当一个数组中大部分元素是同一个值时；
 - 稀疏数组处理方法：把一个数组中不同值的信息（行、列和对应值）以及数组的信息（row、column、有多少个不同的值）都记录进另一个小规模的数组（稀疏数组）。
 
-**代码实现：**
-
-
-
 # 队列Queue
 
 队列是一个有序列表，遵循先入先出原则，可用数组和链表实现。
@@ -590,6 +586,129 @@ public void delete(int no) {
 
 ## 环形链表
 
+### 形成单向环形链表：
+
+```java
+public class CircleLinkedList {
+    private Girl headFirst = new Girl(-1);
+    public void addGirl(int nums){
+        if (nums < 1){
+            System.out.println("nums的值错误！");
+            return;
+        }
+        Girl curGirl = null;
+        for (int i = 1; i <= nums; i++) {
+            Girl girl = new Girl(i);
+            if (i == 1){
+                headFirst = girl;
+                headFirst.setNext(girl);
+                curGirl = headFirst;
+            }else {
+                curGirl.setNext(girl);
+                girl.setNext(headFirst);
+                curGirl = girl;
+            }
+        }
+    }
+    // 遍历
+    public void showGirl(){
+        if (headFirst == null){
+            System.out.println("链表为空！");
+            return;
+        }
+        Girl curGirl = headFirst;
+        while (true){
+            System.out.printf("小孩 %d \n", curGirl.getNo());
+            if (curGirl.getNext() == headFirst){
+                break;
+            }
+            curGirl =curGirl.getNext();
+        }
+    }
+
+}
+
+class Girl {
+    private int no;
+    private Girl next;
+    public Girl(int no) {
+        this.no = no;
+    }
+	...
+}
+```
+
+### 解决约瑟夫问题：
+
+```txt
+设编号为1、2、3、...、n的n个人围成一圈，约定编号为k(1<=k<=n)，的人从1开始报数，数到m的那个人出列，他的下一位又从1开始报数，数到m的那个人又出列，直到所有人出列为止（由此产生一个出队编号的序列）。
+```
+
+```java
+// 根据用户输入形成出圈的序列: 从哪开始数 每次数多少下 最初圈中有多少个
+public void countGirl(int startNo, int countNum, int nums){
+    if (headFirst == null || startNo < 1 || startNo > nums){
+        System.out.println("参数有误！");
+        return;
+    }
+    Girl helper = headFirst;
+    while (true) {
+        if (helper.getNext() == headFirst){
+            break;
+        }
+        helper = helper.getNext();
+    }
+    // 确定到起始位置
+    for (int i = 0; i < startNo - 1; i++) {
+        headFirst = headFirst.getNext();
+        helper = helper.getNext();
+    }
+    // 从起始位置开始报数出圈，直到只有一个节点
+    while (true){
+        if (helper == headFirst) {
+            break;
+        }
+        // 按countNum移动，到达位置就出圈
+        for (int i = 0; i < countNum - 1; i++) {
+            headFirst = headFirst.getNext();
+            helper = helper.getNext();
+        }
+        System.out.printf("小孩%d出圈\n",headFirst.getNo());
+        headFirst = headFirst.getNext();
+        helper.setNext(headFirst);
+    }
+    System.out.printf("最后留在圈中的是：%d\n",headFirst.getNo());
+}
+```
+
+# 栈
+
+## 概述
+
+1. 栈（stack，又名堆栈）是一个先入后出（FILO-First In Last Out）的有序列表。 
+2. 栈(stack)是一种特殊线性表，其元素的插入和删除只能在线性表的同一端进行。允许插入和删除的一端，也就是能变化的一端，称为栈顶(Top)，另一端为固定的一端，称为栈底(Bottom)。 
+3. 根据栈的定义可知，最先放入栈中元素在栈底，最后放入的元素在栈顶，而删除元素刚好相反，最后放入的元素最先删除，最先放入的元素最后删除。
+
+## 应用场景
+
+1. 子程序的调用：在跳往子程序前，会先将下个指令的地址存到堆栈中，直到子程序执行完后再将地址取出，以回到原来的程序中。
+2. 处理递归调用：和子程序的调用类似，只是除了储存下一个指令的地址外，也将参数、区域变量等数据存入堆栈中。
+3. 表达式的转换[中缀表达式转后缀表达式]与求值(实际解决)。 
+4. 二叉树的遍历。 
+5.  图形的深度优先(depth 一 first)搜索法。
+
+# 哈希表
+
+
+
+
+
+
+
+
+
+# 堆
+
 
 
 
@@ -604,7 +723,7 @@ public void delete(int no) {
 
 
 
-
+# 算法
 
 
 

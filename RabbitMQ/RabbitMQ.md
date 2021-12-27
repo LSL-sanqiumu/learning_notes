@@ -76,6 +76,8 @@ RabbitMQ，一个消息中间件，负责消息数据的接收、存储和转发
 - 队列：本质是大的消息缓冲区。
 - 消费者：等待接收信息的程序。
 
+![](img/rabbitmq-model.png)
+
 ## Linux下安装
 
 ### **Erlang环境安装：**
@@ -207,6 +209,8 @@ else：
 
 1. `sudo hostnamectl set-hostname scholarhost`可以修改主机名，启动后生效；`hostname`、`hostnamectl`查看主机名；
 2. `vim /etc/hosts`：查看ip与`192.168.137.129`是否正确。
+
+![](img/rabbitmq-model.png)
 
 # 1.简单队列
 
@@ -746,23 +750,196 @@ public class Customer {
 
 ## 操作
 
+通过自动配置好的`RabbitTemplate rabbitTemplate`进行操作。
 
+### **简单队列：**
 
+```java
+@Test 
+void test1(){ // 生产者
+    rabbitTemplate.convertAndSend("hello","hello springboot--rabbitmq");
+}
+```
 
+```java
+@Component // 消费者
+@RabbitListener(queuesToDeclare = @Queue(value = "hello", durable = "false",autoDelete = "true"))
+public class HelloCustomer {
+    @RabbitHandler
+    public void resp(String message){
+            System.out.println(message);
+        }
+}
+```
 
+### **工作队列：**
 
+```java
+@Test
+void testWork(){
+    for (int i = 0; i < 10; i++) {
+        rabbitTemplate.convertAndSend("work","work 模型");
+    }
+}
+```
 
+```java
+@Component
+public class WorkCustomer {
 
+    @RabbitListener(queuesToDeclare = @Queue("work"))
+    public void customer1(String message){
+        System.out.println("message1：" + message);
+    }
+    @RabbitListener(queuesToDeclare = @Queue("work"))
+    public void customer2(String message){
+        System.out.println("message2：" + message);
+    }
+}
+```
 
+如果需要实现能者多劳的效果，需要额外的配置。
 
+### Fanout：
 
+```java
+@Component
+public class FanoutCustomer {
+    @RabbitListener(bindings = {@QueueBinding(value = @Queue,exchange = @Exchange(value = "sb_fanout",type = "fanout"))})
+    public void receive1(String message){
+        System.out.println("receive1：" + message);
+    }
+    @RabbitListener(bindings = {@QueueBinding(value = @Queue,exchange = @Exchange(value = "sb_fanout",type = "fanout"))})
+    public void receive2(String message){
+        System.out.println("receive2：" + message);
+    }
+}
+```
 
+```java
+@Test
+void testFanout(){ // 生产者
+    rabbitTemplate.convertAndSend("sb_fanout","","fanout的模型 message");
+}
+```
 
+### Routing：
 
+**routing-direct：**
 
+```java
+@Test
+void testRoutingDirect(){ // 生产者
+    rabbitTemplate.convertAndSend("routing-direct","info","routing-direct message");
+    rabbitTemplate.convertAndSend("routing-direct","error","routing-direct message");
+}
+```
 
+```java
+@Component
+public class RouteCustomer {
 
+    @RabbitListener(bindings =
+            {@QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "routing-direct",type = "direct"),key = {"info","warn","error"}),
+            })
+    public void receive1(String message){
+        System.out.println("消费者1:路由到info warn error 的消息" + message);
+    }
+    @RabbitListener(bindings =
+            {@QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "routing-direct",type = "direct"),key = {"error"}),
+            })
+    public void receive2(String message){
+        System.out.println("消费者2:路由到 error 的消息" + message);
+    }
+}
+```
 
+**routing-topic：**
 
+```java
+// topic 动态路由 订阅模式
+@Test
+void testRoutingTopic(){ // 生产者
+    rabbitTemplate.convertAndSend("routing-topic","user.save","routing-optic message: user.save");
+    rabbitTemplate.convertAndSend("routing-topic","order","routing-optic message: order");
+}
+```
 
+```java
+@Component
+public class TopicCustomer {
+    @RabbitListener(bindings =
+            {@QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "routing-topic",type = "topic"),key = {"user.save","user.*"}),
+            })
+    public void receive1(String message){
+        System.out.println("消费者1:路由到 user.* user.save 的消息" + message);
+    }
+    @RabbitListener(bindings =
+            {@QueueBinding(
+                    value = @Queue,
+                    exchange = @Exchange(value = "routing-topic",type = "topic"),key = {"order.#","produce.#","user.*"}),
+            })
+    public void receive2(String message){
+        System.out.println("消费者2:路由到 order.# produce.# user.* 的消息" + message);
+    }
+}
+```
 
+# 应用场景
+
+## 异步处理
+
+场景说明：用户注册后，需要发注册邮件和注册短信,传统的做法有两种 1.串行的方式 2.并行的方式。
+
+串行方式: 将注册信息写入数据库后，发送注册邮件,再发送注册短信，以上三个任务全部完成后才返回给客户端。 这有一个问题是：邮件、短信并不是必须的，它只是一个通知，而这种做法会让客户端等待没有必要等待的东西。
+
+![](img/异步处理-串行.png)
+
+并行方式: 将注册信息写入数据库后，在发送邮件的同时发送短信，这三个任务完成后响应信息给客户端，并行的方式能提高处理的时间。
+
+![](img/异步处理-并行.png)
+
+消息队列：假设三个业务节点分别使用50ms，串行方式使用时间150ms，并行使用时间100ms。虽然并行已经提高的处理时间，但是邮件和短信对我正常的使用网站没有任何影响，客户端没有必要等着其发送完成才显示注册成功，应该是写入数据库后就返回。
+
+当引入消息队列后，把发送邮件、短信不是必须的业务逻辑进行异步处理 。
+
+![](img/异步处理-消息队列.png)
+
+由此可以看出，引入消息队列后，用户的响应时间就等于写入数据库的时间+写入消息队列的时间(可以忽略不计)，引入消息队列后处理后，响应时间是串行的3倍,是并行的2倍。
+
+## 应用解耦
+
+场景：双11是购物狂节，用户下单后，订单系统需要通知库存系统，传统的做法就是订单系统调用库存系统的接口。
+
+![](img/应用解耦-传统.png)
+
+这种做法有一个缺点：当库存系统出现故障时，订单就会失败。 订单系统和库存系统高耦合，因此可以引入消息队列 。
+
+![](img/应用解耦-消息队列.png)
+
+- 订单系统：用户下单后，订单系统完成持久化处理并将消息写入消息队列，返回用户订单下单成功。
+
+- 库存系统：订阅下单的消息，获取下单消息，进行库操作。就算库存系统出现故障，消息队列也能保证消息的可靠投递，
+  不会导致消息丢失。
+
+## 流量削峰
+
+场景: 秒杀活动，一般会因为流量过大，导致应用挂掉，为了解决这个问题，一般在应用前端加入消息队列。  
+
+作用:
+
+1. 可以控制活动人数，超过此一定阀值的订单直接丢弃 。
+2. 可以缓解短时间的高流量而导致应用被压垮（应用程序将按自己的最大处理能力获取订单）。
+
+![](img/应用解耦-消息队列-流程.png)
+
+1. 服务器收到用户的请求之后，首先将请求写入消息队列，当加入消息队列的超过最大值时，则直接抛弃用户请求或跳转到错误页面。
+2. 秒杀业务根据消息队列中的请求信息，再做后续处理。
+
+# RabbitMQ的集群
