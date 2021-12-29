@@ -357,11 +357,92 @@ JavaScript代码由浏览器中JavaScript解析器来执行，JavaScript解析�
 
 ## 对象
 
+### 创建对象
 
+**创建对象方式一：通过**字面量创建对象
 
+```html
+<script type="text/javascript"> 
+    var obj = {
+        username: '陆拾陆',
+        password: '123456',
+        address: 'Beijing',
+        saiHi: function(){
+            alert('对象中的方法');
+        }
+    };
+    // 使用对象属性 对象名.属性 对象名['属性名']
+    alert(obj.username);
+    alert(obj['username']);
+    // 调用方法
+    obj.saiHi();
+</script>   
+```
 
+**创建对象方式二：通过**new Object创建对象
 
+```html
+<script type="text/javascript"> 
+    var obj = new Object(); // 创建了一个空对象
+    obj.username = '陆拾陆';
+    obj.password = '123456';
+    obj.address = 'Beijing';
+    obj.sayHi = function(){
+        alert('这是对象的方法');
+    }
+</script>
+```
 
+**创建对象方式三：**
+
+使用构造函数来创建对象：前面的方式一次只能创建一个对象，将创建对象的过程封装进函数，即构造函数，当需要对象的时候就调用方法并传参就能构造不同属性值的对象。
+
+```html
+<script type="text/javascript"> 
+    // 声明构造函数 首字母要大写 不需要return 属性、方法前面必须要this
+    function CreateObj(username,age){
+        this.username = username;
+        this.age = age;
+        this.sayHi = function(message){
+            alert(message);
+        }
+    }
+    // 使用构造函数创建对象
+    var obj = new CreateObj('陆拾陆',21);
+    obj.sayHi('这是由构造函数创建的对象中的方法');
+    alert(obj['username']);
+</script>
+```
+
+`new`关键字的执行过程：
+
+1. new 构造函数 ===> 就会在内存中创建了一个空的对象；
+2. this 就会指向创建的空对象；
+3. 执行构造函数里面的代码，给空对象添加属性和方法；
+4. 返回对象。（new执行完就会自己返回对象，所以不需要return）
+
+**for in 循环遍历对象：**
+
+```html
+<script type="text/javascript"> 
+    // 声明构造函数 首字母要大写 不需要return 属性、方法前面必须要this
+    function CreateObj(username,age){
+        this.username = username;
+        this.age = age;
+        this.sayHi = function(message){
+            alert(message);
+        }
+    }
+    var obj = new CreateObj('陆拾陆','21');
+    // 使用构造函数创建对象
+    for (var key in obj) {
+        alert(key); // 得到属性名
+        alert(obj[key]); // 得到属性值
+    }
+</script>
+```
+
+### 内置对象
 
 
 
