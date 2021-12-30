@@ -191,8 +191,10 @@ console.log(0.07 * 00); // 7.000000000000001
 
 ```js
 var array = new Array(); // 创建了一个空数组
+var array = new Array(2); // 创建了一个长度为2的数组
 var array = []; // 创建了一个空数组，长度为0
 var array = ['值1','值2','值3','值4','值5']; // 创建并初始化
+
 alert(array[9]); // 可访问任意下标的值，如果不含数据的下标则返回undefined
 array.length; // 数组长度
 ```
@@ -444,15 +446,121 @@ JavaScript代码由浏览器中JavaScript解析器来执行，JavaScript解析�
 
 ### 内置对象
 
+JavaScript的三种对象：自定义对象、内置对象、浏览器对象。
 
+内置对象：JavaScript自带的对象，对象含有常用的或基本而必要功能（属性和方法），例如Math、Date、Array、String。
 
+MDN文档查看：[JavaScript 标准内置对象 - JavaScript | MDN (mozilla.org)](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects)。
 
+#### **Math对象：**
 
+![](img/Math.png)
 
+#### **Date：**
 
+是一个构造函数。
 
+![](img/dateformat.png)
 
+获取时间戳：从1970年1月1日（世界标准世界）起的毫秒数。
 
+```html
+<script type="text/javascript"> 
+    var date = new Date();
+    alert(date.valueOf());
+    alert(date.getTime());
+    // 最常用的方法
+    var date1 = +new Date();
+    alert(date1);
+    // H5 新增
+    alert(Date.now());
+</script>
+```
+
+```html
+<script type="text/javascript">
+    function countDown(time){
+        var nowTime = +new Date();
+        var inputTime = +new Date(time);
+        var times = (inputTime - nowTime) / 1000;
+        var d = parseInt(times / 60 / 60 / 24);
+        d = d < 10 ? '0' + d : d;
+        var h = parseInt(times / 60 / 60 % 24); 
+        h = h < 10 ? '0' + h : h;
+        var m = parseInt(times / 60 % 60);
+        m = m < 10 ? '0' + m : m;
+        var s = parseInt(times % 60);
+        s = s < 10 ? '0' + s : s;
+        return d + '天' + h + '时' + m + '分' + s + '秒';
+    }
+    var t = countDown('2022-1-1 00:00:00');
+    console.log(t); 
+</script>   
+```
+
+#### **数组对象：**
+
+```html
+<script>
+    // 通过内置的Array()构造函数创建数组
+	var array = new Array(); // 创建了一个空数组
+    var array = new Array(3); // 创建了一个长度为3的数组 
+	var array = new Array(2,3); // 创建并初始化 
+</script>
+```
+
+检测是否为数组对象的两种方式：
+
+instanceof，`xx instanceof Array`判断是否为数组。
+
+H5新增方法：`Array.isArray(arr)`，传入arr并判断是否是数组，返回boolean值。
+
+创建的数组对象的方法：（都会改变原数组）
+
+```html
+<script type="text/javascript">
+    // 往数组末尾追加元素
+    var arr = [1,2,3];
+    var length = arr.push(4,'lsl'); // 返回的是新数组的长度
+    alert(arr); 
+    // 往数组头部追加元素 返回的也是新数组长度
+    arr.unshift('头部');
+    alert(arr);
+    // 删除数组最后一个元素并返回这个元素
+    arr.pop();
+    // 删除数组第一个元素并返回这个元素
+    arr.shift();
+</script>
+```
+
+```html
+<script type="text/javascript">
+    var arr = [1,12,3,9,5,7,10,2];
+    // 反转数组的元素
+    alert(arr.reverse());
+    // 冒泡排序
+    arr.sort(function(a,b){
+        return a - b; // 升序来进行排序，+则是降序排序
+    });
+    alert(arr);        
+</script>
+```
+
+数组索引方法：
+
+![](img/index.png)
+
+```html
+<script type="text/javascript">
+    var arr = [1,12,2];
+    // 从前往后查找
+    // 返回该数组元素索引，只返回第一个满足条件的索引，找不到返回-1
+    var index1 = arr.indexOf(12); // 1 
+    // 从后往前查找
+    // 返回该数组元素索引，只返回第一个满足条件的索引，找不到返回-1        
+    var index2 = arr.indexOf(2);  // 2   
+</script>  
+```
 
 
 
