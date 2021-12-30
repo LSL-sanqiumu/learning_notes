@@ -562,6 +562,138 @@ H5新增方法：`Array.isArray(arr)`，传入arr并判断是否是数组，返�
 </script>  
 ```
 
+数组去重：
+
+```js
+function unique(arr){
+    var newArr = [];
+    for(var i = 0; i < arr.length; i++){
+        if(newArr.indexOf(arr[i]) === -1){
+            newArr.push(arr[i]);
+        }
+    }
+    return newArr;
+}
+```
+
+数组转换为字符串：
+
+- `toString()`方法：转换成的字符使用逗号分隔每个元素。
+- `join()`方法：默认是使用逗号分隔，可以设置其他符号来分隔（`join('-')`使用-来分隔）。
+
+![](img/arrM.png)
+
+#### 字符串对象：
+
+**基本包装类型：**
+
+JavaScript提供了三个特殊的引用类型：String、Boolean、Number。基本包装类型就是把简单数据类型包装为复杂数据类型，这样基本数据类型就有了属性和方法。包装的执行过程如下：
+
+```html
+<script type="text/javascript">
+    // 该基本数据类型会包装成复杂数据类型
+    var str = 'string';
+    alert(str.length);
+    // 实际内部执行如下
+    var temp = new String('string'); // 1.创建临时变量
+    str = temp; // 2.赋给str
+    temp = null; // 3.销毁
+</script>
+```
+
+**字符串的不可变：**字符串改变时并不是原来的值发生了改变，而是一个新字符串的引用赋予了该字符串，只是字符串的引用地址发生了改变。
+
+![](img/str.png)
+
+开始的位置是可选的，lastIndexOf也一样。
+
+```html
+<script type="text/javascript">
+    function indexs(arr,str){
+        var indexArray = [];
+        var flag = arr.indexOf(str);
+        while( flag !== -1){
+            indexArray.push(flag);
+            flag = arr.indexOf(str,flag + 1);
+        }
+        return indexArray;
+    }
+    var a  = indexs([1,1,1,3,4,6,1,3],1);
+    alert(a);
+</script>
+```
+
+**根据位置返回字符：**
+
+![](img/str_return.png)
+
+获得重复次数最多的字符：
+
+```html
+<script type="text/javascript">
+    // 出现次数最多的字符
+    function maxShow(str){
+        var obj = {};
+        for(var i = 0; i < str.length; i++){
+            var chars = str.charAt(i);
+            if(obj[chars]){
+                obj[chars]++;
+            }else{
+                obj[chars] = 1;
+            }
+        }
+        var max = 0;
+        var ch = '';
+        for (var key in obj) {
+            if(obj[key] > max){
+                max = obj[key];
+                ch = key;
+            }
+        }
+        return ch;
+    }
+    alert(maxShow('asdffff'));
+</script>
+```
+
+**字符串拼接及截取：**
+
+![](img/str_rel.png)
+
+**替换字符：**
+
+```html
+<script>
+    var str = 'string';
+    // 只会替换首次出现的那个
+    alert(str.replace('s','a'));
+    // 字符转换为数组
+    var s = '1,2,3,4,5,6';
+    console.log(s.split(',')); // [1,2,3,4,5,6]
+    // 字符大小写转换
+    alert(str.toUpperCase()); // 转换为大写
+    alert('AaA'.toLowerCase()); // 转换为小写
+</script>
+```
+
+![](img/e1.png)
+
+## 类型
+
+简单数据类型（也叫基本数据类型）：
+
+- string、number、boolean、undefined、null。
+- 基本数据类型在存储时变量中存储的是值本身，因此叫做值类型。
+- 基本数据类型中特殊的是，null是返回一个空对象（object类型）。
+- 
+
+复杂数据类型（也叫引用类型）：
+
+- 通过new关键字创建的对象（系统对象、自定义对象），如Object、Array、Date等。
+- 存储变量时存储的仅仅是地址（引用）。
+
+![](img/堆和栈.png)
+
 
 
 
