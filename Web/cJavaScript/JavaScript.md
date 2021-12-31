@@ -7,7 +7,7 @@
 
 ![](img/JavaScript.png)
 
-# ECMAScript-最基础
+# ECMAScript-基础语法
 
 JavaScript（网景公司）、Jscript（微软），JavaScript最流行。ECMAScript规定了JS编程的基本语法和基础核心知识，是所有厂商共同遵守的一套JS语法工业标准。使用VS code。
 
@@ -40,7 +40,7 @@ JavaScript（网景公司）、Jscript（微软），JavaScript最流行。ECMAS
 </script>
 ```
 
-## 变量
+### 变量
 
 **变量声明和使用：**
 
@@ -136,7 +136,7 @@ alert(typeof name);
 
 ![](img/转换为数字型.png)
 
-- ​	字符转换为数字型，会根据前面的进行转换，知道遇到不能转换的就终止转换。如`var num = parseInt('123aaa123px');`最终结果是数字型的123，如果`var num = parseInt(a123);`则是NaN。
+- 字符转换为数字型，会根据前面的进行转换，知道遇到不能转换的就终止转换。如`var num = parseInt('123aaa123px');`最终结果是数字型的123，如果`var num = parseInt(a123);`则是NaN。
 
 - 如果转换`'12.94'`之类的字符，会去掉小数位。
 
@@ -170,7 +170,7 @@ console.log(0.07 * 00); // 7.000000000000001
 
 ![](img/==.png)
 
-在JavaScript中，比较运行符会自动换行类型进行比较：`==、>=、<=、>、<`。
+在JavaScript中，比较运行符会自动换行类型进行比较：`==、>=、<=、>、<`、`!==`。
 
 ## 循环
 
@@ -325,17 +325,15 @@ f1(); // 11
 </script>
 ```
 
-
-
 JavaScript代码由浏览器中JavaScript解析器来执行，JavaScript解析器在运行js代码的时候分为：预解析和代码执行。
 
-1. 预解析：js引擎会把js代码里面所有的var还有function提升到当前作用域最前面。
+1. 预解析：js引擎会把js代码里面所有的var还有function提升到**其当前所在作用域的最前面**。
 2. 代码执行：从上往下执行代码。
 
-预解析：
+**预解析：**
 
-- 变量提升：把所有的变量声明都提升到当前作用域最前面，但提升赋值操作。
-- 函数提升：把所有的函数声明提升到当前作用域最前面，但提升调用操作。
+1. 变量提升：把所有的**用var声明的**变量都提升到当前作用域最前面，但不提升赋值操作。
+2. 函数提升：把所有的函数声明提升到当前作用域最前面，但不提升调用操作。（首句使用function开始才算函数，其他只能算函数表达式。）
 
 ```html
 <script type="text/javascript"> 
@@ -356,6 +354,35 @@ JavaScript代码由浏览器中JavaScript解析器来执行，JavaScript解析�
     fun();
 </script>
 ```
+
+**关于预解析的优先级：**“函数会首先被提升，然后才是变量” -《你不知道的JavaScript》。
+
+```html
+<script>
+    console.log(foo);
+    function foo(){
+        console.log('函数声明');
+    }
+    var foo = '与函数同名的变量';
+    console.log(foo);
+</script>
+```
+
+上述代码最后的运行结果表明，**函数提升优先级高于变量提升，且不会被同名变量声明覆盖，但是当同名变量赋值后会被覆盖**。
+
+```js
+// 实际执行：
+function foo(){console.log('函数声明')}
+var foo;
+// foo = '此时会覆盖它-那个与我同名的函数';
+console.log(foo); // 输出函数声明体
+foo = '此时会覆盖它-那个与我同名的函数';
+console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
+```
+
+要注意的是，从一开始便用function开始的才能算作函数，其它只能算作函数表达式，而函数表达式不会被提升。
+
+同时声明多个函数名相同的函数，先声明的会被后声明的覆盖。
 
 ## 对象
 
@@ -685,7 +712,6 @@ JavaScript提供了三个特殊的引用类型：String、Boolean、Number。基
 - string、number、boolean、undefined、null。
 - 基本数据类型在存储时变量中存储的是值本身，因此叫做值类型。
 - 基本数据类型中特殊的是，null是返回一个空对象（object类型）。
-- 
 
 复杂数据类型（也叫引用类型）：
 
@@ -693,6 +719,226 @@ JavaScript提供了三个特殊的引用类型：String、Boolean、Number。基
 - 存储变量时存储的仅仅是地址（引用）。
 
 ![](img/堆和栈.png)
+
+# DOM
+
+Web API，由浏览器通过的一套操作浏览器功能和页面元素的API（DOM、BOM）。
+
+![](img/dom.png)
+
+## 获取元素对象
+
+**1.根据ID获取：** `document.getElementById('id值');`。
+
+```html
+<body>
+    <div id="time">2021-12-31</div>
+    <script>
+      // 返回一个元素对象，不存在有该id的元素则返回null
+      var time = document.getElementById('time');
+      // 使用dir可以打印对象的全部内容
+      console.dir(time);
+    </script>
+</body>
+```
+
+**2.根据HTML标签获取：** `document.getElementsByTagName('标签名');`。
+
+```html
+<body>
+    <div>
+        <ul>
+          <li>1</li>
+          <li>2</li>
+          <li>3</li>
+        </ul>
+        <ul>
+          <li>4</li>
+        </ul>
+    </div>
+    <script>
+      // 返回获取到的元素对象的集合 以伪数组的形式存储  得到的元素对象是动态的
+      // 如果页面中没有，则返回空的伪数组
+      var li = document.getElementsByTagName('li');
+      // 
+      console.dir(li);
+      // 获取某个标签下的某些对象
+      var ul = document.getElementsByTagName('ul');
+      console.dir(ul[1].getElementsByTagName('li')); // 获取到第二个ul里的li元素对象
+    </script>
+</body>
+```
+
+**3.HTML5新增-通过类名获取元素对象：**
+
+```html
+<body>
+    <div class="content">通过类名获取元素对象</div>
+    <div class="content2">通过类名获取元素对象</div>
+    <script>
+      // 根据类名返回元素对象的集合
+      var content = document.getElementsByClassName('content');
+      console.dir(content);
+      // 根据指定选择器返回第一个元素对象
+      var s = document.querySelector('.content');
+      var all = document.querySelectorAll('div');
+      console.dir(s);
+    </script>
+</body>
+```
+
+**4.获取特殊元素：**
+
+```html
+<script>
+    // 获取body元素对象
+    var body = document.body;
+    console.log(body);
+    // 获取html元素对象
+    var htmlEle = document.documentElement;
+    console.log(htmlEle);
+</script>
+```
+
+## 事件
+
+**事件三要素：**1.事件源（被触发对象） 2.事件类型（如何触发） 3.事件处理程序（触发后的行为）。
+
+![](img/事件.png)
+
+```html
+<body>
+    <button id="btn">点一下</button>
+    <script>
+      var btn = document.getElementById('btn');
+      btn.onclick = function(){
+        alert('点击按钮触发的弹窗');
+      }
+    </script>
+</body>
+```
+
+## 操作元素
+
+### **改变元素内容：**
+
+```html
+<body>
+    <button id="btn">显示当前系统时间</button>
+    <div>某个时间1</div>
+    <div>某个时间2</div>
+    <script>
+      // 使用元素对象的属性来更改元素内容
+      var btn = document.getElementById('btn');
+      var div = document.querySelectorAll('div');
+      // div.innerText = '2021.12.31'; 不添加事件，会随着页面的加载而执行更改
+      btn.onclick = function(){
+        // innerText 不会识别HTML标签，内存中存在的标签也充当字符显示  非标准
+        // 会去除内容中的空格和换行
+        div[0].innerText = '<strong>2021</strong>.12.31';  
+      }
+      // 会识别HTML标签，解析内容中存在的标签 W3C标准
+      // 不会去除内容中的空格和换行
+      div[1].innerHTML = '<strong>2021</strong>.12.31';
+      // innerText、innerHtml属性，可以读，即获取到标签内内容
+      console.log(div[1].innerHtml);
+    </script>
+</body>
+```
+
+### **改变常见元素的属性内容：**
+
+ `alt、src、href、id、title`等，都和innerHtml类似，都是元素对象的属性（如果该元素有的话），就可以通过获取到对象后，直接调用属性来直接赋值。
+
+### **修改表单元素的属性内容：**
+
+可以利用DOM操作的有`type、value、checked、selected、disabled（true or false）`，操作步骤和上面差不多。
+
+### **修改元素的样式属性内容：**
+
+![](img/修改样式.png)
+
+行内样式操作：样式较少或功能简单的情况下使用
+
+```html
+<style>
+    div {
+        width: 100px;
+        height: 100px;
+        background-color: aqua;
+    }
+</style>
+<body>
+    <div></div>
+    <script>
+      var div = document.querySelector('div');
+      div.onclick = function(){
+        // 行内样式操作
+        // div.style.backgroundColor = 'pink';
+        this.style.backgroundColor = 'pink';
+      }
+    </script>
+</body>
+```
+
+类名操作方式：
+
+```html
+<style>
+    div {
+        width: 100px;
+        height: 100px;
+        background-color: salmon;
+    }
+    .change {
+        background-color: pink;
+    }
+</style>
+</head>
+<body>
+    <div class=""></div>
+    <script>
+        var div = document.querySelector('div');
+        div.onclick = function(){
+            // 赋值后会覆盖原先的类名
+            div.className = 'change';
+        }
+    </script>
+</body>
+```
+
+![](img/e2.png)
+
+### 排他思想：
+
+```html
+<body>
+    <button>按钮1</button>
+    <button>按钮2</button>
+    <button>按钮3</button>
+    <button>按钮4</button>
+    <button>按钮5</button>
+    <script>
+      var btns = document.getElementsByTagName('button');
+      for(var i = 0; i < btns.length; i++){
+        btns[i].onclick = function(){
+          for(var i = 0; i < btns.length; i++){
+            btns[i].style.backgroundColor = '';
+          }
+          this.style.backgroundColor = 'pink';
+        }
+      }
+    </script>
+</body>
+```
+
+
+
+
+
+
+
+
 
 
 
