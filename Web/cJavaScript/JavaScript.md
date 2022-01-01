@@ -1258,13 +1258,400 @@ xxx.onclick = null;
 
 ![](img/h_事件流2.png)
 
+![](img/h_事件流3.png)
+
 验证事件流：
 
+```html
+<body>
+    <div class="father">
+      <div class="son">son盒子</div>
+    </div>
+    <script>
+      // dom事件流 三个阶段
+      // 1.js代码中只能执行捕获或者冒泡其中一个阶段
+      // 2.onclick 和 attachEvent（ie）只能得到冒泡阶段
+      // 3.捕获阶段 如果addEventListener的第三个参数是true，则处于捕获阶段
+      var son = document.querySelector('.son');
+      son.addEventListener('click',function(){
+        alert('son');
+      },true);
+      var father = document.querySelector('.father');
+      father.addEventListener('click',function(){
+        alert('father');
+      },true);
+      // 4.冒泡阶段 addEventListener的第三个参数缺省或false 则是冒泡阶段
+      var sonB = document.querySelector('.son');
+      sonB.addEventListener('click',function(){
+        alert('son bubble');
+      },false);
+      var fatherB = document.querySelector('.father');
+      fatherB.addEventListener('click',function(){
+        alert('father bubble');
+      },false);
+    </script>
+</body>
+```
+
+- 捕获阶段：document ===> html ===> body ===> father ===> son，依次触发。
+- 冒泡阶段：son ===> father ===> body ===> html ===> document，依次触发。
+
+## 事件对象
+
+### 事件对象的获取：
+
+```html
+<body>
+    <div>123</div>
+    <script>
+      var div = document.querySelector('div');
+      // 1.有了事件后系统自动创建事件对象，在事件侦听函数写入标识就可获取
+      // 2.如下的event1、event2就是事件对象，事件对象名称可自己确定 常用event、evn、e
+      // 3.事件对象是事件的一系列数据的集合 比如鼠标点击事件 ===> 包含鼠标坐标 
+      
+      div.onclick = function(event){
+        console.log(event);
+      }
+      div.addEventListener('click',function(event2){
+        console.log(event2);
+      });
+      // 4.兼容性问题：ie的6 7 8版本用window.event来获取 兼容性写法如下
+      div.addEventListener('click',function(e){
+        e = e || window.event;
+        console.log(e);
+      });
+    </script>
+</body>
+```
+
+### 事件对象的常用方法：
+
+![](img/h_事件方法.png)
+
+target、srcElement、this：
+
+```html
+<body>
+    <div>123</div>
+    <ul><li>1</li><li>2</li><li>3</li></ul>
+    <script>
+      // 1. e.target 哪个元素触发事件就返回哪个元素 this 哪个绑定了事件就返回哪个
+      // 2. currentTarget和this非常相似 但ie6、7、8不认识该属性
+      var div = document.querySelector('div');
+      div.addEventListener('click',function(e){
+        console.log(e.target);
+        console.log(this);
+      });
+      // this返回的是绑定了事件的元素 target返回的是触发了事件的元素
+      var ul = document.querySelector('ul');
+      ul.addEventListener('click',function(e){
+        console.log(this);
+        console.log(e.target);
+      });
+      // 兼容性写法
+      ul.addEventListener('click',function(e){
+        e = e || window.event;
+        var target = e.target || e.srcElement;
+        console.log(target);
+      });
+    </script>
+</body>
+```
+
+type、preventDefault()、retuenValue：
+
+```html
+<body>
+    <div>123</div>
+    <a href="https://www.baidu.com">baidu</a>
+    <form action="https://www.baidu.com">
+      <input type="submit" value="提交" name="sub">
+    </form>
+    <script>
+      // 1.返回事件类型
+      var div = document.querySelector('div');
+      div.addEventListener('click',fun);
+      div.addEventListener('mouseover',fun);
+      div.addEventListener('mouseout',fun);
+      function fun(e){
+        console.log(e.type);
+      }
+      // 2.阻止默认行为或默认事件 例如：让链接不跳转或提交按钮不提交
+      var a = document.querySelector('a');
+      a.addEventListener('click',function(){
+        e.preventDefault(); // dom标准写法
+      });
+      // 传统事件注册方式才能用的 addEventListener方式不能用：
+      a.onclick = function(e){
+        // 兼容低版本ie写法
+        e.preventDefault();
+        e.retuenValue;
+        // 直接return false; 也可以阻止默认行为，没有兼容性问题
+      }
+    </script>
+</body>
+```
+
+### 阻止冒泡的两种方式：
+
+```html
+body>
+  <div class="father">
+    <div class="son">son盒子</div>
+  </div>
+  <script>
+    // 4.冒泡阶段 addEventListener的第三个参数缺省或false 则是冒泡阶段
+    var sonB = document.querySelector('.son');
+    sonB.addEventListener('click',function(e){
+      alert('son bubble');
+      // 方法1，存在兼容性问题
+      e.stopPropagation();
+      // 方法2：非标准，设置为true时禁止冒泡
+      e.cancelBubble = true;
+      // 兼容性写法
+      if(e && e.stopPropagation){
+        e.stopPropagation;
+      }else{
+        window.event.cancelBubble = true;
+      }
+    },false);
+    var fatherB = document.querySelector('.father');
+    fatherB.addEventListener('click',function(){
+      alert('father bubble');
+    },false);
+  </script>
+</body>
+```
+
+### 事件委托：
+
+![](img/h_事件委托.png)
+
+```html
+<body>
+  <ul>
+    <li>点我，弹窗！</li>
+    <li>点我，弹窗！</li>
+    <li>点我，弹窗！</li>
+  </ul>
+  <script>
+    // 事件委托原理：给父节点添加侦听器，利用事件冒泡影响每一个子节点 
+    // 实现需求：点击每个li都会弹窗
+    var ul = document.querySelector('ul');
+    ul.addEventListener('click',function(e){
+      //alert('弹弹弹！');
+      e.target.style.backgroundColor = 'pink';
+    });
+  </script>
+</body>
+```
+
+### 了解-禁止鼠标右键：
+
+```html
+<body>
+  我是一段不愿意分享的文字...
+  <script>
+    // contextmenu 禁用鼠标右键
+    document.addEventListener('contextmenu',function(e){
+      e.preventDefault();
+    });
+    // selectstart 禁止选中文字
+    document.addEventListener('selectstart',function(e){
+      e.preventDefault();
+    });
+  </script>
+</body>
+```
+
+### 鼠标事件对象：
+
+![](img/h_鼠标事件对象.png)
+
+```html
+<body>
+  <script>
+    document.addEventListener('click',function(e){
+      console.log(e.clientX);
+      console.log(e.pageX);
+      console.log(e.screenX);
+    });
+  </script>
+</body>
+```
+
+### 跟随鼠标的图片：
+
+![](img/h_跟随.png)
+
+```html
+<head>
+    <style>
+        img{
+            position: absolute;
+            width: 90px;
+            height: 90px;
+        }
+    </style>
+</head>
+<body>
+  <img src="rabbit.gif" alt="">
+  <script>
+    var pic = document.querySelector('img');
+    // mousemove：鼠标移动1px就会触发
+    document.addEventListener('mousemove',function(e){
+      // 每次获取鼠标坐标值 把其赋予图片的top、left
+      var x = e.pageX;
+      var y = e.pageY;
+      pic.style.top = y - 45 + 'px';
+      pic.style.left = x - 45 + 'px';
+    });
+  </script>
+</body>
+```
+
+### 常用键盘事件：
+
+**键盘触发事件：**
+
+![](img/h_键盘触发.png)
+
+```html
+<body>
+  <script>
+    // 执行顺序 keydown => keypress => keyup
+    document.onkeyup = function(){
+      console.log('键盘键弹起了 up');
+    }
+    document.onkeydown = function(){
+      console.log('你按下键盘键了 down');
+    }
+    // 不能识别功能键 比如ctrl、左右箭头、shift
+    document.onkeypress = function(){
+      con.log('你按下键盘键了 press');
+    }
+  </script>
+</body>
+```
+
+**键盘事件对象：**
+
+![](img/h_keyCode.png)
+
+```html
+<body>
+  <script>
+    // 1.keyup、keydown事件不区分字母大小写 按a、A得到的都是65
+    document.addEventListener('keyup',function(e){
+      // 返回按下的键对应的ASCII码值
+      console.log('keyup:' + e.keyCode);
+      if(e.keyCode === 65){
+        alert("您按下的是a键");
+      }else{
+        alert('您没有按下a键');
+      }
+    });
+    // 2.keypress事件区分字母大小写 a-97 A-65
+    document.addEventListener('keypress',function(e){
+      console.log('press:' + e.keyCode);
+    });
+  </script>
+</body>
+```
+
+### 案例：
+
+![](img/e4.png)
+
+![](img/e5.png)
+
+# BOM
+
+## 概述
+
+![](img/bom.png)
+
+![](img/bom_构成.png)
+
+![](img/window.png)
+
+## window对象常见事件
+
+### 页面加载事件
+
+![](img/bom_window对象.png)
+
+```html
+    <script>
+      window.onload = function(){
+        var btn = document.querySelector('button');
+        btn.addEventListener('click',function(){
+          alert('OK');
+        });
+        alert('页面加载完毕就触发');
+      }
+      window.addEventListener('load',function(){
+        alert('window1');
+      });
+      window.addEventListener('load',function(){
+        alert('window2');
+      });
+      document.addEventListener('DOMContentLoaded',function(){
+        alert(33);
+      });
+      // load 是等页面全部加载完毕才触发 包括页面dom元素、图片、flash、css等
+      // DOMContentLoaded 是DOM加载完毕，不包含图片、flash、css等 加载速度会比load更快
+    </script>
+```
+
+![](img/bom_load.png)
+
+### 调整窗口大小事件
+
+![](img/bom_resize.png)
+
+## 定时器
+
+### setTime()定时器
+
+```html
+ <script>
+    // 1.window.setTimeout(调用函数,延迟ms数); 延迟毫秒数可以省略，省略时是0
+    // 2.调用函数可以直接使用匿名函数，也可以外面声明函数后直接写函数名（不用带括号）
+    // 3.调用函数可以是字符形式：'函数名()'，此时要加括号 ---不提倡
+    // 4.页面中可能有多个定时器，可以为定时器加标识符（命名）
+    setTimeout(function(){
+      alert('2000ms过去了');
+    },2000);
+    var timer2 = setTimeout(function(){
+      alert('3000ms过去了：bongbong');
+    },3000);
+</script>
+```
+
+setTimeout()所调用的函数也被称为回调函数callback（需要等待时间的函数，时间到了再调用函数，因此称为回调函数），触发后调用的函数也可称为回调函数。
+
+**停止setTime()定时器：**
+
+![](img/bom_stoptimer.png)
+
+### setInterval()定时器
 
 
 
+## JavaScript执行机制
 
 
+
+## location对象
+
+
+
+## navigator对象
+
+
+
+## history对象
 
 
 
