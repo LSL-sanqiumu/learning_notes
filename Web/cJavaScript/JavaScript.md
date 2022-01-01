@@ -932,6 +932,356 @@ Web API，由浏览器通过的一套操作浏览器功能和页面元素的API�
 </body>
 ```
 
+### 属性操作：
+
+**获取属性值：**
+
+![](img/get_attrValue.png)
+
+```html
+<body>
+    <button id="value">按钮1</button>
+    <script>
+      var btns = document.getElementsByTagName('button');
+      var v1 = btns[0].id;
+      var v2 = btns[0].getAttribute('id');
+      console.log(v1);
+      console.log(v2);
+    </script>
+</body>
+```
+
+**设置属性值：**
+
+```html
+<body>
+    <button id="value">按钮1</button>
+    <button id="value">按钮1</button>
+    <script>
+      var btns = document.getElementsByTagName('button');
+      btns[0].id = 'hello1';
+      btns[1].setAttribute('id','hello2');
+      console.log(btns[0].id);
+      console.log(btns[1].id);
+    </script>
+</body>
+```
+
+**移除属性值：**
+
+```html
+<body>
+    <button id="value">按钮1</button>
+    <script>
+      var btns = document.getElementsByTagName('button');
+      btns[0].removeAttribute('id');
+      console.log(btns[0].id);
+    </script>
+</body>
+```
+
+### 自定义属性：
+
+![](img/自定义属性.png)
+
+```html
+<body>
+    <div getTime="2" data-time-now="2022"></div>
+    <script>
+      var div = document.querySelector('div');
+      var getTime = div.getAttribute('getTime');
+      div.setAttribute('getTime','2022-1-1');
+      // H5新增自定义获取属性的方法  ie-ie11才开始支持
+      // dataset是一个集合 里面存放了所有自定义的以data开头的属性
+      div.dataset.timeNow = '2022-01-01';
+      console.log('getTime:' + getTime);
+      // data集合存储自定义属性 是以驼峰命名法存储key 如下：
+      console.log('data-time-now:' + div.dataset.timeNow);
+    </script>
+</body>
+```
+
+## 节点操作
+
+### 概述
+
+利用节点层级关系获取元素，逻辑性强，但兼容性差。
+
+![](img/node.png)
+
+### 父子节点
+
+**父子节点的获取：**（找不到就返回null）
+
+```html
+<body>
+    <div id="demo">
+      <div class="box">
+        <span class="e"></span>
+      </div>
+    </div>
+    <ul>
+      <li></li>
+    </ul>
+    <script>
+      var e = document.querySelector('.e');
+      // 获取父节点
+      console.log(e.parentNode);
+      // 获取子节点 childNodes：包含所有的子节点，文本节点、元素节点等
+      var ul = document.querySelector('ul');
+      console.log(ul.childNodes);
+    </script>
+</body>
+```
+
+因为 childNodes包含所有的子节点，如果只想获取到里面的元素节点，就需要专门处理。（因此我们一般不提倡使用childNodes）。
+
+```html
+<script>
+    var ul = document.querySelector('ul');
+    for(var i = 0; i < ul.childNodes.length; i++){
+        if(ul.childNodes[i].nodeType == 1){
+            // 是元素节点
+            console.log(ul.childNodes[i]);
+        }
+    }
+</script>
+```
+
+**获取子节点：**（找不到就返回null）
+
+![](img/parentNode_child.png)
+
+```html
+<script>
+    var ul = document.querySelector('ul');
+    console.log(ul.children);
+</script>
+```
+
+获取第一个节点或最后一个节点：（找不到就返回null）
+
+```html
+<script>
+    var ul = document.querySelector('ul');
+    console.log(ul.firstChild); // 返回第一个节点 不管是元素节点、文本节点或其它
+    console.log(ul.lastChild); // 返回最后一个节点 不管是元素节点、文本节点或其它
+    // ie9 以上兼容的
+    console.log(ul.firstElementChild); // 返回第一个子元素节点
+    console.log(ul.lastElementChild); // 返回最后一个子元素节点
+    // 实际开发使用 没有兼容性问题
+    console.log(ul.childern[0]);
+    console.log(ul.childern[ul.childern.length - 1]);
+</script>
+```
+
+### 兄弟节点
+
+```html
+<body>
+    <div>我是div</div>
+    <span>我是span</span>
+    <ul>
+      <li></li>
+    </ul>
+    <script>
+      var div = document.querySelector('div');
+      // 
+      console.log(div.nextSibling); // 下一个兄弟节点  包含元素节点、文本节点等等
+      console.log(div.previousSibling); // 前一个兄弟节点
+      // 得到兄弟节点 -  元素节点 ie9支持
+      console.log(div.nextElementSibling);
+      console.log(div.previousElementSibling);
+    </script>
+</body>
+```
+
+获取兄弟元素节点，解决兼容性问题：
+
+```html
+<script>
+    function getNextElementSibling(element){
+        var el = elment;
+        while(el = el.nextSibling){
+            if(el.nodeType === 1){
+                return el;
+            }
+        }
+        return null;
+    }
+</script>
+```
+
+### 添加节点
+
+```html
+<body>
+    <ul><li>123</li></ul>
+    <script>
+      // 1.创建元素节点 
+      var li = document.createElement('li');
+      // 2.添加子级节点 在后面追加
+      var ul = document.querySelector('ul');
+      ul.appendChild(li); 
+      // 3.在指定位置添加子节点
+      var lili = document.createElement('li');
+      ul.insertBefore(lili,ul.children[0]);
+    </script>
+</body>
+```
+
+### 删除节点
+
+```html
+<script>
+    // 删除子节点
+	var ul = document.querySelector('ul');
+    ul.removeChild(ul.childern[0]);
+</script>
+```
+
+```html
+<!-- 阻止链接跳转 -->
+<a href="javascript:void(0)"></a>
+<a href="javascript:;"></a>
+```
+
+### 复制节点
+
+![](img/cloneNode.png)
+
+```html
+<script>
+    // 删除子节点
+	var ul = document.querySelector('ul');
+    // cloneNode(true) 深拷贝，复制标签和里面的内容
+    // cloneNode(true) 浅拷贝，只复制标签
+    var cNode = ul.childern[0].cloneNode();
+    ul.appendChild(cNode);
+</script>
+```
+
+![](img/e3.png)
+
+### 创建元素-了解
+
+![](img/createEle.png)
+
+- 使用document.write()重绘后，页面显示内容就只剩写入的了。
+- innerHTML使用字符串拼接时效率慢。
+
+```html
+<body>
+    <button>点我</button>
+    <ul><li>123</li></ul>
+    <script>
+      var btn = document.querySelector('button');
+      btn.onclick = function(){
+        document.write('<div>重绘啦！</div>');
+      }
+    </script>
+</body>
+```
+
+重绘后的HTML页面会变为：
+
+```html
+<html>
+<head></head>
+<body>
+	<div>重绘啦！</div
+</body>
+</html>
+```
+
+## DOM重点核心
+
+针对元素的操作，增、删、改、查、属性操作、事件操作。
+
+# 高级DOM
+
+## 注册事件
+
+![](img/h_sign.png)
+
+事件监听方式1：
+
+![](img/h_addListener.png)
+
+```html
+<body>
+    <button>点我</button>
+    <script>
+      var btn = document.querySelector('button');
+      // 事件监听-注册事件 事件类型是字符型，必须加引号，不能带on
+      btn.addEventListener('click',function(){
+        alert(22);
+      })
+      // 同一元素同一事件可以添加多个侦听器（事件处理程序）
+      btn.addEventListener('click',function(){
+        alert(33);
+      })
+    </script>
+</body>
+```
+
+事件监听方式2：（非标准，ie9以前支持，该方式不能在生产环境中使用，了解一下）
+
+![](img/h_addListener2.png)
+
+## 删除事件
+
+传统的方式来删除事件：
+
+```js
+xxx.onclick = null;
+```
+
+```html
+<body>
+    <button>点我</button>
+    <script>
+      var btns = document.querySelectorAll('button');
+      btns[0].addEventListener('click',fun); // 调用时不需要小括号和调用声明
+      function fun(){
+        alert(333);
+        // 点击触发事件并执行后 重新加载页面前不会再触发
+        btns[0].removeEventListener('click',fun);
+      }
+    </script>
+</body>
+```
+
+## DOM事件流
+
+![](img/h_事件流.png)
+
+![](img/h_事件流2.png)
+
+验证事件流：
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
