@@ -7,7 +7,7 @@
 
 ![](img/JavaScript.png)
 
-# ECMAScript-基础语法
+# ECMAScript-语法标准
 
 JavaScript（网景公司）、Jscript（微软），JavaScript最流行。ECMAScript规定了JS编程的基本语法和基础核心知识，是所有厂商共同遵守的一套JS语法工业标准。使用VS code。
 
@@ -1620,6 +1620,7 @@ body>
     // 2.调用函数可以直接使用匿名函数，也可以外面声明函数后直接写函数名（不用带括号）
     // 3.调用函数可以是字符形式：'函数名()'，此时要加括号 ---不提倡
     // 4.页面中可能有多个定时器，可以为定时器加标识符（命名）
+    // 5.只调用一次 
     setTimeout(function(){
       alert('2000ms过去了');
     },2000);
@@ -1637,25 +1638,230 @@ setTimeout()所调用的函数也被称为回调函数callback（需要等待时
 
 ### setInterval()定时器
 
+![](img/bom_interval.png)
+
+可以实现倒计时效果。
+
+### 清除定时器
+
+![](img/bom_cleartimer.png)
+
+
+
+## this指向
+
+this的指向只有在函数执行的时候才能确定this到底指向谁，一般情况下this最终指向的是那个调用它的对象。
+
+```html
+<body>
+    <button>点我</button>
+    <img src="rabbit.gif" alt="">
+    <script>
+        // 1.全局作用域或普通函数中指向全局对象window
+        console.log(this);
+        function fun(){
+            console.log(this);
+        }
+        // 定时器内也指向window
+        window.setTimeout(function(){
+            console.log(this);
+        },1000);
+        fun(); // window.fun();
+        // 2.方法调用中谁调用就指向谁
+        var obj = {
+            sayHi : function(){
+                console.log(this); // this指向obj这个对象
+            } 
+        }
+        obj.sayHi();
+        var btn = document.querySelector('button');
+        btn.onclick = function(){console.log(this)} // 指向btn
+        // 3.构造函数中this指向构造函数的实例
+        function Person(){
+            console.log(this);
+        }
+        var p = new Person();
+    </script>
+</body>
+```
+
 
 
 ## JavaScript执行机制
 
+![](img/bom_jsrun.png)
 
+![](img/bom_jsasyc.png)
+
+![](img/bom_js.png)
+
+js执行机制：
+
+![](img/bom_js执行机制.png)
 
 ## location对象
 
+### 概述
 
+![](img/bom_location.png)
+
+URL：统一资源定位符
+
+![](img/bom_url.png)
+
+### 属性
+
+![](img/bom_locationM.png)
+
+- 可以通过herf属性和定时器实现页面跳转。
+- search属性，可以获取到表单使用get方法提交的参数，`?v1=v&....`，通过一定处理就可跨页面获取到前一个页面提交的参数。
+
+### 方法
+
+![](img/bom_locationFun.png)
+
+- location.assign()：会记录浏览历史，所以可以实现后退功能。
 
 ## navigator对象
 
-
+![](img/bom_navigator.png)
 
 ## history对象
 
+![](img/bom_history.png)
+
+# PC端网页特效
+
+## 元素偏移量-offset系列
+
+### offset
+
+![](img/pc_offset.png)
+
+![](img/pc_offsty.png)
+
+### 获取鼠标在盒子内坐标
+
+```html
+<head>
+    <style>
+        .box {
+            width: 200px;
+            height: 200px;
+            margin: 200px 0 0 200px;
+            background-color: aqua;
+        }
+    </style>
+</head>
+<body>
+    <div class="box"></div>
+    <script>
+        var box = document.querySelector('.box');
+        box.addEventListener('click',function(e){
+            var l = e.pageX - this.offsetLeft;
+            var r = e.pageY - this.offsetTop;
+            console.log('(' + l + ',' + r + ')');
+        });
+    </script>
+</body>
+```
+
+### 模态框拖拽
 
 
 
+### 放大镜效果
+
+![](img/pc_jdF.png)
+
+## 元素可视区-client系列
+
+### client属性
+
+![](img/pc_client.png)
+
+### 立即执行函数
+
+立即执行函数：不需要调用就执行的函数；主要作用就是，创建了一个独立的作用域。
+
+立即执行函数的写法：（第二个括号可以看作是调用该函数，可以传入参数，可以为函数命名）
+
+1. 写法一：`(function(){})();`。
+2. 写法二：`(function(){}());`
+
+### 淘宝flexible源码分析
+
+
+
+
+
+
+
+## 元素滚动-scroll系列
+
+### scroll属性
+
+![](img/pc_scroll.png)
+
+
+
+### scroll事件
+
+当拖动滚动条时就会触发的事件。
+
+### 仿淘宝固定侧边栏
+
+
+
+## 三大系列总结
+
+![](img/pc_threeAll.png)
+
+## mouseenter和mouseover的区别
+
+![](img/pc_mm.png)
+
+## 动画函数封装
+
+### 动画实现原理
+
+通过定时器使元素产生运动，停止时就移除定时器。
+
+缓慢动画原理：
+
+![](img/pc_缓慢动画.png)
+
+### 封装
+
+函数封装、对象封装。
+
+动画函数封装到单独的js文件。
+
+## 常见网页特效
+
+### 网页轮播图
+
+
+
+
+
+
+
+# 移动端网页特效
+
+## 触屏事件
+
+
+
+## 常见特效
+
+
+
+## 常用开发插件
+
+
+
+## 常用开发框架
 
 
 
