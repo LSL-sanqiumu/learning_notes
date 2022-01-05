@@ -1351,10 +1351,6 @@ interface USB {
 - 当不用关键字而用本身接口名充当数据类型来创建对象时：`new 接口名() {重写}; `  ===> 这就完成了一个匿名实现类的匿名对象，如果要非匿名对象，那么在前面加上 "接口名  对象名 = "就是一个匿名实现类的非匿名对象；
 - 总而言之就是接口实现类的实现方式和对象的实现方式组合成了这四种情况。
 
-# 包装类
-
-
-
 # 异常
 
 ## 概述
@@ -1592,7 +1588,7 @@ public class ResourceNotFoundException extends Exception {
 
 debug进入JDK源码的方式：
 
-1. 使用force step into；
+1. 使用force step into。
 2. 使用step into，需要配置：settings ---》Build ---》Debugger ---》Stepping，把Do not setp into the classes里面的`java.*`和j`avax.*`的勾取消掉。 
 
 # 拓展
@@ -1674,7 +1670,9 @@ MVC设计模式：
 
 - 常用设计模式之一，将程序分为三个层：view视图模型层、controller控制器层、model数据模型层。
 
-# 日志
+# 日志和包
+
+## 日志
 
 我们在平常的代码中，都常用System.out.print()来放在程序中某个位置方便测试、检测程序运行情况，但使用这种方式后面还得一步步删去这些代码，所以为了开发的方便，就提供了日志的功能来方便检测程序的运行状况，而且还能随意的确定是否开启日志。（日志就是为了解决使用System.out.print()来测试后得全部删除这些语句的问题而设计的）。
 
@@ -1720,13 +1718,11 @@ private static final Logger myLogger = Logger.getLogger("com.lsl.mylogger");
 logger.setLevel(Level.ALL); // 不知道设置这个有啥用
 ```
 
-# 包
+## 包
 
 用来组织类。package关键字表示打包。
 
-导包机制-类的导入：
-
-- 只能使用`*`导入一个包：
+导包机制-类的导入：只能使用`*`导入一个包：
 
 ```java
 import java.util.*; // 导入util包下所有的类，但导入不了util包下的包
@@ -1742,7 +1738,7 @@ import static java.lang.System.*; // 导入静态方法、静态域
 
 # javap反编译
 
- javap是 Java class文件分解器，可以反编译，也可以查看java编译器生成的字节码，从而对代码内部的执行逻辑进行分析。
+ javap是 Java class文件分解器，可以反编译，也可以查看java编译器生成的字节码，从而对代码内部的执行逻辑进行分析。cmd命令。
 
 ```cmd
 javap [选项] class文件 # javap -c xxx.class 

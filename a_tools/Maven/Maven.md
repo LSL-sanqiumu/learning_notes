@@ -1072,7 +1072,7 @@ maven-help-plugin
 
 关于import的依赖范围：
 
-- import依赖范围只有在dependencyManagement元素下才有效果
+- import依赖范围只有在dependencyManagement元素下才有效果。
 
 - 如果要在另一个模块使用相同配置的dependencyManagement，就用import
 
@@ -1092,7 +1092,7 @@ maven-help-plugin
 
 插件管理：
 
-使用pluginManagement元素管理模块中的所有的插件配置，和dependencyManagement元素差不多的使用方法
+使用pluginManagement元素管理模块中的所有的插件配置，和dependencyManagement元素差不多的使用方法。
 
 
 

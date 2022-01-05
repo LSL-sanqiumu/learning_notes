@@ -133,6 +133,8 @@ default-character-set=utf8mb4
 7. 安装完成去修改密码，执行：`alter user root@localhost identified by 'root'; `执行后就把密码改为了`root`，这里sql语句后面的分号不要丢；
 8. 服务设置：因为已经有了`mysql5`的服务，设置常用的一个服务的属性为自动，不常用的就设为手动，需要用哪个版本数据库就打开哪个服务，记得要关闭一个再开启另一个。
 
+![](img/mysql.png)
+
 ## 安装SQLyog
 
 可视化软件，下载：[SQLyog - Download (softonic.com)](https://sqlyog.en.softonic.com/)
@@ -288,7 +290,7 @@ Default：设置默认值。
 
 表中的数据中有些字段信息可能是重复的，为了区分这种重复，就引入了约束，协助身份标识；任何一张表都应该有主键约束，主键约束一张表只能有一个。
 
-作为主键的字段：not null + unique（非空、唯一：主键值不能是null，也不能重复）；添加主键约束的操作如下：
+作为主键的字段必须是：not null + unique（非空、唯一：主键值不能是null，也不能重复）；添加主键约束的操作如下：
 
 ```mysql
 create table `table_name`(
@@ -298,7 +300,7 @@ create table `table_name`(
 create table `table_name`(
 	id int(10) not null,
     ...,
-    primary key(字段1，字段2，...)  # 表级约束，主要是给添加包含多个字段的约束，组成复合主键
+    primary key(字段1，字段2，...)  # 表级约束，主要是给表添加包含多个字段的约束，组成复合主键
 );
 # 开发中不建议使用复合主键，建议使用单一主键
 ```
@@ -410,15 +412,16 @@ MySQL引擎在物理文件上的区别：
 
 数据库xx语言：（CURD(create update retrieve delete)	CV	API）
 
-DDL（Definition，数据定义语言）：修改表、库结构的语言，如create、drop、alter的都是。
+- DDL（Definition，数据定义语言）：修改数据表、数据库的结构的语言，如create、drop、alter的都是。
 
-DML（Manipulation，数据操作语言）：对表内数据进行增删改操作的，如insert、update、delete。
+- DML（Manipulation，数据操作语言）：对表内数据进行增删改操作的，如insert、update、delete。
 
-DQL（Query，数据查询语言）：用来查询索引数据，有select关键字的语句都是。
+- DQL（Query，数据查询语言）：用来查询索引数据，有select关键字的语句都是。
 
-DCL（Control ，数据控制语言）：DCL用来授予或回收访问数据库的某种特权，并控制数据库操纵事务发生的时间及效果，对数据库实行监视等，例如授权grant、撤销权限revoke...。
+- DCL（Control ，数据控制语言）：DCL用来授予或回收访问数据库的某种特权，并控制数据库操纵事务发生的时间及效果，对数据库实行监视等，例如授权grant、撤销权限revoke...。
 
-TCL（Transaction Control，事务控制语言）：事务提交commit、事务回滚rollback
+- TCL（Transaction Control，事务控制语言）：事务提交commit、事务回滚rollback。
+
 
 数据库--->数据库中的表--->表中的信息。
 
@@ -443,7 +446,7 @@ TCL（Transaction Control，事务控制语言）：事务提交commit、事务�
 3. 使用数据库
 
    ```sql
-   use `xxx` -- 表名或字段名是特殊字符，就带``
+   use `xxx` -- 表名或字段名是特殊字符，就带 ``
    ```
 
 4. 查看数据库
@@ -497,13 +500,22 @@ show status; -- 显示广泛的服务器状态信息
 show grants; -- 显示授予用户的安全权限
 show errors; -- 显示错误信息
 show warnings; -- 显示警告信息
+show variables like 'character%'; -- 查看字符集设置
 ```
+
+```mysql
+-- 查看表的注释等信息
+USE information_schema;
+SELECT * FROM TABLES WHERE TABLE_SCHEMA='数据库名' AND TABLE_NAME='表名'
+```
+
+
 
 设置数据库表的字符集编码：`CHARSET=utf8`，不设置的话，会是mysql默认的字符集编码~（不支持中文！）。
 
 **MySQL的默认编码是Latin1，不支持中文，但可以修改：**
 
-- 第一种就是创表的时候就修改，charset=utf8；
+- 第一种就是创表的时候就修改，charset=utf8。
 
 
 - 第二种：在my.ini中配置默认的编码：`character-set-server=utf8`。（但不建议使用此种方法，因为第一种是sql上的修改，换台电脑也能运行，但第二种是物理上的修改，如果另一个的数据库ini配置里没有这句话，那就运行不了了）。
@@ -517,9 +529,14 @@ ALTER TABLE `table-name` RENAME AS `new-tablename`;       -- 修改表名
 ALTER TABLE `table-name` ADD 字段名 类型与属性;      -- 添加新字段
 -- alter table add name char(20) NOT NULL default '你是？';
 ALTER TABLE `table-name` MODIFY 字段名 字段属性;   -- 修改字段类型、属性和约束
--- alter table info modify age int(3)not null default 18;
+-- alter table info modify age int(3) not null default 18;
 ALTER TABLE `table-name` CHANGE 字段名 新字段名 字段属性; -- 相当于modify加多了一个修改字段名的功能
 ALTER TABLE `table-name` DROP 字段名;    -- 删除字段
+```
+
+```mysql
+alter table 表名 comment '修改后的表的注释'; -- 修改表的注释
+alter table 表名 modify column 字段名 字段类型 comment '修改后的字段注释'; -- 修改字段的注释
 ```
 
 【注意点】：字段名用可``来包裹起来；SQL大小写不敏感，建议使用小写；所有符号都用英文下的。
@@ -531,10 +548,10 @@ ALTER TABLE `table-name` DROP 字段名;    -- 删除字段
 ## 添加
 
 ```mysql
-insert into `表`(`字段`) value(数据);
--- 为某个字段插入多个数据
-INSERT INTO `表`(`字段`) VALUES (),(),(),(),...;
--- 为多个字段插入一个或多个数据
+insert into `表`(`字段`) value(数据); -- 数据都需要与字段类型对应
+-- 插入多条数据
+INSERT INTO `表`(`字段`) VALUES (数据1),(数据2),(数据3),(数据4),...;
+-- 插入一条或多条数据
 INSERT INTO `表`(`字段`,`字段`,`字段`,...) VALUES (数据1,数据2,数据3),(数据1,数据2,数据3),...; 
 -- 数据和字段要一一对应，字段可省略（省略字段时默认全部字段）
 insert into t_student(birth) values(now());
@@ -556,13 +573,10 @@ date_format函数：将日期转换成特定格式的字符串
 ## 修改
 
 ```mysql
--- 更新 表 set:设置字段值 where:条件定位，可使用运算符 
--- 语法 update `表名` set column_name=value,[column_name=value,...] where [条件]; -- value可以是值也可以是变量
+-- 语法格式：update 表名 set `字段1`=值1,`字段2`=值2,... where 条件;
 update `table-name` set `字段`=新值 -- 如果不指定条件，该表下所有的该字段的值都会被修改
 update `table-name` set `字段`=新值 where `字段`=值;
 update `table-name` set `字段1`=新值1,`字段2`=新值2,... where `字段3`=新值3;
-
--- 语法格式：update 表名 set `字段1`=值1,`字段2`=值2,... where 条件;
 ```
 
 |     条件操作符      |     含义     |  范围  |    结果     |
@@ -576,23 +590,23 @@ update `table-name` set `字段1`=新值1,`字段2`=新值2,... where `字段3`=
 ## 删除
 
 ```mysql
--- delete，delete只删除数据，可以回滚
+-- delete   只删除数据，可以回滚
 delete from `table-name` [where 条件] -- 删除指定数据，没有条件时会删除整张表
--- truncate
-truncate `table-name`  -- 清空数据库表中的数据，但表的结构和索引约束不会变
+-- truncate 清空数据库表中的数据，但表的结构和索引约束不会变
+truncate `table-name`  
 ```
 
-delete和truncate区别：
+`delete`和`truncate`区别：
 
-- 相同点：都能删除数据，但不会影响表的结构；
+- 相同点：都能删除数据，但不会影响表的结构。
 - 不同点：
-  - truncate会重新设置自增列的计数器为0；
+  - truncate会重新设置自增列的计数器为0。
   - truncate不会影响事务。
 
 【了解】delete删除的问题：重启数据库会出现以下现象
 
-- InnoDB：自增列会从1开始（自增量存在于内存，重启内存会丢失，自增列重新开始计数）；
-- MyISAM：继续从上一个自增量开始（自增量存在于文件，文件存在就不会丢失自增量）；
+- InnoDB：自增列会从1开始（自增量存在于内存，重启内存会丢失，自增列重新开始计数）。
+- MyISAM：继续从上一个自增量开始（自增量存在于文件，文件存在就不会丢失自增量）。
 
 # DQL
 
@@ -632,52 +646,51 @@ select `字段1` [as 别名],`字段2` [as 别名],... from `table-name` [as 别
 ```SQL
 -- 去掉某字段的重复数据再显示该字段数据，（distinct关键字？）只能出现在所有字段最前方
 select distinct `字段` from `table-name`;
--- 联合多个字段来去重，几个字段都相同时去重
+-- 联合多个字段来去重，数据中指定字段都相同时才去重
 select distinct `字段1`,`字段2`,... from `table-name`;
--- 可以出现在函数内，下面是去掉该字段重复的数据后剩下的记录条数
-select count(distinct `字段`) from `table-name`;
+-- 可以出现在函数内
+select count(distinct `字段`) from `table-name`; -- 去掉该字段重复的数据后剩下的记录条数
 ```
 
 其他操作：
 
 ```SQL
 SELECT VERSION(); -- 查询版本
-SELECT 1000*4-34 AS '结果'; -- 用来计算
+SELECT 1000*4-34 AS '结果'; -- 计算值
 SELECT @@auto_increment_increment; -- 查询自增的步长
-SELECT `studentresult`+1 AS 提分后 FROM result;
-//上述SQL语句中的中文都是最后用来显示结果的字段名
+SELECT `age`+1 AS 长大一岁 FROM result; -- 指定字段加一后显示，不会改变表内数据
 ```
 
-语法：` select 表达式 from table-name;`；数据库中的表达式：文本值、列、null、函数、计算表达式、系统变量......。
+语法：` select 表达式 from table-name;`；数据库中的表达式：文本值、字段、null、函数、计算表达式、系统变量......。
 
-字段可以使用数学表达式：`select name,sal*12 from table_name`；
+字段也可以使用数学表达式：`select name,age*12 from table_name`；（把字段看成是变量一样进行运算）
 
 ### 条件查询
 
 条件操作符：
 
-|      条件操作符      |     含义     |               描述               |
-| :------------------: | :----------: | :------------------------------: |
-|   =、>、<、>=、<=    |              |                                  |
-|        !=、<>        |    不等于    |                                  |
-| between ... and ...  | 在某个闭区间 |              [x，y]              |
-|         and          |   相当于&&   |              全1为1              |
-|          or          |  相当于\|\|  |              有1为1              |
-|         not          |   相当于！   |                非                |
-|       is null        |  是否为null  |         null不能用=比较          |
-|     is not null      |   不是null   |                                  |
-|         like         |  含有某个值  |      模糊查询，结合%或_使用      |
-|   in(xx,xx,xx,...)   |   里面的值   | 用来查询某字段值有在in里面的数据 |
-| not in(xx,xx,xx,...) | 不在里面的值 | 某字段值不在这几个值当中的是数据 |
+|      条件操作符      |     含义     |                           描述                            |
+| :------------------: | :----------: | :-------------------------------------------------------: |
+|   =、>、<、>=、<=    |              |                                                           |
+|        !=、<>        |    不等于    |                                                           |
+| between ... and ...  | 在某个闭区间 |                          [x，y]                           |
+|         and          |   相当于&&   |                          全1为1                           |
+|          or          |  相当于\|\|  |                          有1为1                           |
+|         not          |   相当于！   |                            非                             |
+|       is null        |  是否为null  |                   null 不能用 = 来比较                    |
+|     is not null      |   不是null   |                                                           |
+|         like         |  含有某个值  |                  模糊查询，结合%或_使用                   |
+|   in(xx,xx,xx,...)   |   里面的值   | 某字段的值能对应in里面的某一个数据<br />返回true或者false |
+| not in(xx,xx,xx,...) | 不在里面的值 |      某字段的值不在这几个值中<br />返回true或者false      |
 
 select语句：
 
 > 语法格式：select `字段1`,`字段2`,... from `table-name` where 条件语句;
 
 ```mysql
-where `字段` = xx; -- 查询字段值为某个值的数据
-where 逻辑判断语句; -- 查询符合该逻辑的数据，可用括号()决定优先级
-where `字段` in (110,120); -- 查询某字段值存在该集合里某个值的数据
+select ... where `字段` = xx; -- 查询字段值为某个值的数据
+select ... where 逻辑判断语句; -- 查询符合该逻辑的数据，可用括号()来决定语句优先级
+select ... where `字段` in (110,120); -- 该字段值是否该集合，如果存在就查询相应数据
 ```
 
 ### 模糊查询
@@ -699,24 +712,26 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
 
 实际的应用中，可能有这样的需求，需要先分组再对每一组的数据进行操作，这是需要使用分组查询。
 
-分组查询就是根据一个或多个字段分为一组组数据再进行查询操作（判断一个或多个字段值是否相同，如果是相同的则为一组，不同的为一组），分组查询一般和分组函数结合来查询特定的数据。
+分组查询就是根据一个或多个字段分为一组组数据再进行查询操作（判断一个或多个字段值是否相同，如果是相同的则为一组数据，不同的为另一组数据），分组查询一般和分组函数结合来查询特定的数据。
 
-- 聚合函数（分组函数、多行处理函数）：多个输入对应一个输出，（例如`select sum(sal) from table_name`只输出总和）。分组函数在使用时必须先分组，然后才能使用，如果不对数据进行分组则默认整张表为一组。
+- 聚合函数（也叫分组函数、多行处理函数）：
+  - 多个输入对应一个输出，（例如`select sum(sal) from table_name`只输出总和）。
+  - 分组函数-经常是分组后再使用，如果不对数据进行分组则默认整张表为一组。
 
 
 - ```sql
-  select 函数 from `table-name`
-  count(指定列); -- 行数计数，会忽略所有的null
+  select 函数 from `table-name`；-- 分组函数如下
+  count(`字段`); -- 行数计数，会忽略所有的null
   count(*); --  不会忽略null
   count(1)
-  sum(xx); avg(xx); max(xx); min(xx);
+  sum(`字段`); avg(`字段`); max(`字段`); min(`字段`); -- 求总和 求平均值 求最大值 求最小值
   ```
 
 
 分组函数使用注意事项：
 
-- 分组函数会自动忽略Null；
-- 分组函数不能直接使用在where子句；
+- 分组函数会自动忽略Null。
+- 分组函数不能直接使用在where条件子句。
 - 所有分组函数可以组合起来一起用。
 
 分组查询的使用：
@@ -742,7 +757,7 @@ create table t_order(
   price decimal(10,2) not null default 0 comment '订单金额',
   the_year SMALLINT not null comment '订单创建年份',
   PRIMARY KEY (id)
-) comment '订单表';
+)engine=innodb default charset=utf8 comment '订单表';
 
 -- 插入数据
 insert into t_order(user_id,user_name,price,the_year) values
@@ -757,38 +772,34 @@ insert into t_order(user_id,user_name,price,the_year) values
   (1003,'丙',66.66,'2019');
 ```
 
+查询每个用户每年的订单量：
+
 ```mysql
--- 查询每个用户每年的订单量：用户和年份分组，然后计算每组的订单量
+-- 用户和年份分组，然后计算每组的订单量
 select user_id,the_year,count(id) as '订单数量' from t_order group by user_id,the_year;
 -- 分组查询完成后再进行过滤，不用where是因为where在group by之前执行
 select user_id,the_year,count(price) as '订单数量' from t_order group by user_id,the_year having the_year=2018;
 ```
 
-
-
 ## 指令执行顺序
 
 ```mysql
--- 执行顺序：from --> where --> group by --> select --> having --> order by
 select ... from ... where ... group by ... having ... order by ...;
--- 从哪张表拿数据->拿出哪些数据->将数据分组->选中数据->对数据进行过滤->对数据进行排序 
+-- 执行顺序：from --> where --> group by --> select --> having --> order by
+-- 从哪张表拿数据 -> 拿出哪些数据 -> 将拿出的数据分组 -> 选中数据 -> 对数据进行过滤 -> 对数据进行排序 
 ```
-
-
 
 ## 联表查询（连接查询）
 
 ### 概述
 
+笛卡儿积现象：当两张表进行连接查询，没有任何条件限制，最终查询结果条数，是两张表条数的乘积，这种现象被称为笛卡尔积现象，由笛卡尔发现的一种数学现象。  ——由该现象可知数据库底层查询是先从表中拿出数据，也就是from先行，这时匹配的次数是每张表的数据条数的乘积；因此，表的连接次数越多，匹配的次数就越多，查询的效率就越低了。
+
 连接查询语法根据年代分为SQL92、SQL99，按照表连接的方式分为三类：
 
-- 内连接：等值连接、非等值连接、自连接；内连接就是连接的两张表没有主次关系；
-- 外连接：有主次关系；
+- 内连接：等值连接、非等值连接、自连接；内连接就是连接的两张表没有主次关系。
+- 外连接：有主次关系（区分主表、从表）。
 - 全连接（几乎不用）。
-
-笛卡儿积现象：当两张表进行连接查询，没有任何条件限制，最终查询结果条数，是两张表条数的乘积，这种现象被称为笛卡尔积现象，由笛卡尔发现的一种数学现象。  
-
-由该现象可知数据库底层查询是先从表中拿出数据，也就是from先行，这时匹配的次数是每张表的条数的乘积，因此，表的连接次数越多，匹配的次数就越多，查询的效率就越低了。
 
 内连接：on后条件用=的就是等值连接，条件不是等值关系就是非等值连接
 
@@ -818,7 +829,7 @@ INSERT INTO `School`.`category` (`categoryid`, `pid`, `categorynamE`) VALUES (4,
 INSERT INTO `school`.`category` (`CATEgoryid`, `pid`, `categoryname`) VALUES (8, 2, '办公信息');
 INSERT INTO `school`.`category` (`categoryid`, `pid`, `CAtegoryname`) VALUES (6, 3, 'web开发'); 
 INSERT INTO `SCHool`.`category` (`categoryid`, `pid`, `categoryname`) VALUES (7, 5, 'ps技术');
-# 把一张表当两张表用，起两个别名；
+# 把一张表当两张表用——起两个别名
 # 下面的SQL语句为：从a、b表选取两表的categoryname都相等的数据的pid、categoryname
  SELECT a.pid,a.categoryname 
  FROM category AS a, category AS b
@@ -829,16 +840,29 @@ INSERT INTO `SCHool`.`category` (`categoryid`, `pid`, `categoryname`) VALUES (7,
 
 SQLJoins：可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。
 
-```sql
+内连接：
+
+```mysql
 inner join -- 两表特定字段在特定条件存在交集的数据集（我的理解），inner join的就是内连接
--- left、right的就是外连接
-left join  -- 左边为主表，两表特定字段存在交集的数据集 + 主表的数据 -> 集合而成的数据集
-right join -- 右边为主表，两表特定字段存在交集的数据集 + 主表的数据 -> 集合而成的数据集
-full outer join -- 两表独立的数据及有交集的数据的集合，类似并集
--- 连接语法：xxx join 确定连接查询方式，见下图-SQL JOINS
+```
+
+外连接：(left、right的就是外连接)
+
+```mysql
+ -- 左外连接，left join左边为主表，两表特定字段存在交集的数据集 + 主表的数据 -> 集合而成的数据集
+left join 
+-- 右外连接，right join右边为主表，两表特定字段存在交集的数据集 + 主表的数据 -> 集合而成的数据集
+right join 
+-- 全外连接，两表独立的数据及交集的数据的集合，类似并集
+full outer join 
+```
+
+连接查询语法：（`xxx join` 确定连接查询方式，见下图-SQL JOINS）
+
+```sql
 -- on 为连接条件，可理解为交集区域
-select ... from ... xxx join ... on ...; （四种）
-select ... from ... xxx join ... on ... where ...;  （三种）
+select ... from `表1` xxx join `表2` on ...; （四种）
+select ... from `表1` xxx join `表2` on ... where ...;  （三种）
 --  where是为了xuan
 ```
 
@@ -846,11 +870,14 @@ inner join ... on一种，left join 、right join 、full outer join 和on 、 w
 
 ![](img/sql-join.png)
 
+使用连接查询的要义：
+
 1. 明确要查询的数据来源的表；
 2. 确定连接查询方式；
 3. 确定交叉数据。
 
 ```sql
+-- 测试用表
 CREATE TABLE t_student(
 id INT(10) NOT NULL AUTO_INCREMENT COMMENT '学生id',
 s_id INT(10) NOT NULL DEFAULT 1001 COMMENT '学号',
@@ -945,9 +972,9 @@ select `字段1`,`字段2`,... from `table-name` where `字段` in(
 
 ```SQL
 -- limit 起始下标,长度n; 从起始下标开始的n条数据  数据条数是从0开始，
-limit 1,5 -- [1,5] 5条j
--- (n-1)*PageSize：n为页面数，PageSize、PageS为每个页面的记录条数 
-limit (n-1)*PageSize,PageS
+limit 1,5 -- [1,5] 5条记录
+-- (n-1)*PageSize：将数据分为n页，每页PageSizet
+limit (n-1)*PageSize,PageSize
 ```
 
 ## 分组和过滤
