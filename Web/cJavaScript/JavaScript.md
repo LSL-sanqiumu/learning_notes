@@ -73,7 +73,7 @@ var a = b = c = 9 //相当于 var a = 9; b=9;c=9;
 
 - JavaScript的变量的数据类型是在程序运行过程中，根据等号右边的值来确定的，当为变量赋值后，该变量的数据类型才能确定。
 
-- js是动态语言，变量的数据类型可变的。
+- js是动态语言，变量的数据类型是可变的。
 
   ```js
   var age = 21;
@@ -117,7 +117,7 @@ var a = b = c = 9 //相当于 var a = 9; b=9;c=9;
 var falg = true; // true是1，false是0，可以使用这两个充当0、1进行运算
 ```
 
-- undefined、NaN和数组相加为NaN，null和数字相加为数字本身。
+- NaN和数组相加为NaN，null和数字相加为数字本身。
 
 ### 检测数据类型
 
@@ -170,7 +170,7 @@ console.log(0.07 * 00); // 7.000000000000001
 
 ![](img/==.png)
 
-在JavaScript中，比较运行符会自动换行类型进行比较：`==、>=、<=、>、<`、`!==`。
+在JavaScript中，比较运行符会自动换行类型进行比较：`==、>=、<=、>、<`、`!==`（不相等		）。
 
 ## 循环
 
@@ -254,7 +254,7 @@ function testArg(){
 testArg(1,2,3);
 ```
 
-arguments是一个伪数组，只有函数才有：
+arguments是一个伪数组，只有函数才有arguments：
 
 - 具有数据的.length属性。
 - 按照索引的方式进行值的存储。
@@ -277,7 +277,7 @@ arguments是一个伪数组，只有函数才有：
    - 浏览器关闭时销毁，比较销毁资源。
 2. 局部变量：
    - 局部作用域（函数内部）的变量，只能在其声明处的函数内部使用。
-   - 程序执行完毕就销毁，更加节约资源。
+   - 程序执行时创建，执行完毕就销毁，更加节约资源。
 
 **作用域链：**
 
@@ -302,12 +302,12 @@ f1(); // 11
 <script type="text/javascript"> 
     // 如果不声明就使用，就会报错
     console.log(num);
-    // 当声明了，上述结果为undefined  坑1
+    // 当如下声明了，上述console结果为undefined  ---坑1
     var num = 10;
     // 此种声明函数方式，可以在函数声明前或后面进行调用
     f();
     function f(){}
-    // 此种声明函数方式，是把函数放进变量里，此时只能在其声明后调用，否则报错 坑2
+    // 此种声明函数方式，是把函数放进变量里，此时只能在其声明后调用，否则报错 ---坑2
     fun();
     var fun = function(){};
 </script>
@@ -327,7 +327,7 @@ f1(); // 11
 
 JavaScript代码由浏览器中JavaScript解析器来执行，JavaScript解析器在运行js代码的时候分为：预解析和代码执行。
 
-1. 预解析：js引擎会把js代码里面所有的var还有function提升到**其当前所在作用域的最前面**。
+1. 预解析：js引擎会把js代码里面所有的var、function提升到**其当前所在作用域的最前面**。（函数表达式不算function）
 2. 代码执行：从上往下执行代码。
 
 **预解析：**
@@ -340,10 +340,10 @@ JavaScript代码由浏览器中JavaScript解析器来执行，JavaScript解析�
     var num = 10;
     fun();
     function fun(){
-        console.log(num);
+        console.log(num); // （最后输出：undefined）
         var num = 20;
     }
-   	// 上面的相当于：（最后输出：undefined）
+   	// 上面的相当于：
     var num;
     function fun(){
         var num;
@@ -374,7 +374,6 @@ JavaScript代码由浏览器中JavaScript解析器来执行，JavaScript解析�
 // 实际执行：
 function foo(){console.log('函数声明')}
 var foo;
-// foo = '此时会覆盖它-那个与我同名的函数';
 console.log(foo); // 输出函数声明体
 foo = '此时会覆盖它-那个与我同名的函数';
 console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
@@ -391,7 +390,9 @@ console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
 **创建对象方式一：通过**字面量创建对象
 
 ```html
-<script type="text/javascript"> 
+<script type="text/javascript">
+    var o = {}; // 创建空对象
+    o.age = 23; // 设置对象属性及值
     var obj = {
         username: '陆拾陆',
         password: '123456',
@@ -450,7 +451,7 @@ console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
 3. 执行构造函数里面的代码，给空对象添加属性和方法；
 4. 返回对象。（new执行完就会自己返回对象，所以不需要return）
 
-**for in 循环遍历对象：**
+**for in 循环遍历对象属性：**
 
 ```html
 <script type="text/javascript"> 
@@ -481,11 +482,18 @@ MDN文档查看：[JavaScript 标准内置对象 - JavaScript | MDN (mozilla.org
 
 #### **Math对象：**
 
+[Math - JavaScript | MDN (mozilla.org)](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Math)
+
 ![](img/Math.png)
+
+- 传入参数，并返回值。
+- 最大、最小值传入数组。
 
 #### **Date：**
 
-是一个构造函数。
+[Date - JavaScript | MDN (mozilla.org)](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Date)
+
+内置的Date()构造函数，创建其对象来调用对象的方法，可以获取时间值。
 
 ![](img/dateformat.png)
 
@@ -494,12 +502,14 @@ MDN文档查看：[JavaScript 标准内置对象 - JavaScript | MDN (mozilla.org
 ```html
 <script type="text/javascript"> 
     var date = new Date();
+    // 方法1
     alert(date.valueOf());
+    // 方法2
     alert(date.getTime());
-    // 最常用的方法
+    // 方法3 最常用的方法
     var date1 = +new Date();
     alert(date1);
-    // H5 新增
+    // 方法4 H5 新增
     alert(Date.now());
 </script>
 ```
@@ -705,7 +715,7 @@ JavaScript提供了三个特殊的引用类型：String、Boolean、Number。基
 
 ![](img/e1.png)
 
-## 类型
+## 类型总结
 
 简单数据类型（也叫基本数据类型）：
 
@@ -1849,7 +1859,23 @@ URL：统一资源定位符
 
 # 移动端网页特效
 
+移动端对js支持较好，不需要怎么考虑兼容性。
+
 ## 触屏事件
+
+### 常见触摸事件
+
+![](img/mobile_touch.png)
+
+### 触摸事件对象
+
+系统自动封装好触屏时的所有参数进事件对象，几个常用对象的属性如下：（第以伪数组存储）
+
+- `touches`：正在触摸屏幕的所有手指的列表。
+- `targetTouches`：正在触摸的当前的dom元素的手指列表。（经常使用）
+- `changedTouches`：手指状态发生改变的列表（从无到有，从有到无的状态）。
+
+
 
 
 
