@@ -269,18 +269,46 @@ Default：设置默认值。
 
 什么是约束（constraint）？
 
-在创建表时，我们可以给表中的字段加上一些约束，来保证这个表中的数据的完整性，有效性，约束的作用就是为了保证表中数据的有效性。
+在创建表时，我们可以给表中的字段加上一些约束，来保证这个表中的数据的完整性、有效性，约束的作用就是为了保证表中数据的有效性。（约束，为保证数据完整性而对数据添加的一些限制）
 
 约束种类：
 
-- 非空约束：not null，指示某列不能存储 NULL 值；
-- 唯一性约束：unique， 保证某列的每行的值唯一；
-- 主键约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个列多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。；
-- 外键约束：foreign key（FK），保证一个表中的数据匹配另一个表中的值的参照完整性；
-- 检查约束：check（MySQL8版本开始支持，Oracle也支持）， 保证列中的值符合指定的条件；
+- 非空约束：not null，指示某列不能存储 NULL 值。
+- 唯一性约束：unique， 保证某列的每行的值唯一、不重复，但是都可以为null。
+- 主键约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个或多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。
+- 外键约束：foreign key（FK），保证一个表中的数据匹配另一个表中的值的参照完整性（一个表中的某个字段受到外表的某个字段值的限制，其字段值得完全参考外表的字段值来存储值）。
+- 检查约束：check（MySQL8版本开始支持，Oracle也支持）， 保证列中的值符合指定的条件。
 - default。
 
 ## 添加唯一性约束
+
+约束单个字段：
+
+```mysql
+-- 创建表时添加
+create table test(
+id int not null auto_increment primary key,
+acct varchar(255) unique  -- 列级约束
+pswd varchar(255) not null
+)engine = innodb default charset=utf8;
+-- 创建表后添加，通过modify或change修改字段结构
+alter table `test` modify acct varchar(255) unique;
+```
+
+两个字段联合唯一：（即不能出现两个字段值都相同的情况）
+
+```mysql
+create table test(
+id int,
+acct varchar(255),
+pswd varchar(255),
+unique(id,acct) -- 约束没有添加在列的后面，称为表级约束
+)engine=innodb default charset=utf8;
+```
+
+在需要给多个字段联合起来添加一个约束的时候，需要使用表级约束。
+
+
 
 
 
@@ -294,7 +322,7 @@ Default：设置默认值。
 
 ```mysql
 create table `table_name`(
-	id int(10) primary key auto_increment, # 行级约束，一个字段作主键：单一主键
+	id int(10) primary key auto_increment, # 行级(列级)约束，一个字段作主键：单一主键
     ...
 );
 create table `table_name`(
@@ -384,9 +412,9 @@ ALTER TABLE XXX ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `
 
 以上操作都是物理外键，数据库级别的外键，不建议使用！
 
-最佳时实践：
+最佳实践：
 
-- 数据库就是单纯的表，只用来存数据，只有行和列；
+- 数据库就是单纯的表，只用来存数据，只有行和列。
 - 使用多张表就创建外键。
 
 # 了解引擎
@@ -483,6 +511,15 @@ CREATE TABLE [IF NOT NULL] 表名(
 )[引擎] [表类型] [字符集设置] [说明];
 ```
 
+将查询结果创建为一个表：
+
+```mysql
+-- 将查询结果当做一张表新建
+create table `table_name` as select ... from ......
+```
+
+
+
 删除表：
 
 ```sql
@@ -547,15 +584,31 @@ alter table 表名 modify column 字段名 字段类型 comment '修改后的字
 
 ## 添加
 
+插入单条数据：
+
 ```mysql
-insert into `表`(`字段`) value(数据); -- 数据都需要与字段类型对应
--- 插入多条数据
-INSERT INTO `表`(`字段`) VALUES (数据1),(数据2),(数据3),(数据4),...;
--- 插入一条或多条数据
-INSERT INTO `表`(`字段`,`字段`,`字段`,...) VALUES (数据1,数据2,数据3),(数据1,数据2,数据3),...; 
+insert into `表`(`字段`,...) value(数据,...); -- 数据都需要与字段类型对应
+-- insert into t_student(birth) values(now());
 -- 数据和字段要一一对应，字段可省略（省略字段时默认全部字段）
-insert into t_student(birth) values(now());
+insert into `表` value(数据,...);
 ```
+
+插入多条数据：
+
+```mysql
+-- 插入一条或多条数据
+INSERT INTO `表`(`字段`) VALUES (数据1),(数据2),(数据3),(数据4),...;
+INSERT INTO `表`(`字段`,`字段`,`字段`,...) VALUES (数据1,数据2,数据3),(数据1,数据2,数据3),...; 
+```
+
+将查询结果插入到一张表中：
+
+```mysql
+-- 查询到的结果要符合目标表的结构
+insert into `表` select ... from ...;  -- 很少用
+```
+
+
 
 为表插入date类型的数据：函数`str_to_date('字符串日期', '日期格式')`：
 
@@ -590,9 +643,12 @@ update `table-name` set `字段1`=新值1,`字段2`=新值2,... where `字段3`=
 ## 删除
 
 ```mysql
--- delete   只删除数据，可以回滚
+-- delete属于DML语句   只删除数据，但数据在硬盘上的存储空间不会被释放
+-- 缺点：删除效率低   优点：支持回滚，数据可以恢复
 delete from `table-name` [where 条件] -- 从指定表删除符合条件的数据，没有条件时会删除整张表
+
 -- truncate 清空数据库表中的数据，但表的结构和索引约束不会变
+-- 删除效率高，不支持回滚，数据不可恢复，属于DDL操作
 truncate `table-name`  
 ```
 
