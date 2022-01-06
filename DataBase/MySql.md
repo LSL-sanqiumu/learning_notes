@@ -527,9 +527,9 @@ SELECT * FROM TABLES WHERE TABLE_SCHEMA='数据库名' AND TABLE_NAME='表名'
 ```mysql
 ALTER TABLE `table-name` RENAME AS `new-tablename`;       -- 修改表名
 ALTER TABLE `table-name` ADD 字段名 类型与属性;      -- 添加新字段
--- alter table add name char(20) NOT NULL default '你是？';
+-- alter table `info` add name char(20) NOT NULL default '你是？';
 ALTER TABLE `table-name` MODIFY 字段名 字段属性;   -- 修改字段类型、属性和约束
--- alter table info modify age int(3) not null default 18;
+-- alter table `info` modify age int(3) not null default 18;
 ALTER TABLE `table-name` CHANGE 字段名 新字段名 字段属性; -- 相当于modify加多了一个修改字段名的功能
 ALTER TABLE `table-name` DROP 字段名;    -- 删除字段
 ```
@@ -591,7 +591,7 @@ update `table-name` set `字段1`=新值1,`字段2`=新值2,... where `字段3`=
 
 ```mysql
 -- delete   只删除数据，可以回滚
-delete from `table-name` [where 条件] -- 删除指定数据，没有条件时会删除整张表
+delete from `table-name` [where 条件] -- 从指定表删除符合条件的数据，没有条件时会删除整张表
 -- truncate 清空数据库表中的数据，但表的结构和索引约束不会变
 truncate `table-name`  
 ```
@@ -714,37 +714,43 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
 
 分组查询就是根据一个或多个字段分为一组组数据再进行查询操作（判断一个或多个字段值是否相同，如果是相同的则为一组数据，不同的为另一组数据），分组查询一般和分组函数结合来查询特定的数据。
 
-- 聚合函数（也叫分组函数、多行处理函数）：
-  - 多个输入对应一个输出，（例如`select sum(sal) from table_name`只输出总和）。
-  - 分组函数-经常是分组后再使用，如果不对数据进行分组则默认整张表为一组。
+**聚合函数（也叫分组函数、多行处理函数）：**
+
+- 多个输入对应一个输出，（例如`select sum(sal) from table_name`只输出总和）。
+- **分组函数必须是分组后才能使用，如果不用group by对数据进行分组则默认整张表为一组**。
 
 
 - ```sql
-  select 函数 from `table-name`；-- 分组函数如下
+  select 分组函数 from `table-name`；-- 分组函数如下
   count(`字段`); -- 行数计数，会忽略所有的null
   count(*); --  不会忽略null
-  count(1)
+  count(1); -- 1 相当于true
   sum(`字段`); avg(`字段`); max(`字段`); min(`字段`); -- 求总和 求平均值 求最大值 求最小值
   ```
+  
+- 分组函数使用注意事项：
 
 
-分组函数使用注意事项：
+  - 分组函数会自动忽略Null。
+  - **分组函数不能直接使用在where条件子句**，但可以使用在having的条件句中。
+  - 所有分组函数可以组合起来一起用。
 
-- 分组函数会自动忽略Null。
-- 分组函数不能直接使用在where条件子句。
-- 所有分组函数可以组合起来一起用。
-
-分组查询的使用：
+**分组查询的使用：**（判断一个或多个字段值是否相同，如果是相同的则为一组数据，不同的为另一组数据）
 
 ```mysql
--- 执行顺序：1.from;2.where;3.group by;4.select;5.order by.
-select xxx from xxx where xxx group by xxx order by xxx;
 -- 分组查询，一定要按照下面的格式；要使用where或having时优先使用having
--- 分组字段数量和group by 后的分组字段应该对应
+-- 分组字段和group by 后的分组字段应该对应
 select `分组字段`,分组函数 from table_name group by `分组字段`;
 select `分组字段1`,`分组字段2`,...,分组函数 from table_name group by `分组字段1`，`分组字段2`, ...;
 select `分组字段`,分组函数 from table_name group by `分组字段` having 条件; -- 先分组再筛选
 ```
+
+```mysql
+-- 关于执行顺序：1.from;2.where;3.group by;4.select;5.order by.
+select xxx from xxx where xxx group by xxx order by xxx;
+```
+
+
 
 分组查询实例：
 
@@ -783,17 +789,29 @@ select user_id,the_year,count(price) as '订单数量' from t_order group by use
 
 ## 指令执行顺序
 
+查询语句：
+
 ```mysql
-select ... from ... where ... group by ... having ... order by ...;
+select ... from ... [可选]; -- [可选] 的随意选择，不过要按照一定顺序书写
+-- 可选要遵循的顺序
+where ... group by ... having ... order by ... limit page,pageSize;
+```
+
+查询语句执行顺序：
+
+```mysql
+select ... from ... where ... group by ... having ... order by ... limit page,pageSize;
 -- 执行顺序：from --> where --> group by --> select --> having --> order by
--- 从哪张表拿数据 -> 拿出哪些数据 -> 将拿出的数据分组 -> 选中数据 -> 对数据进行过滤 -> 对数据进行排序 
+-- 从哪张表拿数据 -> 拿出哪些数据 -> 将拿出的数据分组 -> 选中数据 -> 对数据进行过滤 -> 对数据进行排序 -> 数据分页
 ```
 
 ## 联表查询（连接查询）
 
 ### 概述
 
-笛卡儿积现象：当两张表进行连接查询，没有任何条件限制，最终查询结果条数，是两张表条数的乘积，这种现象被称为笛卡尔积现象，由笛卡尔发现的一种数学现象。  ——由该现象可知数据库底层查询是先从表中拿出数据，也就是from先行，这时匹配的次数是每张表的数据条数的乘积；因此，表的连接次数越多，匹配的次数就越多，查询的效率就越低了。
+笛卡儿积现象：当两张表进行连接查询，没有任何条件限制，**最终查询结果条数**，是两张表条数的乘积，这种现象被称为笛卡尔积现象，由笛卡尔发现的一种数学现象。  ——由该现象可知数据库底层查询是先从表中拿出数据，也就是from先行，这时匹配的次数是每张表的数据条数的乘积；因此，表的连接次数越多，匹配的次数就越多，查询的效率就越低了。
+
+联表查询中，**加条件是为了避免笛卡尔积现象，查询出有效的组合记录**，但是匹配的次数是一次都没有少的，联表查询加条件和效率并没有关系，因此联表查询中尽量降低表的连接才能提高效率。
 
 连接查询语法根据年代分为SQL92、SQL99，按照表连接的方式分为三类：
 
@@ -936,26 +954,36 @@ join d on a和d连接的条件
 
 ## 排序order
 
+按照某个字段升序或降序排序：
+
+```mysql
+select 字段 from table_name order by `字段` asc;
+-- asc：从上往下，升序 desc：从上往下，降序
+```
+
+按照多个字段排序：
+
+```mysql
+select 字段1,字段2 from table_name order by `字段1` asc,`字段2` asc; 
+-- 先按照字段1进行排序处理，字段2是备用排序
+-- 也就是说当字段1的值在某处有多个相等的情况下，这几个相等的就会按照字段2再进行排序处理 
+```
+
+根据字段的位置进行排序，不建议使用（因为列的顺序很容易发生改变）
+
 ```SQL
-select 字段 from table_name order by `字段` asc;-- asc：升序；desc：降序
--- 按照多个字段排序，如下：先按照字段1排序，字段2是备用排序
--- 也就是说字段1的值都是相等的情况下，才会按照字段2进行排序
-select 字段1,字段2 from table_name order by `字段1` asc,`字段2` asc;  
--- 根据字段的位置进行排序，不建议使用（因为列的顺序很容易发生改变）
-select 字段1,字段2 from table_name order by 2; -- 对第二个字段进行排序  
--- 按多个列进行排列
-select 字段 from 表 order by 字段1，字段二; -- 按字段1进行排序，当有多个字段1的的值相同的时候，相同值数据才会按字段2排序
+select 字段1,字段2 from table_name order by 2; -- 对第2个字段进行排序处理，字段位置从1开始而不是从0  
 ```
 
 ## 子查询
 
-本质：在where子语句嵌套一个查询语句
+where子句中出现的子查询，在where子语句中嵌套一个查询语句：
 
 ```SQL
 select `字段1`,`字段2`,... from `table-name` where `字段`=(
 	select `字段`... from `table-name` where 条件语句;
 ))
-......; -- 由里及外
+......; -- 运行由里及外
 ```
 
 ```sql
@@ -966,22 +994,64 @@ select `字段1`,`字段2`,... from `table-name` where `字段` in(
 )
 ```
 
+在from中的子查询：**（from后面的子查询，可以将子查询的查询结果当做一张临时表。）（技巧）**
+
+```mysql
+select ... from (select ... from ... ...) 别名 ......
+```
+
+在select后的子查询语句：(简单了解，会看)
+
+```mysql
+select 字段1, 字段2, (select ... from ... ...) from ... ...
+```
+
+## union
+
+联合，用于将查询结果联合在一起，结果集重复的数据会合并成一条：
+
+```mysql
+ select name,age from info where age = 20 union select name,age from info where age = 18;
+ +----------+-----+
+| name     | age |
++----------+-----+
+| 王小楚   |  20 |
+| 王楚     |  20 |
+| 齐永华   |  20 |
+| 诗涵沁   |  18 |
+| 王芳     |  18 |
+| 欧阳晓宇 |  18 |
++----------+-----+
+select name,age from info where age = 20 union select name,age from info where age = 20;
++--------+-----+
+| name   | age |
++--------+-----+
+| 王小楚 |  20 |
+| 王楚   |  20 |
+| 齐永华 |  20 |
++--------+-----+
+```
+
+- 使用union在进行结果集合并的时候要求两个结果集的列数相同，列的类型可以不同（Oracle下则要求列数、列数据类型都一致）。
+- 一定的场景下，相比联表查询会效率高一些，因为联表查询匹配次数满足笛卡尔积。
+
+
+
 ## 分页limit
 
-缓解数据压力，加强体验；一般图片的才使用瀑布流。
+可用于缓解数据压力，加强体验；一般图片的才使用瀑布流。
 
 ```SQL
--- limit 起始下标,长度n; 从起始下标开始的n条数据  数据条数是从0开始，
-limit 1,5 -- [1,5] 5条记录
--- (n-1)*PageSize：将数据分为n页，每页PageSizet
+-- limit 起始下标,长度n; 从起始下标开始的n条数据  注意数据条数是从0开始的
+limit 0,5 -- [0,5] 每页6条记录
+-- (n-1)*PageSize：将数据分为n页，每页PageSize条数据
 limit (n-1)*PageSize,PageSize
 ```
 
-## 分组和过滤
+## 过滤
 
 ```SQL
-group by 字段; -- 通过什么字段来分组
-having 条件字句; -- 过滤，条件字句中可以使用别名
+select ... from xxx having 条件子句; -- 过滤出符合条件的数据，条件子句中可以使用别名
 ```
 
 # DCL
@@ -996,10 +1066,6 @@ having 条件字句; -- 过滤，条件字句中可以使用别名
 
 4、新建用户（create user）。
 
-# TCL
-
-
-
 # ---------------SQL---------------
 
 # 数据库常用函数
@@ -1012,8 +1078,8 @@ having 条件字句; -- 过滤，条件字句中可以使用别名
 
 |                 单行处理函数                 |                             描述                             |
 | :------------------------------------------: | :----------------------------------------------------------: |
-|             lower(字符串、字段)              |                          转换成小写                          |
-|             upper(字符串、字段)              |                          转换成大写                          |
+|             lower(字符串或字段)              |                 将字符串或字段的值转换成小写                 |
+|             upper(字符串或字段)              |                 将字符串或字段的值转换成大写                 |
 | substr(被截取的字符串，起始下标，截取的长度) |                  取子串（起始下标从1开始）                   |
 |                length(字符串)                |                            取长度                            |
 |                 trim(字符串)                 |                            去空格                            |
@@ -1022,7 +1088,7 @@ having 条件字句; -- 过滤，条件字句中可以使用别名
 |                   format()                   |                          设置千分位                          |
 |              round(1234.567,0)               |                  四舍五入，0表示保留0位小数                  |
 |                    rand()                    |                      生成0-1内的随机数                       |
-|      ifnull(数据，如果为null时转换的值)      |                     将Null转换为具体的值                     |
+|      ifnull(数据，如果为null时转换的值)      |                   数据为Null时转换为某个值                   |
 |          （Null参与的运算都为Null）          |                                                              |
 |   case..when..then..when..then..else..end    | 当..的时候怎么怎么做，只对查询显示的数据进行操作，不会更改数据库 |
 
@@ -1041,29 +1107,29 @@ having 条件字句; -- 过滤，条件字句中可以使用别名
 - hour(now())
 - minute(now())
 - second(now())
-- system_user()：系统
-- user()：系统
-- version()：版本
+- system_user()：系统（ 会返回`root@localhost `）
+- user()：系统（会返回 `root@localhost` ）
+- version()：返回版本号
 
 数学运算：
 
-- ABS( )：绝对值
-- Ceiling( )：向上取整
-- floor( )：向下取整
-- rand( )：随机数
-- sign( )：返回参数的符号（零：0-0，负数：-1，正数：1）
+- abs(xxx)：绝对值
+- ceiling(xxx)：向上取整
+- floor(xxx)：向下取整
+- rand()：返回一个随机数
+- sign(xxx)：返回参数的符号（零：返回0，负数：返回-1，正数：返回1）
 
-字符串函数：
+字符串函数：（**注意：函数中被操作字符的下标是从1开始的，而select查询出来的结果是从0开始的**）
 
 - char_length( )：返回字符串长度
-- concat(a，b，...)：拼接字符串
-- insert('...',int_num,int_num,'......' )：插入字符串
-- lower( )：转小写
-- upper( )：转大写
-- instr( )：返回第一次出现的子串的索引
-- replace( )：替换出现的指定的字符串
-- substr( )：返回指定子字符串
-- reverse( )：反转字符串
+- concat(a，b，...)：用来拼接字符串，相当于几个字符变量相加`a + b + c + ...`
+- insert(s1,x,len,s2)：将s1字符串的 [x,x+len] 区域的字符串替换为s2字符串
+- lower(xxx)：转小写
+- upper(xxx)：转大写
+- instr(目标字符串,要搜索的子串)：返回第一次出现的子串的索引
+- replace(s,s1,s2)：替换出现的指定的字符串，将字符串 s2 替代字符串 s 中的子串 s1
+- substr(被截取的字符串，起始下标，截取的长度)：从指定字符串截取子串，起始下标从1开始
+- reverse(s)：反转字符串，将字符串s的顺序反过来
 
 ## 聚合函数(最常用)
 
@@ -1079,8 +1145,8 @@ sum(xx); avg(xx); max(xx); min(xx);
 
 分组函数使用注意事项：
 
-- 分组函数会自动忽略Null；
-- 分组函数不能直接使用在where字句；
+- 分组函数会自动忽略Null。
+- 分组函数不能直接使用在where字句。
 - 所有分组函数可以组合起来一起用。
 
 # MD5加密
@@ -1130,7 +1196,7 @@ ACID，是指数据库管理系统（DBMS）在写入或更新资料的过程中
 ## 事务操作
 
 ```sql
-set autocommit=0\1; -- 关闭(0)或开启(1)事务，mysql默认开启事务自动提交
+set autocommit=0; -- 关闭(0)或开启(1)事务，mysql默认开启事务自动提交
 ```
 
 手动处理事务流程：
@@ -1249,14 +1315,14 @@ EXPLAIN SELECT * FROM app_user WHERE `name`='用户999999';
 
 ## 索引原则
 
-- 索引不是越多越好
-- 不要对常变动的数据加索引
-- 小数据量的表不需要加索引
-- 索引一般加在常用来查询的字段上
+- 索引不是越多越好。
+- 不要对常变动的数据加索引。
+- 小数据量的表不需要加索引。
+- 索引一般加在常用来查询的字段上。
 
 关于索引的数据结构：
 
-Hash类型的索引、Btree（innodb默认的）
+Hash类型的索引、Btree（innodb默认的）。
 
 # 权限管理
 
