@@ -513,72 +513,6 @@ class Customer extends Thread {
 
 学习目的：知道类是干什么的、以及方法的作用，会使用。
 
-## 包装类
-
-包装类（Wrapper）：针对八种基本数据类型定义的相应的引用类型，Byte、Short、Integer、Long、Float、Double、Character、Boolean。
-
-包装类、基本数据类型、String三者之间的转换（以整型数据为例）：
-
-- 基本数据类型--->包装类：调用包装类的构造器，注意Boolean的构造器有些优化；
-
-  ```java
-  int i = 9;
-  Integer num = new Integer(i);
-  ```
-
-- 包装类--->基本数据类型：调用包装类Xxx的xxxValue()；
-
-  ```java
-  Integer num = new Integer(9);
-  int i = num.intValue();
-  ```
-
-  
-
-- 【】JDK5.0新特性：
-
-  - 自动装箱：基本数据类型可以直接赋给相应的包装类对象，基本数据类型--->包装类；
-  - 自动拆箱：包装类对象可以赋给相应基本数据类型变量，包装类--->基本数据类型。
-
-- 基本数据类型、包装类 <===> String：
-
-  - String ===> 基本数据类型、包装类：调用相应包装类的 parseXxx() 
-  
-    ```java
-    String str = "2134";
-    int i = Integer.parseInt(str);
-    ```
-  
-  - 基本数据类型、包装类 ===> String：调用String类的 valueOf() 
-  
-    ```java
-    String s = String.valueOf(number);
-    ```
-
-【**面试**】
-
-```java
-public void test() {
-    Integer i = new Integer(1);
-    Integer j = new Integer(1);
-    System.out.println(i == j);//false
-    
-    //Integer内部定义的IntegerCache结构中定义了Integer[]，保存了从-128~127范围内的整数
-    //如果我们用自动装箱的方式给Integer赋值的范围时可以直接使用数组中的元素，不用再去new了
-    //目的：提高效率
-    
-    Integer m = 1;
-    Integer n = 1;
-    System.out.println(m == n);//true
-    
-    Integer x = 128;
-    Integer y = 128;
-    System.out.println(x == y);//false
-}
-```
-
-
-
 ## String类
 
 ### 特性
@@ -883,8 +817,6 @@ BigDecimal类支持不可变的、任意精度的有符号十进制定点数。
   - public BigDecimal subtract(BigDecimal subtrahend) ；
   - public BigDecimal multiply(BigDecimal multiplicand) ；
   - public BigDecimal divide(BigDecimal divisor, int scale, int roundingMode)。
-
-## Object类
 
 # 日期类
 
