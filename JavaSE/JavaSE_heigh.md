@@ -18,7 +18,7 @@
 
 一个复杂的多功能的程序内部存在这样的分层情况，内部会分为不同的程序模块来执行不同的命令，以便完成各个功能。当我们需要用程序实现某个任务时，我们先运行程序，然后使用程序某个命令(功能)，这个命令对应一条程序的执行路径，而当使用多个命令时，就有多条执行路径在运行。线程就是这里的程序内部的执行路径，或者说是程序执行区域，而当这个进程同一时间**可以并行执行多个线程**时，这个程序就是支持多线程的。
 
-并行：多个CPU同时执行多个任务；并发：一个CPU（采用时间片）同时执行多个任务 。	 	
+并行：多个CPU同时执行多个任务；并发：一个CPU（采用时间片方式）同时执行多个任务 。	 	
 
 多线程优缺点，什么时候要使用多线程？
 
@@ -122,9 +122,11 @@ public void makeForCallable() throws ExecutionException, InterruptedException {
 
 4. newScheduledThreadPool()：延迟连接池，可以在给定的延迟时间后执行命令，或者定期执行命令，它比Timer更强大更灵活。
 
-   ScheduledThreadPoolExecutor具有固定线程个数，适用于需要多个后台线程执行周期任务，并且为了满足资源管理需求而限制后台线程数量的场景
+   ScheduledThreadPoolExecutor具有固定线程个数，适用于需要多个后台线程执行周期任务，并且为了满足资源管理需求而限制后台线程数量的场景。
 
    它适用于单个后台线程执行周期任务，并且保证顺序一致执行的场景。
+
+使用线程池：
 
 ```java
 //创建池子
@@ -141,16 +143,28 @@ service.submit(new Callable线程);//适合使用于Callable
 
 ## 线程的方法
 
+Thread类的常用静态方法，操作的线程是"**正在执行静态方法所在的代码块的线程**"：
+
 ```java
-currentThread()  //Thread的静态方法，返回执行当前代码的线程
-    // 线程对象的方法
-getName()        //获取当前线程名称
-setName()        //设置当前线程名称,设置线程名称还可以通过在创建Thread的子类时，通过super("线程名")
-yield()          //释放当前CPU执行权(释放后CPU又开始重新分配)
-join()           //在当前线程里调用其他线程的join()方法，执行到这个方法时，当前线程停滞，从而执行调用join()方法的线程
-    			 //(stop方法已过时，其作用是强制结束进程)
-sleep()          //让当前线程“睡眠“指定的时间(ms),停滞完时长后再执行下去
-isAlive()        //判断当前线程是否存活
+// Thread.currentThread()：返回执行当前代码的线程信息 
+// Thread.sleep(ms数)：休眠当前线程
+// Thread.yield()
+public static void main(String[] args) throws InterruptedException {
+    Thread.sleep(1000); // 当前线程休眠1000ms
+    System.out.println(Thread.currentThread()); // Thread[main,5,main]
+}
+```
+
+线程对象方法：
+
+```java
+getName()        // 获取当前线程名称
+setName()        // 设置当前线程名称（设置线程名称还可以通过在创建Thread的子类时，通过super("线程名")）
+yield()          // 释放当前CPU执行权(释放后CPU又开始重新分配)
+join()           // 在当前线程里调用其他线程的join()方法，执行到这个方法时，当前线程停滞，从而执行调用join()方法的线程
+stop()    	     // (stop方法已过时，其作用是强制结束进程)
+sleep()          // 让当前线程“睡眠“指定的时间(ms),停滞完时长后再执行下去
+isAlive()        // 判断当前线程是否存活，true or false
     
 //见最后线程通信：wait()、notify()、notifyAll()
 ```
@@ -203,45 +217,43 @@ Java中通过Thread类或其子类的对象来创建线程。线程通常要经�
 
 
 
-线程安全:为什么线程会有安全问题？线程之间存在共享数据就可能存在线程安全问题
+线程安全：为什么线程会有安全问题？
 
-- 多个线程执行的不确定性引起执行结果的不稳定（线程执行不确定性）；
-- 多个线程对账本的共享，会造成操作的不完整性，会破坏数据（就是多个线程都进入了run里面执行了操作，而使得在同一数据上操作了多回）。
+- 线程之间存在共享数据就可能存在线程安全问题。
+- 多个线程执行的不确定性引起执行结果的不稳定（线程执行不确定性）。
+- 多个线程对信息的共享，会造成操作的不完整性，就会破坏数据（就是多个线程都进入了run里面执行了操作，而使得在同一数据上的操作被多个线程操作过）。
 
 ## 线程安全
 
 ### 同步机制解决线程安全：
 
- 当操作同步代码块时只是一个线程参与，一个参与完后才到下一个，相当于单线程，效率低
+使用同步代码块解决线程安全问题：
 
-- 同步代码块
+1. 共享数据是指可能会被多个线程共同操作的变量，操作共享数据的代码就是需要被同步的代码 ---> 括起来的代码不能多也不能少。
+2. 关于锁：**任何一个类的对象都可以充当锁**（多个线程必须共用同一把锁），要注意的是：
+   - 通过继承Thread创建的线程，锁可以用当前类来代替(xx.class)，此时慎用this充当锁。
+   - 补充：通过实现Runnable接口来创建的线程，锁就可以使用this来代替。
+3. 当操作synchronized修饰的代码块（同步代码块）时只能是获得锁的线程参与，一个参与完后并释放锁后，下一个线程才能获得锁之后进入并执行，这个过程相当于单线程，效率低。
 
-  - ```java
-    synchronized(同步监视器,俗称锁){
-        //需要被同步的代码
-    }
-        操作共享数据的代码就是需要被同步的代码--->不能多也不能少
-        共享数据就是多个线程共同操作的变量
-        任何一个类的对象都可以充当锁（多个线程必须共用同一把锁）
-        当操作同步代码块时只是一个线程参与，一个参与完后才到下一个，相当于单线程，效率低
-    //关于锁
-            使用继承Thread来创建线程的，锁可以用当前类来代替(xx.class),慎用this
-            补充：使用实现Runnable接口来创建的线程，锁可以使用this来代替
-    ```
+- ```java
+  synchronized(同步监视器,俗称锁){
+      // 需要被同步的代码
+  }
+  ```
 
-- 同步方法
+使用同步方法解决线程安全问题：
 
-  - ```java
-    //实现Runnable
-    将需要被同步的代码存放于synchronized声明的方法中（this（当前对象）就是监视器）
-        public synchronized void test(){
-        //需要同步的代码（此时this就是监视器）
-    }
-    //继承Thread
-    public static synchronized void test(){
-        //需要同步的代码（此时方法所在类就是监视器(类名.class就是监视器)）
-    }
-    ```
+- ```java
+  // 1.实现Runnable的线程中的同步方法
+  // 将需要被同步的代码存放于synchronized声明的方法中（this（当前对象）就是监视器）
+  public synchronized void test(){
+      // 需要同步的代码（此时this就是监视器）
+  }
+  // 2.继承Thread的线程中的同步方法
+  public static synchronized void test(){
+      // 需要同步的代码（此时方法所在类就是监视器(类名.class就是监视器)）
+  }
+  ```
 
 懒汉式的线程安全：
 
@@ -271,9 +283,10 @@ synchronized(this){
 }
 ```
 
-死锁：
+### 死锁：
 
-- **不同的线程分别占用对方需要的同步资源不放弃**，都在等待对方放弃自己需要的同步资源，就形成了线程的死锁 ；
+**不同的线程分别占用对方需要的同步资源不放弃**，都在等待对方放弃自己需要的同步资源，就形成了线程的死锁（双方访问同步资源时所需要的锁都被各自拿到了并使用着，无法释放，于是线程就停滞来等待锁的释放，就陷入了停滞状态） ；
+
 - 出现死锁后，不会出现异常，不会出现提示，只是所有的线程都处于阻塞状态，无法继续。
 
 ```java
@@ -284,6 +297,7 @@ synchronized(this){
 	// 线程1
 	new Thread() {
 		public void run() {
+            // 占用锁 s1
 			synchronized (s1) {
 				s1.append("1");
 				s1.append("2");
@@ -294,6 +308,7 @@ synchronized(this){
 					e.printStackTrace();
 				}
 				System.out.println(s1);
+                // 等待锁 s2 （线程2一执行就占用了锁s2）
 				synchronized (s2) {
 					s2.append("3");
 					s2.append("4");
@@ -306,10 +321,12 @@ synchronized(this){
 	new Thread(new Runnable() {
 		@Override
 		public void run() {
+            // 占用锁 s2
 			synchronized (s2) {
 				s1.append("11");
 				s1.append("22");
 				System.out.println(s1);
+                // 等待锁 s1 （线程1一执行就占用了锁s1）
 				synchronized (s1) {
 					s2.append("33");
 					s2.append("44");
@@ -322,61 +339,60 @@ synchronized(this){
 
 解决方法：
 
-- 专门的算法、原则 
-- 尽量减少同步资源的定义 
-- 尽量避免嵌套同步
+- 使用专门的算法、遵循一些原则。 
+- 尽量减少同步资源的定义 。
+- 尽量避免嵌套同步。
 
 ```java
-     final StringBuffer s1 = new StringBuffer();
-     final StringBuffer s2 = new StringBuffer();
-     new Thread() {
-            public void run() {
-                synchronized (s1) {
-                    s2.append("A");
+final StringBuffer s1 = new StringBuffer();
+final StringBuffer s2 = new StringBuffer();
+new Thread() {
+    public void run() {
+        synchronized (s1) {
+            s2.append("A");
 
-                    try {
-                        Thread.sleep(100);               //当前线程停滞，s1被占用，停滞时主线程仍在执行，下面的线程也进入停滞状态
-                    } catch (InterruptedException e) {   //S2被占用，当停滞完，两个线程访问锁s1、s2，但由于此时两个锁都被占用
-                        e.printStackTrace();             //进入等待锁释放的时候，两个线程一直等待，形成死锁
-                    }
-
-                    synchronized (s2) {
-                        s2.append("B");
-                        System.out.print(s1);
-                        System.out.print(s2);
-                   }
-               }
-           }
-       }.start();
-       new Thread() {
-            public void run() {
-                synchronized (s2) {
-                    s2.append("C");
-
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    synchronized (s1) {
-                        s1.append("D");
-                        System.out.print(s2);
-                        System.out.print(s1);
-                    }
-                }
+            try {
+                //当前线程停滞，s1被占用，停滞时主线程仍在执行，下面的线程也进入停滞状态
+                Thread.sleep(100);               
+            } catch (InterruptedException e) {   
+                //S2被占用，当停滞完，两个线程访问锁s1、s2，但由于此时两个锁都被占用
+                e.printStackTrace();  //进入等待锁释放的时候，两个线程一直等待，形成死锁
             }
-        }.start();  
 
+            synchronized (s2) {
+                s2.append("B");
+                System.out.print(s1);
+                System.out.print(s2);
+            }
+        }
+    }
+}.start();
+new Thread() {
+    public void run() {
+        synchronized (s2) {
+            s2.append("C");
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            synchronized (s1) {
+                s1.append("D");
+                System.out.print(s2);
+                System.out.print(s1);
+            }
+        }
+    }
+}.start();  
 ```
 
 ### Lock锁解决线程安全：
 
--  从JDK 5.0开始，Java提供了更强大的线程同步机制——通过显式定义同步锁对象来实现同步。同步锁使用Lock对象充当。 
+从JDK 5.0开始，Java提供了更强大的线程同步机制——通过显式定义同步锁对象来实现同步，同步锁对象使用Lock对象充当。java.util.concurrent.locks.Lock接口是控制多个线程对共享资源进行访问的工具。锁提供了对共享资源的独占访问，每次只能有一个线程对Lock对象加锁，线程开始访问共享资源之前应先获得Lock对象。
 
--  java.util.concurrent.locks.Lock接口是控制多个线程对共享资源进行访问的工具。锁提供了对共享资源的独占访问，每次只能有一个线程对Lock对象 加锁，线程开始访问共享资源之前应先获得Lock对象。
-
-- ReentrantLock 类实现了 Lock ，它拥有与 synchronized 相同的并发性和 内存语义，在实现线程安全的控制中，比较常用的是ReentrantLock，可以 显式加锁、释放锁。
+- ReentrantLock 类实现了 Lock ，它拥有与 synchronized 相同的并发性和内存语义，在实现线程安全的控制中，比较常用的是ReentrantLock，可以显式加锁、释放锁。
 
 - ```java
   ReentrantLock lock = new ReentrantLock();
@@ -396,11 +412,11 @@ synchronized(this){
 
 【面试】synchronized和Lock的异同：
 
-- Lock是显式锁（手动开启和关闭锁，别忘记关闭锁），synchronized是 隐式锁，出了作用域自动释放 ；
+- Lock是显式锁（手动开启和关闭锁，别忘记关闭锁），synchronized是隐式锁，出了作用域自动释放 ；
 - Lock只有代码块锁，synchronized有代码块锁和方法锁 ；
 - 使用Lock锁，JVM将花费较少的时间来调度线程，性能更好。并且具有 更好的扩展性（提供更多的子类） 。
 
-【面试】解决线程安全的方式：
+【面试】解决线程安全的方式。
 
 ## 线程通信
 
@@ -1451,7 +1467,7 @@ Java不是动态语言，但Java可以称之为“准动态语言”。即Java�
 
 ### 四：调用指定内容
 
-通过反射还可以对指定的对象设置值或取值、调用其方法、构造器。
+通过反射还可以对指定的对象设置值或取值、调用其方法和构造器。
 
 ```java
 Person p = new Person();
