@@ -1221,50 +1221,156 @@ INSERT INTO `md5test` VALUES (1,'王将','1233456')
 INSERT INTO `md5test` VALUES (2,'李四','1233456'),(3,'王五','1233456'),(4,'朝六','1233456')
 
 UPDATE md5test SET pwd=MD5(pwd) WHERE id=1
-INSERT INTO `md5test` VALUES (5,'小明',MD5('1233456'))
+INSERT INTO `md5test` VALUES (5,'小明',MD5('1233456'))  -- 使用md5函数
 
 -- 校验
 SELECT * FROM md5test WHERE `name`='小明' AND pwd=MD5('1233456')
 ```
 
-# 事务
+# 事务（要求精通）
 
-## 了解事务
+## 事务概述
+
+什么是事务？
+
+事务就是一个完整的业务逻辑，不可再分的、最小的工作单元，事务指是程序中一系列严密的逻辑操作，而且所有操作必须全部成功完成，否则在每个操作中所作的所有更改都会被撤消（本质上，事务是批量的DML语句执行同时成功或同时执行失败）。（只有DML语句才有事务一说，也就是insert、update、delete这三个才有事务，涉及到数据的增、删、改就一定要考虑数据的安全问题。）
+
+![](img/事务.png)
+
+为什么需要存在事务机制？
+
+以转账业务来说，完整的转账流程需要从一个账号中减去转账金额，再在转入的目标账号中增加金额，这时这个业务逻辑的完成就需要两条DML语句了，而事务机制就是保证这两个DML语句高度关联，要么同时成功、要么同时失败，保证整个业务不会出错。也就是说，事务机制就是为了保证一些需要多个DML语句才能完成业务实现的业务的准确完成和数据安全。如果所有的业务都可以通过一条DML语句搞定的话，事务也就没有存在的价值。
+
+事务特性ACID：
 
 ACID，是指数据库管理系统（DBMS）在写入或更新资料的过程中，为保证事务（transaction）是正确可靠的，所必须具备的四个特性：原子性（atomicity，或称不可分割性）、一致性（consistency）、隔离性（isolation，又称独立性）、持久性（durability）。
 
-参考：[事务ACID理解_dengjili的专栏-CSDN博客_acid](https://blog.csdn.net/dengjili/article/details/82468576)
+1. 原子性：说明事务是不可再分的、最小的工作单元。
 
-原子性：将一组SQL放在一组中执行，要么都执行成功，要么都执行失败。
+2. 一致性：同一个事务中，所有操作要么都执行成功，要么都执行失败，以保证数据的一致性。
 
-一致性：事务前后数据完整性一致
+3. 隔离性：不同事务，按照提交的先后顺序执行，事务之间是相互隔离的。
 
-隔离性：多个用户并发访问数据库，数据库为每一个用户开启的事务不能被其他的事务的操作数据所影响，事务之间互相隔离
+4. 持久性：提交后将数据持久化到数据库（事务提交就相当于将没有保存到硬盘的数据保存到硬盘）。
 
-持久性：提交后不可逆，持久化到数据库（事务提交完毕，保持提交后的状态；否则，恢复到提交前状态）
+## 事务隔离
 
-隔离所导致的问题：
+**隔离所导致的问题：**
 
--  脏读：指一个事务读取了另外一个事务未提交的数据。
-- 不可重复读：在一个事务内读取表中的某一行数据，多次读取结果不同。（这个不一定是错误，只是某些场合不对）
-- 虚读(幻读)：是指在一个事务内读取到了别的事务插入的数据，导致前后读取数量总量不一致。（一般是行影响，如下图所示：多了一行）
+-  脏读：一个事务读到了另一个未提交事务修改过的数据。
+- 不可重复读：也就是在当事务A读取数据了但还没结束事务时，另一个事务修改了数据并提交，此时事务A再读取数据，读取到的数据是最新的，导致此时与先前的读取到的数据不一致，这就是不可重复读。
+- 虚读(幻读)：一个事务先根据某些条件查询出一些记录，之后另一个事务又向表中插入了符合这些条件的记录，原先的事务再次按照该条件查询时，能把另一个事务插入的记录也读出来。（幻读在读未提交、读已提交、可重复读隔离级别都可能会出现）
+
+**事务隔离级别：**
+
+1. 读未提交（read uncommitted）：（没有提交就读到了）
+
+   - 最低的隔离级别，事务A未提交就可以读到事务B未提交的数据。
+   - 脏读就是此时出现。这种隔离级别一般是理论上的，大多数的数据库的隔离级别都是二档起步。
+
+2. 读已提交（read committed）：（提交之后才能读）
+
+   - 事务A只能读取到事务B提交之后的数据。
+
+   - 解决了脏读现象，但存在不可重复读的问题，也会存在幻读的问题。
+   - Oracle数据库的默认隔离级别，这种隔离级别下每一次读取到的数据都是真实的、持久化到硬盘中的数据。
+
+3. 可重复读（repeatable read）：（提交之后也读不到，读取到的都是刚刚开启事务时的数据）
+
+   - 事务A开启后，无论多久，在事务A中读取到的数据都是一致的，即使事务B将数据修改并提交，事务A读到的数据还是没有发生变化。
+   - MySQL默认的隔离级别。
+
+4. 序列化/可串行化（serializable）：
+
+   - 最高的隔离级别，效率最低，解决了所有的问题；这种隔离级别表示事务排队，不能并发。
+   - 类似synchronized线程同步（事务同步）。
+
+## 事务隔离级别演示
+
+查看MySQL的事务隔离级别：
+
+```mysql
+select @@tx_isolation; -- 查看当前会话的隔离级别
+select @@session.tx_isolation; -- 会话的
+SELECT @@global.tx_isolation; -- 查看全局的隔离级别
+-- 在MySQL 8.0.3 中，tx_isolation 变量被 transaction_isolation 变量替换了
+```
+
+修改隔离级别：
+
+```mysql
+set session transaction isolation level read uncommitted; -- 修改会话的
+set global transaction isolation level read uncommitted; -- 修改全局的
+-- {read uncommitted | read committed | repeatable read | serializable}
+```
+
+- SESSION：表示修改的事务隔离级别将应用于当前 session（当前 cmd 窗口）内的所有事务。
+- GLOBAL：表示修改的事务隔离级别将应用于所有 session（全局）中的所有事务，且当前已经存在的 session 不受影响。
+- 如果省略 SESSION 和 GLOBAL，表示修改的事务隔离级别将应用于当前 session 内的下一个还未开始的事务。
+
+```mysql
+create table t_user(name varchar(255))engine=innodb default charset=utf8;  -- 测试用表
+```
+
+1、验证 read uncommited：（打开两个会话）
+
+```mysql
+set session transaction isolation level read uncommitted; -- 分别设置两个会话的隔离级别
+select @@session.tx_isolation; -- 查看会话的隔离级别
+```
+
+![](img/read-uncommitted.png)
+
+设置会话级别后，按0-0-1-2-3的顺序执行SQL语句，观察查询结果。
+
+2、验证 read committed：(删除数据，重新打开两个会话)
+
+```mysql
+set session transaction isolation level read committed; -- 分别设置两个会话的隔离级别
+```
+
+![](img/read-committed.png)
+
+设置会话级别后，按上述0-5的顺序执行SQL语句，观察查询结果。
+
+3.验证repeatable read：（打开新的两个会话，不用再设置隔离级别）
+
+```mysql
+insert into t_user values('零三零');
+```
+
+![](img/repeatable-read.png)
+
+开启事务后，无论另一个事务怎么修改数据、提交或不提交，都不会影响到其查询的结果，如上图。
+
+4.测试serializable：（新开两个会话）
+
+```mysql
+set session transaction isolation level serializable;
+```
+
+![](img/serializable.png)
+
+如上，左边的事务不结束，右边的事务就不能执行。
+
+
 
 ## 事务操作
 
+MySQL默认情况下支持提交事务，且是自动提交，每执行一次DML就自动提交，可设置关闭：
+
 ```sql
-set autocommit=0; -- 关闭(0)或开启(1)事务，mysql默认开启事务自动提交
+set autocommit=0; -- 关闭(0)或开启(1)事务自动提交，mysql默认开启事务自动提交
 ```
 
 手动处理事务流程：
 
 ```mysql
-set autocommit = 0; -- 关闭事务自动提交
-start transaction; -- 标记事务开始
-各种操作
+start transaction; -- 标记事务开始，此时会自动关闭事务的自动提交
+-- insert\update\delete操作
 ...
-commit; -- 提交：成功提交时持久化成功
-rollback; -- 提交失败：回滚到原状态
-set autocommit = 1; -- 开启，事务结束
+commit; / rollback; -- 执行提交或执行回滚，事务结束，执行完会自动开启事务的自动提交
+
 -- 了解
 savepoint; -- 设置事务保存点
 rollback savepoint; -- 回滚到事务保存节点
