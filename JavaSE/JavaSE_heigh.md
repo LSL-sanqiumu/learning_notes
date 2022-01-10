@@ -28,7 +28,7 @@
 
 ### 通过继承Thread类：
 
-继承Thrad类并重写run()方法。(可以通过创建匿名子类的对象来创建线程（new Thread() {重写run方法}.start();）。)
+继承Thrad类并重写run()方法。(可以通过创建匿名子类的对象来创建线程（`new Thread() {重写run方法}.start();`）。)
 
 ```java
 public class MyThread extends Thread{
@@ -106,19 +106,23 @@ public void makeForCallable() throws ExecutionException, InterruptedException {
 
 关于 Future接口 ：
 
--  可以对具体Runnable、Callable任务的执行结果进行取消、查询是否完成、获取结果等。
--  FutrueTask是Futrue接口的唯一的实现类 ；
+-  可以对具体的Runnable、Callable任务的执行结果进行取消、查询是否完成、获取结果等。
+-  FutrueTask是Futrue接口的唯一的实现类 。
 -  FutureTask 同时实现了Runnable，Future接口。它既可以作为 Runnable被线程执行，又可以作为Future得到Callable的返回值。
 
-### 通过线程池:
+### 通过线程池：
+
+```java
+java.util.concurrent.Executors // Executors，工具类，用于创建线程池
+```
 
 四种线程池：
 
-1.  newFixedThreadPool()：固定大小的线程池，满足了资源管理的需求，可以限制当前线程数量。适用于负载较重的服务器环境；
+1.  newFixedThreadPool()：固定大小的线程池，满足了资源管理的需求，可以限制当前线程数量。适用于负载较重的服务器环境。
 
-2. newSingleThreadExecutor()：相当于大小为1的FixedThreadPool；
+2. newSingleThreadExecutor()：相当于大小为1的FixedThreadPool。
 
-3. newCachedThreadPool()：一个任务创建一个线程，适用于执行很多短期异步任务的小程序，适用于负载较轻的服务器；
+3. newCachedThreadPool()：一个任务创建一个线程，适用于执行很多短期异步任务的小程序，适用于负载较轻的服务器。
 
 4. newScheduledThreadPool()：延迟连接池，可以在给定的延迟时间后执行命令，或者定期执行命令，它比Timer更强大更灵活。
 
@@ -129,13 +133,13 @@ public void makeForCallable() throws ExecutionException, InterruptedException {
 使用线程池：
 
 ```java
-//创建池子
+// 创建池子
 ExecutorService service = Executors.newFixedThreadPool(10);
-//设置线程池属性
+// 设置线程池属性
 ThreadPoolExecutor service1 = (ThreadPoolExecutor)service;
 service1.setCorePoolSize(15);
 
-//执行指定线程
+// 执行指定线程
 service.execute(new Runnable线程);//适合用于Runnable
 service.submit(new Callable线程);//适合使用于Callable
 
@@ -148,7 +152,7 @@ Thread类的常用静态方法，操作的线程是"**正在执行静态方法�
 ```java
 // Thread.currentThread()：返回执行当前代码的线程信息 
 // Thread.sleep(ms数)：休眠当前线程
-// Thread.yield()
+// Thread.yield() 释放当前线程的CPU执行权
 public static void main(String[] args) throws InterruptedException {
     Thread.sleep(1000); // 当前线程休眠1000ms
     System.out.println(Thread.currentThread()); // Thread[main,5,main]
@@ -166,7 +170,7 @@ stop()    	     // (stop方法已过时，其作用是强制结束进程)
 sleep()          // 让当前线程“睡眠“指定的时间(ms),停滞完时长后再执行下去
 isAlive()        // 判断当前线程是否存活，true or false
     
-//见最后线程通信：wait()、notify()、notifyAll()
+// 见最后线程通信：wait()、notify()、notifyAll()
 ```
 
 
@@ -229,7 +233,7 @@ Java中通过Thread类或其子类的对象来创建线程。线程通常要经�
 
 使用同步代码块解决线程安全问题：
 
-1. 共享数据是指可能会被多个线程共同操作的变量，操作共享数据的代码就是需要被同步的代码 ---> 括起来的代码不能多也不能少。
+1. 共享数据是指可能会被多个线程共同操作的变量，操作共享数据的代码就是需要被同步的代码 ===> 括起来的代码不能多也不能少。
 2. 关于锁：**任何一个类的对象都可以充当锁**（多个线程必须共用同一把锁），要注意的是：
    - 通过继承Thread创建的线程，锁可以用当前类来代替(xx.class)，此时慎用this充当锁。
    - 补充：通过实现Runnable接口来创建的线程，锁就可以使用this来代替。
