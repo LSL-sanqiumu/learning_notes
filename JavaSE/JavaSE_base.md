@@ -1452,10 +1452,10 @@ try{
     //可能出现异常的代码
 }catch(异常类型1 变量名1) {
     // 处理异常对象
-    e.printStackTrace();
+    e1.printStackTrace();
 }catch(异常类型2 变量名2) {
     // 处理异常对象
-    e.getMessage(); // 会返回异常的详细信息
+    e2.getMessage(); // 会返回异常的详细信息
 }catch(异常类型3 变量名3) {
     // 处理异常对象
 }
