@@ -127,7 +127,7 @@ public class ArrayQueue {
     private int front; // 前面
     private int maxSize; // 队列容量
     private int[] arr; // 队列实体数组
-    // 实例化队列
+    // 用于实例化队列
     public ArrayQueue(int arrayMaxSize){
         maxSize = arrayMaxSize;
         arr = new int[maxSize];
