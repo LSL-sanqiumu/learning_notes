@@ -1,5 +1,3 @@
-
-
 # JavaSE_heigh
 
 # 	多线程基础
@@ -122,7 +120,7 @@ public void makeForCallable() throws ExecutionException, InterruptedException {
 java.util.concurrent.Executors // Executors，工具类，用于创建线程池
 ```
 
-四种线程池：
+通过工具类的方法创建的四种线程池：
 
 1.  newFixedThreadPool()：固定大小的线程池，满足了资源管理的需求，可以限制当前线程数量。适用于负载较重的服务器环境。
 
@@ -406,20 +404,37 @@ new Thread() {
 - ReentrantLock 类实现了 Lock ，它拥有与 synchronized 相同的并发性和内存语义，在实现线程安全的控制中，比较常用的是ReentrantLock，可以显式加锁、释放锁。
 
 - ```java
-  ReentrantLock lock = new ReentrantLock();
-  public void m(){
-      lock.lock();
-  try(){
-      
-  }finally{
-      lock.unlock();
-  }
+  ReentrantLock lock = new ReentrantLock(); // 可以传入参数true，表示公平分配
+  public void test(){
+      try{
+  		lock.lock();   // 为ReentrantLock对象加锁
+          // 需要锁住的代码
+      }finally{
+          lock.unlock(); // 释放锁
+      }
   }
   
   ```
 
-
 建议优先使用顺序： Lock > 同步代码块（已经进入了方法体，分配了相应资源）>同步方法 （在方法体之外）
+
+```java
+private ReentrantLock lock = new ReentrantLock(); // 可以传入参数true，表示公平分配
+public void run() {
+    while (ticket > 0){
+        try{
+            lock.lock();
+     		System.out.println(Thread.currentThread() + ":买得票号" + ticket);
+            ticket--;
+            Thread.yield();       
+        }finally{
+            lock.unlock(); 
+        }
+    }
+}
+```
+
+
 
 【面试】synchronized和Lock的异同：
 
@@ -431,12 +446,12 @@ new Thread() {
 
 ## 线程通信
 
-以下方法只能在同步代码块或同步方法中调用：（都是定义在Object下的方法）
+以下方法只能在同步代码块或同步方法中调用：（这三个都是定义在Object下的方法）
 
 - notify()方法：只能唤醒一个被wait()的线程，如果有多个则会唤醒优先级最高的；
 - notifyAll()方法：唤醒所有被wait()的线程；
 - wait()方法：将当前线程进入阻滞状态并释放同步监视器；
-- 【注意】调用这三个的方法必须是同步代码块或同步方法中的同步监视器（方法前是同步监视器(是this可以省略)），否则会出现IllegalMonitorStateException异常。
+- 【注意】这三个方法的调用者必须是同步代码块或同步方法中的同步监视器（锁是this可以省略），否则会出现IllegalMonitorStateException异常。
 
 【面试】sleep()与wait()方法的异同：
 
@@ -682,9 +697,9 @@ StringBuffer sb2 = new StringBuffer("abc");//char[] value = new char["abc".lengt
 
 - **reverse()**：把当前字符序列逆转
 
-  - 当append和insert时，如果原来value数组长度不够，可扩容。 
-  -  如上这些方法支持方法链操作。 
-  - 方法链的原理：
+- 当append和insert时，如果原来value数组长度不够，可扩容。 
+
+- 如上这些方法支持方法链操作。 方法链的原理：
 
   ```java
   @Override
@@ -718,64 +733,99 @@ StringBuffer sb2 = new StringBuffer("abc");//char[] value = new char["abc".lengt
 
 遍历：for() + char()  / toString()。
 
-**【注意】StringBuilder 和 StringBuffer 非常类似，均代表可变的字符序列，而且 提供相关功能的方法也一样**。
+**【注意】StringBuilder 和 StringBuffer 非常类似，均代表可变的字符序列，而且提供相关功能的方法也一样**。
 
 
 
 ## Java比较器
 
-### Comparable
+Java中的对象，正常情况下只能使用比较运算符来比较（==或!=），不能使用>和<来进行比较，但是在实际的开发场景下，往往需要对多个对象进行比较后再排序，因此就需要java.lang.Comparable 接口和java.util.Comparator接口。
 
-> 自然排序：java.lang.Comparable ；
+### Comparable接口
 
-String类、包装类等：实现了Comparable接口，重写了compareTo()方法，给出了比较两个对象大小的方式  
+> 接口java.lang.Comparable ，是用于自然排序的比较器接口
 
-- 可通过调用一些方法来实现从小到大的排序，如使用Arrays.sort(Obj obj)方法对String数组进行排序；
-- 重写compareTo(obj)的规则：（可查看API文档）
-  - 当如果当前对象this大于形参对象obj，则返回正整数；
-  - 如果当前对象this小于形参对象obj，则返回负整数；
-  - 如果当前对象this等于形参对象obj，则返回零。
+java.lang.Comparable 接口的`compareTo()`方法是用于对对象进行大小比较的，具体实现在接口实现类中，重写其`compareTo(obj)`方法的规则如下：
 
-对自定义类的排序：
+- 如果当前对象this大于形参对象obj，则返回正整数；
+- 如果当前对象this小于形参对象obj，则返回负整数；
+- 如果当前对象this等于形参对象obj，则返回零。
 
-- 自定义类实现Comparable接口，并重写compareTo(obj)方法和toString()方法。
+Comparable接口的应用——用于排序中的比较：
 
-### Comparator
+- String类、包装类等实现了Comparable接口，重写了compareTo()方法，定义了特定的方式来比较两个对象的大小。  
+- Arrays工具类的`Arrays.sort(Obj[] obj)`方法可以对数组中的内容进行从小到大的排序，该方法内部实现使用到了compareTo()方法来进行大小的比较。重写了compareTo()方法的类的数组对象，可以调用其进行排序。
+-  集合中`Collections.sort(List<T> list)`方法的排序实现也使用到了`Arrays.sort(Obj[] obj)`方法。
 
-> 定制排序：java.util.Comparator。
+使用工具类对自定义类排序的步骤：
 
-当元素的类型没有实现java.lang.Comparable接口而又不方便修改代码， 或者实现了java.lang.Comparable接口的排序规则不适合当前的操作，那 么可以考虑使用 Comparator 的对象来排序，强行对多个对象进行整体排序的比较。
+1. 自定义类要实现Comparable接口，并重写compareTo(obj)方法（要遵循重写规则），在方法内实现比较的逻辑。
+2. 使用Arrays工具类的`Arrays.sort(Obj[] obj)`方法对数组进行排序。
 
-重写compare(Object o1,Object o2)方法，比较o1和o2的大小：如果方法返回正整数，则表示o1大于o2；如果返回0，表示相等；返回负整数，表示 o1小于o2。
+### Comparator接口
+
+> 接口java.util.Comparator，是用于定制排序的比较器接口
+
+当元素的类型没有实现java.lang.Comparable接口而又不方便修改代码时， 或者实现了java.lang.Comparable接口但排序规则不适合当前的需求时，那么可以考虑使用 Comparator 的对象来强行对多个对象进行整体排序的比较。
+
+重写`compare(Object o1,Object o2)`方法，比较对象o1和o2的大小，返回值规则如下：
+
+- 如果方法返回正整数，则表示o1大于o2。
+- 如果返回0，表示相等。
+- 返回负整数，表示 o1小于o2。
+
+```java
+// 使用Comparator 的对象来对多个对象进行整体排序的比较
+public static void main(String[] args) {
+    String[] arr = new String[]{"A","I","H","G","H","D","B"};
+    Arrays.sort(arr, new Comparator<String>() {
+        @Override
+        public int compare(String o1, String o2) {
+            return o1.compareTo(o2);
+        }
+    });
+    System.out.println(Arrays.toString(arr));
+}
+```
 
 Comparable、Comparator使用对比：
 
-Comparable的接口方式一旦确定，就保证了Comparable接口实现类的对象在任何位置都可以比较大小
+- Comparable的接口方式一旦确定，就保证了Comparable接口实现类的对象在任何位置都可以比较大小。
 
-Comparator接口属于临时性的比较
+- Comparator接口属于临时性的比较。
+
 
 ### 比较器总结
 
-无论是使用Comparable自然排序或者是Comparator定制排序，都使用Arrays.sort()方法或其重写的方法来实现排序。
+无论是使用Comparable或者是Comparator，都使用Arrays.sort()方法或其重写的方法来实现排序。
 
-- 关于Comparable的：
-  - String和包装类已经重写了相关方法可直接调用Arrays.sort(obj)实现从小到大的排序
-  - 如果对自定义类的数组进行排序，可通过自定义类实现该接口并重写compareTo()方法，再调用Arrays.sort(obj)方法实现从大到小或从小到大的排序
-- 关于Comparator：
-  - 通过Comparator的对象来重写compare(Object o1, Object o2)方法，使用Arrays.sort(obj，Comparator的对象)来实现排序
-- 理解Arrays.sort(obj)、compareTo()、compare(Object o1, Object o2)方法，比较器就是对这些方法进行重操作以达到自己所需的排序、比较目的。
+**关于Comparable接口：**
+
+- String和包装类已经重写了该接口相关方法，可直接调用`Arrays.sort()`实现从小到大的排序。
+  - 如果对自定义类的数组进行排序，自定义类应实现该接口并重写`compareTo()`方法，再调用`Arrays.sort()`方法实现排序。
+
+**关于Comparator接口：**
+
+- 通过Comparator的对象来重写`compare(Object o1, Object o2)`方法，使用`Arrays.sort(obj，Comparator的对象)`来实现排序
+
+- 理解`Arrays.sort(obj)`、`compareTo()`、`compare(Object o1, Object o2)`方法，比较器就是对这些方法进行重操作以达到自己所需的排序或比较目的。
 
 ## System类
 
-- System类代表系统，系统级的很多属性和控制方法都放置在该类的内部。 该类位于java.lang包。
-- 由于该类的构造器是private的，所以无法创建该类的对象，也就是无法实 例化该类。其内部的成员变量和成员方法都是static的，所以也可以很方便 的进行调用。 
--  成员变量 
+1. System类代表系统，系统级的很多属性和控制方法都放置在该类的内部。 该类位于java.lang包。
+2. 由于该类的构造器是private的，所以无法创建该类的对象，也就是无法实例化该类。其内部的成员变量和成员方法都是static的，所以也可以很方便地通过类进行调用。 
+3. 成员变量 
   - System类内部包含in、out和err三个成员变量，分别代表标准输入流 (键盘输入)，标准输出流(显示器)和标准错误输出流(显示器)。
--  成员方法 
-  - native long currentTimeMillis()： 该方法的作用是返回当前的计算机时间，时间的表达格式为当前计算机时 间和GMT时间(格林威治时间)1970年1月1号0时0分0秒所差的毫秒数。 
-- void exit(int status)： 该方法的作用是退出程序。其中status的值为0代表正常退出，非零代表 异常退出。使用该方法可以在图形界面编程中实现程序的退出功能等。 9.5 System类
--  void gc()： 该方法的作用是请求系统进行垃圾回收。至于系统是否立刻回收，则 取决于系统中垃圾回收算法的实现以及系统执行时的情况。
--  String getProperty(String key)： 该方法的作用是获得系统中属性名为key的属性对应的值。系统中常见 的属性名以及属性的作用如下表所示：
+4. 成员方法 
+  - `native long currentTimeMillis()`： 该方法的作用是返回当前的计算机时间，时间的表达格式为当前计算机时 间和GMT时间(格林威治时间)1970年1月1号0时0分0秒所差的毫秒数。 
+
+  - `void exit(int status)`： 该方法的作用是退出程序。其中status的值为0代表正常退出，非零代表 异常退出。使用该方法可以在图形界面编程中实现程序的退出功能等。（ 见PPT9.5 ——System类）
+
+  - `void gc()`： 该方法的作用是请求系统进行垃圾回收。至于系统是否立刻回收，则 取决于系统中垃圾回收算法的实现以及系统执行时的情况。
+
+  - `String getProperty(String key)`： 该方法的作用是获得系统中属性名为key的属性对应的值。系统中常见的属性名以及属性的作用如下表所示： 
+
+    ![](images/system属性.png)
 
 
 
@@ -783,25 +833,26 @@ Comparator接口属于临时性的比较
 
 java.lang.Math提供了一系列静态方法用于科学计算。其方法的参数和返回 值类型一般为double型。
 
- abs() 绝对值 
+-  abs() 绝对值 
 
-acos(),asin(),atan(),cos(),sin(),tan() 三角函数 
+- acos(),asin(),atan(),cos(),sin(),tan() 三角函数 
 
-sqrt() 平方根 
+- sqrt() 平方根 
 
-pow(double a,doble b) a的b次幂 
+- pow(double a,doble b) a的b次幂 
 
-log 自然对数 
+- log 自然对数 
 
-exp e为底指数 
+- exp e为底指数 
 
-max(double a,double b) min(double a,double b) 
+- max(double a,double b) min(double a,double b) 
 
-random() 返回0.0到1.0的随机数 
+- random() 返回0.0到1.0的随机数 
 
-long round(double a) double型数据a转换为long型（四舍五入） 
+- long round(double a) double型数据a转换为long型（四舍五入） 
 
-toDegrees(double angrad) 弧度—>角度 toRadians(double angdeg) 角度—>弧度
+- toDegrees(double angrad) 弧度—>角度 toRadians(double angdeg) 角度 —> 弧度
+
 
 ## Arrays类
 
@@ -819,7 +870,7 @@ Integer类作为int的包装类，能存储的最大整型值为2^31-1，Long类
 
 java.math包的BigInteger可以表示不可变的任意精度的整数。BigInteger提供所有Java 的基本整数操作符的对应物，并提供 java.lang.Math的所有相关方法。 另外，BigInteger还提供以下运算：模算术、GCD 计算、质数测试、素数生成、位操作以及一些其他操作。
 
-- 构造器 BigInteger(String val)：根据字符串构建BigInteger对象。
+- 构造器 `BigInteger(String val)`：根据字符串构建BigInteger对象。
 - 常用方法
   - public BigInteger abs()：返回此 BigInteger 的绝对值的 BigInteger；
   - BigInteger add(BigInteger val) ：返回其值为 (this + val) 的 BigInteger ；
@@ -837,13 +888,13 @@ java.math包的BigInteger可以表示不可变的任意精度的整数。BigInte
 BigDecimal类支持不可变的、任意精度的有符号十进制定点数。 
 
 - 构造器 
-  - public BigDecimal(double val) ；
-  - public BigDecimal(String val) 。
+  - `public BigDecimal(double val) `；
+  - `public BigDecimal(String val) `。
 - 常用方法 
-  - public BigDecimal add(BigDecimal augend) ；
-  - public BigDecimal subtract(BigDecimal subtrahend) ；
-  - public BigDecimal multiply(BigDecimal multiplicand) ；
-  - public BigDecimal divide(BigDecimal divisor, int scale, int roundingMode)。
+  - `public BigDecimal add(BigDecimal augend)` ；
+  - `public BigDecimal subtract(BigDecimal subtrahend) `；
+  - `public BigDecimal multiply(BigDecimal multiplicand) `；
+  - `public BigDecimal divide(BigDecimal divisor, int scale, int roundingMode)`。
 
 # 日期类
 
