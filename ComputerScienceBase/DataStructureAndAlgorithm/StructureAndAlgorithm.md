@@ -172,7 +172,7 @@ public void appendNum(int arr[]){
 
 数组是可以在内存中连续存储多个数据元素的结构，在内存中的分配也是连续的，数组中的元素通过数组下标进行访问，数组下标从0开始。
 
-优点：按照索引查询元素，速度快、按照索引遍历数组方便。
+优点：按照索引访问元素，速度快、按照索引遍历数组方便。
 
 缺点：
 
@@ -186,8 +186,6 @@ public void appendNum(int arr[]){
 
 - 使用场景：当一个数组中大部分元素是同一个值时。
 - 稀疏数组处理方法：把一个数组中不同值的信息（行、列和对应值）以及数组的信息（row、column、有多少个不同的值）都记录进另一个小规模的数组（稀疏数组）。
-
-
 
 # 队列Queue
 
@@ -769,17 +767,162 @@ public void countGirl(int startNo, int countNum, int nums){
 
 # 哈希表(散列)
 
-散列表（Hash table，也叫哈希表），是根据关键码值(Key value)而直接进行访问的数据结构。也就是说，它通过把关键码值映射到表中一个位置来访问记录，以加快查找的速度。这个映射函数叫做散列函数，存放记录的数组叫做散列表。
+散列表（Hash table，也叫哈希表），是根据关键码值(Key value)而直接进行访问的数据结构。也就是说，它通过把关键码值映射到表中的一个位置来访问该位置记录有的数据，以加快查找的速度。这个把关键码值映射到表中具体位置的映射函数叫做散列函数，存放记录的数组叫做散列表（哈希表）。
 
-给定表M，存在函数f(key)，对任意给定的关键字值key，代入函数后若能得到一个包含该关键字的记录在M表中的地址，则称表M为哈希(Hash）表，函数f(key)为哈希(Hash) 函数。
+<img src="img/2.hashTable.png" style="zoom: 50%;" />
+
+**实现hash表，以存储员工名字的hash表为例：**
+
+## 实体类：
+
+```java
+public class Emp {
+    private int id;
+    private String name;
+    private Emp next;
+    // 构造器、get/set方法略
+}
+```
+
+## 链表：
+
+```java
+public class EmpLinkedList {
+    private Emp head;
+
+    public EmpLinkedList(Emp head) {
+        this.head = head;
+    }
+
+    public EmpLinkedList() {
+    }
+}
+```
+
+链表的功能函数：
+
+```java
+public void add(Emp emp){
+    if (head == null){
+        head = emp;
+        return;
+    }
+    Emp curEmp = head;
+    while (true) {
+        if (curEmp.getNext() == null){
+            break;
+        }
+        curEmp = head.getNext();
+    }
+    curEmp.setNext(emp);
+}
+// 遍历链表的信息
+public void list(int no){
+    if (head == null){
+        System.out.println("第" + (no+1) + "条链表为空！");
+        return;
+    }
+    System.out.print("第" + (no+1) + "条链表信息为");
+    Emp curEmp = head;
+    while (true){
+        System.out.printf("=> id=%d name=%s\t",curEmp.getId(),curEmp.getName());
+        if (curEmp.getNext() == null){
+            break;
+        }
+        curEmp = curEmp.getNext();
+    }
+    System.out.println();
+}
+public Emp findEmpById(int id) {
+    if (head == null) {
+        System.out.println("链表为空~~~");
+        return null;
+    }
+    Emp curEmp = head;
+    while (true) {
+        if (curEmp.getId() == id) {
+            break;
+        }
+        if (curEmp.getNext() == null) {
+            curEmp = null;
+            break;
+        }
+        curEmp = curEmp.getNext();
+    }
+    return curEmp;
+}
+```
+
+## 哈希表：
+
+哈希表初始化：
+
+```java
+public class HashTable {
+    private EmpLinkedList[] empLinkedLists;
+    private int size;
+    // 初始化哈希表结构
+    public HashTable(int size){
+        this.size = size;
+        this.empLinkedLists = new EmpLinkedList[size];
+        for (int i = 0; i < size; i++) {
+            empLinkedLists[i] = new EmpLinkedList();
+        }
+    }
+```
+
+哈希表的映射函数：（以简单的求余运算为例）
+
+```java
+public int hashFun(int id){
+    // 余数都不会超过模数size，因此求余出来的在整型值在 [0,size)，能映射到数组的下标
+    return id % size; 
+}
+```
+
+为哈希表添加功能函数，例如遍历所有存储在哈希表中的值、通过关键码查出含该关键码的数据、往表中加数据等：
+
+```java
+// 遍历哈希表
+public void list(){
+    for (int i = 0; i < size; i++) {
+        empLinkedLists[i].list(i);
+    }
+}
+// 往指定的EmpLinkedList添加雇员
+public void add(Emp emp){
+    int empLinkedListNo = hashFun(emp.getId());
+    empLinkedLists[empLinkedListNo].add(emp);
+}
+```
+
+通过关键码找数据：
+
+```java
+public void findEmpById(int id){
+    int empLinkedListNo = hashFun(id);
+    Emp emp = empLinkedLists[empLinkedListNo].findEmpById(id);
+    if (emp == null){
+        System.out.println("在哈希表中没有找到！");
+    }else {
+        System.out.printf("在第%d条链表中找到了 雇员id=%d name=%s \n",(empLinkedListNo + 1),id,emp.getName());
+    }
+}
+```
+
+
+
+# 树Tree
 
 
 
 
 
+# 堆heap
 
 
-# 堆
+
+
 
 
 
@@ -788,14 +931,6 @@ public void countGirl(int startNo, int countNum, int nums){
 # 图graph
 
 
-
-
-
-# 树Tree
-
-
-
-# 算法
 
 
 
