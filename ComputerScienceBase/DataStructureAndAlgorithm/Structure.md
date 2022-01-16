@@ -34,7 +34,7 @@
 
 # 数据结构
 
-![](img/type.png)
+![](img/0.type.png)
 
 **概述：**
 
@@ -50,7 +50,7 @@
 
 常用的数据结构：数组（array）、栈（stack）、队列（queue）、链表（linked list）、树（tree）、图（graph）、堆（heap）、散列表（hash）。
 
-<img src="img/数据结构.svg"  />
+<img src="img/数据结构.svg" style="zoom:50%;" />
 
 数据结构的学习：xxx结构是是什么？说出其优缺点和应用场景，如何实现。
 
@@ -193,7 +193,7 @@ public void appendNum(int arr[]){
 
 ## **单队列：**
 
-<img src="img/queue_array.png" style="zoom: 50%;" />
+<img src="img/1.1queue_array.png" style="zoom: 50%;" />
 
 front：用于定位数组的头部，取值-1，头部索引=(front+1)，每取出一次数据front要加1；
 
@@ -271,7 +271,7 @@ public class ArrayQueue {
 
 **使用环形数组实现：**
 
-<img src="img/queue_circle_array.png" style="zoom:50%;" />
+<img src="img/1.2queue_circle_array.png" style="zoom:50%;" />
 
 使用数据简单实现队列中存在一个问题：就是一个队列满载后，即使取出一些数据把位置“空出来”，但空出来的位置已经是不能复用的了，那怎么才能实现一个当满载后再取出数据后还能往队列添加数据的队列呢？答案就是：在数组中把一个位置当为缓冲区，满载时，当取出一个数据，就把这个缓冲区转化为队列的有效位置，而取出数据后空出来的位置就再次充当缓冲区，这样就能把头尾“相连”起来了，就实现了一个环形的数组充当的队列。（如果不满载，缓冲区就逐渐后移就好）
 
@@ -913,6 +913,115 @@ public void findEmpById(int id){
 
 
 # 树Tree
+
+树，一种数据结构 ，它是由 n (n>=1 )个有限节点组成一个具有层次关系的集合 。
+
+这种数据结构能提高数据存储、读取的效率，例如利用二叉排序树(Binary Sort Tree)，既可以保证数据的检索速度，同时也可以保证数据的插入、删除和修改的速度。
+
+## 二叉树
+
+二叉树：每个节点最多只能有两个子节点。
+
+![](img/3.二叉树.png)
+
+- 满二叉树：所有子节点都在最后一层，并且节点总数是2^-1（n为层数）的树。
+- 完全二叉树：叶子结点只能出现在最下层和次下层，且最下层的叶子结点集中在树的左部并连续，次下层的叶子节点集中在树的右部且连续。（需要注意的是，满二叉树肯定是完全二叉树，而完全二叉树不一定是满二叉树。）
+
+### **创建二叉树：**
+
+1.二叉树使用节点存储信息，所以先把节点建起来：
+
+```java
+public class Node {
+    private int id;
+    ......                  // 节点存储的信息
+    private Node leftNode;  // 存储左节点的地址
+    private Node rightNode; // 存储右节点的地址
+
+    public Node(int id) {
+        this.id = id;
+    }
+    ...... // get、set方法
+}
+```
+
+2.创建节点并把节点连成树：（这里使用手动方式）
+
+```java
+public class ThisIsATree {
+    public static void main(String[] args) {
+        Node root = new Node(6);
+        Node n1 = new Node(5);
+        Node n2 = new Node(10);
+        Node n3 = new Node(3);
+        Node n4 = new Node(4);
+        Node n5 = new Node(8);
+        Node n6 = new Node(9);
+        Node n7 = new Node(2);
+        // 第一层root
+        // 第二层
+        root.setLeftNode(n1);
+        root.setRightNode(n2);
+        // 第三层
+        n1.setLeftNode(n3);
+        n1.setRightNode(n4);
+        n2.setLeftNode(n5);
+        n2.setRightNode(n6);
+        // 第四层
+        n3.setLeftNode(n7);
+    }
+}
+```
+
+### **二叉树遍历：**
+
+- 前序遍历：先输出父节点，再遍历左子树，最后遍历右子树。
+- 中序遍历：先遍历左子树，再输出父节点，再遍历右子树。
+- 后续遍历：先遍历左子树，再遍历右子树，最后再输出父节点。
+- （看父节点输出顺序，就可以确定是哪个遍历）
+
+```java
+// 前序遍历
+public void preOrder(){ 
+    System.out.println(this);
+    // 遍历树中所有左节点
+    if (this.leftNode != null){
+        this.leftNode.preOrder();
+    }
+    // 遍历树中所有右节点
+    if (this.rightNode != null){
+        this.rightNode.preOrder();
+    }
+}
+// 中序遍历
+public void infixOrder(){
+    if (this.leftNode != null){
+        this.leftNode.infixOrder();
+    }
+    System.out.println(this);
+    if (this.rightNode != null){
+        this.rightNode.infixOrder();
+    }
+}
+// 后续遍历
+public void postOrder(){
+    if (this.leftNode != null){
+        this.leftNode.postOrder();
+    }
+    if (this.rightNode != null){
+        this.rightNode.postOrder();
+    }
+    System.out.println(this);
+}
+```
+
+总结：
+
+1. 使用了递归实现左节点、右节点的遍历。
+2. 快速确定遍历输出：
+   - 遍历结果会分为这几部分：根节点（第一层的）、父节点（左父、右父）、左叶子节点、右叶子节点。
+   - 遍历结果会分层输出，最前面的层数的树的节点会越先输出。
+   - 根据前序、中序、后序遍历确定各部分的输出位置即可。例如前序遍历的输出就是按照这个顺序：根节点（第一层的） => 次层左父节点/次层左叶子节点 => 次层右父节点/次层右叶子节点，以此从第一层类推下去，哪个部分没有数据的就没得输出。
 
 
 
