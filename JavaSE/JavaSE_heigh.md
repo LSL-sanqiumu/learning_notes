@@ -1156,163 +1156,284 @@ enum Season implements Info{
 
 # 注解(Annotation)
 
-## 概述
+## 了解注解
 
- 注解(Annotation)概述 ：
-
-- 从 JDK 5.0 开始，Java 增加了对元数据(MetaData) 的支持, 也就是 Annotation(注解) ；
-- Annotation 其实就是代码里的特殊标记, 这些标记可以在编译、类加载、运行时被读取, 并执行相应的处理。通过使Annotation，程序员可以在不改变原有逻辑的情况下，在源文件中嵌入一些补充信息。代码分析工具、开发工具和部署工具可以通过这些补充信息进行验证或者进行部署。
--  Annotation 可以像修饰符一样被使用，可用于修饰包、类、构造器、方法、成员变量、参数、局部变量的声明，这些信息被保存在 Annotation 的 “name=value” 对中。
-- 在JavaSE中，注解的使用目的比较简单，例如标记过时的功能，忽略警告等。在JavaEE/Android中注解占据了更重要的角色，例如用来配置应用程序的任何切面，代替JavaEE旧版中所遗留的繁冗代码和XML配置等。
--  未来的开发模式都是基于注解的，JPA是基于注解的，Spring2.5以上都是基于注解的，Hibernate3.x以后也是基于注解的，现在的 Struts2有一部分也是基于注解的了，注解是一种趋势，一定程度上可以说：**框架 = 注解 + 反射 + 设计模式。**
+1. **注解的出现：**从JDK 5.0 开始，Java 增加了对元数据(MetaData) 的支持, 也就是 Annotation(注解) 。
+2. **注解的作用：**Annotation 其实就是代码里的特殊标记, 这些标记可以在编译、类加载、运行时被读取, 并执行相应的处理。通过使Annotation，程序员可以在不改变原有逻辑的情况下，在源文件中嵌入一些补充信息。代码分析工具、开发工具和部署工具可以通过这些补充信息进行验证或者进行部署。
+3. **注解使用范围：**Annotation 可以像修饰符一样被使用，可用于修饰包、类、构造器、方法、成员变量、参数、局部变量的声明，这些信息被保存在 Annotation 的 “name=value” 对中。
+4. **注解的重要性：**
+   - 在JavaSE中，注解的使用目的比较简单，例如标记过时的功能，忽略警告等。在JavaEE/Android中注解占据了更重要的角色，例如用来配置应用程序的任何切面，代替JavaEE旧版中所遗留的繁冗代码和XML配置等。
+   - 未来的开发模式都是基于注解的，JPA是基于注解的，Spring2.5以上都是基于注解的，Hibernate3.x以后也是基于注解的，现在的 Struts2有一部分也是基于注解的了，注解是一种趋势，一定程度上可以说：**框架 = 注解 + 反射 + 设计模式。**
 
 ![](images/annotation.png)
 
-## 常见注解示例
+## 了解常见注解示例
 
-常见的Annotation示例 ：
+使用 Annotation 时要在其前面增加 `@ `符号，可以把 Annotation 当成一个修饰符使用，用于修饰它支持的程序元素 。
 
-- 使用 Annotation 时要在其前面增加 @ 符号，并把该 Annotation 当成一个修饰符使用。用于修饰它支持的程序元素 。
+**示例一：与使用文档注释来生成说明文档的相关的注解** （在文档注释类使用的注解）
 
-- 示例一：生成文档相关的注解 
+1. @author：标明开发该类模块的作者，多个作者之间使用`,`（道号）分割。
+2. @version：标明该类模块的版本 。
+3. @see：参考转向，也就是相关主题。
+4. @since：从哪个版本开始增加的。
+5. @param：对方法中某参数的说明，如果没有参数就不能写。
+6. @return：对方法返回值的说明，如果方法的返回值类型是void就不能写。
+7. @exception：对方法可能抛出的异常进行说明 ，如果方法没有用throws显式抛出的异常就不能写其中。
+8. 【注意】@param、@return 和 @exception： 这三个标记都是只用于方法上的文档注释的。
+  - @param的格式要求：`@param 形参名 形参类型 形参说明` ；
+  - @return 的格式要求：`@return 返回值类型 返回值说明 `；
+  - @exception的格式要求：`@exception 异常类型 异常说明 `；
+  - @param和@exception可以并列多个。
 
-  - @author 标明开发该类模块的作者，多个作者之间使用`,`分割； 
-  - @version 标明该类模块的版本 ；
-  - @see 参考转向，也就是相关主题 ；
-  - @since 从哪个版本开始增加的 ；
-  - @param 对方法中某参数的说明，如果没有参数就不能写； 
-  - @return 对方法返回值的说明，如果方法的返回值类型是void就不能写 ；
-  - @exception 对方法可能抛出的异常进行说明 ，如果方法没有用throws显式抛出的异常就不能写其中 ；
-  - @param @return 和 @exception 这三个标记都是只用于方法的：
-    - @param的格式要求：`@param 形参名 形参类型 形参说明` ；
-    - @return 的格式要求：`@return 返回值类型 返回值说明 `；
-    - @exception的格式要求：`@exception 异常类型 异常说明 `；
-    - @param和@exception可以并列多个。
+**示例二：在编译时进行格式检查(以下是JDK内置的三个基本注解)**
 
-- 示例二：在编译时进行格式检查(JDK内置的三个基本注解)
+- @Override：限定重写方法，该注解只能用于方法，修饰后会对方法进行校验，要求方法是重写方法。
+- @Deprecated： 用于表示所修饰的元素（类， 方法等），已过时。通常是因为所修饰的结构危险或存在更好的选择 。
+- @SuppressWarnings：用于抑制编译器的警告。
 
-  - @Override: 限定重写父类方法, 该注解只能用于方法 ；
-  - @Deprecated: 用于表示所修饰的元素(类， 方法等)已过时。通常是因为 所修饰的结构危险或存在更好的选择 ；
-  - @SuppressWarnings: 抑制编译器警告。
+**示例三：跟踪代码依赖性，实现替代配置文件功能**
 
-- 示例三：跟踪代码依赖性，实现替代配置文件功能
+- Servlet3.0提供了注解(annotation)，使得不再需要在web.xml文件中进行Servlet的部署；
 
-  - Servlet3.0提供了注解(annotation)，使得不再需要在web.xml文件中进行Servlet的部署；
-
-  - ```java
-    @WebServlet("/login")
-    public class LoginServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws
-    ServletException, IOException { }
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws
-    ServletException, IOException {
-    doGet(r
-    ```
-
-  -  spring框架中关于“事务”的管理；
-
-  - ```
-    
-    ```
-
-- 示例四：
-
-  ```java
-  public Cl {
-      @Override          // 如果加上这个，会进行重写的一些语法校验，如果不是重写方法则编译错误
-      public void test() {
-          
-      }
-  }
+- ```java
+  @WebServlet("/login")
+  public class LoginServlet extends HttpServlet {
+  private static final long serialVersionUID = 1L;
+  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws
+  ServletException, IOException { }
+  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws
+  ServletException, IOException {
+  doGet(r
   ```
 
-  
+- spring框架中关于“事务”的管理。
+
+
+**示例四：**
+
+```java
+public Cl {
+    @Override          // 如果加上这个，会进行重写的一些语法校验，如果不是重写方法则编译错误
+    public void test() {
+        
+    }
+}
+```
 
 ## 自定义注解
 
-自定义Annotation ：
+**自定义Annotation ：**（参考`@SuppressWarnings`注解）
 
-- 声明方式：`public @interface 注解名称 {}  `   (自动继承了Annotation接口)；
-
+- 声明方式：`public @interface 注解名称 {}  `   (自动继承了Annotation接口)。
 - 注解成员变量：（也称为配置参数）
-  - 以无参数方法的形式来声明，例如：`int value();`(只有一个参数成员，建议使用参数名为value)；
-  - 成员类型：八种基本数据类型、String类型、Class类型、enum类型、Annotation类型、 以上所有类型的数组；
+  - 以无参数方法的形式来声明，例如：`int value();`（只有一个参数成员时，建议使用参数名为value）。
+  - 成员类型：八种基本数据类型、String类型、Class类型、enum类型、Annotation类型、 以上所有类型的数组。
   - 指定成员变量的初始值可使用 default 关键字，例如：`int value() default 3`。
   
-  
-  
-- 使用：
-  - 如果定义的注解含有配置参数，那么使用时必须指定参数值，除非它有默认值。格式是“参数名 = 参数值” ，如果只有一个参数成员，且名称为value， 可以省略“value=” ；
-  - 没有定义成员的Annotation称为标记; 元数据 Annotation：包含成员变量的 Annotation称为 ；
-  - 注意：自定义注解必须配上**注解的信息处理流程(即使用反射)**才有意义。
-  
-  ```java
-  public @interface MyAnnotation {
-      int value() default 3; // 无参方法
-  }
-  ```
-  
-  
+
+```java
+public @interface MyAnnotation {
+    //String value(); 
+    String value() default "value";
+}
+```
+
+**自定义的注解的使用：**
+
+- 如果定义的注解含有配置参数，那么使用时必须指定参数值，除非它有默认值。格式是“参数名 = 参数值” ，如果只有一个参数成员，且名称为value， 则可以省略“value=” ；
+- 没有定义成员的注解称为标记；包含成员变量的Annotation称为元数据注解。
+- 注意：自定义注解必须配上**注解的信息处理流程(即使用反射)**才有意义。
+
+```java
+@MyAnnotation("hello") 
+public void test(){
+
+}
+```
 
 ## 元注解
 
 **JDK中的元注解 ：**
 
-- 对现有的注解进行解释说明的注解，修饰注解的注解；
+- 元注解：对现有的注解进行解释说明的注解，修饰注解的注解。
 - JDK5.0提供了4个标准的meta-annotation类型，分别是： 
-  - Retention 
-  - Target 
-  - 以下用得较少
-  - Documented 
-  - Inherited
+  - `@Retention `、`@Target `。
+  - `@Documented` 、`@Inherited`用得较少。
 
-**Retention：**
+### **@Retention：**
 
-`@Rentention `用于指定注解的生命周期（作用范围），Retention 保留  Policy策略。
+`@Rentention `用于指定注解的生命周期（作用范围，默认是class），Retention 保留了  Policy策略。其包含一个名为 `RetentionPolicy`的枚举类型的成员变量，使用 `@Rentention` 时必须为其` value `成员变量指定值：
 
-- `@Rentention `包含一个 `RetentionPolicy` 类型的成员变量, 使用 `@Rentention` 时必须为该` value `成员变量指定值: 
-  - `RetentionPolicy.SOURCE`：在源文件中有效（即源文件保留），编译器使用后会直接丢弃这种策略的注解 ；
-  - `RetentionPolicy.CLASS`：在class文件中有效（即class保留） ， 当运行 Java 程序时，JVM  不会保留注解（这是默认值） ；
-  - `RetentionPolicy.RUNTIME`：在运行时有效（即运行时保留），当运行 Java 程序时，JVM 会保留注解。程序可以通过反射获取该注解。
-- `@Rentention(RetentionPolicy.CLASS)`。
+- `RetentionPolicy.SOURCE`：在源文件中有效（即源文件保留），编译器使用后会直接丢弃这种策略的注解 。
+- `RetentionPolicy.CLASS`：在class文件中有效（即class保留） ， 当运行 Java 程序时，JVM  不会保留注解（这是默认值） 。
+- `RetentionPolicy.RUNTIME`：在运行时有效（即运行时保留），当运行 Java 程序时，JVM 会保留注解。程序可以通过反射获取该注解。
 
-**Target ：**
+```java
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface Retention {
+    /**
+     * Returns the retention policy.
+     * @return the retention policy
+     */
+    RetentionPolicy value();
+}
+```
 
-`@Target  `指定注解类可以在哪些地方使用(类、接口、枚举类、属性、方法、局部变量等)。
+````java
+@Retention(value = RetentionPolicy.SOURCE)
+public @interface MyAnnotation {
+    String value() default "value";
+}
+````
 
-**Documented ：**
+### **@Target ：**
 
-用于指定被该元注解修饰的 Annotation（注解）类将被 javadoc 工具提取成文档。默认情况下，javadoc是不包括注解的。
+`@Target`用于指定注解类可以在哪些地方使用（类（ElementType.TYPE）、接口、枚举类、属性、方法、局部变量、包等）。
 
-定义为Documented的注解必须设置`@Retention`的值为RUNTIME。
+源码：
 
-**Inherited：**
+```java
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.ANNOTATION_TYPE)
+public @interface Target {
+    /**
+     * Returns an array of the kinds of elements an annotation type
+     * can be applied to.
+     * @return an array of the kinds of elements an annotation type
+     * can be applied to
+     */
+    ElementType[] value();
+}
+```
 
-被它修饰的 Annotation 将具有继承性。如果某个类使用了被 `@Inherited` 修饰的 Annotation, 则其子类将自动具有该注解。
+使用：
 
-比如：如果把标有@Inherited注解的自定义的注解标注在类级别上，子类则可以 继承父类级别的注解 【】实际应用中，使用较少。
+```java
+@Target({ElementType.TYPE,ElementType.FIELD,ElementType.METHOD,ElementType.PACKAGE,ElementType.CONSTRUCTOR,ElementType.LOCAL_VARIABLE})
+public @interface MyAnnotation {
+    String value() default "value";
+}
+```
 
+### **@Documented ：**
 
+被该元注解修饰的 Annotation（注解）类将被 javadoc 工具提取成文档。默认情况下，javadoc生成的文档是不包括注解的。
+
+被`@Documented`修饰的注解必须设置`@Retention`的值为RUNTIME。
+
+```java
+@Retention(value = RetentionPolicy.RUNTIME)
+@Documented
+public @interface MyAnnotation {
+    String value() default "value";
+}
+```
+
+### **@Inherited：**
+
+被它修饰的注解将具有继承性。如果某个类使用了被 `@Inherited` 修饰的注解，那么这个类的子类将自动具有该注解。
+
+比如：如果把标有@Inherited注解的自定义的注解标注在类级别上，子类则可以继承父类级别的注解 （际应用中，使用较少）。
+
+```java
+// 自定义注解
+@Retention(value = RetentionPolicy.RUNTIME)
+@Inherited
+public @interface MyAnnotation {
+    String value() default "extends";
+}
+// 使用该注解的类
+@MyAnnotation
+public class AnnotationTest {
+}
+// 该类继承AnnotationTest，会继承到注解
+public class ExtendsAnnotation extends AnnotationTest{
+    public static void main(String[] args) {
+        Class clazz = ExtendsAnnotation.class;
+        Annotation[] annotations = clazz.getAnnotations();
+        System.out.println(annotations[0]); // 输出：@com.lsl.test.MyAnnotation(value=extends)
+    }
+}
+```
 
 ## JDK8中注解新特性
 
-**可重复注解：**
+**可重复注解：**可重复使用多个注解来修饰，使用`@Repeatable(名字.class)`。
 
-- 使用@Repeatable；@Repeatable(名字.class)；
-- 例如
-  - 声明了两个注解 MyAnnotation 和 MyAnnotations；
-  - 在MyAnnotation上声明 @Repeatable(MyAnnotations.class)；
-  - MyAnnotation的Target和Retention等元注解与MyAnnotations相同。
+可重复注解的实现：
 
-**类型注解：**
+1. 声明两个注解 MyAnnotation 和 MyAnnotations。
+2. 在MyAnnotation上声明 `@Repeatable(MyAnnotations.class)`。
+3. MyAnnotation的@Target、@Retention、@Inherited等元注解与MyAnnotations要相同。
 
- JDK1.8之后，关于元注解@Target的参数类型ElementType枚举值多了两个： TYPE_PARAMETER,TYPE_USE。
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface MyAnnotations {
+    MyAnnotation[] value();
+}
+@Retention(value = RetentionPolicy.RUNTIME)
+@Repeatable(MyAnnotations.class)
+@Inherited
+public @interface MyAnnotation {
+    String value() default "extends";
+}
+@MyAnnotation("v1")
+@MyAnnotation("v2")
+public class AnnotationTest {
+}
+```
 
-在Java 8之前，注解只能是在声明的地方所使用，Java8开始，注解可以应用在任何地方。
+```java
+// jdk8之前使用此种方式实现重复注解
+@Retention(value = RetentionPolicy.RUNTIME)
+@Inherited
+public @interface MyAnnotation {
+    String value() default "extends";
+}
+@MyAnnotations({@MyAnnotation("v1"),@MyAnnotation("v2")})
+public class AnnotationTest {
+}
+@MyAnnotations({@MyAnnotation("v1"),@MyAnnotation("v2")})
+public class AnnotationTest {
+}
+```
 
-- ElementType.TYPE_PARAMETER：表示该注解能写在类型变量的声明语 句中（如：泛型声明）；
-- ElementType.TYPE_USE：表示该注解能写在使用类型的任何语句中。
+**类型注解：**JDK1.8之后，关于元注解@Target的参数类型ElementType枚举值多了两个： TYPE_PARAMETER、TYPE_USE。在Java 8之前，注解只能是在声明的地方所使用，Java8开始，注解可以应用在任何地方。
+
+`ElementType.TYPE_PARAMETER`，表示该注解能写在类型变量的声明语句中（如：泛型声明）：
+
+```java
+public class TestTypeDefine<@TypeDefine() U> {
+    private U u;
+    public <@TypeDefine() T> void test(T t){
+
+    }
+}
+// 注解
+@Target(ElementType.TYPE_PARAMETER)
+public @interface TypeDefine {
+}
+```
+
+`ElementType.TYPE_USE`，表示该注解能写在使用类型的任何语句中：
+
+```java
+@Target({ElementType.TYPE_PARAMETER,ElementType.TYPE_USE})
+public @interface TypeDefine {
+}
+public class TestTypeDefine<@TypeDefine() U> {
+    private U u;
+    public <@TypeDefine() T> void test(T t){
+        ArrayList<@TypeDefine String> list = new ArrayList<>(); // 没加TYPE_USE时此处报错
+        int num = (@TypeDefine int) 10L; // 没加TYPE_USE时此处报错
+    }
+}
+```
 
 # 反射
 
