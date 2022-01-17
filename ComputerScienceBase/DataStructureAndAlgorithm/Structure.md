@@ -765,7 +765,7 @@ public void countGirl(int startNo, int countNum, int nums){
 4. 二叉树的遍历。 
 5.  图形的深度优先(depth 一 first)搜索法。
 
-# 哈希表(散列)
+# 哈希(散列)表
 
 散列表（Hash table，也叫哈希表），是根据关键码值(Key value)而直接进行访问的数据结构。也就是说，它通过把关键码值映射到表中的一个位置来访问该位置记录有的数据，以加快查找的速度。这个把关键码值映射到表中具体位置的映射函数叫做散列函数，存放记录的数组叫做散列表（哈希表）。
 
@@ -918,6 +918,8 @@ public void findEmpById(int id){
 
 这种数据结构能提高数据存储、读取的效率，例如利用二叉排序树(Binary Sort Tree)，既可以保证数据的检索速度，同时也可以保证数据的插入、删除和修改的速度。
 
+![](img/5.堆.png)
+
 ## 二叉树
 
 二叉树：每个节点最多只能有两个子节点。
@@ -1018,20 +1020,187 @@ public void postOrder(){
 总结：
 
 1. 使用了递归实现左节点、右节点的遍历。
-2. 快速确定遍历输出：
-   - 遍历结果会分为这几部分：根节点（第一层的）、父节点（左父、右父）、左叶子节点、右叶子节点。
-   - 遍历结果会分层输出，最前面的层数的树的节点会越先输出。
-   - 根据前序、中序、后序遍历确定各部分的输出位置即可。例如前序遍历的输出就是按照这个顺序：根节点（第一层的） => 次层左父节点/次层左叶子节点 => 次层右父节点/次层右叶子节点，以此从第一层类推下去，哪个部分没有数据的就没得输出。
+2. 快速确定遍历输出：可看成一颗颗小树，父、左（父、左、右）、右（父、左、右）。
+
+### 二叉树查找：
+
+```java
+// 节点
+public Node preOrderSearch(int id){
+    if (this.id == id){
+        return this;
+    }
+    Node result = null;
+    if (this.leftNode != null){
+        result = this.leftNode.preOrderSearch(id);
+    }
+    if (result != null){
+        return result;
+    }
+    if (this.rightNode != null){
+        result = this.rightNode.preOrderSearch(id);
+    }
+    return result;
+}
+public Node infixOrderSearch(int id){
+    Node result = null;
+    if (this.leftNode != null){
+        result = this.leftNode.preOrderSearch(id);
+    }
+    if (result != null){
+        return result;
+    }
+    if (this.id == id){
+        return this;
+    }
+    if (this.rightNode != null){
+        result = this.rightNode.preOrderSearch(id);
+    }
+    return result;
+}
+public Node postOrderSearch(int id){
+    Node result = null;
+    if (this.leftNode != null){
+        result = this.leftNode.preOrderSearch(id);
+    }
+    if (result != null){
+        return result;
+    }
+    if (this.rightNode != null){
+        result = this.rightNode.preOrderSearch(id);
+    }
+    if (result != null){
+        return result;
+    }
+    if (this.id == id){
+        return this;
+    }
+    // 如果找不到，返回null
+    return result;
+}
+```
+
+```java
+// 树
+public Node preOrderSearch(int id){
+    if (root != null){
+        return root.preOrderSearch(id);
+    }else {
+        return null;
+    }
+}
+public Node infixOrderSearch(int id){
+    if (root != null){
+        return root.infixOrderSearch(id);
+    }else {
+        return null;
+    }
+}
+public Node postOrderSearch(int id){
+    if (root != null){
+        return root.postOrderSearch(id);
+    }else {
+        return null;
+    }
+}
+```
+
+### 删除节点
+
+```java
+// 节点：删除叶子节点或父子节点的子树
+public void delNode(int id){
+    if (this.leftNode != null && this.leftNode.id == id){
+        this.leftNode = null;
+        return;
+    }
+    if (this.rightNode != null && this.rightNode.id == id){
+        this.leftNode = null;
+        return;
+    }
+    if (this.leftNode != null){
+        this.leftNode.delNode(id);
+    }
+    if (this.rightNode != null){
+        this.rightNode.delNode(id);
+    }
+}
+```
+
+```java
+// 树
+public void delNode(int id){
+    if (root != null){
+        if (root.getId() == id){
+            root = null;
+        }else {
+            root.delNode(id);
+        }
+    }else {
+        System.out.println("空树！");
+    }
+}
+```
+
+如果目标节点是非叶子节点，如何只删除该节点但不删除其下面的子节点？
+
+- 如果是叶子节点就可以直接删除。
+- 如果不是叶子节点，那么可以指定如下规则：
+  1. 如果该非叶子节点只有一个子节点，那么该子节点就替代被删除的节点的位置。
+  2. 如果该非叶子节点有两个子节点，那么左子节点就替代被删除的节点的位置，右子节点就变为该子节点的右子节点。
 
 
+
+
+
+## 顺序存储二叉树
+
+![](img/4.顺序存储二叉树.png)
+
+```java
+public class ArrayBinaryTree {
+    private int[] arr;
+    public ArrayBinaryTree(int[] arr){
+        this.arr = arr;
+    }
+
+    public static void main(String[] args) {
+        ArrayBinaryTree arrayBinaryTree = new ArrayBinaryTree(new int[]{1,2,3,4,5,6,7});
+        arrayBinaryTree.preOrder(); // 1245367
+    }
+    // 树的前序遍历
+    public void preOrder(){
+        this.preOrder(0);
+    }
+    public void preOrder(int index){
+        if (arr == null || arr.length == 0){
+            System.out.println("空数组，不能转为二叉树！");
+        }
+        // 输出当前元素
+        System.out.println(arr[index]);
+        if ((index*2+1) < arr.length){
+            preOrder(2*index + 1);
+        }
+        if ((index*2+2) < arr.length){
+            preOrder(2*index + 2);
+        }
+    }
+}
+```
+
+实际应用：堆排序。
+
+## 线索化二叉树
 
 
 
 # 堆heap
 
+堆是什么？堆是一类特殊的树，是为了实现排序而设计的一种数据结构，它不是面向查找操作的。堆的通用特点就是父节点会大于或小于所有子节点。堆并不一定就是完全二叉树，平时使用完全二叉树的原因是易于存储、	便于索引。
 
+就是所有父结点都比子结点要小，符合这个特点的完全二叉树我们称为最小堆。反之，如果所有父结点都比子结点要大，这样的完全二叉树称为最大堆。
 
-
+## 二叉堆
 
 
 
