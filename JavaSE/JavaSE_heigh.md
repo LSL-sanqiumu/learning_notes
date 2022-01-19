@@ -1681,6 +1681,12 @@ constructor.setAccessible(true);
 Person lsl = (Person) constructor.newInstance("LSL", "22");
 ```
 
+## 动态代理
+
+
+
+
+
 # Properties配置文件
 
 ```java
@@ -3178,7 +3184,134 @@ TCP/UDP
 
 端口号和IP地址的组合得出一个网络套接字：Socket；套接字Socket=（IP地址：端口号），套接字的表示方法是点分十进制的lP地址后面写上端口号，中间用冒号或逗号隔开；每一个传输层连接唯一地被通信两端的两个端点（即两个套接字）所确定。例如：如果IP地址是210.37.145.1，而端口号是23，那么得到套接字就是`210.37.145.1:23`。
 
+# Java8新特性
 
+## Lambda表达式
+
+Lambda表达式是一个匿名函数，可以把Lambda表达式理解为一段可以传递的代码（将代码像数据一样进行传递）。在Java中，lambda表达式是作为接口的实例。
+
+使用Lambda表达式：
+
+- 使用格式：`(形参1,形参2,...) -> lambda体`。
+- `->`：箭头操作符，lambda操作符。
+- lambda操作符左边：是lambda形参列表（实际上就是接口中抽象方法的形参列表）。
+- lambda操作符右边：lambda体，重写的抽象方法的方法体。
+
+语法格式一，无参无返回值：
+
+```java
+public static void main(String[] args) {
+    Runnable r1 = new Runnable() {
+        @Override
+        public void run() {
+            System.out.println("hello");
+        }
+    };
+    // 箭头操作符左边是抽象方法形参列表，右边是重写的方法的方法体
+    Runnable r2 = () -> System.out.println("lambda函数表达式"); 
+    r1.run();
+    r2.run();
+}
+```
+
+语法格式二，有一个参数但没有返回值：
+
+```java
+public static void main(String[] args) {
+    Consumer<String> con = new Consumer<String>() {
+        @Override
+        public void accept(String s) {
+            System.out.println(s);
+        }
+    };
+    Consumer<String> con2 = (s) -> System.out.println(s);
+    con2.accept("hello");
+}
+```
+
+语法格式三，数据类型可以省略（因为可以由编译器来推断出，称为“类型维护”）：
+
+```java
+public static void main(String[] args) {
+    Consumer<String> con1 = (String s) -> {System.out.println(s);};
+    // 类型推断
+    Consumer<String> con2 = (s) -> {System.out.println(s);};
+    con1.accept("hello1");
+    con2.accept("hello2");
+    ArrayList<String> arrayList = new ArrayList<>(); // 泛型的类型推断
+    int[] arr = {1,2,3}; // 类型推断
+}
+```
+
+语法格式四，若只需要一个参数，那么参数的小括号可以省略：
+
+```java
+public static void main(String[] args){
+ 	Consumer<String> con2 = s -> {System.out.println(s);};   
+}
+```
+
+语法格式五，有多个参数、有返回值、多条执行语句：
+
+```java
+public static void main(String[] args) {
+    Comparator<Integer> c1 = new Comparator<Integer>() {
+        @Override
+        public int compare(Integer o1, Integer o2) {
+            System.out.println(o1);
+            System.out.println(o2);
+            return Integer.compare(o1,o2);
+        }
+    };
+    Comparator<Integer> c2 = (o1,o2) -> {
+        System.out.println(o1);
+        System.out.println(o2);
+        return Integer.compare(o1,o2);
+    };
+    int v1 = c1.compare(21, 20);
+    int v2 = c2.compare(21, 20);
+    System.out.println(v1 + "\n" + v2);
+}
+```
+
+语法格式六，当lambda体只有一条语句，return与大括号可省略：
+
+```java
+public static void main(String[] args) {
+    Comparator<Integer> c1 = (o1,o2) -> {return Integer.compare(o1,o2);};
+    Comparator<Integer> c2 = (o1,o2) -> Integer.compare(o1,o2);
+    // 也可以使用方法引用：Comparator<Integer> c2 = Integer::compare;
+    int v2 = c2.compare(21, 20);
+    System.out.println(v2);
+}
+```
+
+总结：
+
+1. 形参列表的参数的类型可以省略不写，如果形参列表的参数只有一个那么那个括号也可以不写。
+2. lambda体使用`{}`包裹，如果lambda体只有一条执行语句（可能是return语句），那么`{}`可以不写（如果是return语句，则{}、return都可以不用写）。
+
+
+
+## 函数式接口
+
+
+
+
+
+## 方法引用与构造器引用
+
+
+
+
+
+## Stream API
+
+
+
+
+
+## Optional类
 
 
 
