@@ -3295,25 +3295,355 @@ public static void main(String[] args) {
 
 ## 函数式接口
 
+函数式接口：只包含一个抽象方法的接口。
 
+Lambda表达式依赖于函数式接口。
 
+![](images/函数式接口.png)
 
+## 方法引用
 
-## 方法引用与构造器引用
+方法引用是实际上是函数式接口的实例。
 
+1. 使用格式：`对象或类 :: 方法名`。
+2. 当传递给lambda体的操作有具体实现，可以使用方法的引用。
+3. 要求：函数式接口的抽象方法的形参列表和返回值类型 = 方法引用的方法的形参列表和返回值类型。
 
+使用方式一，通过对象引用：`对象 :: 实例的方法`
 
+```java
+public class Employee {
+    private String name;
+}
+// @Test
+Employee e = new Employee("tom");
+Supplier s = e :: getName;
+System.out.println(s.get()); // 函数式接口的get()方法的返回值和形参列表和getName方法和的一致
+```
 
+使用方式二，通过类引用：`类 :: 静态方法`
+
+```java
+// @Test
+// 函数式接口实例的compare方法的方法体是Interger的静态方法compare
+Comparator<Integer> c1 = Integer::compare;
+int compare = c1.compare(12, 32);
+System.out.println(compare);
+```
+
+```JAVA
+// 这三个等价
+Function<Double,Long> function = new Function<Double, Long>() {
+    @Override
+    public Long apply(Double aDouble) {
+        return Math.round(aDouble);
+    }
+};
+Function<Double,Long> func1 = aDouble -> Math.round(aDouble);
+Function<Double,Long> func2 = Math::round;
+```
+
+使用方式二，通过类引用：`类 :: 非静态方法`
+
+```java
+public class Employee {
+    private String name;
+}
+public static void main(String[] args) {
+    Employee e = new Employee("tom");
+    Function<Employee,String> fun = Employee :: getName;
+    // 函数式接口实例-fun对象的apply方法的方法体是Employee类型的e对象的getName方法
+    System.out.println(fun.apply(e));
+}
+```
+
+## 构造器引用
+
+```java
+public static void main(String[] args) {
+    Supplier<Employee> s = () -> new Employee();
+    Supplier<Employee> sr = Employee::new;
+}
+```
+
+```java
+public class Employee {
+    private String name;
+    private Integer age;
+    public Employee(Integer age,String name) {
+        this.name = name;
+        this.age = age;
+    }
+}
+// 以下等价
+BiFunction<Integer,String,Employee> fun1 = (age,name) -> new Employee(age,name);
+fun1.apply(22,"lsl");
+BiFunction<Integer,String,Employee> fun2 = Employee ::new;
+fun2.apply(22,"lsl");
+```
+
+## 数组引用
+
+```java
+// 以下创建数组方式等价
+public static void main(String[] args) {
+    Function<Integer,String[]> fun1 = length -> new String[length];
+    String[] arr1 = fun1.apply(6);
+    Function<Integer,String[]> fun2 = String[] :: new;
+    String[] arr2 = fun2.apply(6);
+}
+```
 
 ## Stream API
 
+### 概述与Stream创建
 
+Stream API真正地把函数式编程风格引入Java。
 
+Stream 是数据渠道，用于操作数据源（集合、数组等）所生成的元素序列，其关注的是对数据的运算而不是对数据的存储。
 
+注意点：
+
+1. Stream 不会自己存储元素。
+2. Stream 不会改变源数据对象，但会返回一个持有结果的新Stream 。
+3. Stream 操作是延时执行的，这意味着Stream 会等到需要结果的时候才执行。
+
+![](images/stream.png)
+
+**stream的四种创建方式：**
+
+```java
+public static void main(String[] args) {
+    // 创建方式1
+    List list1 = new ArrayList();
+    Stream stream1 = list1.stream();
+    Stream stream2 = list1.parallelStream();
+    // 创建方式二
+    int[] arr = new int[]{1,2,4};
+    IntStream stream3 = Arrays.stream(arr);
+    // 创建方式三
+    Stream<Integer> integerStream = Stream.of(12, 23, 54, 56);
+    // 创建方式4 创建无限流
+    // 无限流 迭代
+    Stream.iterate(0,t -> t+2).limit(10).forEach(System.out::println);
+    // 无限流 生成
+    Stream.generate(Math :: random).limit(10).forEach(System.out::println);
+}
+```
+
+### **Stream的中间操作：**
+
+Stream的多个中间操作可以连接成为一条流水线，除非流水线上触发终止操作，否则中间操作就不会被执行，当在触发终止操作时，中间操作一次性全部触发执行，这别称为“惰性处理”。
+
+1.刷选和切片：
+
+| 方法                | 描述                                                         |
+| :------------------ | :----------------------------------------------------------- |
+| filter(Predicate p) | 接收lambda，从流中排除某些元素                               |
+| distinct()          | 筛选，通过流所生成元素的hashCode()和equals()去除重复元素，<br/>元素的这两个方法需要重写 |
+| limit(long maxSize) | 截断，使流处理的元素不超过给定数量                           |
+| skip(long n)        | 跳过前n个元素，并返回n；若流中元素不足n个，则返回一个空流    |
+
+```java
+public static void main(String[] args) {
+    List<Employee> list = EmployeeData.getEmployees();
+    Stream<Employee> stream = list.stream();
+    stream.filter(e -> e.getSalary() > 4000).forEach(System.out::println);
+    list.stream().limit(3).forEach(System.out::println);
+    list.stream().skip(3).forEach(System.out::println);
+    list.add(new Employee(1009,"东",40,8888));
+    list.add(new Employee(1009,"东",40,8888));
+    list.add(new Employee(1009,"东",40,8888));
+    list.add(new Employee(1009,"东",40,8888));
+    list.stream().distinct().forEach(System.out::println);
+}
+```
+
+测试需要的类：
+
+```java
+public class Employee {
+    private int id;
+    private String name;
+    private int age;
+    private double salary;
+    // tostring、equals、构造器、getset
+    ......
+}
+```
+
+```java
+public class EmployeeData {
+    public static List<Employee> getEmployees(){
+        List<Employee> list = new ArrayList<>();
+        list.add(new Employee(1001,"马化腾",34,6000.38));
+        list.add(new Employee(1002,"马云",12,9000.38));
+        list.add(new Employee(1003,"刘强东",33,1200.38));
+        list.add(new Employee(1004,"雷军",36,1600.38));
+        list.add(new Employee(1005,"李彦宏",45,3600.38));
+        list.add(new Employee(1006,"比尔盖茨",66,4600.38));
+        list.add(new Employee(1007,"扎克伯格",44,6600.38));
+        list.add(new Employee(1008,"任正非",35,9600.38));
+        return list;
+    }
+}
+```
+
+2.映射
+
+| 方法                            | 描述                                                         |
+| ------------------------------- | ------------------------------------------------------------ |
+| map(Function f)                 | 接收一个函数，接收的函数会被映射到每个元素上，并将元素映射成一个新元素<br/>传入的函数对每个元素进行处理并形成映射 |
+| mapToDouble(ToDoubleFunction f) | 接收一个函数，接收的函数会被映射到每个元素上，产生一个新的DoubleStrem |
+| mapToInt(ToIntFunction f)       | 接收一个函数，接收的函数会被映射到每个元素上，产生一个新的IntStrem |
+| mapToLong(ToLongFunction f)     | 接收一个函数，接收的函数会被映射到每个元素上，产生一个新的LongStrem |
+| flatMap(Function f)             | 接收的函数将流中的每个值都转换为另一个流，然后再把所有流都合并成一个流 |
+
+```java
+@Test // map()
+public void test1(){
+    List<String> list = Arrays.asList("aa","bb","cc","dd");
+    list.stream().map(str -> str.toUpperCase()).forEach(System.out::println);
+}
+```
+
+```java
+public class StreamTestAPI {
+    @Test // flatMap()
+    public void test2(){
+        List<String> list = Arrays.asList("aa","bb","cc","dd");
+        // stream的元素是stream
+        Stream<Stream<Character>> streamStream = list.stream().map(StreamTestAPI ::fromStringToStream);
+        streamStream.forEach(s -> {s.forEach(System.out::print);});
+        System.out.println();
+        Stream<Character> characterStream = list.stream().flatMap(StreamTestAPI::fromStringToStream);
+        characterStream.forEach(System.out::print);
+    }
+    // 将字符转换为stream
+    public static Stream<Character> fromStringToStream(String s){
+        ArrayList<Character> list = new ArrayList<>();
+        for (Character c : s.toCharArray()) {
+            list.add(c);
+        }
+        return list.stream();
+    }
+}
+```
+
+3.排序
+
+| 方法                   | 描述                                 |
+| ---------------------- | ------------------------------------ |
+| sorted()               | 产生一个新的流，将元素自然排序       |
+| sorted(Comparator com) | 产生一个新的流，将元素按比较器来排序 |
+
+```java
+@Test
+public void test3(){
+    List<Integer> list1 = Arrays.asList(43, 56, 12, 35, 32, 54);
+    list1.stream().sorted().forEach(System.out::println);
+    List<Employee> list2 = EmployeeData.getEmployees();
+    list2.stream().sorted((e1,e2) -> {
+        return Integer.compare(e1.getAge(),e2.getAge());
+    }).forEach(System.out::println);
+}
+```
+
+### **Stream的终止操作：**
+
+1.匹配与查找
+
+| 方法                   | 描述                                               |
+| ---------------------- | -------------------------------------------------- |
+| allMatch(Predicate p)  | 是否匹配全部元素（按传入的函数来确定匹配细节）     |
+| anyMatch(Predicate p)  | 是否至少匹配一个元素（按传入的函数来确定匹配细节） |
+| noneMatch(Predicate p) | 是否没有匹配全部元素（按传入的函数来确定匹配细节） |
+| findFirst()            | 返回第一个元素                                     |
+| findAny()              | 返回当前流中任意元素                               |
+| count()                | 返回流中元素总数                                   |
+| max(Comparator c)      | 返回流中最大值                                     |
+| min(Comparator c)      | 返回流中最小值                                     |
+| forEach(Consumer c)    | 内部迭代                                           |
+
+```java
+// 使用示例
+public static void main(String[] args) {
+    List<Employee> list = EmployeeData.getEmployees();
+    boolean b = list.stream().allMatch(employee -> employee.getAge() > 18);
+    System.out.println(b);
+}
+```
+
+```java
+// 使用示例
+public static void main(String[] args) {
+    Stream<Double> stream1 = list.stream().map(employee -> employee.getSalary());
+    Optional<Double> max = stream1.max(Double::compare);
+    System.out.println(max);
+}
+```
+
+2.归约
+
+| 方法                             | 描述                                                         |
+| -------------------------------- | ------------------------------------------------------------ |
+| reduce(T iden, BinaryOperator b) | 将流中元素反复结合起来，得到一个值（iden是初始值）并返回。返回T |
+| reduce(BinaryOperator b)         | 将流中元素反复结合起来，得到一个值并返回 。返回`Optional<T>` |
+
+备注：map与reduce的连接通常称为map-deduce模式，因google用它来进行网络搜索而出名。
+
+```java
+@Test // 归约
+public void test4(){
+    // 计算1-10的和
+    List<Integer> list1 = Arrays.asList(1,2,3,4,5,6,7,8,9,10);
+    //Integer reduce = list1.stream().reduce(10, Integer::sum); // 65
+    Integer reduce = list1.stream().reduce(0, Integer::sum);
+    System.out.println(reduce); // 55
+    // 计算工资总和
+    List<Employee> list2 = EmployeeData.getEmployees();
+    Stream<Double> salaryStream = list2.stream().map(Employee::getSalary);
+    //Optional<Double> all = salaryStream.reduce(Double::sum); // Optional[42203.04]
+    Optional<Double> all = salaryStream.reduce((d1,d2) -> d1+d2); // Optional[42203.04]
+    System.out.println(all);
+}
+```
+
+3.收集
+
+```java
+colect(Collector c) // 将流转换为其它形式，接收一个Collector接口的实现，用于给Stream中元素做汇总的方法
+```
+
+Collector接口方法的实现决定了如何对流执行收集的操作（如收集到List、Set、Map）。另外，Collectors实用类提供了很多静态方法，可以方便地创建常见收集器实例：
+
+![](images/collectors.png)
+
+```java
+@Test // 收集
+public void test5(){
+    List<Employee> employees = EmployeeData.getEmployees();
+    Stream<Employee> salaryStream = employees.stream().filter(employee -> employee.getSalary() > 6000);
+    salaryStream.forEach(System.out :: println);
+    System.out.println();
+    Set<Employee> set = employees.stream().filter(employee -> employee.getSalary() > 6000).collect(Collectors.toSet());
+    set.forEach(System.out :: println);
+}
+```
+
+Collectors其他的API：
+
+![](images/collectors2.png)
 
 ## Optional类
 
+（受到Google的Guava项目的启发，在JDK8中引入）。
 
+`Optional<T>`（java.util.Optional）是一个容器类，它可以保存T类型的值，代表这个值存在；或者仅仅保存null，代表这个值不存在。原来用null表示一个值不存在，现在Optional可以更好地表达这个概念，并且可以避免空指针异常。
+
+Optional类：一个可以为null的容器对象，如果值存在则isPresent()方法返回true，调用get()方法会返回该对象。
+
+![](images/optional.png)
 
 
 
