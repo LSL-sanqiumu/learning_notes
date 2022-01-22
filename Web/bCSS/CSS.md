@@ -926,7 +926,7 @@ vscode的cssrem插件，可以自动将px值转为rem值（需要进入设置里
 
 ```css
 .container {
-    width: 7;
+    width: 1100px;
     margin: 0 auto;
 }
 @media screen and (max-width: 767px) {
@@ -958,6 +958,79 @@ vscode的cssrem插件，可以自动将px值转为rem值（需要进入设置里
 来自推特，目前最受欢迎的前端框架，基于HTML、CSS、JavaScript，简洁灵活，使得web开发更加快捷。
 
 [Bootstrap中文网 (bootcss.com)](https://www.bootcss.com/)
+
+### 使用
+
+[Bootstrap中文网 (bootcss.com)](https://www.bootcss.com/)，下载。
+
+引入。
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>陆拾陆的blog</title>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="../static/bootstrap-3.4.1-dist/css/bootstrap.min.css">
+</head>
+	<body>
+	</body>
+</html>
+```
+
+### 布局容器
+
+![](image/bootstrap布局容器.png)
+
+### 栅格系统
+
+bootstrap将页面划分为12列。
+
+![](image/栅格系统1.png)
+
+注意：
+
+- 如果划分份数不够12，默认向左靠齐。
+- 如果划分份数超过12，默认换行。
+
+![](image/栅格_row.png)
+
+![](image/栅格_列偏移.png)
+
+![](image/栅格_列排序.png)
+
+### 响应式工具
+
+![](image/bootstrap_组件.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
