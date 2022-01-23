@@ -1681,12 +1681,6 @@ constructor.setAccessible(true);
 Person lsl = (Person) constructor.newInstance("LSL", "22");
 ```
 
-## 动态代理
-
-
-
-
-
 # Properties配置文件
 
 ```java
