@@ -856,9 +856,13 @@ select ... from ... where ... group by ... having ... order by ... limit page,pa
 
 ### 概述
 
-笛卡儿积现象：当两张表进行连接查询，没有任何条件限制，**最终查询结果条数**，是两张表条数的乘积，这种现象被称为笛卡尔积现象，由笛卡尔发现的一种数学现象。  ——由该现象可知数据库底层查询是先从表中拿出数据，也就是from先行，这时匹配的次数是每张表的数据条数的乘积；因此，表的连接次数越多，匹配的次数就越多，查询的效率就越低了。
+**笛卡儿积现象：**
+
+当两张表进行连接查询，没有任何条件限制，**最终查询结果条数**，是两张表条数的乘积，这种现象被称为笛卡尔积现象，由笛卡尔发现的一种数学现象。  ——由该现象可知数据库底层查询是先从表中拿出数据，也就是from先行，这时匹配的次数是每张表的数据条数的乘积；因此，表的连接次数越多，匹配的次数就越多，查询的效率就越低了。
 
 联表查询中，**加条件是为了避免笛卡尔积现象，查询出有效的组合记录（使查询结果条数不是m*n）**，但是匹配的次数是一次都没有少的，联表查询加条件和效率并没有关系，因此联表查询中尽量降低表的连接才能提高效率。
+
+**连接查询：**
 
 连接查询语法根据年代分为SQL92、SQL99，按照表连接的方式分为三类：
 
@@ -866,27 +870,30 @@ select ... from ... where ... group by ... having ... order by ... limit page,pa
 - 外连接：有主次关系（区分主表、从表）。
 - 全连接（几乎不用）。
 
-内连接：on后条件用=的就是等值连接，条件不是等值关系就是非等值连接
+**内连接：**on后条件用=的就是等值连接，条件不是等值关系就是非等值连接
 
 ```mysql
--- SQL92 结构不清晰，表的连接和筛选都放在了where后面
+-- SQL92语法的等值内连接 结构不清晰，表的连接和筛选都放在了where后面
 select s.name,stu.name from school s, student stu where s.no = c.no and 条件;
--- SQL99语法 表连接独立，连接后可再进行筛选  表起别名，很重要，效率问题
--- 语法： select ... from a join b on a和b的连接条件 where 筛选条件; inner可以省略
+```
+
+```mysql
+-- SQL99语法的等值内连接 表连接独立，连接后可再进行筛选  表起别名，很重要，效率问题
+-- 语法： select ... from a join b on a和b的连接条件 where 筛选条件; inner是可以省略的
 select s.name,stu.name from school s inner join student stu on s.no = c.no;
 ```
 
-内连接-自连接(了解)：把一张表当做两张表来进行查询。例子如下：
+**内连接-自连接(了解)：**把一张表当做两张表来进行查询。例子如下：
 
 ```mysql
-# 这里的`school`是指数据库，SQL语句中可以"数据库.数据库表"来指定哪个数据库下的表
+-- 这里的`school`是指数据库，SQL语句中可以"数据库.数据库表"来指定哪个数据库下的表
 CREATE TABLE `school`.`category`( 
 `categoryid` INT(3) NOT NULL COMMENT 'id', 
 `pid` INT(3) NOT NULL COMMENT '父id 没有父则为1', 
 `categoryname` VARCHAR(10) NOT NULL COMMENT '种类名字', 
 PRIMARY KEY (`categoryid`)
 ) ENGINE=INNODB CHARSET=utf8 COLLATE=utf8_general_ci; 
-
+-- 插入数据
 INSERT INTO `school`.`category` (`categoryid`, `pid`, `categoryname`) VALUES (2, 1, '信息技术');
 INSERT INTO `school`.`CATEGOrY` (`categoryid`, `pid`, `categoryname`) VALUES (3, 1, '软件开发');
 INSERT INTO `school`.`category` (`categoryid`, `PId`, `categoryname`) VALUES (5, 1, '美术设计');
@@ -894,41 +901,44 @@ INSERT INTO `School`.`category` (`categoryid`, `pid`, `categorynamE`) VALUES (4,
 INSERT INTO `school`.`category` (`CATEgoryid`, `pid`, `categoryname`) VALUES (8, 2, '办公信息');
 INSERT INTO `school`.`category` (`categoryid`, `pid`, `CAtegoryname`) VALUES (6, 3, 'web开发'); 
 INSERT INTO `SCHool`.`category` (`categoryid`, `pid`, `categoryname`) VALUES (7, 5, 'ps技术');
-# 把一张表当两张表用——起两个别名
-# 下面的SQL语句为：从a、b表选取两表的categoryname都相等的数据的pid、categoryname
+# 把一张表当两张表用——通过起两个别名
+# 下面的SQL语句的功能为：选取两表中categoryname都相等的数据的pid、categoryname
  SELECT a.pid,a.categoryname 
  FROM category AS a, category AS b
- WHERE a.categoryname =b.categoryname;
+ WHERE a.categoryname = b.categoryname;
 ```
 
 ### 连接查询
 
 SQLJoins：可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。
 
-内连接：
+**内连接：**（两表特定字段在特定条件存在交集的数据集（我的理解））
 
 ```mysql
-inner join -- 两表特定字段在特定条件存在交集的数据集（我的理解），inner join的就是内连接
+inner join -- inner join的就是内连接
+-- inner、as可以省略
+select s.id,s.name,g.course,g.scores from student s join grades g on s.id=g.id;
+select s.id,s.name,g.course,g.scores from student as s inner join grades as g on s.id=g.id;
 ```
 
-外连接：(left、right的就是外连接)
+**外连接：**(left、right的就是外连接)
 
 ```mysql
- -- 左外连接，left join左边为主表，两表特定字段存在交集的数据集 + 主表的数据 -> 集合而成的数据集
+ -- 左外连接，left join的左边为主表，两表特定字段存在交集的数据集 + 主表的其它数据 -> 集合而成的数据集
 left join 
--- 右外连接，right join右边为主表，两表特定字段存在交集的数据集 + 主表的数据 -> 集合而成的数据集
+-- 右外连接，right join的右边为主表，两表特定字段存在交集的数据集 + 主表的其它数据 -> 集合而成的数据集
 right join 
--- 全外连接，两表独立的数据及交集的数据的集合，类似并集
+-- 全外连接，两表独立的数据及交集的数据的集合，类似并集 （MySQL不支持，可以使用union实现）
 full outer join 
 ```
 
-连接查询语法：（`xxx join` 确定连接查询方式，见下图-SQL JOINS）
+**连接查询语法：**（`xxx join` 确定连接查询方式，见下图-SQL JOINS）
 
 ```sql
 -- on 为连接条件，可理解为交集区域
 select ... from `表1` xxx join `表2` on ...; （四种）
 select ... from `表1` xxx join `表2` on ... where ...;  （三种）
---  where是为了xuan
+--  where是为了选数据，选取连接查询后得到的数据
 ```
 
 inner join ... on一种，left join 、right join 、full outer join 和on 、 where搭配分出六种：
@@ -982,6 +992,7 @@ INSERT INTO t_class(s_id,specialty,grade) VALUES
 (1007,'会计','计算机191'),
 (2221,'土木工程','土木201'),
 (2222,'软件工程','软件221');
+-- 测试各种连接.
 ```
 
 
@@ -989,15 +1000,13 @@ INSERT INTO t_class(s_id,specialty,grade) VALUES
 ### 更多张表的连接
 
 ```mysql
--- 语法  可以使用inner、right等的join
+-- 可以使用inner、right等的join，以内连接为例
 select ... from 
 a join b on a和b连接的条件 
 join c on a和c连接的条件 
 join d on a和d连接的条件
 ... 
 ```
-
-
 
 ## 排序order
 
@@ -1055,7 +1064,7 @@ select 字段1, 字段2, (select ... from ... ...) from ... ...
 
 ## union
 
-联合，用于将查询结果联合在一起，结果集重复的数据会合并成一条：
+联合，用于将查询结果联合在一起，结果集重复的数据（整条记录的字段名、字段类型、字段值一致）才会合并成一条：
 
 ```mysql
  select name,age from info where age = 20 union select name,age from info where age = 18;
