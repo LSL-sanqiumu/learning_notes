@@ -1,5 +1,3 @@
-学习新东西的一个思路：1.安装解压；2.了解需要的配置和其目录结构；3.作用
-
 ## Tomcat
 
 Tomcat服务器是一个实现了Servlet规范和JSP规范的容器，启用Tomcat服务器后可以通过URL去访问webapps目录下的内容，也可以这么说，例如`http://localhost:8081/xx/xx.html`，可以将`http://localhost:8081/`看作是webapps目录，访问服务器（物理服务器）上的资源可以说就是访问主机里的web container里面的web应用，Tomcat服务器就是一个web容器。
@@ -8,39 +6,44 @@ Tomcat服务器是一个实现了Servlet规范和JSP规范的容器，启用Tomc
 
 目录结构：
 
-- bin：启动关闭的基本文件，命令目录；
-- conf：配置目录；
-- lib：依赖的包、核心库，库目录；
-- logs：日志；
-- webapps：放web应用（存放网站）（B端的URL的`http://localhost:8081/`去除后的剩余部分，就是相对于webapps目录的相对URL）；
-- work：存放jsp被访问后生成对应的server文件和 .class文件，jsp生成文件目录。
+1. bin：启动关闭的基本文件，命令目录；
+2. conf：配置目录；
+3. lib：依赖的包、核心库，库目录；
+4. logs：日志；
+5. webapps：放web应用（存放网站）（B端的URL的`http://localhost:8081/`去除后的剩余部分，就是相对于webapps目录的相对URL）；
+6. work：存放jsp被访问后生成对应的server文件和 .class文件，jsp生成文件目录。
 
-  启动：运行bin文件夹里的startup.bat文件，浏览器访问localhost:8080即可进入一个webapp
+- 启动：运行bin文件夹里的startup.bat文件，浏览器访问localhost:8080即可进入一个webapp
+- 关闭：shutdown.bat
 
-关闭：shutdown.bat
 
-配置：conf文件夹的server.xml里
+配置：（在conf文件夹的配置文件server.xml里配置）
 
-- 修改端口：
+1. 修改端口：
 
   - 默认端口8080，（http：80；mysql：3306；https：443）
 
   - ```xml
-    <Connector port="8080" protocol="HTTP/1.1"
+    	<Connector port="8080" protocol="HTTP/1.1"
                    connectionTimeout="20000"
                    redirectPort="8443" />
     ```
 
-- 配置主机名称：
+2. 配置主机名称：
 
   - 默认主机名：localhost；默认网站应用存放位置：webapps；
 
-  - C:\Windows\System32\drivers\etc的hosts文件里添加修改后的主机名
+  - 修改主机名：
 
-  - ```xml
+     - 先找到如下配置项，然后修改name。
+
+     ```xml
+     <!-- 主机配置 -->
      <Host name="localhost"  appBase="webapps"
                 unpackWARs="true" autoDeploy="true">
-    ```
+     ```
+
+     - 在C:\Windows\System32\drivers\etc的hosts文件里添加修改后的name进去；
 
 环境变量配置：可选项
 

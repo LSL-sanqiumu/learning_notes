@@ -10,10 +10,10 @@ JavaEE5规范下的子规范---
 					---servlet3.0
 					---JDBC
 					---......
-Tomcat服务器：Tomcat6实现了sevrlet2.5规范，7实现了3.0规范，9实现了4.0规范。
+Tomcat服务器：Tomcat6实现了sevrlet2.5规范，Tomcat7实现了3.0规范，Tomcat9实现了4.0规范。
 ```
 
-架构分类：S是软件服务器
+架构分类：（S是软件服务器）
 
 - C/S架构：client / server
   - 娱乐型的，要求用户体验，页面、访问速度好；
@@ -22,7 +22,7 @@ Tomcat服务器：Tomcat6实现了sevrlet2.5规范，7实现了3.0规范，9实�
 - B/S架构：browser / server（本质上还是C/S架构，还是客户端访问服务器，只不过客户端是浏览器）
   - 企业内部使用的办公系统，界面要求不高、访问速度不是很慢，要求升级方便；
   - 优点：不需要特定客户端软件，只需要一个浏览器，升级只需要升级服务器端；
-  - 缺点：数据都集成在服务器，发生意外时数据丢失严重，访问速度慢；页面粗糙；
+  - 缺点：数据都集成在服务器，发生意外时数据丢失严重，访问速度慢；页面粗糙。
 
 以后要走的是方向（企业级开发）：B/S架构；web前端、web后端开发。
 
@@ -30,7 +30,7 @@ B/S架构的角色与协议规范：
 
 ![](img/BS架构与协议规范.png)
 
-Servlet = Serv + let，相当于服务器＋小程序，**servlet是服务器与Java程序之间要遵守的规范**，而JDBC是程序与数据库之间要遵守的规范。
+Servlet = Serv + let，相当于服务器＋小程序，**servlet——是服务器与Java程序之间要遵守的规范**，而JDBC是程序与数据库之间要遵守的规范。
 
 我们只需要实现Servlet接口，并把实现好的Java程序类和路径写到配置文件(web.xml)中；web.xml文件：将请求路径和Java小程序绑定。
 
@@ -83,6 +83,20 @@ web.xml的头部：
 参考文章：[不知道这些Servlet规范、容器，还敢说自己是Java程序员? - 掘金 (juejin.cn)](https://juejin.cn/post/7024417658695057439)。
 
 1997年SUN公司推出Servlet技术。
+
+**Servlet接口的出现：**
+
+浏览器发给服务端的是一个HTTP请求，HTTP服务器收到请求后，需调用服务端程序处理请求。那么HTTP服务器怎么知道需要调用哪个处理方法呢？最简单的就是在HTTP服务器代码写一堆if/else：若是A请求就调x类m1方法，若是B请求就调o类的m2方法。 这种设计的致命点在于HTTP服务器代码跟业务逻辑耦合，若你新增了业务方法，竟然还得改HTTP服务器代码。 **面向接口编程**算得上是解决耦合问题的银弹，我们可定义一个接口，各业务类都实现该接口，没错，它就是Servlet接口，实现了Servlet接口的业务类也叫作Servlet。
+
+
+
+**Servlet容器的诞生：**
+
+解决了业务逻辑和HTTP服务器的耦合问题，那又有问题了：对特定请求，HTTP服务器又如何知道：哪个Servlet负责处理请求？谁负责实例化Servlet？
+
+显然HTTP服务器不适合负责这些，否则又要和业务逻辑耦合。于是，就诞生了Servlet容器。
+
+其他参考文章：[Servlet、Servlet容器、Tomcat、Nginx - 简书 (jianshu.com)](https://www.jianshu.com/p/eacf1a03dd2a)。
 
 
 
@@ -253,8 +267,6 @@ servlet标签原来定义servlet对象，类似于spring中的bean标签，用�
 </servlet-mapping>	
 ```
 
-
-
 ### welcome-file-list
 
 欢迎页面是webapp根目录下的HTML、JSP、htm页面资源，也可以是servlet对象、其他页面资源。设置欢迎页面在web-app标签里使用如下标签：
@@ -291,8 +303,6 @@ servlet标签原来定义servlet对象，类似于spring中的bean标签，用�
     <location>/errorPage/505.html</location>
 </error-page>
 ```
-
-
 
 ### init-param
 
@@ -356,8 +366,6 @@ servlet标签原来定义servlet对象，类似于spring中的bean标签，用�
     <param-value>123</param-value>
 </context-param>
 ````
-
-
 
 ## 关于Servlet的路径总结
 
