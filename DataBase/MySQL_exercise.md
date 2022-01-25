@@ -107,9 +107,9 @@ insert into grades values(1,'语文',90),(1,'数学',66),(2,'语文',78),(2,'数
 select s.id,s.name,g.course,g.scores from student as s left join grades as g on s.id=g.id;
 ```
 
-## 查找不在另一种表的
+## 查找两表中不存在映射关系的数据
 
-**问题：**“学生表”有学号和姓名；“近视学生表”为近视学生的名单，只包含序号和学号。请问不是近视眼的学生都有谁？（“学生表”表中的学号与“近视学生”表中的学生学号一一对应）
+**问题1：**“学生表”有学号和姓名；“近视学生表”为近视学生的名单，只包含序号和学号。请问不是近视眼的学生都有谁？（“学生表”表中的学号与“近视学生”表中的学生学号一一对应）
 
 ```mysql
 create table mysqltest.student(
@@ -133,11 +133,69 @@ select s.id,s.name from student s join myopia m on s.id!=m.sid;
 ```
 
 ```mysql
--- 使用外连接（select只是把需要的给选出来，实际上结果集并不只是select选中的那）
+-- 使用外连接 (要知道指令执行的顺序，不要被select迷惑)
 select s.id,s.name from student s left join myopia m on s.id=m.sid where m.id is null; 
 ```
 
+**问题2：**查找“不在表里的数据”应用案例：某网站包含两个表，顾客姓名表（表名Customers）和 购买记录表（表名Orders）。找出所有从不订购任何东西的客户。（“顾客姓名表”中的ID与“购买记录”表中的学生学号CustomerId一一对应）
 
+```mysql
+create table mysqltest.customers(
+    id int(10) not null auto_increment primary key,
+    name varchar(255)
+)engine=innodb default charset=utf8;
+create table mysqltest.orders(
+    id int(10) not null auto_increment primary key,
+    customerid int(10)
+)engine=innodb default charset=utf8;
+insert into mysqltest.customers(name) values("Joe"),("Henry"),("Sam"),("Bob");
+insert into mysqltest.orders(customerid) values(1),(3);
+```
+
+**解：**
+
+从两表中进行查询，可以利用union，也可以使用外连接，以顾客表为主表。
+
+```mysql
+select c.name from customers c left join orders o on c.id=o.customerid where o.customerid is null;
+```
+
+## 从两表取数据并进行一定分析
+
+**问题：**“雇员表“中记录了员工的信息，“薪水表“中记录了对应员工发放的薪水。两表通过“雇员编号”关联。
+
+查找当前所有雇员入职以来的薪水涨幅，给出雇员编号、以及其对应的薪水涨幅，并按照薪水涨幅进行升序。（注：薪水表中结束日期为2004-01-01的才是当前员工，否则是已离职员工）
+
+<img src="img/ex_1.png" style="zoom: 67%;" />
+
+```mysql
+-- 雇员表
+create table mysqltest.employee(
+	employeeid varchar(255), 
+    birthday date,
+    `name` varchar(255),
+    sex varchar(255),
+    hiredate date
+)engine=innodb default charset=utf8;
+-- 薪水表
+create table mysqltest.salary(
+	id varchar(255), 
+    salary int,
+    startdate date,
+    enddate date
+)engine=innodb default charset=utf8;
+insert into mysqltest.employee values
+('1002','1976-09-09','小明','男','2001-08-02'),
+('1005','1973-08-07','小红','女','2001-09-09'),
+('1006','1980-08-28','小蓝','女','2001-08-02');
+insert into mysqltest.salary values
+('1002',72527,'2001-08-02','2003-01-01'),
+('1002',75432,'2003-01-01','2004-01-01'),
+('1005',94692,'2001-09-09','2003-01-01'),
+('1006',43311,'2001-08-02','2004-01-01');
+```
+
+**解：**
 
 
 

@@ -563,18 +563,18 @@ class Customer extends Thread {
 
 **JDK8中的源码显示：**
 
-- String底层是声明为final的char数组，不可被继承，地址不变；（final的value[]可利用数组改变里面的某些值）
+- String类被final修饰——不可被继承的；底层是声明为final的char数组，地址不变；（final的value[]可利用数组改变里面的某些值）
 - 实现了Serializable和Comparable接口，表示支持序列化（可在网络传输）、可比较大小；
 - 内部定义`final char value[]`用于存储字符串数据。
 
 **String的不可变与使用：**
 
-- 不可变的字符序列（不可变性）：
+1. 不可变的字符序列（不可变性）：
 
   - 原有地址不可变：当对字符串型变量重新赋值，不会在原地址上更改内容，而是得重新指定新的地址赋值，拼接一个字符串也是得新指定区域后再赋值；
   - 当调用String的replace()方法时也是如此，也是重新指定内存区域来进行赋值的。
 
-- 字面量赋值：
+2. 字面量赋值：
 
   ```java
   String s1 = "abc";  
@@ -583,7 +583,7 @@ class Customer extends Thread {
   // 使用字面量来赋值，字符串会声明在字符串常量池(String Pool)中，注意字符串常量池不会存储相同内容的字符串。
   ```
 
-- 构造器赋值：
+3. 构造器赋值：
 
   ```java
   String str2 = new String("123");	
@@ -594,40 +594,64 @@ class Customer extends Thread {
 
 **字符串拼接：**
 
-- 字面量的拼接在常量池中（常量与常量拼接结果在常量池中，且常量池中不会存在相同内容，只创建了一个对象）；
-- 变量与字面量的拼接或变量与变量的拼接都在堆空间中（拼接式中，只要有一个是变量名，结果就在堆中，注意声明为final的变量已经是一个常量）；
-- 如果拼接的结果调用intern()方法，返回值就在常量池中。
+1. 字面量的拼接在常量池中（常量与常量拼接结果在常量池中，且常量池中不会存在相同内容，只创建了一个字符串对象）。
+
+   ```java
+   String s1 = "12" + "12";
+   String s2 = "1212";
+   System.out.println(s1 == s2); // true
+   ```
+
+2. 变量与字面量的拼接或变量与变量的拼接都在堆空间中（拼接式中，只要有一个是变量名，结果就在堆中，**注意**声明为final的变量已经是一个常量（使用new的方式创建的字符串））。
+
+   ```java
+   String s1 = "12"; // 常量池中
+           final String s2 = "12"; // 常量池中
+           String s3 = "12" + s1; // 堆中
+           String s4 = "12" + s2; // 常量池中
+           String s5 = "1212"; // 常量池中
+           System.out.println(s3 == s5); // false
+           System.out.println(s4 == s5); // true
+   ```
+
+3. 如果拼接的结果调用intern()方法，返回值就在常量池中。
+
+   ```java
+   String s1 = "12";
+           String s2 = new String("12").intern();
+           System.out.println(s1 == s2); // true
+   ```
 
 ### 常用方法
 
-- **int length()**：返回字符串的长度： return value.length 
-- **char charAt(int index)**： 返回某索引处的字符return value[index] 
-- **boolean isEmpty()**：判断是否是空字符串：return value.length == 0 
-- **String toLowerCase()**：使用默认语言环境，将 String 中的所有英文字符转换为小写 
-- **String toUpperCase()**：使用默认语言环境，将 String 中的所有英文字符转换为大写 
-- **String trim()**：返回字符串的副本，忽略前导空白和尾部空白 
-- **boolean equals(Object obj)**：比较字符串的内容是否相同 
-- **boolean equalsIgnoreCase(String anotherString)**：与equals方法类似，忽略大小写 
-- **String concat(String str)**：将指定字符串连接到此字符串的结尾。 等价于用“+” 
-- **int compareTo(String anotherString)**：比较两个字符串的大小 
-- **String substring(int beginIndex)**：返回一个新的字符串，它是此字符串的从 beginIndex开始截取到最后的一个子字符串
-- **String substring(int beginIndex, int endIndex)** ：返回一个新字符串，它是此字符串从beginIndex开始截取到endIndex(不包含)的一个子字符串
-- **boolean endsWith(String suffix)**：测试此字符串是否以指定的后缀结束 
-- **boolean startsWith(String prefix)**：测试此字符串是否以指定的前缀开始 
-- **boolean startsWith(String prefix, int toffset)**：测试此字符串从指定索引开始的子字符串是否以指定前缀开始
-- **boolean contains(CharSequence s)**：当且仅当此字符串包含指定的 char 值序列 时，返回 true 
-- **int indexOf(String str)**：返回指定子字符串在此字符串中第一次出现处的索引 
-- **int indexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中第一次出 现处的索引，从指定的索引开始 
-- **int lastIndexOf(String str)**：返回指定子字符串在此字符串中最右边出现处的索引 
-- **int lastIndexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中最后 一次出现处的索引，从指定的索引开始反向搜索
-- 【注】：indexOf和lastIndexOf方法如果未找到都是返回-1
-- **String replace(char oldChar, char newChar)**：把某个字符串中的单个字符oldChar替换为newChar，返回的是新的字符串，它是通过用newChar替换此字符串中出现的所有oldChar 得到的。 
-- **String replace(CharSequence target, CharSequence replacement)**：（字符序列的替换，只能是字面量）使用指定的字面值替换序列替换此字符串所有匹配字面值目标序列的子字符串。 
-- **String replaceAll(String regex, String replacement)** ： 使用给定的replacement替换此字符串所有匹配给定的正则表达式的子字符串。 
-- **String replaceFirst(String regex, String replacement)** ： 使用给定的replacement替换此字符串匹配给定的正则表达式的第一个子字符串。
-- **boolean matches(String regex)**：告知此字符串是否匹配给定的正则表达式
-- **String[] split(String regex)**：根据给定正则表达式的匹配拆分此字符串
--  **String[] split(String regex, int limit)**：根据匹配给定的正则表达式来拆分此字符串，最多不超过limit个，如果超过了，剩下的全部都放到最后一个元素中
+1. **int length()**：返回字符串的长度： return value.length 
+2. **char charAt(int index)**： 返回某索引处的字符：return value[index] 
+3. **boolean isEmpty()**：判断是否是空字符串：return value.length == 0 
+4. **String toLowerCase()**：使用默认语言环境，将 String 中的所有英文字符转换为小写 
+5. **String toUpperCase()**：使用默认语言环境，将 String 中的所有英文字符转换为大写 
+6. **String trim()**：忽略前导空白和尾部空白后返回字符串的副本
+7. **boolean equals(Object obj)**：比较字符串的内容是否相同 
+8. **boolean equalsIgnoreCase(String anotherString)**：与equals方法类似，忽略大小写 
+9. **String concat(String str)**：将指定字符串连接到此字符串的结尾。 等价于用“+” 
+10. **int compareTo(String anotherString)**：比较两个字符串的大小 
+11. **String substring(int beginIndex)**：返回一个新的字符串，它是此字符串的从 beginIndex开始截取到最后的一个子字符串
+12. **String substring(int beginIndex, int endIndex)** ：返回一个新字符串，它是此字符串从beginIndex开始截取到endIndex(不包含)的一个子字符串
+13. **boolean endsWith(String suffix)**：测试此字符串是否以指定的后缀结束 
+14. **boolean startsWith(String prefix)**：测试此字符串是否以指定的前缀开始 
+15. **boolean startsWith(String prefix, int toffset)**：测试此字符串从指定索引开始的子字符串是否以指定前缀开始
+16. **boolean contains(CharSequence s)**：当且仅当此字符串包含指定的 char 值序列 时，返回 true 
+17. **int indexOf(String str)**：返回指定子字符串在此字符串中第一次出现处的索引 
+18. **int indexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中第一次出 现处的索引，从指定的索引开始 
+19. **int lastIndexOf(String str)**：返回指定子字符串在此字符串中最右边出现处的索引 
+20. **int lastIndexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中最后 一次出现处的索引，从指定的索引开始反向搜索
+21. 【注】：indexOf()和lastIndexOf()方法如果未找到都是返回-1
+22. **String replace(char oldChar, char newChar)**：把某个字符串中的单个字符oldChar替换为newChar，返回的是新的字符串，它是通过用newChar替换此字符串中出现的所有oldChar 得到的。 
+23. **String replace(CharSequence target, CharSequence replacement)**：（字符序列的替换，只能是字面量）使用指定的字面值替换序列替换此字符串所有匹配字面值目标序列的子字符串。 
+24. **String replaceAll(String regex, String replacement)** ： 使用给定的replacement替换此字符串所有匹配给定的正则表达式的子字符串。 
+25. **String replaceFirst(String regex, String replacement)** ： 使用给定的replacement替换此字符串匹配给定的正则表达式的第一个子字符串。
+26. **boolean matches(String regex)**：告知此字符串是否匹配给定的正则表达式
+27. **String[] split(String regex)**：根据给定正则表达式的匹配拆分此字符串
+28. **String[] split(String regex, int limit)**：根据匹配给定的正则表达式来拆分此字符串，最多不超过limit个，如果超过了，剩下的全部都放到最后一个元素中
 
 
 
@@ -638,11 +662,25 @@ class Customer extends Thread {
 - String ===> char[ ]：调用String的toCharArray()；
 - char[ ] ===> String：调用String的构造器。
 
+```java
+String str = "tochararray";
+char[] c = str.toCharArray();
+System.out.println(c[0]);
+```
+
 String与byte[]的互转：（IO流时字节流会使用）
 
 - 编码：String ===> byte[ ]：调用String的getBytes()方法；
 - 解码：byte[ ] ===> String：调用String的构造器；
-- 编码、解码所用字符集要一致。
+- 编码、解码时所用字符集要一致。
+
+```java
+String str = "byte";
+byte[] b = str.getBytes(StandardCharsets.UTF_8);
+String byteToStr = new String(b);
+System.out.println(b[0]); // b -> 98
+System.out.println(byteToStr);
+```
 
 ### 关于String的常见算法
 
@@ -1053,9 +1091,7 @@ System.out.println(format);
 
 # 枚举类
 
-枚举类：一个类只有有限的、确定的对象，我们称此类为枚举类；当需要定义一组常量时，强烈建议使用枚举类。
-
-如果枚举类中只有一个对象，则可以作为单例模式的实现方式。
+枚举类：一个类只有有限的、确定的对象，我们称此类为枚举类；当需要定义一组常量时，强烈建议使用枚举类。如果枚举类中只有一个对象，则可以作为单例模式的实现方式。
 
  如何自定义枚举类：
 
@@ -1078,8 +1114,6 @@ class Season{
     
 }
 ```
-
-
 
 - JDK5.0，可以使用enum关键字，该类默认继承了java.lang.Enum，所以不能再继承其它的类
 
