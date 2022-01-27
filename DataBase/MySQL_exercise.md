@@ -162,7 +162,7 @@ select c.name from customers c left join orders o on c.id=o.customerid where o.c
 
 ## 从两表取数据并进行一定分析
 
-**问题：**“雇员表“中记录了员工的信息，“薪水表“中记录了对应员工发放的薪水。两表通过“雇员编号”关联。
+**问题1：**“雇员表“中记录了员工的信息，“薪水表“中记录了对应员工发放的薪水。两表通过“雇员编号”关联。
 
 查找当前所有雇员入职以来的薪水涨幅，给出雇员编号、以及其对应的薪水涨幅，并按照薪水涨幅进行升序。（注：薪水表中结束日期为2004-01-01的才是当前员工，否则是已离职员工）
 
@@ -196,6 +196,220 @@ insert into mysqltest.salary values
 ```
 
 **解：**
+
+分析：
+
+1. 薪水涨幅：当前薪水减去入职薪水，当前薪水是截止时间'2004-01-01'的，入职薪水是雇用日期等于起始日期的。
+2. 目标对象：入职了并且还在职的员工。
+3. 查询结果：目标对象的编号和薪水涨幅。
+
+操作思路如下：
+
+1.找出当前员工的当前薪水和编号：
+
+```mysql
+select id,salary from salary where enddate="2004-01-01";
+```
+
+2.找出当前员工的初始薪水：
+
+```mysql
+select s.id,s.salary from employee e join salary as s on e.employeeid = s.id 
+where e.hiredate = s.startdate 
+and s.id in(select id from salary where enddate="2004-01-01");
+```
+
+3.相减：（1当一个表，取出当前薪水，2当一个表，取出入职薪水）
+
+```mysql
+select a.id,a.salary-b.salary as 薪水涨幅 from 
+(select id,salary from salary where enddate="2004-01-01") as a
+join 
+(select s.id,s.salary from employee e join salary as s on e.employeeid = s.id where e.hiredate = s.startdate and s.id in(select id from salary where enddate="2004-01-01")) as b on a.id=b.id 
+order by `薪水涨幅` asc;
+```
+
+```mysql
++------+----------+
+| id   | 薪水涨幅 |
++------+----------+
+| 1006 |        0 |
+| 1002 |     2905 |
++------+----------+
+```
+
+
+
+**问题2：**查找所有学生开学以来的成绩涨幅，给出学生编号以及其对应的成绩涨幅，并按照成绩涨幅进行降序排序。
+
+<img src="img/ex_2.png" style="zoom:50%;" />
+
+```mysql
+create table mysqltest.student(
+	id varchar(10),
+    birthday date,
+    name varchar(10),
+    sex varchar(3),
+    sdate date
+)engine=innodb default charset=utf8;
+create table mysqltest.grades(
+	sid varchar(10),
+    grades int,
+    startdate date,
+    enddate date
+)engine=innodb default charset=utf8;
+insert into student values
+('10002','1996-09-09','小明','男','2011-09-02'),
+('10005','1995-08-07','小红','女','2011-09-02');
+insert into grades values
+('10002',75,'2011-09-02','2011-09-03'),
+('10002',90,'2011-10-01','2011-10-02'),
+('10005',80,'2011-09-02','2011-09-03'),
+('10005',70,'2011-10-01','2011-10-02');
+```
+
+**解：**
+
+分析：
+
+1. 初始成绩：入学日期与成绩表起始日期对应的成绩；
+2. 当前成绩：2011-10-02的成绩；
+
+操作思路：
+
+1.找出当前成绩：
+
+```mysql
+select sid,grades from grades where enddate="2011-10-02";
+```
+
+2.找出初始成绩：
+
+```mysql
+select g.sid,g.grades from student s join grades g on s.id=g.sid where s.sdate=g.startdate;
+```
+
+3.联合相减：
+
+```mysql
+select st.sid,st.grades-en.grades as `成绩涨幅` from 
+(select sid,grades from grades where enddate="2011-10-02") as st
+join
+(select g.sid,g.grades from student s join grades g on s.id=g.sid where s.sdate=g.startdate) as en
+on st.sid=en.sid
+order by 成绩涨幅 desc;
+```
+
+```mysql
++-------+----------+
+| sid   | 成绩涨幅 |
++-------+----------+
+| 10002 |       15 |
+| 10005 |      -10 |
++-------+----------+
+```
+
+## 如何比较日期
+
+**题目1：**下面是某公司每天的营业额，表名为“日销”。“日期”这一列的数据类型是日期类型（date）。请找出所有比前一天（昨天）营业额更高的数据。（前一天的意思，如果“当天”是1月，“昨天”（前一天）就是1号）
+
+<img src="img/ex_3.png" style="zoom:33%;" />
+
+```mysql
+create table mysqltest.sales(
+	id int not null auto_increment primary key,
+    d date,
+    turnover int comment '万元'
+)engine=innodb default charset=utf8;
+insert into sales(d,turnover) values
+('2019-01-01',97),('2019-01-02',87),('2019-01-03',88),('2019-01-04',98),
+('2019-01-05',100),('2019-01-06',80),('2019-01-07',77),('2019-01-08',92);
+```
+
+**解：**
+
+1.交叉连结这个表，找出每个日期与其后一天的数据
+
+```mysql
+select * from sales as s1 cross join sales as s2 on datediff(s2.d,s1.d)=1;
++----+------------+----------+----+------------+----------+
+| id | d          | turnover | id | d          | turnover |
++----+------------+----------+----+------------+----------+
+|  1 | 2019-01-01 |       97 |  2 | 2019-01-02 |       87 |
+|  2 | 2019-01-02 |       87 |  3 | 2019-01-03 |       88 |
+|  3 | 2019-01-03 |       88 |  4 | 2019-01-04 |       98 |
+|  4 | 2019-01-04 |       98 |  5 | 2019-01-05 |      100 |
+|  5 | 2019-01-05 |      100 |  6 | 2019-01-06 |       80 |
+|  6 | 2019-01-06 |       80 |  7 | 2019-01-07 |       77 |
+|  7 | 2019-01-07 |       77 |  8 | 2019-01-08 |       92 |
++----+------------+----------+----+------------+----------+
+```
+
+2.在1的基础上，找出后一天销售额比前一天销售额大的
+
+```mysql
+select * from sales as s1 cross join sales as s2 on datediff(s2.d,s1.d)=1 
+where s2.turnover > s1.turnover;
++----+------------+----------+----+------------+----------+
+| id | d          | turnover | id | d          | turnover |
++----+------------+----------+----+------------+----------+
+|  2 | 2019-01-02 |       87 |  3 | 2019-01-03 |       88 |
+|  3 | 2019-01-03 |       88 |  4 | 2019-01-04 |       98 |
+|  4 | 2019-01-04 |       98 |  5 | 2019-01-05 |      100 |
+|  7 | 2019-01-07 |       77 |  8 | 2019-01-08 |       92 |
++----+------------+----------+----+------------+----------+
+```
+
+3.只需要所有比前一天（昨天）营业额更高的数据
+
+```mysql
+select s2.id,s2.d,s2.turnover from sales as s1 cross join sales as s2 on datediff(s2.d,s1.d)=1 
+where s2.turnover > s1.turnover;
++----+------------+----------+
+| id | d          | turnover |
++----+------------+----------+
+|  3 | 2019-01-03 |       88 |
+|  4 | 2019-01-04 |       98 |
+|  5 | 2019-01-05 |      100 |
+|  8 | 2019-01-08 |       92 |
++----+------------+----------+
+```
+
+**问题2：**下面是气温表（weather表），date列的数据格式为date，请找出比前一天温度更高的ID和日期。
+
+<img src="img/ex_4.png" style="zoom: 50%;" />
+
+```mysql
+create table weather(
+	id int not null auto_increment primary key,
+    `date` date,
+    temp int
+)engine=innodb default charset=utf8;
+insert into weather(`date`,temp) values
+('2015-01-01',10),
+('2015-01-02',25),
+('2015-01-03',20),
+('2015-01-04',30);
+```
+
+**解：**
+
+```mysql
+select w2.id,w2.`date` from weather w1 cross join weather w2 on datediff(w2.`date`,w1.`date`)=1 
+where w2.temp > w1.temp;
++----+------------+
+| id | date       |
++----+------------+
+|  2 | 2015-01-02 |
+|  4 | 2015-01-04 |
++----+------------+
+```
+
+```mysql
+-- 使用函数timestampdiff
+select w2.id,w2.`date` from weather w1 cross join weather w2 on timestampdiff(day,w1.`date`,w2.`date`)=1 
+where w2.temp > w1.temp;
+```
 
 
 

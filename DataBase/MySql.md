@@ -995,8 +995,6 @@ INSERT INTO t_class(s_id,specialty,grade) VALUES
 -- 测试各种连接.
 ```
 
-
-
 ### 更多张表的连接
 
 ```mysql
@@ -1007,6 +1005,22 @@ join c on a和c连接的条件
 join d on a和d连接的条件
 ... 
 ```
+
+### 交叉连结
+
+```mysql
+ select * from sales as a cross join sales as b;
+```
+
+
+
+直接使用交叉联结的业务需求比较少见，往往需要结合具体条件。
+
+
+
+
+
+
 
 ## 排序order
 
@@ -1277,6 +1291,18 @@ sum(xx); avg(xx); max(xx); min(xx);
 - 分组函数会自动忽略Null。
 - 分组函数不能直接使用在where字句。
 - 所有分组函数可以组合起来一起用。
+
+## 对时间的操作函数
+
+1. `datediff(日期1, 日期2)`：
+   - 得到的结果是日期1与日期2相差的天数，如果日期1比日期2大，结果为正；如果日期1比日期2小，结果为负。
+   - `select datediff('2022-01-27','2022-01-29') as compare;`。
+2. `timestampdiff(时间类型, 日期1, 日期2)`：
+   - 这个函数和上面diffdate的正、负号规则刚好相反；日期1大于日期2，结果为负；日期1小于日期2，结果为正。
+   - 在“时间类型”的参数位置，通过添加day、hour、second等关键词，来规定计算天数差、小时数差、还是分钟数差。
+   - `select timestampdiff(day,'2022-01-27','2022-01-29') as compare;`。
+
+
 
 # MD5加密
 

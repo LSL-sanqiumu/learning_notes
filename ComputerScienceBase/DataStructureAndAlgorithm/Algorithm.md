@@ -1,6 +1,8 @@
 # 算法4
 
-## 排序
+# 排序算法
+
+## 初级排序
 
 ### 选择排序
 
@@ -58,13 +60,53 @@ public static void insertSort(Comparable[] a){
 }
 ```
 
+### 希尔排序
+
+基于插入排序。希尔排序思想：将数组中任意间隔为h的元素当成有序表。
+
+```java
+public static void shellSort(Comparable[] a){
+    int n = a.length;
+    int h = 1;
+    while (h < n/3){
+        h = 3 * h + 1;
+    }
+    while (h >= 1){
+        for (int i = h; i < n; i++) {
+            for (int j = i; j >= h;j -= h){
+                if (a[j].compareTo(a[j-1]) < 0) {
+                    Comparable temp = a[j];
+                    a[j] = a[j-1];
+                    a[j-1] = temp;
+                }
+            }
+        }
+        h = h / 3;
+    }
+}
+```
+
+
+
+## 归并排序
 
 
 
 
 
+## 快速排序
 
 
+
+
+
+## 优先队列
+
+
+
+
+
+## 排序算法的应用
 
 
 
