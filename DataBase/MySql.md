@@ -162,13 +162,18 @@ default-character-set=utf8mb4
 ## 数据库基本命令
 
 ```sql
-mysql -u root -p123456;#连接数据库
-update mysql.user set authentication_string=password('123456') where user='root' and Host='localhost'; #修改密码
-flush privileges; #刷新权限
-describe xxx; #显示数据库中所有表的信息
-exit; #退出数据库管理系统
--- #单行注释（mysql的本来的注释）
-/**/ #多行注释
+# 连接数据库，进入数据库管理系统
+mysql -u root -p123456;
+# 修改数据库密码
+update mysql.user set authentication_string=password('123456') where user='root' and Host='localhost'; 
+# 刷新权限
+flush privileges; 
+# 显示数据库中所有表的信息
+describe xxx; 
+# 退出数据库管理系统
+exit;
+--   # 单行注释（mysql的本来的注释）
+/**/ # 多行注释
 
 ```
 
@@ -176,7 +181,7 @@ exit; #退出数据库管理系统
 
 什么是表？为什么要使用表来存储数据？
 
-表就是数据库中用来存储数据的一种形式，表的row（横行）被称为数据（或记录），column（纵行，列）被称为字段，字段有字段类型、字段属性、字段值。
+表就是数据库中用来存储数据的一种形式，表的row（横行）被称为数据（或记录），column（纵行，列）被称为字段，字段包括字段类型、字段属性、字段值。
 
 ## 字段类型
 
@@ -392,19 +397,18 @@ CREATE TABLE `t_student1`(
 )ENGINE=INNODB DEFAULT CHARSET=utf8;
 ```
 
-
-
 **外键的创建方式二：在创建表完成之后再添加外键约束**
 
 ```MYSQL
 -- 添加一个叫FK_gradeid的外键约束，外键约束字段为`gradeid`，指向的表为`grade`，和该表的`gradeid`形成关联
 -- 从表的`gradeid`的值的选项被主表`grade`的`gradeid`的值限定住
 ALTER TABLE XXX ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`);
+ALTER TABLE XXX ADD FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`);
 ```
 
 **其他注意的点：**
 
-- 删除有外键关系的表：先再删除被引用的表，然后删除有引用其他表的表；
+- 删除有外键关系的表，需要先删除被引用的表（主表），然后再删除有引用其他表的表；
 - 外键值可以为null；
 - 外键引用主表中的某个字段，被引用的字段不一定是主键，但至少具有唯一性。
 
@@ -452,7 +456,7 @@ MySQL引擎在物理文件上的区别：
 
 ## 数据库
 
-1. 创建数据库（使用命令创建不设置字符集时是默认的字符集(不支持中文)）
+1. 创建数据库（使用命令创建不设置字符集时是默认的字符集(不支持中文)，值得注意的是MySQL中，utf8mb4才是真正的utf8）
 
    ```mysql
    create database [if not exists] database_name CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -1076,6 +1080,14 @@ select ... from (select ... from ... ...) 别名 ......
 select 字段1, 字段2, (select ... from ... ...) from ... ...
 ```
 
+```sql
+select (case when mod(id, 2) != 0  then id + 1 when mod(id, 2)  = 0  then id - 1 end)  
+as  `交换后座位号`,name,sid as `学号`
+from student order by `交换后座位号` asc;
+```
+
+
+
 ## union
 
 联合，用于将查询结果联合在一起，结果集重复的数据（整条记录的字段名、字段类型、字段值一致）才会合并成一条：
@@ -1261,6 +1273,7 @@ revoke 权限列表 on 数据库名.表名 from `用户名`@`主机名`;
 - floor(xxx)：向下取整
 - rand()：返回一个随机数
 - sign(xxx)：返回参数的符号（零：返回0，负数：返回-1，正数：返回1）
+- mod(n,m) ：返回n除以m的余数。
 
 字符串函数：（**注意：函数中被操作字符的下标是从1开始的，而select查询出来的结果是从0开始的**）
 
@@ -1302,8 +1315,6 @@ sum(xx); avg(xx); max(xx); min(xx);
    - 在“时间类型”的参数位置，通过添加day、hour、second等关键词，来规定计算天数差、小时数差、还是分钟数差。
    - `select timestampdiff(day,'2022-01-27','2022-01-29') as compare;`。
 
-
-
 # MD5加密
 
 **MD5信息摘要算法**（MD5 Message-Digest Algorithm），一种被广泛使用的**密码散列函数**，主要增强算法复杂度和不可逆性。
@@ -1320,7 +1331,7 @@ INSERT INTO `md5test` VALUES (1,'王将','1233456')
 INSERT INTO `md5test` VALUES (2,'李四','1233456'),(3,'王五','1233456'),(4,'朝六','1233456')
 
 UPDATE md5test SET pwd=MD5(pwd) WHERE id=1
-INSERT INTO `md5test` VALUES (5,'小明',MD5('1233456'))  -- 使用md5函数
+INSERT INTO `md5test` VALUES (5,'小明',MD5('1233456'))  -- 使用md5函数进行加密
 
 -- 校验
 SELECT * FROM md5test WHERE `name`='小明' AND pwd=MD5('1233456')
@@ -1803,32 +1814,3 @@ source 指定.sql文件;
 - 多对多怎么设计：多对多，三张表，关系表两个外键。（背这个口诀）。
 - 一对多怎么设计：一对多，两张表，多的表加外键。
 - 一对一怎么设计：一对一，外键唯一。（可能表字段太多，就拆分）
-
-# 练习
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

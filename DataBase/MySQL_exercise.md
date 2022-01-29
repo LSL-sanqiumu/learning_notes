@@ -411,15 +411,169 @@ select w2.id,w2.`date` from weather w1 cross join weather w2 on timestampdiff(da
 where w2.temp > w1.temp;
 ```
 
+## 如何交换数据
 
+**题目1:**小明是一所学校的老师，她有一张 ‘学生表’，平时用来存放座位号和学生的信息。其中，座位号是连续递增的。总的座位数是偶数。
 
+现在，小明想改变相邻俩学生的座位。你能不能帮她写一个sql查来输出想要的结果呢？
 
+```mysql
+create table mysqltest.student(
+	id int not null auto_increment primary key,
+    sid int(5) zerofill,
+    name varchar(6),
+    birthday date,
+    sex varchar(2)
+)engine=innodb default charset=utf8;
+insert into student(sid,name,birthday,sex) values(10,'唐同学','2022-01-29','男');
+insert into student(sid,name,birthday,sex) values(11,'宋同学','2022-01-29','女');
+insert into student(sid,name,birthday,sex) values(12,'元同学','2022-01-29','男');
+insert into student(sid,name,birthday,sex) values(13,'明同学','2022-01-29','女');
++----+-------+--------+------------+------+
+| id | sid   | name   | birthday   | sex  |
++----+-------+--------+------------+------+
+|  1 | 00010 | 唐同学 | 2022-01-29 | 男   |
+|  2 | 00011 | 宋同学 | 2022-01-29 | 女   |
+|  3 | 00012 | 元同学 | 2022-01-29 | 男   |
+|  4 | 00013 | 明同学 | 2022-01-29 | 女   |
++----+-------+--------+------------+------+
+```
 
+```mysql
+-- 交换座位后
++----+-------+--------+------------+------+
+| id | sid   | name   | birthday   | sex  |
++----+-------+--------+------------+------+
+|  1 | 00011 | 宋同学 | 2022-01-29 | 女   |
+|  2 | 00010 | 唐同学 | 2022-01-29 | 男   |
+|  3 | 00013 | 明同学 | 2022-01-29 | 女   |
+|  4 | 00012 | 元同学 | 2022-01-29 | 男   |
++----+-------+--------+------------+------+
+```
 
+**解：**
 
+分析：
 
+1. 相邻同学交换座位，相当于奇数位加1，偶数位减一。
 
+```mysql
+select
+      (case
+             when mod(id, 2) != 0  then id + 1
+             when mod(id, 2)  = 0  then id - 1
+      end)  as  `交换后座位号`,
+      name,sid as `学号`
+from student order by `交换后座位号` asc;
+```
 
+**题目2：**更换相邻位置学生的座次，如果最后一位同学的座位是奇数位，因为其后面没有与其交换的，所以其位置不变。
+
+```mysql
+create table mysqltest.student(
+    id int not null auto_increment primary key comment '座位号',
+    name varchar(6)
+)engine=innodb default charset=utf8;
+insert into student(name) values('A同学');
+insert into student(name) values('B同学');
+insert into student(name) values('C同学');
++----+-------+
+| id | name  |
++----+-------+
+|  1 | A同学 |
+|  2 | B同学 |
+|  3 | C同学 |
++----+-------+
+```
+
+```mysql
+-- 交换座位后
++----+-------+
+| id | name  |
++----+-------+
+|  1 | B同学 |
+|  2 | A同学 |
+|  3 | C同学 |
++----+-------+
+```
+
+**解：**
+
+分析：
+
+1. 当座位是奇数并且不是最后一个时，就可以进行位置交换。
+2. 位置交换：奇数加1，偶数减1。
+
+取得总的数据的记录数：
+
+```mysql
+select count(*) as counts from student;
+```
+
+使用`case ... end`：
+
+```mysql
+select (case 
+        when mod(id,2) != 0 and counts != id then id+1
+        when mod(id,2) !=0 and counts = id then id
+        else id - 1
+        end) as `id2`,name 
+from student as a,(select count(*) as counts from student) as b order by id2 asc;
+```
+
+## 找出最小的n个数
+
+**题目1：**“学生表”里记录了学生的学号、入学时间等信息。“成绩表”里是学生选课成绩的信息。两个表中的学号一一对应。（滴滴2020年面试题）
+
+现在需要：
+
+1.  筛选出2017年入学的“计算机”专业年龄最小的3位同学名单（姓名、年龄）
+2.  统计每个班同学各科成绩平均分大于80分的人数和人数占比
+
+<img src="img/ex_5.png" style="zoom: 50%;" />
+
+```mysql
+create table student(
+	name varchar(6),
+    sid int(4) zerofill not null auto_increment primary key,
+    grade varchar(6),
+    opentime date,
+    age int,
+    specialized varchar(255)
+)engine=innodb default charset=utf8;
+insert into student(name,grade,opentime,age,specialized) values
+('小赵','1班','2016-09-01',19,'计算机'),
+('小浅','1班','2017-09-01',21,'计算机'),
+('小孙','2班','2017-09-01',19,'金融'),
+('小李','3班','2017-09-01',17,'计算机'),
+('小周','3班','2017-09-01',20,'计算机'),
+('小吴','3班','2017-09-01',18,'计算机');
+create table grades(
+	id int(4) zerofill,
+    cid int(2) zerofill,
+    scores int
+)engine=innodb default charset=utf8;
+insert into grades values
+(1,1,90),(2,1,70),(2,2,84),(3,1,90),(3,3,80),(4,1,90),(4,2,60),(5,1,85),(6,2,70);
+-- 为成绩表添加外键
+alter table grades add foreign key (id) references student(sid); 
+```
+
+**解：**
+
+1.筛选出2017年入学的“计算机”专业年龄最小的3位同学名单（姓名、年龄）
+
+```mysql
+select name,age from student where specialized='计算机' and opentime="2017-09-01" 
+order by age asc limit 0,3;
+```
+
+2.统计每个班同学各科成绩平均分大于80分的人数和人数占比
+
+- 每位同学的平均成绩
+- 平均成绩大于80的人数
+- 平均成绩大于80的人数占比
+- 输出结果是`班级 平均成绩大于80的人数 平均分大于80的人数占班级人数的多少`
 
 
 
