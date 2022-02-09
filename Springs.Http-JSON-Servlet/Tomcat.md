@@ -4,7 +4,7 @@ Tomcat服务器是一个实现了Servlet规范和JSP规范的容器，启用Tomc
 
 官网：[Apache Tomcat® - Welcome!](https://tomcat.apache.org/)
 
-目录结构：
+**Tomcat目录结构：**
 
 1. bin：启动关闭的基本文件，命令目录；
 2. conf：配置目录；
@@ -16,15 +16,14 @@ Tomcat服务器是一个实现了Servlet规范和JSP规范的容器，启用Tomc
 - 启动：运行bin文件夹里的startup.bat文件，浏览器访问localhost:8080即可进入一个webapp
 - 关闭：shutdown.bat
 
-
-配置：（在conf文件夹的配置文件server.xml里配置）
+**配置Tomcat：**（在conf文件夹的配置文件server.xml里配置）
 
 1. 修改端口：
 
   - 默认端口8080，（http：80；mysql：3306；https：443）
 
   - ```xml
-    	<Connector port="8080" protocol="HTTP/1.1"
+    	<<Connector port="8080" protocol="HTTP/1.1"
                    connectionTimeout="20000"
                    redirectPort="8443" />
     ```
@@ -47,18 +46,18 @@ Tomcat服务器是一个实现了Servlet规范和JSP规范的容器，启用Tomc
 
 环境变量配置：可选项
 
-【】网站访问？
+**网站访问？**
 
-1. 输入域名，回车进行查找
+1. 输入域名，回车进行访问
 2. 先在本机里的C:\Windows\System32\drivers\etc里的hosts文件查找是否有这个域名的映射
-   1. 有的话就直接返回对应的ip地址，在这个地址中有我们需要访问的web程序，可以直接访问
-   2. 没有的话就去DNS服务器找，找到的话就返回，找不到就返回失败；
+   - 有的话就直接返回对应的ip地址，在这个地址中有我们需要访问的web程序，可以直接访问
+   - 没有的话就去DNS服务器找，找到的话就返回，找不到就返回失败
 
 网站发布：
 
-- 所写网站放到服务器(Toact)指定的webapps应用文件夹里，然后就可以访问了。
+1. 所写网站放到服务器(Tomcat)指定的webapps应用文件夹里，然后就可以访问了。
 
-- 所写的webapp应用应有的目录结构，servlet规范
+2. 所写的webapp应用应有的目录结构，servlet规范：
 
   - ```TXT
     webapps

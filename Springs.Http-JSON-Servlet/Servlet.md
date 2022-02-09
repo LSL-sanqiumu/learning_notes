@@ -38,7 +38,50 @@ Servlet = Serv + let，相当于服务器＋小程序，**servlet——是服务
 2. Tomcat服务器是一个实现了Servlet规范和JSP规范的容器，所以也称为servlet容器或jsp容器；
 3. servlet的运行环境叫做web容器或servlet容器，Tomcat就是一个servlet容器；servlet上下文是由Web服务器为每个webapp程序创建的一块共享区域。
 
-# Servlet配置
+# servlet容器
+
+参考文章：[不知道这些Servlet规范、容器，还敢说自己是Java程序员? - 掘金 (juejin.cn)](https://juejin.cn/post/7024417658695057439)。
+
+1997年SUN公司推出Servlet技术。（容器技术的起源是？？？）
+
+**Servlet接口的出现：**
+
+浏览器发给服务端的是一个HTTP请求，HTTP服务器收到请求后，需调用服务端程序处理请求。那么HTTP服务器怎么知道需要调用哪个处理方法呢？最简单的就是在HTTP服务器代码写一堆if/else：若是A请求就调x类m1方法，若是B请求就调o类的m2方法。 这种设计的致命点在于HTTP服务器代码跟业务逻辑耦合，若你新增了业务方法，竟然还得改HTTP服务器代码。 **面向接口编程**算得上是解决耦合问题的银弹，我们可定义一个接口，各业务类都实现该接口，没错，它就是Servlet接口，实现了Servlet接口的业务类也叫作Servlet。
+
+
+
+**Servlet容器的诞生：**
+
+解决了业务逻辑和HTTP服务器的耦合问题，那又有问题了：对特定请求，HTTP服务器又如何知道：哪个Servlet负责处理请求？谁负责实例化Servlet？
+
+显然HTTP服务器不适合负责这些，否则又要和业务逻辑耦合。于是，就诞生了Servlet容器。
+
+其他参考文章：[Servlet、Servlet容器、Tomcat、Nginx - 简书 (jianshu.com)](https://www.jianshu.com/p/eacf1a03dd2a)。
+
+**关于webapp：**Tomcat服务器的webapps目录里，可以放多个webapp小程序，webapp小程序目录的规范如下：
+
+```
+webapps
+	|---ROOT
+	|---xxx：网站目录（webapp目录）
+		|---WEB-INF （里面的文件不能直接被访问，需要通过请求才能访问）
+			|---classes：放java程序的字节码文件等
+			|---lib：放web应用所依赖的jar包
+			|---web.xml：网站配置文件，用来对java小程序进行配置
+		|---index.html：默认首页
+		|---static
+			|---css
+				|---style.css
+			|---js
+			|---img
+		|---。。。。。。
+```
+
+
+
+# servlet的基本知识
+
+## Servlet依赖
 
 servlet的依赖：
 
@@ -76,49 +119,6 @@ web.xml的头部：
     
     
 </web-app>
-```
-
-# servlet容器的体会-容器的起源
-
-参考文章：[不知道这些Servlet规范、容器，还敢说自己是Java程序员? - 掘金 (juejin.cn)](https://juejin.cn/post/7024417658695057439)。
-
-1997年SUN公司推出Servlet技术。
-
-**Servlet接口的出现：**
-
-浏览器发给服务端的是一个HTTP请求，HTTP服务器收到请求后，需调用服务端程序处理请求。那么HTTP服务器怎么知道需要调用哪个处理方法呢？最简单的就是在HTTP服务器代码写一堆if/else：若是A请求就调x类m1方法，若是B请求就调o类的m2方法。 这种设计的致命点在于HTTP服务器代码跟业务逻辑耦合，若你新增了业务方法，竟然还得改HTTP服务器代码。 **面向接口编程**算得上是解决耦合问题的银弹，我们可定义一个接口，各业务类都实现该接口，没错，它就是Servlet接口，实现了Servlet接口的业务类也叫作Servlet。
-
-
-
-**Servlet容器的诞生：**
-
-解决了业务逻辑和HTTP服务器的耦合问题，那又有问题了：对特定请求，HTTP服务器又如何知道：哪个Servlet负责处理请求？谁负责实例化Servlet？
-
-显然HTTP服务器不适合负责这些，否则又要和业务逻辑耦合。于是，就诞生了Servlet容器。
-
-其他参考文章：[Servlet、Servlet容器、Tomcat、Nginx - 简书 (jianshu.com)](https://www.jianshu.com/p/eacf1a03dd2a)。
-
-
-
-# servlet的基本知识
-
-关于webapp：Tomcat服务器的webapps目录里，可以放多个webapp小程序，webapp小程序目录的规范如下：
-
-```
-webapps
-	|---ROOT
-	|---xxx：网站目录（webapp目录）
-		|---WEB-INF 
-			|---classes：放java程序的字节码文件等
-			|---lib：放web应用所依赖的jar包
-			|---web.xml：网站配置文件，用来
-		|---index.html：默认首页
-		|---static
-			|---css
-				|---style.css
-			|---js
-			|---img
-		|---。。。。。。
 ```
 
 ## 第一个servlet程序
@@ -242,21 +242,34 @@ public class HelloServlet implements Servlet
 
 ## web.xml内标签总结
 
-- 一个webapp只有一个web.xml文件；
-- web.xml文件主要用来配置请求路径和Servlet类名之间的绑定关系；
-- web.xml文件在tomcat服务器启动的阶段被解析；
-- web.xml文件解析失败会导致webapp启动失败；
-- web.xml文件中的标签不能随便乱写，因为tomcat服务器早就知道了该文件中编写哪些标签；
-- web.xml文件中的标签也是sun公司制定的servlet规范。
+1. 一个webapp只有一个web.xml文件；
+
+2. web.xml文件主要用来配置请求路径和Servlet类名之间的绑定关系；
+
+3. web.xml文件在tomcat服务器启动的阶段被解析；
+
+4. web.xml文件解析失败会导致webapp启动失败；
+
+5. web.xml文件中的标签不能随便乱写，因为tomcat服务器早就知道了该文件中编写哪些标签；
+
+6. web.xml文件中的标签也是sun公司制定的servlet规范。
+
+7. web.xml文件中各标签要遵循一定的顺序：
+
+   ```ABAP
+   The content of element type "web-app" must match "(icon?,display-name?,description?,distributable?,context-param*,filter*,filter-mapping*,listener*,servlet*,servlet-mapping*,session-config?,mime-mapping*,welcome-file-list?,error-page*,taglib*,resource-env-ref*,resource-ref*,security-constraint*,login-config?,security-role*,env-entry*,ejb-ref*,ejb-local-ref*)".
+   ```
+
+   
 
 ### servlet标签
 
-servlet标签原来定义servlet对象，类似于spring中的bean标签，用来定义servlet对象，servlet-mapping则为servlet对象定义映射路径，映射路径是虚拟路径，从浏览器访问该虚拟路径会被抵达servlet对象，从而执行相应的响应：
+servlet标签用来定义servlet对象，类似于spring中的bean标签，用来定义servlet对象，servlet-mapping则为servlet对象定义映射路径，映射路径是虚拟路径，从浏览器访问该虚拟路径会被抵达servlet对象，从而执行相应的响应：
 
 ```xml
 <servlet>
     <servlet-name>随便起一个名字</servlet-name>
-    <servlet-class>Servlet实现类</servlet-class>
+    <servlet-class>Servlet接口实现类</servlet-class>
 </servlet>
 <servlet-mapping>
     <servlet-name>和上面名字一样</servlet-name>
@@ -287,7 +300,7 @@ servlet标签原来定义servlet对象，类似于spring中的bean标签，用�
 404和500是HTTP协议状态码，是W3C制定的，正常响应的HTTP协议状态码是200。
 
 * 404 Not Found ：资源未找到；
-* 500 Server Inner Error： 服务器内部错误，一般都是服务器Java程序出现异常。
+* 500 Server Inner Error： 服务器内部错误，一般都是服务器中Java程序出现异常。
 
 当在web.xml中配置错误页面后，服务器会根据响应状态调用对应的错误页面，配置如下：
 
@@ -311,7 +324,7 @@ servlet标签原来定义servlet对象，类似于spring中的bean标签，用�
 - `<init-param>`标签是初始化参数，定义在`<servlet>`标签中；
 - `<init-param>`标签内还有`<param-name>`、`<param-value>`标签，`<param-name>`表示key，`<param-value>`表示value；
 - `<init-param>`定义的参数属于某一个 Servlet；
-- String value = servletConfig.getInitParameter(name)获取的就是`<init-param>`中的参数；
+- `String value = servletConfig.getInitParameter(name)`获取的就是`<init-param>`中的参数；
 - 这些初始化参数信息封装在ServletConfig对象中。
 
 ````xml
@@ -324,20 +337,17 @@ servlet标签原来定义servlet对象，类似于spring中的bean标签，用�
         <param-name>driver</param-name>
         <param-value>com.mysql.jdbc.driver</param-value>
     </init-param>
-
     <init-param>
         <param-name>url</param-name>
         <param-value>jdbc:mysql://localhost:3306/database</param-value>
     </init-param>
-
     <init-param>
         <param-name>user</param-name>
         <param-value>root</param-value>
     </init-param>
-
     <init-param>
         <param-name>password</param-name>
-        <param-value>admin</param-value>
+        <param-value>123456</param-value>
     </init-param>
 </servlet>
 ````
@@ -357,14 +367,19 @@ servlet标签原来定义servlet对象，类似于spring中的bean标签，用�
 - 这些参数信息封装在ServletContext对象中。
 
 ````xml
-<context-param>
-    <param-name>username</param-name>
-    <param-value>admin</param-value>
-</context-param>
-<context-param>
-    <param-name>password</param-name>
-    <param-value>123</param-value>
-</context-param>
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+<webapp>
+    <context-param>
+        <param-name>username</param-name>
+        <param-value>admin</param-value>
+    </context-param>
+    <context-param>
+        <param-name>password</param-name>
+        <param-value>123456</param-value>
+    </context-param>
+</web-app>
 ````
 
 ## 关于Servlet的路径总结
@@ -372,24 +387,24 @@ servlet标签原来定义servlet对象，类似于spring中的bean标签，用�
 servlet中需要用到路径的有四处地方：
 
 1. servlet对象的虚拟路径；
-2. 前端页面资源里的a标签；
+2. 前端页面资源里的a标签的href属性；
 3. 欢迎页面设置里的`<welcome-file>`标签；
 4. 错误页面设置里的`<location></location>`标签。
 
 当在客户端访问服务器资源时，是相对于web服务器的webapps目录，例如访问某个应用，就是`/webappname/xxx`，而在服务器内部的webapp的服务器端处理程序则是相对于该webapp根目录进行寻址定位。
 
 1. `<url-pattern>`标签：以`/`开头，`/`前省略了hostName和webappName；   ---Servlet对象的虚拟路径
-2. `<a>`标签：要以`/webappName`开头，此时`/`前代表的是主机名，如`http://localhost:8080`；  ---浏览器处理的路径
+2. `<a href="#">`标签：要以`/webappName`开头，此时`/`前代表的是主机名，如`http://localhost:8080`；  ---浏览器处理的路径
 3. `<welcome-file>`标签：是相对webapp根目录的路径；   
-4. `<location></location>`标签：是相对webapp根目录的路径，但是不需要以`/`开头，【特殊】。
+4. `<location></location>`标签：以`/`开头，相对webapp根目录的路径；不要`/`，此时是相对于WEB-INF，需要通过映射路径才能访问。
 
 总结：按照以下去进行相对路径定位
 
-- 前端页面的请求路径是相对于webapps目录；
-- 后端web小程序映射路径相对于项目根目录（webapp），location特殊不需要以`/`开头；
-- 相对路径：`/`代表根目录、`../`代表上一级目录、`./`代表当前目录，一般都是从`/`写起，表示作为参考的相对目录。
+1. 前端页面的请求路径是相对于webapps目录；
+2. 后端web小程序映射路径相对于项目根目录（webapp）；
+3. 相对路径：`/`代表根目录、`../`代表上一级目录、`./`代表当前目录，一般都是从`/`写起，表示作为参考的相对目录。
 
-- 欢迎页面 
+4. 欢迎页面 
 
   ```xml
   <welcome-file-list>
@@ -428,20 +443,20 @@ servlet中需要用到路径的有四处地方：
   <url-pattern>/*</url-pattern>
   ```
 
+# Servlet规范的三个重要接口
 
-
-# Servlet接口
+## Servlet接口
 
 Servlet接口的实现类的方法，和servlet的生命周期有一定联系：
 
 ````java
-public Servlet() //空参构造方法
-public void init(ServletConfig config) //初始化方法-被创建时执行，执行只执行一次
-public void service(ServletRequest req, ServletResponse res) //Servlet响应与请求-提供服务
-public void destroy() //销毁对象前的准备，运行完此方法表示生命快结束了-销毁
-//get方法
-public void ServletConfig getServletConfig() //返回一个ServletConfig对象，其中包含此Servlet的初始化和启动参数
-public void String getServletInfo() //返回有关servlet的信息，例如作者，版本和版权
+public Servlet() // 空参构造方法
+public void init(ServletConfig config) // 初始化方法-被创建时执行，执行只执行一次
+public void service(ServletRequest req, ServletResponse res) // Servlet响应与请求-提供服务
+public void destroy() // 销毁对象前的准备，运行完此方法表示生命快结束了-销毁
+// get方法
+public void ServletConfig getServletConfig() // 返回一个ServletConfig对象，其中包含此Servlet的初始化和启动参数
+public void String getServletInfo() // 返回有关servlet的信息，例如作者，版本和版权
 ````
 
 **管理Servlet对象的生命周期**
@@ -471,7 +486,7 @@ servlet对象的生命周期：生命周期表示一个Java对象从最初被创
 
 5）Servlet对象销毁：
 
-- web容器关闭的时候、webApp重新部署的时候、该Servlet对象长时间没有用户访问的时候，web容器会将Servlet对象销毁，在销毁Servlet对象前，会调用对象的`destroy()`方法进行销毁前的准备。
+- web容器关闭的时候、webApp重新部署的时候、该Servlet对象长时间没有用户访问的时候，web容器就会将Servlet对象销毁，在销毁Servlet对象前，会调用对象的`destroy()`方法进行销毁前的准备。
 
 **总结：**
 
@@ -563,7 +578,7 @@ Servlet接口中的这些方法中写什么代码？什么时候使用这些方�
 
 实际上，服务器启动时会解析web.xml文件，并且将解析的数据存放在Map集合中，当在浏览器中输入请求的路径时，web容器会先在**Map<String, Servlet>**集合找请求路径所对应的Servlet对象，如果没有找到，再去web.xml文件中寻找（**实际上不是去web.xml文件中找此路径对应的完整类名，而是去此Map集合中查找**）。
 
-# ServletConfig接口
+## ServletConfig接口
 
 简单了解一下：`javax.servlet.ServletConfig`是一个接口，Apache Tomcat服务器实现了Servlet规范，Tomcat服务器写了一个ServletConfig接口的实现类，实现类的完整类名是`org.apache.catalina.core.StandardWrapperFacade`，webapp放到Tomcat服务器中，ServletConfig的实现类是：`org.apache.catalina.core.StandardWrapperFacade`，webapp放到JBOSS服务器中，ServletConfig的实现类可能是另外一个类名了。
 
@@ -620,13 +635,13 @@ Servlet接口中的这些方法中写什么代码？什么时候使用这些方�
 
    4. `ServletContext  getServletContext()`：获取ServletContext【Servlet上下文】对象。
 
-# ServletContext接口
+## ServletContext接口
 
 ```JAVA
 org.apache.catalina.core.ApplicationContextFacade // 其实现类
 ```
 
-## 概述
+### 概述
 
 **ServletContext到底是什么？什么时候被创建？什么时候被销毁？创建几个？**
 
@@ -648,7 +663,7 @@ classDiagram
 - 所有用户若想共享同一个数据，可以将数据放到ServletContext对象中（写到web.xml文件中，或后期通过方法添加）；
 - 一般放到ServletContext对象中的数据不建议是涉及到修改操作的，因为ServletContext是多线程共享的一个对象，修改的时候会存在线程安全问题。
 
-## 方法
+### 方法
 
 **ServletContext接口中常用方法：**
 
@@ -661,7 +676,7 @@ classDiagram
 
 可使用ServletConfig config对象的getServletContext()获取上下文对象，再使用方法。
 
-## 特点
+### 特点
 
 1. Servlet、ServletConfig、ServletContext之间的关系
 
@@ -671,7 +686,7 @@ classDiagram
 2. **ServletContext范围可以完成跨用户传递数据**
    A用户在ServletContext中存储了一个数据，B用户可以通过name获取对应的数据。
 
-## 总结
+### 总结
 
 ServletConfig与ServletContext中的`getInitParameter()`、`getInitParameterNames()`的差异：
 
@@ -837,8 +852,6 @@ GET请求和POST请求应该如何选择？
 浏览器将资源缓存后，缓存的资源是和某个特定的路径绑定在一起的，只要浏览器再发送这个相同的请求路径，这个时候浏览器就会去缓存中获取资源，不再访问服务器，以这种方式降低服务器的压力，提高用户体验。
 
 但是有的时候我们并不希望走缓存，希望每一次后台访问服务器，可以在请求路径后面添加时间戳，例如：`http://ip:port/oa/system/logout?timetamp=1234564635423`
-
-
 
 # HttpServlet实现类
 
@@ -1248,17 +1261,17 @@ Servlet是单实例多线程环境下运行的，Servlet对象只有一个，被
 
 **什么时候程序会存在线程安全问题？**
 
-- 多线程并发；
-- 有共享数据；
-- 共享数据有修改操作。
+1. 多线程并发；
+2. 有共享数据；
+3. 共享数据有修改操作。
 
 **JVM中哪些数据存在线程安全问题：**
 
-- 局部变量内存空间不共享，一个线程一个栈，局部变量在栈中存储，局部变量不会存在线程安全问题；
-- 常量不会被修改，所以不存在线程安全问题；
-- 所有线程共享一个堆：
+1. 局部变量内存空间不共享，一个线程一个栈，局部变量在栈中存储，局部变量不会存在线程安全问题；
+2. 常量不会被修改，所以不存在线程安全问题；
+3. 所有线程共享一个堆：
   - 堆内存中new出来的对象在堆内存中存储，对象内部有“实例变量”，所以“实例变量”的内存多线程共享的；实例变量多线程访问，并涉及到修改操作时就会发生线程安全问题；
-- 所有线程共享一个方法区：
+4. 所有线程共享一个方法区：
   - 方法区中有静态变量，静态变量的内存也是共享的，若涉及到修改操作，静态变量也存在线程安全问题。
 
 **数据库线程安全问题：**
@@ -1267,10 +1280,10 @@ Servlet是单实例多线程环境下运行的，Servlet对象只有一个，被
 
 **怎么解决数据库中的线程安全问题？至少有两种解决方案：**
 
-- 第一种方案：在Java程序中使用`synchronized`关键字，线程排队，自然不会在数据库中并发；
-- 第二种方案：行级锁（悲观锁）；
-- 第三种方案：事务隔离级别，例如：串行化；
-- 第四种方案：乐观锁。
+1. 第一种方案：在Java程序中使用`synchronized`关键字，线程排队，自然不会在数据库中并发；
+2. 第二种方案：行级锁（悲观锁）；
+3. 第三种方案：事务隔离级别，例如：串行化；
+4. 第四种方案：乐观锁。
 
 **怎么解决线程安全问题：**
 
@@ -1327,8 +1340,6 @@ public class Register extends HttpServlet {
     }
 }
 ````
-
-
 
 # 转发与重定向
 
@@ -1439,13 +1450,13 @@ public class Save extends HttpServlet {
 
 pri-servlet-13
 
-使用到的：登录页面、数据库链接、重定向。
+使用到的：登录页面、数据库连接、重定向。
 
 # Cookie类
 
 ## 概述
 
- Cookie是什么？曲奇饼干~笑
+ Cookie是什么？
 
 - Cookie可以保存会话状态，但是这个会话状态是保留在客户端上的，只要Cookie清除，或者Cookie失效，这个会话状态就没有了；
 - Cookie可以保存在浏览器客户端、保存在浏览器的缓存中（浏览器关闭Cookie消失）、保存在客户端硬盘文件中（浏览器关闭Cookie还在）；
@@ -1507,8 +1518,6 @@ cookie.setMaxAge(60*60*24);
 ```java
 request.getCookies(); // 返回一个cookie对象数组
 ```
-
-
 
 # HttpSession类
 
@@ -1643,9 +1652,7 @@ ServletContext、HttpSession、HttpServletRequest：
 
    登陆成功的状态也不能保存在application范围中，因为登陆成功的状态属于会话级别，不能所有用户共享。
 
-
-
-### else
+## else
 
 其他的一些问题：
 
@@ -1810,8 +1817,6 @@ destroy()：
 - String getInitParameter(String name)： 返回在部署描述中指定名称的初始化参数的值，如果不存在返回null；
 - Enumeration getInitParameterNames()：返回过滤器的所有初始化参数的名字的枚举集合；
 - public ServletContext getServletContext()：返回Servlet上下文对象的引用。
-
-
 
 # Listener：监听器
 

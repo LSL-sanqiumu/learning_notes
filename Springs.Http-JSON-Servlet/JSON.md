@@ -1,10 +1,10 @@
 # JSON
 
-## 概念
+# 概念
 
 JSON(JavaScript Object Notation, JS 对象简谱) 是一种轻量级的数据交换格式。它基于 ECMAScript (欧洲计算机协会制定的js规范)的一个子集，采用完全独立于编程语言的文本格式来存储和表示数据。简洁和清晰的层次结构使得 JSON 成为理想的数据交换语言。 易于人阅读和编写，同时也易于机器解析和生成，并有效地提升网络传输效率。
 
-## JSON格式
+# JSON格式
 
 在 JavaScript 是一门面向对象的语言，JavaScript 支持的类型都可以通过 JSON 来表示，例如字符串、数字、对象、数组等。JSON 是 JavaScript 对象的字符串表示法，它使用文本表示一个 JS 对象的信息，本质是一个字符串-特定格式的字符串。
 
@@ -18,7 +18,7 @@ var obj = {a: 'Hello', b: 'World'}; //这是一个JavaScript对象，注意键�
 var json = '{"a": "Hello", "b": "World"}'; //这是一个 JSON 字符串，本质是一个字符串
 ```
 
-## 对象转换
+# 对象转换
 
 JSON字符串转换为JavaScript 对象，使用 JSON.parse() 方法：
 
@@ -34,7 +34,7 @@ var json = JSON.stringify({a: 'Hello', b: 'World'});
 //结果是 '{"a": "Hello", "b": "World"}' 字符串
 ```
 
-## JSON解析工具
+# JSON解析工具
 
 Jackson应该是目前比较好的json解析工具之一，其他的还有阿里巴巴的 fastjson 等。fastjson.jar是阿里开发的一款专门用于Java开发的包，可以方便的实现json对象与JavaBean对象的转换，实现JavaBean对象与json字符串的转换，实现json对象与json字符串的转换。实现json的转换方法很多，最后的实现结果都是一样的。
 
@@ -76,11 +76,11 @@ JSON代表：JSONObject和JSONArray的转化：
 
 这种工具类，我们只需要掌握使用就好了，在使用的时候在根据具体的业务去找对应的实现。和以前的commons-io那种工具包一样，拿来用就好了！
 
-## webapplication中使用json
+# webapplication中使用json
 
 web项目使用的到spring、servlet、springmvc、mybatis等配置好。
 
-### 导入依赖：
+## 导入依赖：
 
 ```xml
 	<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
@@ -99,7 +99,7 @@ web项目使用的到spring、servlet、springmvc、mybatis等配置好。
     </dependency>
 ```
 
-### pojo使用到lombok：
+## pojo使用到lombok：
 
 ```java
 @Data
@@ -112,7 +112,7 @@ public class User {
 }
 ```
 
-### controller使用到@ResponseBody：
+## controller使用到@ResponseBody：
 
 ​    @ResponseBody用来干嘛的？使该方法返回的只是json格式的字符串。
 
@@ -134,7 +134,7 @@ public class JsonTest {
     }
 ```
 
-### 解决乱码：
+## 解决乱码：
 
 1. @RequestMapping(value = "/json1", produces = "application/json;charset=utf-8")；
 
@@ -169,11 +169,11 @@ public class JsonTest {
                               https://www.springframework.org/schema/mvc/spring-mvc.xsd">
    ```
 
-### 解决同一返回JSON字符串：
+## 解决同一返回JSON字符串：
 
 在类上直接使用 **@RestController** （不使用@Controller），这样子，里面所有的方法都只会返回 json 字符串，不用再为每一个方法都添加@ResponseBody ！我们在前后端分离开发中，一般都使用 @RestController ，十分便捷！
 
-### 封装工具类：
+## 封装工具类：
 
 ```java
 public class JsonUtils {
@@ -200,9 +200,9 @@ public class JsonUtils {
 }
 ```
 
-## JSON与HTTP
+# JSON与HTTP
 
 
 
-## jaskson库
+# jaskson库
 

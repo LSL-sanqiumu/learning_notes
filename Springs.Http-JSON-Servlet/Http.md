@@ -1,8 +1,8 @@
 # TCP/IP
 
-Client客户端，发送请求获取服务器资源的一端。
+客户端（Client）：发送请求获取服务器资源的一端。
 
-服务器端：提供资源响应的一端。
+服务器端（Server）：提供资源响应的一端。
 
 WWW提议：致力于全世界的研究者们进行知识共享。
 
@@ -59,20 +59,6 @@ URI(Uniform Resource Identifier)，由某个协议方案表示的资源的定位
 5. `dir/index.html`：带层次的文件路径，通过该路径定位特指的资源。
 6. `uid=1`：查询字符串，针对指定的资源传入任意参数；
 7. `cha`：片段标识符，可选。
-
-# Http
-
-## Http协议概念
-
-
-
-## get/post方法
-
-
-
-## HttpClient库
-
-
 
 # HTTP协议
 
@@ -203,6 +189,8 @@ GET请求和POST请求应该如何选择？
 HTTP没有加密机制，但可以通过SSL（Secure Socket Layer，安全嵌套层），或TLS（Transport Layer Security，安全层传输协议）的组合使用，加密HTTP的通信内容。
 
 HTTPS：与SSL组合使用的HTTP被称为HTTPS（HTTP Secure，超文本传输安全协议）或HTTP over SSL。用SSL来建立安全通信线路。SSL不仅提供加密处理，还使用了一种被称为证书的手段。
+
+# HttpClient库
 
 
 
