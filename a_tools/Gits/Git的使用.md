@@ -27,7 +27,7 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 查看配置：
 
 - `$ git config --system --list`：查看系统配置
-- `$ git config --global --list`：查看当前用户(global)配置
+- `$ git config --global --list`：查看当前用户(global)全局配置
 - `$ git config --local --list`：查看仓库配置信息
 
 # 仓库的创建
@@ -36,11 +36,11 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 
 仓库创建步骤：（都是在运行GitBash出现的命令行窗口中执行指令）
 
-1. 找到合适的位置创建一个空目录，创建空目录命令：`$ mkdir 目录名称`。
-2. 进入该目录，通过`git init`把这个目录变成Git可以管理的仓库，仓库就创建完毕了。
-3. 说明：仓库创建完毕会在目录下出现一个.git目录，这个目录是Git来跟踪管理版本库的，没事千万不要手动修改这个目录里面的文件，不然改乱了，就把Git仓库给破坏了，该目录默认情况下是隐藏的。
+1. 创建仓库目录：找到合适的位置创建一个空目录，创建空目录命令：`$ mkdir 目录名称`。
+2. 初始化仓库：进入仓库目录，然后执行`git init`命令把这个目录变成Git可以管理的仓库，仓库就创建完毕了。
+3. 说明：仓库创建完毕会在仓库目录下出现一个.git目录，这个目录是Git用来跟踪管理版本库的，没事千万不要手动修改这个目录里面的文件，不然改乱了，就把Git仓库给破坏了，该目录默认情况下是隐藏的。
 
-# 文件改动
+# 文件的提交
 
 所有的版本控制系统，只能跟踪**文本文件的改动**，比如TXT文件，网页，所有的程序代码等等，Git也不例外。
 
@@ -56,11 +56,11 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 4. 提交后显示信息说明：
   - `1 file changed`：1个文件被改动（我们新添加的文件）；`2 insertions`：插入了两行内容（文件中所含内容被改动）。
 
-**修改后，情况查看，再添加、提交：**
+**情况查看：**
 
 1. `$ git ststus`：查看仓库状况，有没有待提交的、有没有修改了的、修改了但还未添加待提交的、仓库是否干净...等等相关信息。
 2. `$ git diff 可指定文件`：查看不同，看看修改了哪些内容。
-3. `$ cat 文件 `：显示文件内容。
+3. `$ cat 文件 `：显示文件的全部内容。
 
 # 版本控制
 
@@ -130,7 +130,7 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 
 查看提交到了版本仓库中的文件：`git ls-files `
 
-# 远程仓库
+# 关联远程仓库
 
 通过远程仓库，实现版本库的分布式存储。
 
@@ -138,20 +138,21 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 
 ## 远程库配置
 
-GitHub配置远程仓库：
+**GitHub配置远程仓库：**
 
-1. 创建SSH key：`$ ssh-keygen -t rsa -C "youremail@example.com"`（在C盘用户主目录下，看看有没有.ssh目录，如果有，再看看这个目录下有没有`id_rsa`和`id_rsa.pub`这两个文件，如果已经有了，可直接跳到下一步。如果没有，打开Shell（Windows下打开Git Bash），创建SSH Key，创建时需要先进入到.ssh目录）；
-2. 登陆GitHub，打开“Account settings”，“SSH Keys”页面：然后，点“Add SSH Key”，填上任意Title，在Key文本框里粘贴`id_rsa.pub`文件的内容；
-3. 点“Add Key”，你就应该看到已经添加的Key；
-4. 添加远程仓库：登陆GitHub后，在settings->Repositories，创建仓库。
+1. 创建SSH key：GitBash中执行`$ ssh-keygen -t rsa -C "youremail@example.com"`命令。
+   - 在C盘用户主目录下，看看有没有.ssh目录，如果有，再看看这个目录下有没有`id_rsa`和`id_rsa.pub`这两个文件，如果已经有了，可直接跳到第2步。如果没有，打开Shell（Windows下打开Git Bash），创建SSH Key，创建时需要先进入到.ssh目录。
 
-远程仓库配置好后，本地仓库设置：
+2. 登陆GitHub，打开“Account settings”，“SSH Keys”页面，然后，点“Add SSH Key”，填上任意Title，在Key文本框里粘贴`id_rsa.pub`文件的内容；最后点击“Add Key”，就添加好Key了。
+3. 添加远程仓库：登陆GitHub后，在settings ===> Repositories，创建仓库。
 
-1. 进入到本地仓库目录，执行`$ git remote add origin git@github.com:你的GitHub账户名/本地仓库名.git`，与远程仓库关联；
-   - （添加关联后，远程库在本地的名字(?)就是origin，这是Git默认的叫法，也可以改成其他的。）
-2. 将本地库的所有内容推送到远程仓库：执行`$ git push -u origin master`，把当前分支master推送到远程仓库。
+**远程仓库配置好后，本地仓库的设置：**
+
+1. 关联远程仓库：进入到本地仓库目录，执行`$ git remote add origin git@github.com:你的GitHub账户名/本地仓库名.git`。
+   - origin可以看做是后面仓库链接的一个替代词，push时可通过该代名词来push。
+2. 将本地库的所有内容推送到远程仓库：执行`$ git push -u origin master`，把当前仓库的master分支推送到远程仓库。
    - （由于远程库是空的，我们第一次推送`master`分支时，加上了`-u`参数，Git不但会把本地的`master`分支内容推送到远程新的`master`分支，还会把本地的`master`分支和远程的`master`分支关联起来，在以后的推送或者拉取时就可以简化命令。）
-3. 执行上述操作后，从现在起，只要本地作了提交，就可以通过命令：`$ git push origin master`，把本地`master`分支的最新修改推送至GitHub，现在，就拥有了真正的分布式版本库！
+3. 执行上述操作后，从现在起，只要本地作了`git commit -m "xxx"`，就可以通过命令`$ git push origin master`来把本地`master`分支的最新修改推送至在GitHub的仓库；现在，就拥有了真正的分布式版本库！
 
 ## SSH警告
 
@@ -195,16 +196,16 @@ $ git remote rm origin
 <!--$ git remote rm 仓库别名-->
 ```
 
-此处的“删除”其实是解除了本地和远程的绑定关系，并不是物理上删除了远程库。远程库本身并没有任何改动。要真正删除远程库，需要登录到GitHub，在后台页面找到删除按钮再删除。
+此处的“删除”其实是解除了本地和远程的绑定关系，并不是物理上删除了远程库。远程库本身并没有任何改动。要真正删除远程库，需要登录到GitHub，在后台页面通过删除按钮来删除。
 
 ## 小结
 
-- 要关联一个远程库，使用命令`git remote add origin git@server-name:path/repo-name.git`；
-- 关联一个远程库时必须给远程库指定一个名字，`origin`是默认习惯命名；
-- 关联后，使用命令`git push -u origin master`第一次推送master分支的所有内容；
-- 此后，每次本地提交后，只要有必要，就可以使用命令`git push origin master`推送最新修改；
+- 要关联一个远程库，使用命令`git remote add origin git@server-name:path/repo-name.git`。
+- 关联一个远程库时必须给远程库指定一个名字，`origin`是默认的习惯命名。
+- 关联后，使用命令`git push -u origin master`第一次推送master分支的所有内容。
+- 此后，每次本地提交后，只要有提交的必要，就可以使用命令`git push origin master`推送最新修改。
 
-# 克隆
+# 克隆远程仓库
 
 从零开发，那么最好的方式是先创建远程库，然后，从远程库克隆。
 
@@ -213,12 +214,12 @@ $ git remote rm origin
 1. 登陆GitHub，创建一个新仓库；
 2. 进入合适位置执行`$ git clone git@github.com:用户账户名/仓库名.git`，克隆完成。
 
-克隆项目方法：
+克隆项目的方法：
 
-- `$ git clone git/@github.com:用户名/仓库名.git`：（使用 SSH 地址克隆）；
-- `$ git clone https://github.com/用户名/项目仓库名`。
+- `$ git clone git/@github.com:用户名/仓库名.git`。（使用 SSH 地址克隆）
+- `$ git clone https://github.com/用户名/项目仓库名`。（直接通过仓库地址来克隆）
 
-没有断网情况下出现下载失误，下载到一半停止或访问不了，可以尝试的解决方法：
+网络状况良好却出现下载失误，下载到一半就停止或访问不了的时候，可以尝试的解决方法：
 
 - 将项目的GitHub网址中的 `https://` 改成 `git://`：`git clone git://github.com/用户名/项目仓库名--depth 1`。
 
@@ -343,6 +344,8 @@ Git鼓励大量使用分支：
 如果要丢弃一个没有被合并过的分支，可以通过`$ git branch -D <name>`强行删除。
 
 ## 多人协作
+
+### 具体操作
 
 **推送分支：**
 
@@ -722,7 +725,7 @@ Git有很多图形界面工具，这里我们推荐[SourceTree](https://www.sour
 
 1. 第一次运行SourceTree时，SourceTree并不知道我们的Git库在哪。如果本地已经有了Git库，直接从资源管理器把文件夹拖拽到SourceTree上，就添加了一个本地Git库；也可以选择“New”-“Clone from URL”直接从远程克隆到本地。
 
-提交
+提交：
 
 我们双击添加了的仓库，会打开另一个窗口，展示这个Git库的当前所有分支以及文件状态。选择左侧面板的“WORKSPACE”-“File status”，右侧会列出当前已修改的文件（Unstaged files）；
 
