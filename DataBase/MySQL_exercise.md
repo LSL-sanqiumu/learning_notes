@@ -561,21 +561,223 @@ alter table grades add foreign key (id) references student(sid);
 
 **解：**
 
-1.筛选出2017年入学的“计算机”专业年龄最小的3位同学名单（姓名、年龄）
+1.筛选出2017年入学的“计算机”专业年龄最小的3位同学名单（姓名、年龄）。
 
 ```mysql
 select name,age from student where specialized='计算机' and opentime="2017-09-01" 
 order by age asc limit 0,3;
++------+------+
+| name | age  |
++------+------+
+| 小李 |   17 |
+| 小吴 |   18 |
+| 小周 |   20 |
++------+------+
 ```
 
-2.统计每个班同学各科成绩平均分大于80分的人数和人数占比
+2.统计每个班同学各科成绩平均分大于80分的人数和人数占比。
 
-- 每位同学的平均成绩
-- 平均成绩大于80的人数
-- 平均成绩大于80的人数占比
-- 输出结果是`班级 平均成绩大于80的人数 平均分大于80的人数占班级人数的多少`
+分析：
 
+1. 每位同学的平均成绩
 
+   ```mysql
+   select avg(scores) from grades group by id; 
+   ```
+
+2. 平均成绩大于80的人数
+
+   ```mysql
+   select sum(case when t_a.avgscores > 80 then 1 else 0 end) as 大于80的人数 
+   from
+   (select avg(scores) as avgscores from grades group by id) as t_a; 
+   ```
+
+3. 总人数
+
+   ```mysql
+   select count(id) from (select id,avg(scores) as avgscores from grades group by id) as t_a;
+   ```
+
+4. 平均成绩大于80的人数占比
+
+   ```mysql
+   select sum(case when t_a.avgscores > 80 then 1 else 0 end)/count(id) as 人数占比 
+   from 
+   (select id,avg(scores) as avgscores from grades group by id) as t_a; 
+   ```
+
+5. 输出结果是`班级 平均成绩大于80的人数 平均分大于80的人数占班级人数的多少`
+
+   ```mysql
+   select s.grade,sum(case when t_a.avgscores > 80 then 1 else 0 end) as 大于80的人数,sum(case when t_a.avgscores > 80 then 1 else 0 end)/count(id) as 人数占比 
+   from student s 
+   left join 
+   (select id,avg(scores) as avgscores from grades group by id) as t_a 
+   on s.sid=t_a.id 
+   group by grade;
+   +-------+--------------+----------+
+   | grade | 大于80的人数 | 人数占比 |
+   +-------+--------------+----------+
+   | 1班   |            1 |   0.5000 |
+   | 2班   |            1 |   1.0000 |
+   | 3班   |            1 |   0.3333 |
+   +-------+--------------+----------+
+   ```
+
+**题目2：**
+
+1.查询最小/最大的N个数据的问题：某网站有购买记录表，找出消费最大的2名顾客，并输出顾客ID和消费金额。
+
+```mysql
+create table record(
+	id int(2) zerofill not null auto_increment primary key comment "顾客ID",
+    amount int
+)engine=innodb default charset=utf8; 
+insert into record(amount) values (2016),(6250),(5237),(4175),(6666); 
++----+--------+
+| id | amount |
++----+--------+
+| 01 |   2016 |
+| 02 |   6250 |
+| 03 |   5237 |
+| 04 |   4175 |
+| 05 |   6666 |
++----+--------+
+```
+
+**解：**
+
+```mysql
+select id,amount from record order by amount desc limit 0,2;  
+```
+
+2.分组汇总问题：某网站有顾客表和消费表，请统计每个城市的顾客平均消费在1000元以上的人数，输出城市、人数。
+
+```mysql
+create table employee(
+    id int(2) zerofill not null auto_increment primary key,
+	name varchar(10),
+    city varchar(10)
+)engine=innodb default charset=utf8;
+insert into employee(name,city) values
+('小赵','北京'),
+('小钱','广州'),
+('小孙','上海'),
+('小李','北京'),
+('小吴','广州'),
+('小周','上海');
++----+------+------+
+| id | name | city |
++----+------+------+
+| 01 | 小赵 | 北京 |
+| 02 | 小钱 | 广州 |
+| 03 | 小孙 | 上海 |
+| 04 | 小李 | 北京 |
+| 05 | 小吴 | 广州 |
+| 06 | 小周 | 上海 |
++----+------+------+
+```
+
+```mysql
+create table sales(
+	id int(2) zerofill,
+    goods int(2) zerofill,
+    amount int
+)engine=innodb default charset=utf8;
+insert into sales values
+(1,1,900),
+(2,1,7000),
+(2,2,840),
+(3,1,9000),
+(3,3,80),
+(4,1,90),
+(4,2,60),
+(5,1,85),
+(6,2,7300);
++------+-------+--------+
+| id   | goods | amount |
++------+-------+--------+
+|   01 |    01 |    900 |
+|   02 |    01 |   7000 |
+|   02 |    02 |    840 |
+|   03 |    01 |   9000 |
+|   03 |    03 |     80 |
+|   04 |    01 |     90 |
+|   04 |    02 |     60 |
+|   05 |    01 |     85 |
+|   06 |    02 |   7300 |
++------+-------+--------+
+```
+
+**解：**
+
+1. 每个顾客的总消费
+
+   ```mysql
+   select id,sum(amount) from sales group by id;
+   ```
+
+2. 求出每个顾客的消费次数
+
+   ```mysql
+   select count(id) from sales group by id;
+   ```
+
+3. 求出顾客的平均消费
+
+   ```mysql
+   select id,sum(amount)/count(id) as 平均消费 from sales group by id;
+   ```
+
+4. 平均消费在1000元以上的人
+
+   ```mysql
+   select * from (select id,sum(amount)/count(id) as 平均消费 from sales group by id) as a
+   where 平均消费>1000;
+   ```
+
+5. 输出城市、人数
+
+   ```mysql
+   select city,count(city) as 人数 
+   from employee e 
+   join
+   (select id,sum(amount)/count(id) as 平均消费 from sales group by id) s 
+   on e.id=s.id where s.平均消费>1000 group by e.city;    
+   -- 或者
+   select city,count(city) as 人数 
+   from employee e 
+   join
+   (select * from (select id,sum(amount)/count(id) as 平均消费 from sales group by id) as a
+   where 平均消费>1000) s 
+   on e.id=s.id group by e.city;
+   +------+------+
+   | city | 人数 |
+   +------+------+
+   | 上海 |    2 |
+   | 广州 |    1 |
+   +------+------+
+   ```
+
+其他的：
+
+```mysql
+select e.city,sum(case when s.平均消费>1000 then 1 else 0 end) as 人数
+from employee as e 
+left join (select id,avg(amount) as 平均消费 from sales group by id) as s
+on e.id=s.id
+group by city;
++------+------+
+| city | 人数 |
++------+------+
+| 上海 |    2 |
+| 北京 |    0 |
+| 广州 |    1 |
++------+------+
+```
+
+## 行列互换问题
 
 
 
