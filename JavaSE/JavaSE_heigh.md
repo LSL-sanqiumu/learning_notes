@@ -75,7 +75,7 @@ public void makeForRunnable() {
 开发中优先选择通过Runable接口创建线程：
 
 - 继承局限：通过接口来实现没有继承的单继承局限。
-- 共享数据：实现接口的方式更适合来处理有共享数据的情况，属性就可以成为共享数据。
+- 共享数据：实现接口的方式更适合来处理有共享数据的情况，属性就可以成为共享数据（通过一个Runnable实例来创建多个线程，Runnable的属性就被多个线程共享了）。
 - 从内存开销分析：实现接口的方式只用创建一个Runnable实现类对象。
 
 
@@ -120,15 +120,15 @@ public void makeForCallable() throws ExecutionException, InterruptedException {
 java.util.concurrent.Executors // Executors，工具类，用于创建线程池
 ```
 
-通过工具类的方法创建的四种线程池：
+通过工具类方法创建的四种线程池：
 
-1.  newFixedThreadPool()：固定大小的线程池，满足了资源管理的需求，可以限制当前线程数量。适用于负载较重的服务器环境。
+1.  `newFixedThreadPool()`：固定大小的线程池，满足了资源管理的需求，可以限制当前线程数量。适用于负载较重的服务器环境。
 
-2. newSingleThreadExecutor()：相当于大小为1的FixedThreadPool。
+2. `newSingleThreadExecutor()`：相当于大小为1的FixedThreadPool。
 
-3. newCachedThreadPool()：一个任务创建一个线程，适用于执行很多短期异步任务的小程序，适用于负载较轻的服务器。
+3. `newCachedThreadPool()`：一个任务创建一个线程，适用于执行很多短期异步任务的小程序，适用于负载较轻的服务器。
 
-4. newScheduledThreadPool()：延迟连接池，可以在给定的延迟时间后执行命令，或者定期执行命令，它比Timer更强大更灵活。
+4. `newScheduledThreadPool()`：延迟连接池，可以在给定的延迟时间后执行命令，或者定期执行命令，它比Timer更强大更灵活。
 
    ScheduledThreadPoolExecutor具有固定线程个数，适用于需要多个后台线程执行周期任务，并且为了满足资源管理需求而限制后台线程数量的场景。
 
@@ -144,8 +144,8 @@ ThreadPoolExecutor service1 = (ThreadPoolExecutor)service;
 service1.setCorePoolSize(15);
 
 // 执行指定线程
-service.execute(new Runnable线程);//适合用于Runnable
-service.submit(new Callable线程);//适合使用于Callable
+service.execute(new Runnable线程); // 适合用于Runnable
+service.submit(new Callable线程);  // 适合用于Callable
 
 ```
 
@@ -174,7 +174,7 @@ stop()    	     // (stop方法已过时，其作用是强制结束进程)
 sleep()          // 让当前线程“睡眠“指定的时间(ms),停滞完时长后再执行下去
 isAlive()        // 判断当前线程是否存活，true or false
     
-// 见最后线程通信：wait()、notify()、notifyAll()
+// wait()、notify()、notifyAll() 见最后线程通信
 ```
 
 
@@ -448,12 +448,12 @@ public void run() {
 
 以下方法只能在同步代码块或同步方法中调用：（这三个都是定义在Object下的方法）
 
-- notify()方法：只能唤醒一个被wait()的线程，如果有多个则会唤醒优先级最高的；
-- notifyAll()方法：唤醒所有被wait()的线程；
-- wait()方法：将当前线程进入阻滞状态并释放同步监视器；
-- 【注意】这三个方法的调用者必须是同步代码块或同步方法中的同步监视器（锁是this可以省略），否则会出现IllegalMonitorStateException异常。
+- `notify()`方法：只能唤醒一个被wait()的线程，如果有多个则会唤醒优先级最高的；
+- `notifyAll()`方法：唤醒所有被wait()的线程；
+- `wait()`方法：将当前线程进入阻滞状态并释放同步监视器；
+- 【注意】这三个方法的调用者必须是同步代码块或同步方法中的同步监视器（锁是this则可以省略），否则会出现IllegalMonitorStateException异常。
 
-【面试】sleep()与wait()方法的异同：
+【面试】`sleep()`与`wait()`方法的异同：
 
 - 同：执行到这两个方法都会使当前线程进入阻滞状态；
 - 异：
@@ -602,7 +602,7 @@ class Customer extends Thread {
    System.out.println(s1 == s2); // true
    ```
 
-2. 变量与字面量的拼接或变量与变量的拼接都在堆空间中（拼接式中，只要有一个是变量名，结果就在堆中，**注意**声明为final的变量已经是一个常量（使用new的方式创建的字符串））。
+2. 变量与字面量的拼接或变量与变量的拼接都在堆空间中（拼接式中，只要有一个是变量名，结果就在堆中，**注意**声明为final的变量已经是一个常量（使用new的方式创建的字符串，final后的变量与字面量或常量池常量拼接，最后仍然是在堆空间引用））。
 
    ```java
    String s1 = "12"; // 常量池中
@@ -704,7 +704,7 @@ StringBuffer：可变的字符序列；线程安全的，效率低；底层用ch
 
 StringBuilder：可变的字符序列；JDK5.0新增，线程不安全的，效率高；底层用char[]数组存储；（什么时候用：不是多线程，不需要考虑线程安全的）。
 
-### 源码分析：
+### 源码分析
 
 ```java
 // String
@@ -722,21 +722,19 @@ StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".len
 // 扩容问题：如果要添加的数据底层数组盛不下，那就需要扩容底层数组；默认情况下，扩容为原来容量的 2倍 + 2，同时将原有数组中的元素复制到新数组中（指导意义：开发中建议大家使用：StringBuffer(int capacity)或StringBuilder(int capacity),指定好容量）
 ```
 
-### 常用方法
+### StringBuffer常用方法
 
-### StringBuffer 
+- **`append(xxx)`**：提供了很多的append()方法，用于进行字符串拼接 ；
 
-- **append(xxx)**：提供了很多的append()方法，用于进行字符串拼接 ；
+- **`delete(int start,int end)`**：删除指定位置的内容 ；
 
-- **delete(int start,int end)**：删除指定位置的内容 ；
+- **`replace(int start, int end, String str)`**：把[start,end)位置替换为str ；
 
-- **replace(int start, int end, String str)**：把[start,end)位置替换为str ；
+- **`insert(int offset, xxx)`**：在指定位置插入xxx字符串，插入位置的字符串不会被替换掉 ；
 
-- **insert(int offset, xxx)**：在指定位置插入xxx ；
+- **`reverse()`**：把当前字符序列逆转；
 
-- **reverse()**：把当前字符序列逆转
-
-- 当append和insert时，如果原来value数组长度不够，可扩容。 
+- 当append和insert时，如果原来value数组长度不够，会扩容。 
 
 - 如上这些方法支持方法链操作。 方法链的原理：
 
@@ -746,33 +744,64 @@ StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".len
       super.append(str);
       return this;
   }
+  // 方法链操作
+  @Test
+  public void test() {
+      StringBuffer sb = new StringBuffer();
+      sb.append("abc").append("123").insert(5,"def").insert(8,"456");
+      System.out.println(sb);
+  }
   ```
 
 其他方法：
 
-- public int indexOf(String str) ：str字符串在StringBuffer字符串第一次出现的起始下标，如果没有子串会返回-1；
-- public String substring(int start,int end) ：返回`[start , end)`之间的子串；
-- public int length()：字符串长度；
-- public char charAt(int n ) ：返回指定下标的字符；
-- public void setCharAt(int n ,char ch)：修改指定下标的字符。
+- `public int indexOf(String str) `：str字符串在StringBuffer字符串第一次出现的起始下标，如果没有子串会返回-1；
+- `public String substring(int start,int end)` ：返回`[start , end)`之间的子串；
+- `public int length()`：字符串长度；
+- `public char charAt(int n )` ：返回指定下标的字符；
+- `public void setCharAt(int n ,char ch)`：修改指定下标的字符。
 
 总结：
 
-增：append()；
+- 增：append()；
 
-删：delete(int start,int end)；
+- 删：delete(int start,int end)；
 
-改：setCharAt(int n ,char ch) / replace(int start, int end, String str)；
+- 改：setCharAt(int n ,char ch) / replace(int start, int end, String str)；
 
-查：charAt(int n)；
+- 查：charAt(int n)；
 
-插入：insert(int offset, xxx)；
+- 插入：insert(int offset, xxx)；
 
-长度：length()；
+- 长度：length()；
 
-遍历：for() + char()  / toString()。
+- 遍历：for() + char()  / toString()。
+
 
 **【注意】StringBuilder 和 StringBuffer 非常类似，均代表可变的字符序列，而且提供相关功能的方法也一样**。
+
+### 线程不安全
+
+StringBuilder线程不安全。
+
+```java
+public static void main(String[] args) throws InterruptedException {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < 10;i++) {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int j = 0; j < 1000; j++) {
+                    sb.append("a");
+                }
+            }
+        });
+        t.start();
+    }
+    Thread.sleep(100); // 主线程等一会，等各线程都执行完毕再向下执行
+    System.out.println(sb.length());
+}
+```
 
 
 
@@ -789,6 +818,8 @@ java.lang.Comparable 接口的`compareTo()`方法是用于对对象进行大小�
 - 如果当前对象this大于形参对象obj，则返回正整数；
 - 如果当前对象this小于形参对象obj，则返回负整数；
 - 如果当前对象this等于形参对象obj，则返回零。
+
+排序中需要对对象进行大小的比较，那就可以调用该方法来进行大小的比较，从而再执行其他操作来完成排序。
 
 Comparable接口的应用——用于排序中的比较：
 
@@ -841,11 +872,11 @@ Comparable、Comparator使用对比：
 **关于Comparable接口：**
 
 - String和包装类已经重写了该接口相关方法，可直接调用`Arrays.sort()`实现从小到大的排序。
-  - 如果对自定义类的数组进行排序，自定义类应实现该接口并重写`compareTo()`方法，再调用`Arrays.sort()`方法实现排序。
+- 如果对自定义类的数组进行排序，自定义类应实现该接口并重写`compareTo()`方法，再调用`Arrays.sort()`方法实现排序。
 
 **关于Comparator接口：**
 
-- 通过Comparator的对象来重写`compare(Object o1, Object o2)`方法，使用`Arrays.sort(obj，Comparator的对象)`来实现排序
+- 通过Comparator的对象来重写`compare(Object o1, Object o2)`方法，使用`Arrays.sort(obj，Comparator的对象)`来实现排序。
 
 - 理解`Arrays.sort(obj)`、`compareTo()`、`compare(Object o1, Object o2)`方法，比较器就是对这些方法进行重操作以达到自己所需的排序或比较目的。
 
@@ -853,18 +884,23 @@ Comparable、Comparator使用对比：
 
 1. System类代表系统，系统级的很多属性和控制方法都放置在该类的内部。 该类位于java.lang包。
 2. 由于该类的构造器是private的，所以无法创建该类的对象，也就是无法实例化该类。其内部的成员变量和成员方法都是static的，所以也可以很方便地通过类进行调用。 
-3. 成员变量 
-  - System类内部包含in、out和err三个成员变量，分别代表标准输入流 (键盘输入)，标准输出流(显示器)和标准错误输出流(显示器)。
-4. 成员方法 
-  - `native long currentTimeMillis()`： 该方法的作用是返回当前的计算机时间，时间的表达格式为当前计算机时 间和GMT时间(格林威治时间)1970年1月1号0时0分0秒所差的毫秒数。 
+3. 成员变量 ：
+     - System类内部包含in、out和err三个成员变量，分别代表标准输入流 (键盘输入)，标准输出流(显示器)和标准错误输出流(显示器)。
+4. 成员方法 ：
 
-  - `void exit(int status)`： 该方法的作用是退出程序。其中status的值为0代表正常退出，非零代表 异常退出。使用该方法可以在图形界面编程中实现程序的退出功能等。（ 见PPT9.5 ——System类）
+     - `native long currentTimeMillis()`： 该方法的作用是返回当前的计算机时间，时间的表达格式为当前计算机时 间和GMT时间(格林威治时间)1970年1月1号0时0分0秒所差的毫秒数。 
 
-  - `void gc()`： 该方法的作用是请求系统进行垃圾回收。至于系统是否立刻回收，则 取决于系统中垃圾回收算法的实现以及系统执行时的情况。
 
-  - `String getProperty(String key)`： 该方法的作用是获得系统中属性名为key的属性对应的值。系统中常见的属性名以及属性的作用如下表所示： 
+     - `void exit(int status)`： 该方法的作用是退出程序。其中status的值为0代表正常退出，非零代表 异常退出。使用该方法可以在图形界面编程中实现程序的退出功能等。（ 见PPT9.5 ——System类）
 
-    ![](images/system属性.png)
+
+     - `void gc()`： 该方法的作用是请求系统进行垃圾回收。至于系统是否立刻回收，则 取决于系统中垃圾回收算法的实现以及系统执行时的情况。
+
+
+     - `String getProperty(String key)`： 该方法的作用是获得系统中属性名为key的属性对应的值。系统中常见的属性名以及属性的作用如下表所示： 
+
+       ![](images/system属性.png)
+
 
 
 
