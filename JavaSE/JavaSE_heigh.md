@@ -698,11 +698,12 @@ System.out.println(byteToStr);
 
 【面试】String、StringBuffer、StringBuilder三者的异同？
 
-String：不可变的字符序列；底层用char[]数组存储；
+- String：不可变的字符序列；底层用char[]数组存储。
 
-StringBuffer：可变的字符序列；线程安全的，效率低；底层用char[]数组存储；（什么时候用：多线程的，要考虑的线程安全的）；
+- StringBuffer：可变的字符序列；线程安全的，效率低；底层用char[]数组存储；（什么时候用：多线程的，要考虑的线程安全的）。
 
-StringBuilder：可变的字符序列；JDK5.0新增，线程不安全的，效率高；底层用char[]数组存储；（什么时候用：不是多线程，不需要考虑线程安全的）。
+- StringBuilder：可变的字符序列；JDK5.0新增，线程不安全的，效率高；底层用char[]数组存储；（什么时候用：不是多线程，不需要考虑线程安全的时候）。
+
 
 ### 源码分析
 
@@ -719,7 +720,8 @@ sb1.append('b'); // value[1] = 'b';
 StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".length + 16];
 
 // System.out.println(sb2.length); // 3
-// 扩容问题：如果要添加的数据底层数组盛不下，那就需要扩容底层数组；默认情况下，扩容为原来容量的 2倍 + 2，同时将原有数组中的元素复制到新数组中（指导意义：开发中建议大家使用：StringBuffer(int capacity)或StringBuilder(int capacity),指定好容量）
+// 扩容问题：如果要添加的数据底层数组盛不下，那就需要扩容底层数组；默认情况下，扩容为原来容量的 2倍 + 2，同时将原有数组中的元素复制到新数组中
+// （指导意义：开发中建议大家使用：StringBuffer(int capacity)或StringBuilder(int capacity),先指定好容量）
 ```
 
 ### StringBuffer常用方法
@@ -813,19 +815,19 @@ Java中的对象，正常情况下只能使用比较运算符来比较（==或!=
 
 > 接口java.lang.Comparable ，是用于自然排序的比较器接口
 
-java.lang.Comparable 接口的`compareTo()`方法是用于对对象进行大小比较的，具体实现在接口实现类中，重写其`compareTo(obj)`方法的规则如下：
+java.lang.Comparable 接口的`compareTo()`方法是用于对对象进行大小比较的，具体实现是在接口实现类中，其实现类重写其`compareTo(obj)`方法的规则如下：
 
-- 如果当前对象this大于形参对象obj，则返回正整数；
-- 如果当前对象this小于形参对象obj，则返回负整数；
+- 如果当前对象this大于形参对象obj，则返回正整数。
+- 如果当前对象this小于形参对象obj，则返回负整数。
 - 如果当前对象this等于形参对象obj，则返回零。
 
 排序中需要对对象进行大小的比较，那就可以调用该方法来进行大小的比较，从而再执行其他操作来完成排序。
 
 Comparable接口的应用——用于排序中的比较：
 
-- String类、包装类等实现了Comparable接口，重写了compareTo()方法，定义了特定的方式来比较两个对象的大小。  
-- Arrays工具类的`Arrays.sort(Obj[] obj)`方法可以对数组中的内容进行从小到大的排序，该方法内部实现使用到了compareTo()方法来进行大小的比较。重写了compareTo()方法的类的数组对象，可以调用其进行排序。
--  集合中`Collections.sort(List<T> list)`方法的排序实现也使用到了`Arrays.sort(Obj[] obj)`方法。
+1. String类、包装类等实现了Comparable接口，重写了compareTo()方法——定义了特定的方式来比较两个对象的大小。  
+2. Arrays工具类的`Arrays.sort(Obj[] obj)`方法可以对数组中的内容进行从小到大的排序，该方法内部实现使用到了compareTo()方法来进行大小的比较。重写了compareTo()方法的类的数组对象，可以调用其进行排序。
+3. 集合中`Collections.sort(List<T> list)`方法的排序实现也使用到了`Arrays.sort(Obj[] obj)`方法。
 
 使用工具类对自定义类排序的步骤：
 
@@ -869,12 +871,12 @@ Comparable、Comparator使用对比：
 
 无论是使用Comparable或者是Comparator，都使用Arrays.sort()方法或其重写的方法来实现排序。
 
-**关于Comparable接口：**
+一、关于Comparable接口：
 
 - String和包装类已经重写了该接口相关方法，可直接调用`Arrays.sort()`实现从小到大的排序。
 - 如果对自定义类的数组进行排序，自定义类应实现该接口并重写`compareTo()`方法，再调用`Arrays.sort()`方法实现排序。
 
-**关于Comparator接口：**
+二、关于Comparator接口：
 
 - 通过Comparator的对象来重写`compare(Object o1, Object o2)`方法，使用`Arrays.sort(obj，Comparator的对象)`来实现排序。
 
@@ -898,7 +900,7 @@ Comparable、Comparator使用对比：
 
 
      - `String getProperty(String key)`： 该方法的作用是获得系统中属性名为key的属性对应的值。系统中常见的属性名以及属性的作用如下表所示： 
-
+    
        ![](images/system属性.png)
 
 

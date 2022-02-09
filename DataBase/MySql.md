@@ -541,9 +541,7 @@ USE information_schema;
 SELECT * FROM TABLES WHERE TABLE_SCHEMA='数据库名' AND TABLE_NAME='表名'
 ```
 
-
-
-设置数据库表的字符集编码：`CHARSET=utf8`，不设置的话，会是mysql默认的字符集编码~（不支持中文！）。
+设置数据库表的字符集编码：`CHARSET=utf8`，不设置的话，会是mysql默认的字符集编码~（不支持中文！）；MySQL中，utf8mb4才是真正的utf8。
 
 **MySQL的默认编码是Latin1，不支持中文，但可以修改：**
 
@@ -712,7 +710,7 @@ SELECT @@auto_increment_increment; -- 查询自增的步长
 SELECT `age`+1 AS 长大一岁 FROM result; -- 指定字段加一后显示，不会改变表内数据
 ```
 
-语法：` select 表达式 from table-name;`；数据库中的表达式：文本值、字段、null、函数、计算表达式、系统变量......。
+语法：` select 表达式 from table-name;`；数据库中的表达式：文本值、字段、null、函数、计算表达式、系统变量等。
 
 字段也可以使用数学表达式：`select name,age*12 from table_name`；（把字段看成是变量一样进行运算）
 
@@ -720,19 +718,19 @@ SELECT `age`+1 AS 长大一岁 FROM result; -- 指定字段加一后显示，不
 
 条件操作符：
 
-|      条件操作符      |     含义     |                           描述                            |
-| :------------------: | :----------: | :-------------------------------------------------------: |
-|   =、>、<、>=、<=    |              |                                                           |
-|        !=、<>        |    不等于    |                                                           |
-| between ... and ...  | 在某个闭区间 |                          [x，y]                           |
-|         and          |   相当于&&   |                          全1为1                           |
-|          or          |  相当于\|\|  |                          有1为1                           |
-|         not          |   相当于！   |                            非                             |
-|       is null        |  是否为null  |                   null 不能用 = 来比较                    |
-|     is not null      |   不是null   |                                                           |
-|         like         |  含有某个值  |                  模糊查询，结合%或_使用                   |
-|   in(xx,xx,xx,...)   |   里面的值   | 某字段的值能对应in里面的某一个数据<br />返回true或者false |
-| not in(xx,xx,xx,...) | 不在里面的值 |      某字段的值不在这几个值中<br />返回true或者false      |
+|      条件操作符      |      含义      |                           描述                            |
+| :------------------: | :------------: | :-------------------------------------------------------: |
+|   =、>、<、>=、<=    |                |                                                           |
+|        !=、<>        |     不等于     |                                                           |
+| between ... and ...  |  在某个闭区间  |                          [x，y]                           |
+|         and          |    相当于&&    |                          全1为1                           |
+|          or          |   相当于\|\|   |                          有1为1                           |
+|         not          |    相当于！    |                            非                             |
+|       is null        |     是null     |                   null 不能用 = 来比较                    |
+|     is not null      |    不是null    |                                                           |
+|         like         |   含有某个值   |                  模糊查询，结合%或_使用                   |
+|   in(xx,xx,xx,...)   |  符合里面的值  | 某字段的值能对应in里面的某一个数据<br />返回true或者false |
+| not in(xx,xx,xx,...) | 不符合里面的值 |      某字段的值不在这几个值中<br />返回true或者false      |
 
 select语句：
 
@@ -843,8 +841,8 @@ select user_id,the_year,count(price) as '订单数量' from t_order group by use
 查询语句：
 
 ```mysql
-select ... from ... [可选]; -- [可选] 的随意选择，不过要按照一定顺序书写
--- 可选要遵循的顺序
+select ... from ... [可选]; -- [可选] 的是可以随意选择的，不过要按照一定顺序书写
+-- 可选要遵循的指令顺序
 where ... group by ... having ... order by ... limit page,pageSize;
 ```
 
@@ -852,7 +850,7 @@ where ... group by ... having ... order by ... limit page,pageSize;
 
 ```mysql
 select ... from ... where ... group by ... having ... order by ... limit page,pageSize;
--- 执行顺序：from --> where --> group by --> select --> having --> order by
+-- 执行顺序：from --> where --> group by --> select --> having --> order by --> limit
 -- 从哪张表拿数据 -> 拿出哪些数据 -> 将拿出的数据分组 -> 选中数据 -> 对数据进行过滤 -> 对数据进行排序 -> 数据分页
 ```
 
@@ -864,7 +862,7 @@ select ... from ... where ... group by ... having ... order by ... limit page,pa
 
 当两张表进行连接查询，没有任何条件限制，**最终查询结果条数**，是两张表条数的乘积，这种现象被称为笛卡尔积现象，由笛卡尔发现的一种数学现象。  ——由该现象可知数据库底层查询是先从表中拿出数据，也就是from先行，这时匹配的次数是每张表的数据条数的乘积；因此，表的连接次数越多，匹配的次数就越多，查询的效率就越低了。
 
-联表查询中，**加条件是为了避免笛卡尔积现象，查询出有效的组合记录（使查询结果条数不是m*n）**，但是匹配的次数是一次都没有少的，联表查询加条件和效率并没有关系，因此联表查询中尽量降低表的连接才能提高效率。
+联表查询中，**加条件是为了避免笛卡尔积现象，查询出有效的组合记录（使查询结果条数不是m*n）**，但是匹配的次数是一次都没有少的，联表查询加条件和效率并没有什么关系，因此联表查询中尽量降低表的连接才是提高效率的方法。
 
 **连接查询：**
 
