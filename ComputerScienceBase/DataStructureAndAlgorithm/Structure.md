@@ -1105,7 +1105,7 @@ public Node postOrderSearch(int id){
 }
 ```
 
-### 删除节点
+### 删除节点:
 
 ```java
 // 节点：删除叶子节点或父子节点的子树
@@ -1201,7 +1201,324 @@ public class ArrayBinaryTree {
 
 代码实现中序线索二叉树，在二叉树的基础上加上线索化的功能：
 
+### 节点:
 
+```java
+public class Node {
+    private int id;
+    private Node leftNode;
+    private Node rightNode;
+    // leftType为0则表示指向左子树，为1则指向前驱节点
+    // rightType为0表示指向右子树，为1则指向后继节点
+    private int leftType;
+    private int rightType;
+
+    public int getLeftType() {
+        return leftType;
+    }
+    public void setLeftType(int leftType) {
+        this.leftType = leftType;
+    }
+    public int getRightType() {
+        return rightType;
+    }
+    public void setRightType(int rightType) {
+        this.rightType = rightType;
+    }
+
+    public Node(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Node getLeftNode() {
+        return leftNode;
+    }
+
+    public void setLeftNode(Node leftNode) {
+        this.leftNode = leftNode;
+    }
+
+    public Node getRightNode() {
+        return rightNode;
+    }
+
+    public void setRightNode(Node rightNode) {
+        this.rightNode = rightNode;
+    }
+
+
+    public Node preOrderSearch(int id){
+        if (this.id == id){
+            return this;
+        }
+        Node result = null;
+        if (this.leftNode != null){
+            result = this.leftNode.preOrderSearch(id);
+        }
+        if (result != null){
+            return result;
+        }
+        if (this.rightNode != null){
+            result = this.rightNode.preOrderSearch(id);
+        }
+        return result;
+    }
+    public Node infixOrderSearch(int id){
+        Node result = null;
+        if (this.leftNode != null){
+            result = this.leftNode.preOrderSearch(id);
+        }
+        if (result != null){
+            return result;
+        }
+        if (this.id == id){
+            return this;
+        }
+        if (this.rightNode != null){
+            result = this.rightNode.preOrderSearch(id);
+        }
+        return result;
+    }
+    public Node postOrderSearch(int id){
+        Node result = null;
+        if (this.leftNode != null){
+            result = this.leftNode.preOrderSearch(id);
+        }
+        if (result != null){
+            return result;
+        }
+        if (this.rightNode != null){
+            result = this.rightNode.preOrderSearch(id);
+        }
+        if (result != null){
+            return result;
+        }
+        if (this.id == id){
+            return this;
+        }
+        // 如果找不到，返回null
+        return result;
+    }
+    public void delNode(int id){
+        if (this.leftNode != null && this.leftNode.id == id){
+            this.leftNode = null;
+            return;
+        }
+        if (this.rightNode != null && this.rightNode.id == id){
+            this.leftNode = null;
+            return;
+        }
+        if (this.leftNode != null){
+            this.leftNode.delNode(id);
+        }
+        if (this.rightNode != null){
+            this.rightNode.delNode(id);
+        }
+    }
+
+    public void preOrder(){
+        System.out.println(this);
+        // 左子树遍历
+        if (this.leftNode != null){
+            this.leftNode.preOrder();
+        }
+        // 右子树遍历
+        if (this.rightNode != null){
+            this.rightNode.preOrder();
+        }
+    }
+    public void infixOrder(){
+        if (this.leftNode != null){
+            this.leftNode.infixOrder();
+        }
+        System.out.println(this);
+        if (this.rightNode != null){
+            this.rightNode.infixOrder();
+        }
+    }
+    public void postOrder(){
+        if (this.leftNode != null){
+            this.leftNode.postOrder();
+        }
+        if (this.rightNode != null){
+            this.rightNode.postOrder();
+        }
+        System.out.println(this);
+    }
+}
+```
+
+### 中序线索二叉树:
+
+```java
+public class ThreadBinaryTree {
+    private Node root;
+    // 在递归时，pre总是保留前一个节点
+    private Node pre = null;
+
+    public void setRoot(Node root) {
+        this.root = root;
+    }
+    // 线索化
+    public void threadNodes(){
+        this.threadNodes(root);
+    }
+    // 线索化的方法
+    public void threadNodes(Node node){
+        if (node == null){
+            return;
+        }
+        // 1.中序遍历，先线索化左子树
+        threadNodes(node.getLeftNode());
+        // 2.中序遍历，线索化当前节点
+        // 处理当前节点的前驱节点
+        if (node.getLeftNode() == null){
+            // 当前节点的左指针指向前驱节点
+            node.setLeftNode(pre);
+            // 修改当前节点的做指针的类型，指向前驱节点
+            node.setLeftType(1);
+        }
+        // 处理当前节点的后继节点
+        if (pre != null && pre.getRightNode() == null){
+            pre.setRightNode(node);
+            pre.setRightType(1);
+        }
+        // 每处理一个节点后，让当前节点是下一个节点的前驱节点
+        pre = node;
+        // 3.中序遍历，线索化右子树
+        threadNodes(node.getRightNode());
+    }
+    // 中序线索化二叉树的遍历
+    public void threadedList(){
+        // 定义变量存储当前遍历的节点，从root开始
+        Node node = root;
+        while (node != null){
+            // 找到leftType=1的节点
+            while (node.getLeftType() == 0){
+                node = node.getLeftNode();
+            }
+            System.out.print(node.getId() + " ");
+            // 如果当前指针指向的是后继节点，就一直输出
+            while (node.getRightType() == 1){
+                // 获取后继节点
+                node = node.getRightNode();
+                System.out.print(node.getId() + " ");
+            }
+            // 替换这个遍历的节点
+            node = node.getRightNode();
+        }
+    }
+
+    public Node preOrderSearch(int id){
+        if (root != null){
+            return root.preOrderSearch(id);
+        }else {
+            return null;
+        }
+    }
+    public Node infixOrderSearch(int id){
+        if (root != null){
+            return root.infixOrderSearch(id);
+        }else {
+            return null;
+        }
+    }
+    public Node postOrderSearch(int id){
+        if (root != null){
+            return root.postOrderSearch(id);
+        }else {
+            return null;
+        }
+    }
+    public void delNode(int id){
+        if (root != null){
+            if (root.getId() == id){
+                root = null;
+            }else {
+                root.delNode(id);
+            }
+        }else {
+            System.out.println("空树！");
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ThreadBinaryTree{" +
+                "root=" + root +
+                ", pre=" + pre +
+                '}';
+    }
+}
+```
+
+### 中序遍历:
+
+线索化二叉树后，各个节点的指向有所变化，因此原来的遍历方式不可以用了，这时可以通过线型方式来遍历，不需要使用递归，这样效率会提高。
+
+```java
+// 中序线索化二叉树的遍历
+public void threadedList(){
+    // 定义变量存储当前遍历的节点，从root开始
+    Node node = root;
+    while (node != null){
+        // 找到leftType=1的节点
+        while (node.getLeftType() == 0){
+            node = node.getLeftNode();
+        }
+        System.out.print(node.getId() + " ");
+        // 如果当前指针指向的是后继节点，就一直输出
+        while (node.getRightType() == 1){
+            // 获取后继节点
+            node = node.getRightNode();
+            System.out.print(node.getId() + " ");
+        }
+        // 替换这个遍历的节点
+        node = node.getRightNode();
+    }
+}
+```
+
+### 测试:
+
+```java
+public class TestThreadBT {
+    public static void main(String[] args) {
+        Node root = new Node(1);
+        Node node2 = new Node(3);
+        Node node3 = new Node(6);
+        Node node4 = new Node(8);
+        Node node5 = new Node(10);
+        Node node6 = new Node(14);
+        // 手动创建二叉树
+        root.setLeftNode(node2);
+        root.setRightNode(node3);
+        node2.setLeftNode(node4);
+        node2.setRightNode(node5);
+        node3.setLeftNode(node6);
+        // 测试线索化二叉树
+        ThreadBinaryTree tbt = new ThreadBinaryTree();
+        tbt.setRoot(root);
+        tbt.threadNodes();
+        // 测试：以10号节点测试
+        Node leftNode = node5.getLeftNode();
+        Node rightNode = node5.getRightNode();
+        System.out.println("10号节点的前驱节点是"+leftNode.getId()); // 3
+        System.out.println("10号节点的后继节点是" + rightNode.getId()); // 1
+        // 中序遍历
+        System.out.print("使用线索化的方式遍历线索化二叉树：");
+        tbt.threadedList(); // 8 3 10 1 14 6
+    }
+}
+```
 
 
 
