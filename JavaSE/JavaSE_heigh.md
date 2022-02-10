@@ -829,6 +829,16 @@ Comparable接口的应用——用于排序中的比较：
 2. Arrays工具类的`Arrays.sort(Obj[] obj)`方法可以对数组中的内容进行从小到大的排序，该方法内部实现使用到了compareTo()方法来进行大小的比较。重写了compareTo()方法的类的数组对象，可以调用其进行排序。
 3. 集合中`Collections.sort(List<T> list)`方法的排序实现也使用到了`Arrays.sort(Obj[] obj)`方法。
 
+```java
+// String类实现了Comparable接口并重写了compareTo()方法
+// Arrays.sort()方法使用到了传入对象的compareTo()方法来进行大小的比较，从而实现排序
+public static void main(String[] args) {
+    String[] arr = new String[]{"A","C","G","D","F","R","S","G"};
+    Arrays.sort(arr);
+    System.out.println(Arrays.toString(arr));
+}
+```
+
 使用工具类对自定义类排序的步骤：
 
 1. 自定义类要实现Comparable接口，并重写compareTo(obj)方法（要遵循重写规则），在方法内实现比较的逻辑。
@@ -840,7 +850,7 @@ Comparable接口的应用——用于排序中的比较：
 
 当元素的类型没有实现java.lang.Comparable接口而又不方便修改代码时， 或者实现了java.lang.Comparable接口但排序规则不适合当前的需求时，那么可以考虑使用 Comparator 的对象来强行对多个对象进行整体排序的比较。
 
-重写`compare(Object o1,Object o2)`方法，比较对象o1和o2的大小，返回值规则如下：
+Comparator实现类要重写`compare(Object o1,Object o2)`方法，用来比较对象o1和o2的大小，方法返回值规则如下：
 
 - 如果方法返回正整数，则表示o1大于o2。
 - 如果返回0，表示相等。
@@ -866,78 +876,99 @@ Comparable、Comparator使用对比：
 
 - Comparator接口属于临时性的比较。
 
-
 ### 比较器总结
-
-无论是使用Comparable或者是Comparator，都使用Arrays.sort()方法或其重写的方法来实现排序。
 
 一、关于Comparable接口：
 
 - String和包装类已经重写了该接口相关方法，可直接调用`Arrays.sort()`实现从小到大的排序。
-- 如果对自定义类的数组进行排序，自定义类应实现该接口并重写`compareTo()`方法，再调用`Arrays.sort()`方法实现排序。
+- 如果对自定义类的数组进行排序，自定义类应实现Comparable接口并重写`compareTo()`方法，再调用`Arrays.sort()`方法实现排序。
 
 二、关于Comparator接口：
 
-- 通过Comparator的对象来重写`compare(Object o1, Object o2)`方法，使用`Arrays.sort(obj，Comparator的对象)`来实现排序。
+- 通过Comparator的对象来重写`compare(Object o1, Object o2)`方法，使用`Arrays.sort(obj,Comparator的对象)`来实现排序。
 
-- 理解`Arrays.sort(obj)`、`compareTo()`、`compare(Object o1, Object o2)`方法，比较器就是对这些方法进行重操作以达到自己所需的排序或比较目的。
+- 要理解`Arrays.sort(obj)`、`compareTo()`、`compare(Object o1, Object o2)`方法，比较器就是对这些方法进行重新操作以达到自己所需的**排序**或**比较**目的。
 
 ## System类
 
 1. System类代表系统，系统级的很多属性和控制方法都放置在该类的内部。 该类位于java.lang包。
 2. 由于该类的构造器是private的，所以无法创建该类的对象，也就是无法实例化该类。其内部的成员变量和成员方法都是static的，所以也可以很方便地通过类进行调用。 
 3. 成员变量 ：
-     - System类内部包含in、out和err三个成员变量，分别代表标准输入流 (键盘输入)，标准输出流(显示器)和标准错误输出流(显示器)。
+     - System类内部包含in（InputStream）、out（PrintStream）和err（PrintStream）三个成员变量，分别代表标准输入流 (键盘输入)，标准输出流(显示器)和标准错误输出流(显示器)。
 4. 成员方法 ：
 
-     - `native long currentTimeMillis()`： 该方法的作用是返回当前的计算机时间，时间的表达格式为当前计算机时 间和GMT时间(格林威治时间)1970年1月1号0时0分0秒所差的毫秒数。 
+     - `native long currentTimeMillis()`： 该方法的作用是返回当前的计算机时间，时间的表达格式为当前计算机时 间和GMT时间(格林威治时间)1970年1月1号0时0分0秒所差的毫秒数。 （native关键字：该方法实现非Java代码实现）
+     - `void exit(int status)`： 该方法的作用是退出程序。其中status的值为0代表正常退出，非零代表 异常退出。使用该方法可以在图形界面编程中实现程序的退出功能等。
+     - `void gc()`： 该方法的作用是请求系统进行垃圾回收。至于系统是否立刻回收，则是取决于系统中垃圾回收算法的实现以及系统执行时的情况。
+     - `String getProperty(String key)`： 该方法的作用是获得系统中属性名为key的属性对应的值。系统中常见的属性名以及属性的作用如下表所示：
 
-
-     - `void exit(int status)`： 该方法的作用是退出程序。其中status的值为0代表正常退出，非零代表 异常退出。使用该方法可以在图形界面编程中实现程序的退出功能等。（ 见PPT9.5 ——System类）
-
-
-     - `void gc()`： 该方法的作用是请求系统进行垃圾回收。至于系统是否立刻回收，则 取决于系统中垃圾回收算法的实现以及系统执行时的情况。
-
-
-     - `String getProperty(String key)`： 该方法的作用是获得系统中属性名为key的属性对应的值。系统中常见的属性名以及属性的作用如下表所示： 
-    
-       ![](images/system属性.png)
-
-
-
+![](images/system属性.png)
 
 ## Math类
 
 java.lang.Math提供了一系列静态方法用于科学计算。其方法的参数和返回 值类型一般为double型。
 
--  abs() 绝对值 
+| Math方法-最大最小值绝对值 | 作用                                   |
+| ------------------------- | -------------------------------------- |
+| abs()                     | 绝对值，支持int、long、float、double   |
+| max(参数1,参数2)          | 求最大值，支持int、long、float、double |
+| min(参数1,参数2)          | 求最小值，支持int、long、float、double |
 
-- acos(),asin(),atan(),cos(),sin(),tan() 三角函数 
+| Math方法-求整运算             | 作用                                                         |
+| ----------------------------- | ------------------------------------------------------------ |
+| static double ceil(double a)  | 返回大于或等于 a 的最小整数                                  |
+| static double floor(double a) | 返回小于或等于 a 的最大整数                                  |
+| static double rint(double a)  | 返回最接近 a 的整数值，如果有两个同样接近的整数，则结果取偶数<br>如：传入5.5，则返回6 |
+| static int round(float a)     | 将参数加上0.5后再向下取整                                    |
+| static long round(double a)   | 将参数加上0.5后再向下取整，结果转换为long型返回              |
 
-- sqrt() 平方根 
+ 
 
-- pow(double a,doble b) a的b次幂 
+| Math方法-三角函数运算                  | 作用                                                       |
+| -------------------------------------- | ---------------------------------------------------------- |
+| static double sin(double a)            | 返回角的三角正弦值，参数以孤度为单位                       |
+| static double cos(double a)            | 返回角的三角余弦值，参数以孤度为单位                       |
+| static double asin(double a)           | 返回一个值的反正弦值，参数域在 [-1,1]，值域在 [-PI/2,PI/2] |
+| static double acos(double a)           | 返回一个值的反余弦值，参数域在 [-1,1]，值域在 [0.0,PI]     |
+| static double tan(double a)            | 返回角的三角正切值，参数以弧度为单位                       |
+| static double atan(double a)           | 返回一个值的反正切值，值域在 [-PI/2,PI/2]                  |
+| static double toDegrees(double angrad) | 将用孤度表示的角转换为近似相等的用角度表示的角             |
+| staticdouble toRadians(double angdeg)  | 将用角度表示的角转换为近似相等的用弧度表示的角             |
 
-- log 自然对数 
+```java
+public static void main(String[] args) {
+    System.out.println("90 度的正弦值：" + Math.sin(Math.PI/2));
+    System.out.println("0 度的余弦值：" + Math.cos(0));
+    System.out.println("1 的反正切值：" + Math.atan(1));
+    System.out.println("120 度的弧度值：" + Math.toRadians(120.0));
+}
+90 度的正弦值：1.0
+0 度的余弦值：1.0
+1 的反正切值：0.7853981633974483
+120 度的弧度值：2.0943951023931953
+```
 
-- exp e为底指数 
 
-- max(double a,double b) min(double a,double b) 
 
-- random() 返回0.0到1.0的随机数 
+| Math方法-指数运算                    | 作用                                     |
+| ------------------------------------ | ---------------------------------------- |
+| static double exp(double a)          | 返回 e 的 a 次幂                         |
+| static double pow(double a,double b) | 返回以 a 为底数，以 b 为指数的幂值       |
+| static double sqrt(double a)         | 返回 a 的平方根                          |
+| static double cbrt(double a)         | 返回 a 的立方根                          |
+| static double log(double a)          | 返回 a 的自然对数，即对数 lna 的值       |
+| static double log10(double a)        | 返回以 10 为底 a 的对数，即对数 lga 的值 |
 
-- long round(double a) double型数据a转换为long型（四舍五入） 
-
-- toDegrees(double angrad) 弧度—>角度 toRadians(double angdeg) 角度 —> 弧度
+-  `static double random() `：返回一个随机数，区间[0,1]。 
 
 
 ## Arrays类
 
 包含一些对数据进行处理的静态方法。
 
-1. `toString()`：返回数组的字符串形式；
-2. sort()：自然排序和定制排序；
-3. binarySearch()：二分法查找，但要先排好序；
+1. `toString()`：返回数组的字符串形式。
+2. sort()：自然排序和定制排序。
+3. binarySearch()：二分法查找，但要先排好序。
 
 ![](images/Arraysutil.png)
 
@@ -947,14 +978,14 @@ Integer类作为int的包装类，能存储的最大整型值为2^31-1，Long类
 
 java.math包的BigInteger可以表示不可变的任意精度的整数。BigInteger提供所有Java 的基本整数操作符的对应物，并提供 java.lang.Math的所有相关方法。 另外，BigInteger还提供以下运算：模算术、GCD 计算、质数测试、素数生成、位操作以及一些其他操作。
 
-- 构造器 `BigInteger(String val)`：根据字符串构建BigInteger对象。
-- 常用方法
-  - public BigInteger abs()：返回此 BigInteger 的绝对值的 BigInteger；
-  - BigInteger add(BigInteger val) ：返回其值为 (this + val) 的 BigInteger ；
-  - BigInteger subtract(BigInteger val) ：返回其值为 (this - val) 的 BigInteger ；
-  - BigInteger multiply(BigInteger val) ：返回其值为 (this * val) 的 BigInteger ；
-  - BigInteger divide(BigInteger val) ：返回其值为 (this / val) 的 BigInteger。整数 相除只保留整数部分；
-  - BigInteger remainder(BigInteger val) ：返回其值为 (this % val) 的 BigInteger；
+1. 构造器 `BigInteger(String val)`：根据字符串构建BigInteger对象。
+2. 常用方法
+  - public BigInteger abs()：返回此 BigInteger 的绝对值的 BigInteger。
+  - BigInteger add(BigInteger val) ：返回其值为 (this + val) 的 BigInteger 。
+  - BigInteger subtract(BigInteger val) ：返回其值为 (this - val) 的 BigInteger 。
+  - BigInteger multiply(BigInteger val) ：返回其值为 (this * val) 的 BigInteger 。
+  - BigInteger divide(BigInteger val) ：返回其值为 (this / val) 的 BigInteger。整数 相除只保留整数部分。
+  - BigInteger remainder(BigInteger val) ：返回其值为 (this % val) 的 BigInteger。
   - BigInteger[] divideAndRemainder(BigInteger val)：返回包含 (this / val) 后跟 (this % val) 的两个 BigInteger 的数组；
   - BigInteger pow(int exponent) ：返回其值为 (thisexponent) 的 BigInteger。
 
@@ -964,113 +995,207 @@ java.math包的BigInteger可以表示不可变的任意精度的整数。BigInte
 
 BigDecimal类支持不可变的、任意精度的有符号十进制定点数。 
 
-- 构造器 
-  - `public BigDecimal(double val) `；
+1. 构造器 ：
+  - `public BigDecimal(double val) `。
   - `public BigDecimal(String val) `。
-- 常用方法 
-  - `public BigDecimal add(BigDecimal augend)` ；
-  - `public BigDecimal subtract(BigDecimal subtrahend) `；
-  - `public BigDecimal multiply(BigDecimal multiplicand) `；
+2. 常用方法 ：
+  - `public BigDecimal add(BigDecimal augend)` 。
+  - `public BigDecimal subtract(BigDecimal subtrahend) `。
+  - `public BigDecimal multiply(BigDecimal multiplicand) `。
   - `public BigDecimal divide(BigDecimal divisor, int scale, int roundingMode)`。
 
 # 日期类
 
 ## JDK8之前的时间日期API
 
-### currentTimeMillis():
+### currentTimeMillis()
 
-currentTimeMillis()：返回当前时间与1970年1月1日0时0分0秒之间的时间差，以毫米为单位；也称为时间戳。（System类的方法）。
+System类的静态方法currentTimeMillis()：返回当前时间与1970年1月1日0时0分0秒之间的时间差，以毫秒为单位；也称为时间戳。
 
 ```java
 long l = System.currentTimeMillis();
 ```
 
+### java.util.Date
 
+类表示特定的瞬间，精确到毫秒。
 
-### Date类:
-
-java.util.Date类：表示特定的瞬间，精确到毫秒。
+两个构造器：
 
 ```java
-Date date = new Date();  // 当前时间对象，打印输出为当前时间，打印输出时间格式为 Fri Oct 01 09:54:27 CST 2021
-Date dates = new Date(123); // 传入毫秒数，为指定毫秒数的时间对象，打印输出时间格式为  Thu Jan 01 08:00:00 CST 1970
+// 当前时间对象，打印输出为当前时间，输出时间格式为 Thu Feb 10 14:38:09 CST 2022
+Date date = new Date();  
+// 传入的毫秒数表示从1970 年 1 月 1 日 00:00:00 GMT开始走过的时间（1970 年 1 月 1 日 08:00:00 CST）
+// 输出： Thu Jan 01 08:00:01 CST 1970
+Date dates = new Date(1000); 
 ```
 
-- 两个方法的使用
-  - getTime()：返回自 1970 年 1 月 1 日 00:00:00 GMT 以来到此 Date 对象创建的毫秒数时间。 
-  - toString()：把此 Date 对象转换为以下形式的 String： dow mon dd hh:mm:ss zzz yyyy ，其中： dow 是一周中的某一天 (Sun, Mon, Tue,  Wed, Thu, Fri, Sat)，zzz是时间标准，yyyy是年份；例如 Fri Oct 01 09:54:27 CST 2021。
-  - 其它很多方法都过时了。
+两个方法的使用：
+1. getTime()：获取时间戳，返回自 1970 年 1 月 1 日 00:00:00 GMT 以来到此 Date 对象创建的时间——毫秒数。 
+2. toString()：把此 Date 对象转换为以下形式的 String： dow mon dd hh:mm:ss zzz yyyy ，其中： dow 是一周中的某一天 (Sun, Mon, Tue,  Wed, Thu, Fri, Sat)，zzz是时间标准，yyyy是年份；例如 Fri Oct 01 09:54:27 CST 2021。
+3. 其它很多方法都过时了。
 
-java.sql.Date类：对应数据库中的date字段类型，数据库中的数据封装到Java中，date->java.sql.date，专门匹配数据库的date
+**关于GMT和CST：**
 
-- 实例化：java.sql.Date date = new java.sql.Date(毫秒数)，时间格式为yyyy-mm-dd；
-- java.util.Date--->java.sql.Date：转换为数据库中的时间，使用构造器，把毫秒数扔进构造器。
+1. GMT：GMT(Greenwich Mean Time)代表格林尼治标准时间。
+2. CST：CST同时可以代表如下 4 个不同的时区
+   - Central Standard Time (USA) UT-6:00。（美国）
+   - Central Standard Time (Australia) UT+9:30。（澳大利亚）
+   - China Standard Time UT+8:00。（中国）
+   - Cuba Standard Time UT-4:00。（古巴）
 
-### SimpleDateFormat类:
+### java.sql.Date
 
-> java.text.SimpleDateFormat  可以将日期对象格式化为一定的格式，或将字符格式化为Date对象
+其继承了java.util.Date类，对应数据库中的date字段类型，数据库中的数据封装到Java中就使用该类，date ===> java.sql.Date，该Date是专门用来匹配数据库的date。
 
-使用默认格式： `21-10-1 上午10:50`
+实例化：java.sql.Date date = new java.sql.Date(毫秒数)，输出的时间格式为yyyy-mm-dd。
 
 ```java
-SimpleDateFormat sf = new SimpleDateFormat();
-Date date = new Date();
-Date d = sf.format(date)；
-System.out.println(d); // 输出的格式为 21-10-1 上午10:50
-// 字符串转换为Date对象
-String str = "21-10-1 上午10:50"; // 字符格式严格，必须是这样
-Date da = sf.parse(str)；
+public static void main(String[] args) {
+    java.sql.Date d = new Date(24*60*60*1000);
+    System.out.println(d);
+}
+1970-01-02
+```
+
+java.util.Date ===> java.sql.Date：转换为数据库中的时间，使用构造器，把毫秒数扔进构造器。
+
+```java
+public static void main(String[] args) {
+    java.util.Date d1 = new java.util.Date();
+    java.sql.Date d = new Date(d1.getTime());
+    System.out.println(d);
+}
+2022-02-10
+```
+
+**如何将"yyyy-mm-dd"格式的字符串转换为java.sql.Date？**
+
+方法一：
+
+```java
+public static void main(String[] args) {
+    SimpleDateFormat sdf =  new SimpleDateFormat("yyyy-MM-dd");
+    String time = "2007-7-12";
+    try {
+        java.util.Date date = sdf.parse(time);
+        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+        System.out.println(sqlDate);
+    } catch (Exception ex) {
+        System.out.println(ex.getMessage());
+    }
+}
+```
+
+方法二：如果格式已经符合日期格式，那么可以直接通过java.sql.Date的静态方法`valueOf(String str)`将字符串转化为java.sql.Date对象
+
+```java
+public static void main(String[] args) {
+    String birthday="2016-01-01";
+    java.sql.Date sqlDate = Date.valueOf(birthday);
+    System.out.println(sqlDate);
+}
+```
+
+
+
+### SimpleDateFormat类
+
+> java.text.SimpleDateFormat  可以将日期对象格式化成一定格式字符，或将字符串格式化为Date对象
+
+使用format()方法将日期转换为字符串：转换成的默认格式为`21-10-1 上午10:50`
+
+```java
+public static void main(String[] args) {
+    SimpleDateFormat sdf = new SimpleDateFormat();
+    Date d = new Date();
+    String sd = sdf.format(d);
+    System.out.println(sd); // 22-2-10 下午3:20
+}
+```
+
+使用 parse() 方法将字符串转换为日期：
+
+```java
+// 默认情况下
+public static void main(String[] args) throws ParseException {
+   SimpleDateFormat sdf = new SimpleDateFormat();
+    Date parse = sdf.parse("22-2-10 下午3:20");
+    System.out.println(parse);
+}
+// 输出：Thu Feb 10 15:20:00 CST 2022
+```
+
+```java
+public static void main(String[] args) throws ParseException {
+    // 这里要指明日期格式，指明的格式和parse()方法的参数的一致，否则会报异常
+    // 如果不知名，是默认的格式：22-2-10 下午3:20
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    Date date = sdf.parse("2022-01-10");
+    System.out.println(date); 
+}
+// 输出：Mon Jan 10 00:00:00 CST 2022
 ```
 
 自定义时间日期格式：
 
 ```java
-Date date = new Date();
-// 自定义时间格式
-SimpleDateFormat test = new SimpleDateFormat("yyyy:MM:dd hh:mm:ss");
-// 对date进行格式化：调用SimpleDateFormat类的format()方法；
-String showTime = test.format(date);
-try {
-    Date showTime2 = test.parse("2021:05:01 10:20:30");
-    System.out.println(showTime2);
-} catch (ParseException e) {
-    e.printStackTrace();
+public static void main(String[] args) {
+    Date date = new Date();
+    // 设置时间格式
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd hh:mm:ss");
+    // 调用 SimpleDateFormat对象的 format()方法格式化时间
+    String showTime = sdf.format(date);
+    System.out.println(showTime);
 }
+2022:02:10 03:30:41 // 输出内容
 ```
 
 ![](images/simpledate.png)
 
 总结：
 
-- 格式化：日期--->字符串：调用SimpleDateFormat类的format()方法；
-- 解析：字符串--->日期：调用SimpleDateFormat类的parse()方法；
-- 注意解析时字符串的格式要和所用的SimpleDateFormat对象的时间格式相同。
+1. 格式化：日期 ===> 字符串：调用SimpleDateFormat类的format()方法。
+2. 解析：字符串 ===> 日期：调用SimpleDateFormat类的parse()方法。
+3. 注意解析时字符串的格式要和所用的SimpleDateFormat对象的时间格式一致。
 
-### Calendar类:
+### Calendar类
 
-Calendar类（日历类，抽象类）
+Calendar类（日历类，抽象类）对象的创建：
 
 ```java
 // 通过其子类创建对象
-GregorianCalendar gc = new GregorianCalendar();
-// 通过其静态方法getInstance()
+Calendar c = new GregorianCalendar();
+// 通过其静态方法getInstance()创建
 Calendar examole = Calendar.getInstance();
 ```
 
 日历类的常用方法的使用：
 
 ```java
-Date date = new Date();
-GregorianCalendar gc = new GregorianCalendar();
-int i = gc.get(Calendar.DAY_OF_MONTH); // 第几号
-System.out.println(i);
-gc.set(Calendar.DAY_OF_MONTH,3); // 设置为第几号
-gc.add(Calendar.DAY_OF_MONTH,3); // 设置为第(n+3)号
-Date date2 = gc.getTime(); // 日历类转为Date类
-gc.setTime(Date); // 设置日历类的Date属性值，一个Date变为了日历类的数据，日历类的年月日等也跟着
+public static void main(String[] args) throws ParseException {
+    // 1
+    Calendar c = Calendar.getInstance();
+    int week = c.get(Calendar.DAY_OF_WEEK); // 周几
+    int day = c.get(Calendar.DAY_OF_MONTH); // 今天是多少号
+    int dy = c.get(Calendar.DAY_OF_YEAR);   // 今天是今年的第几天
+    System.out.println("今年的第"+dy+"天"+"是"+ day +"号" + "是周" + (week-1));
+    // 2
+    c.set(Calendar.DAY_OF_MONTH,3);  // 把今天更改为这个月的3号
+    System.out.println("更改后今天是" + c.get(Calendar.DAY_OF_MONTH) +"号");
+    // 3
+    c.add(Calendar.DAY_OF_MONTH,3);  // 把今天的号数加3
+    System.out.println("将号数加3后变为了"+c.get(Calendar.DAY_OF_MONTH)+"号");
+    // 4
+    Date time = c.getTime(); // 转换为Date对象，输出：Sun Feb 06 15:49:07 CST 2022
+    // 5
+    Date d = new Date(1000);
+    c.setTime(d); // 设置日历类的Date属性值，这个Date变为了日历类的数据，日历类的年月日等也跟着改变
+    System.out.println(c.get(Calendar.DAY_OF_MONTH));
+}
 ```
 
-获取月份时，一月是0，十二月是11；获取星期时，周日是1，周六是7。
+**[注意特殊的]：**获取月份时，一月是0，十二月是11；获取星期内的天数时，周日是1，周六是7。
 
 ## JDK8中新的时间日期API
 

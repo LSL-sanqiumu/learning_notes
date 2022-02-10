@@ -81,7 +81,9 @@ select ifnull(
 
 # 多表
 
-## 联表查询基本操作
+## 表的联结
+
+### 联表查询基本操作
 
 **问题：**现在有两个表，“学生表”记录了学生的基本信息，有“学号”、“姓名”。“成绩表”记录了学生选修的课程，以及对应课程的成绩。这两个表通过“学号”进行关联。现在要查**找出所有学生的学号、姓名、课程和成绩**。
 
@@ -107,7 +109,7 @@ insert into grades values(1,'语文',90),(1,'数学',66),(2,'语文',78),(2,'数
 select s.id,s.name,g.course,g.scores from student as s left join grades as g on s.id=g.id;
 ```
 
-## 查找两表中不存在映射关系的数据
+### 查找两表中不存在映射关系的数据
 
 **问题1：**“学生表”有学号和姓名；“近视学生表”为近视学生的名单，只包含序号和学号。请问不是近视眼的学生都有谁？（“学生表”表中的学号与“近视学生”表中的学生学号一一对应）
 
@@ -160,7 +162,7 @@ insert into mysqltest.orders(customerid) values(1),(3);
 select c.name from customers c left join orders o on c.id=o.customerid where o.customerid is null;
 ```
 
-## 从两表取数据并进行一定分析
+### 从两表取数据并进行一定分析
 
 **问题1：**“雇员表“中记录了员工的信息，“薪水表“中记录了对应员工发放的薪水。两表通过“雇员编号”关联。
 
@@ -309,7 +311,7 @@ order by 成绩涨幅 desc;
 +-------+----------+
 ```
 
-## 如何比较日期
+### 如何比较日期
 
 **题目1：**下面是某公司每天的营业额，表名为“日销”。“日期”这一列的数据类型是日期类型（date）。请找出所有比前一天（昨天）营业额更高的数据。（前一天的意思，如果“当天”是1月，“昨天”（前一天）就是1号）
 
@@ -411,7 +413,9 @@ select w2.id,w2.`date` from weather w1 cross join weather w2 on timestampdiff(da
 where w2.temp > w1.temp;
 ```
 
-## 如何交换数据
+## 多条件判断与case
+
+### 如何交换数据
 
 **题目1:**小明是一所学校的老师，她有一张 ‘学生表’，平时用来存放座位号和学生的信息。其中，座位号是连续递增的。总的座位数是偶数。
 
@@ -521,7 +525,7 @@ select (case
 from student as a,(select count(*) as counts from student) as b order by id2 asc;
 ```
 
-## 找出最小的n个数
+### 找出最小的n个数
 
 **题目1：**“学生表”里记录了学生的学号、入学时间等信息。“成绩表”里是学生选课成绩的信息。两个表中的学号一一对应。（滴滴2020年面试题）
 
@@ -777,7 +781,215 @@ group by city;
 +------+------+
 ```
 
-## 行列互换问题
+### 行列互换问题
+
+**题目1：**有如下表：
+
+```mysql
++------+-------+-------+
+| year | month | value |
++------+-------+-------+
+| 2009 |     1 |   1.1 |
+| 2009 |     2 |   1.2 |
+| 2009 |     3 |   1.3 |
+| 2009 |     4 |   1.4 |
+| 2010 |     1 |   2.1 |
+| 2010 |     2 |   2.2 |
+| 2010 |     3 |   2.3 |
+| 2010 |     4 |   2.4 |
++------+-------+-------+
+```
+
+```mysql
+create table cook(
+	`year` int,
+    `month` int,
+    `value` double
+)engine=innodb default charset=utf8;
+insert into cook values
+(2009,1,1.1),(2009,2,1.2),(2009,3,1.3),(2009,4,1.4),
+(2010,1,2.1),(2010,2,2.2),(2010,3,2.3),(2010,4,2.4);
+```
+
+要求查询结果如下：
+
+```mysql
++------+------+------+------+------+
+| year | m1   | m2   | m3   | m4   |
++------+------+------+------+------+
+| 2009 |  1.1 |  1.2 |  1.3 |  1.4 |
+| 2010 |  2.1 |  2.2 |  2.3 |  2.4 |
++------+------+------+------+------+
+```
+
+**解：**
+
+1.
+
+```mysql
+select `year`,
+(case month when 1 then `value` else 0 end) as m1,
+(case month when 2 then `value` else 0 end) as m2,
+(case month when 3 then `value` else 0 end) as m3,
+(case month when 4 then `value` else 0 end) as m4
+from cook;
++------+------+------+------+------+
+| year | m1   | m2   | m3   | m4   |
++------+------+------+------+------+
+| 2009 |  1.1 |    0 |    0 |    0 |
+| 2009 |    0 |  1.2 |    0 |    0 |
+| 2009 |    0 |    0 |  1.3 |    0 |
+| 2009 |    0 |    0 |    0 |  1.4 |
+| 2010 |  2.1 |    0 |    0 |    0 |
+| 2010 |    0 |  2.2 |    0 |    0 |
+| 2010 |    0 |    0 |  2.3 |    0 |
+| 2010 |    0 |    0 |    0 |  2.4 |
++------+------+------+------+------+
+```
+
+2.将上述的结果使用 `year`来分组，再通过聚合函数聚合数据
+
+```mysql
+select `year`,
+max(case month when 1 then `value` else 0 end) as m1,
+max(case month when 2 then `value` else 0 end) as m2,
+max(case month when 3 then `value` else 0 end) as m3,
+max(case month when 4 then `value` else 0 end) as m4
+from cook group by `year`;
++------+------+------+------+------+
+| year | m1   | m2   | m3   | m4   |
++------+------+------+------+------+
+| 2009 |  1.1 |  1.2 |  1.3 |  1.4 |
+| 2010 |  2.1 |  2.2 |  2.3 |  2.4 |
++------+------+------+------+------+
+```
+
+注意：由于默认的 MySQL 配置中 `sql_mode` 配置了 `only_full_group`，需要 `GROUP BY` 中包含所有 在 SELECT 中出现的字段。
+
+- only_full_group_by ：使用这个就是使用和oracle一样的group 规则，select后的字段都要在group中，或者select后的字段本身是聚合列(SUM、AVG、MAX、MIN) 才行（聚合列会根据分组的字段来将数据聚合成一列）。
+
+**遇到行列互换的问题，可以用下面的万能模版来解决：**
+
+<img src="img/ex_6.png" style="zoom: 50%;" />
+
+```mysql
+select A,
+-- 第2步，在行列互换结果表中，其他列里的值分别使用case和max来获取
+max(case B when 'm' then C else 0 end) as 'm',
+max(case B when 'n' then C else 0 end) as 'n'
+from cook
+-- 第1步，在行列互换结果表中按第1列分组
+group by A;
+```
+
+**题目2：**下面是学生的成绩表(表名：成绩表，列名：学号，课程，成绩)，使用sql语句实现表行转化。
+
+<img src="img/ex_7.png" style="zoom: 33%;" />
+
+```mysql
+create table grades(
+	id int,
+    sub varchar(10),
+    scores int
+)engine=innodb default charset=utf8;
+insert into grades values
+(1,'语文',80),(1,'数学',90),
+(2,'语文',75),(2,'数学',85);
++------+------+--------+
+| id   | sub  | scores |
++------+------+--------+
+|    1 | 语文 |     80 |
+|    1 | 数学 |     90 |
+|    2 | 语文 |     75 |
+|    2 | 数学 |     85 |
++------+------+--------+
+```
+
+**解：**
+
+```mysql
+select id as 学号,
+(case sub when '语文' then scores else 0 end) as 语文成绩,
+(case sub when '数学' then scores else 0 end) as 数学成绩
+from grades;
++------+----------+----------+
+| 学号 | 语文成绩 | 数学成绩 |
++------+----------+----------+
+|    1 |       80 |        0 |
+|    1 |        0 |       90 |
+|    2 |       75 |        0 |
+|    2 |        0 |       85 |
++------+----------+----------+
+```
+
+分组、聚合：
+
+```mysql
+select id as 学号,
+max(case sub when '语文' then scores else 0 end) as 语文成绩,
+max(case sub when '数学' then scores else 0 end) as 数学成绩
+from grades group by id;
++------+----------+----------+
+| 学号 | 语文成绩 | 数学成绩 |
++------+----------+----------+
+|    1 |       80 |       90 |
+|    2 |       75 |       85 |
++------+----------+----------+
+```
+
+## 表的自联结应用
+
+一个表，遇到计算时间间隔的问题，使用自联结。
+
+### 找出连续出现N次的内容
+
+**问题1：**
+
+<img src="img/ex_8.png" style="zoom: 67%;" />
+
+```mysql
+create table grades(
+	id int(4) zerofill not null auto_increment primary key,
+    scores int
+)engine=innodb default charset=utf8;
+insert into grades(scores) values
+(89),(76),(76),(76),(84),(84),(84),(76),(91),(88),(86);
++------+--------+
+| id   | scores |
++------+--------+
+| 0001 |     89 |
+| 0002 |     76 |
+| 0003 |     76 |
+| 0004 |     76 |
+| 0005 |     84 |
+| 0006 |     84 |
+| 0007 |     84 |
+| 0008 |     76 |
+| 0009 |     91 |
+| 0010 |     88 |
+| 0011 |     86 |
++------+--------+
+```
+
+**解：**
+
+了解什么情况才是连续出现三次：由题可知，连续出现三次就是——连续的三个学号的成绩都相等。
+
+```mysql
+select a.scores as 连续三次出现的成绩
+from grades as a,grades as b,grades as c
+where a.id=b.id-1 and b.id=c.id-1 and a.scores=b.scores and b.scores=c.scores;
+```
+
+**问题2：**查询至少连续3天没有出勤的员工。
+
+```mysql
+create table employees()engine=innodb default charset=utf8;
+```
+
+**解：**
+
+### 如何分析留存率？
 
 
 
