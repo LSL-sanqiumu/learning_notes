@@ -401,9 +401,9 @@ Git有一种称为rebase的操作，有人把它翻译成“变基”。
 
 **创建标签的几种操作：**
 
-1. 切换到要打标签的分支，`$ git tag <name>`（默认是的HEAD）
-2. 使用commit id来打上标签：`$ git tag <name> commid-id`
-3. 创建带说明的标签：`$ git tag -a <name> -m "..." commit-id`
+1. 切换到要打标签的分支，`$ git tag <name>`（默认是的HEAD）。
+2. 使用commit id来打上标签：`$ git tag <name> commid-id`。
+3. 创建带说明的标签：`$ git tag -a <name> -m "..." commit-id`。
 
 **【注意】：**
 
