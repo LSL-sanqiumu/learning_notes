@@ -563,8 +563,8 @@ class Customer extends Thread {
 
 **JDK8中的源码显示：**
 
-- String类被final修饰——不可被继承的；底层是声明为final的char数组，地址不变；（final的value[]可利用数组改变里面的某些值）
-- 实现了Serializable和Comparable接口，表示支持序列化（可在网络传输）、可使用compareTo()比较大小；
+- String类被final修饰——不可被继承的；底层是声明为final的char数组，地址不变。（final的value[]可利用数组改变里面的某些值）
+- 实现了Serializable和Comparable接口，表示支持序列化（可在网络传输）、可使用compareTo()比较大小。
 - 内部定义`final char value[]`用于存储字符串数据。
 
 **String的不可变与使用：**
@@ -610,7 +610,7 @@ class Customer extends Thread {
    String s3 = "12" + s1; // 堆中
    String s4 = "12" + s2; // 常量池中
    String s5 = "1212"; // 常量池中
-   final String s6 = new String("12"); // 堆中，final后地址不可变
+   final String s6 = new String("12"); // 堆中，final后在堆中地址不可变
    System.out.println(s3 == s5); // false
    System.out.println(s4 == s5); // true
    System.out.println(s2 == s6); // false
@@ -782,7 +782,7 @@ StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".len
 
 **【注意】StringBuilder 和 StringBuffer 非常类似，均代表可变的字符序列，而且提供相关功能的方法也一样**。
 
-### 线程不安全
+### StringBuilder线程
 
 StringBuilder线程不安全。
 
@@ -910,7 +910,7 @@ java.lang.Math提供了一系列静态方法用于科学计算。其方法的参
 
 | Math方法-最大最小值绝对值 | 作用                                   |
 | ------------------------- | -------------------------------------- |
-| abs()                     | 绝对值，支持int、long、float、double   |
+| abs(xx)                   | 绝对值，支持int、long、float、double   |
 | max(参数1,参数2)          | 求最大值，支持int、long、float、double |
 | min(参数1,参数2)          | 求最小值，支持int、long、float、double |
 
@@ -1010,7 +1010,7 @@ BigDecimal类支持不可变的、任意精度的有符号十进制定点数。
 
 ### currentTimeMillis()
 
-System类的静态方法currentTimeMillis()：返回当前时间与1970年1月1日0时0分0秒之间的时间差，以毫秒为单位；也称为时间戳。
+System类的静态方法currentTimeMillis()：返回当前时间与 GMT-1970年1月1日0时0分0秒 之间的时间差，以毫秒为单位；也称为时间戳。
 
 ```java
 long l = System.currentTimeMillis();
@@ -1032,7 +1032,7 @@ Date dates = new Date(1000);
 
 两个方法的使用：
 1. getTime()：获取时间戳，返回自 1970 年 1 月 1 日 00:00:00 GMT 以来到此 Date 对象创建的时间——毫秒数。 
-2. toString()：把此 Date 对象转换为以下形式的 String： dow mon dd hh:mm:ss zzz yyyy ，其中： dow 是一周中的某一天 (Sun, Mon, Tue,  Wed, Thu, Fri, Sat)，zzz是时间标准，yyyy是年份；例如 Fri Oct 01 09:54:27 CST 2021。
+2. toString()：把此 Date 对象转换为以下形式的 String： dow mon dd hh:mm:ss zzz yyyy ，其中： dow 是周几 (Sun, Mon, Tue,  Wed, Thu, Fri, Sat)，zzz是时间标准，yyyy是年份；例如 Fri Oct 01 09:54:27 CST 2021。
 3. 其它很多方法都过时了。
 
 **关于GMT和CST：**
@@ -1048,17 +1048,17 @@ Date dates = new Date(1000);
 
 其继承了java.util.Date类，对应数据库中的date字段类型，数据库中的数据封装到Java中就使用该类，date ===> java.sql.Date，该Date是专门用来匹配数据库的date。
 
-实例化：java.sql.Date date = new java.sql.Date(毫秒数)，输出的时间格式为yyyy-mm-dd。
+实例化：`java.sql.Date date = new java.sql.Date(毫秒数)`，输出的时间格式为yyyy-mm-dd，与数据库date的默认格式一致。
 
 ```java
 public static void main(String[] args) {
     java.sql.Date d = new Date(24*60*60*1000);
     System.out.println(d);
 }
-1970-01-02
+1970-01-02 // 输出
 ```
 
-java.util.Date ===> java.sql.Date：转换为数据库中的时间，使用构造器，把毫秒数扔进构造器。
+java.util.Date ===> java.sql.Date：转换为数据库中的时间，使用sql.Date的构造器，把毫秒数扔进构造器即可。
 
 ```java
 public static void main(String[] args) {
@@ -1066,10 +1066,10 @@ public static void main(String[] args) {
     java.sql.Date d = new Date(d1.getTime());
     System.out.println(d);
 }
-2022-02-10
+2022-02-10 // 输出
 ```
 
-**如何将"yyyy-mm-dd"格式的字符串转换为java.sql.Date？**
+**如何将"yyyy-MM-dd"格式的字符串转换为java.sql.Date？**
 
 方法一：
 
@@ -1129,7 +1129,7 @@ public static void main(String[] args) throws ParseException {
 ```java
 public static void main(String[] args) throws ParseException {
     // 这里要指明日期格式，指明的格式和parse()方法的参数的一致，否则会报异常
-    // 如果不知名，是默认的格式：22-2-10 下午3:20
+    // 如果不指明，则是默认的格式：22-2-10 下午3:20
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     Date date = sdf.parse("2022-01-10");
     System.out.println(date); 
@@ -1150,6 +1150,8 @@ public static void main(String[] args) {
 }
 2022:02:10 03:30:41 // 输出内容
 ```
+
+常见的时间格式：
 
 ![](images/simpledate.png)
 
@@ -1199,59 +1201,153 @@ public static void main(String[] args) throws ParseException {
 
 ## JDK8中新的时间日期API
 
+### 概述
+
+与时间日期相关的包：
+
+1. **java.time —— 包含值对象的基础包** 
+2. java.time.chrono —— 提供对不同的日历系统的访问 
+3. **java.time.format —— 格式化和解析时间和日期** 
+4. java.time.temporal —— 包括底层框架和扩展特性 
+5. java.time.zone —— 包含时区支持的类 
+
+大多数开发者只会用到**基础包和format包**，可能会用到temporal包。因此，尽管有68个新的公开类型，但大多数开发者大概只会使用到其中的三分之一。
+
+旧版本的时间日期面临的问题：
+
+1. 可变性：日期、时间这样的类应该不可变。
+2. 偏移性：Date中年份从1990开始的；月份都是从0开始的。
+3. 格式化：格式化只对Date有用，对Calendar则不行。
+4. 不是线程安全的，不能处理闰秒。
+
+为解决这些问题，就有了后面的新的时间日期API。Java8中时间日期API吸收了Joda-Time的精华，新的java.time包含了所有关于本地日期（LocalDate）、本地时间（LocalTime）、本地日期时间（LocalDateTime）、时区（ZonedDateTime）和持续时间（Duration）的类。Date新增了toInstant()方法，用于把Date转换为新的表现形式。
+
 ### LocalDateTime
 
-- java.time – 包含值对象的基础包 
-- java.time.chrono – 提供对不同的日历系统的访问 
-- java.time.format – 格式化和解析时间和日期 
-- java.time.temporal – 包括底层框架和扩展特性 
-- java.time.zone – 包含时区支持的类 
+1. LocalDate、LocalTime、LocalDateTime ：
+   - 它们的实例都是不可变的对象，分别表示使用 ISO-8601日历系统的日期、时间、日期时间。
+   - 它们提供了简单的本地日期或时间，并不包含当前的时间信息，也不包含与时区相关的信息。
+   - （注：ISO-8601日历系统是国际标准化组织制定的现代公民的日期和时间的表示法，也就是公历。）
 
-【说明】大多数开发者只会用到基础包和format包，可能会用到temporal包。因此，尽管有68个新的公开类型，大多数开发者大概将只会用到其中的三分之一。
+2. LocalDate：年月日，代表IOS格式（yyyy-MM-dd）的日期，可以存储生日、纪念日等日期。 
+3. LocalTime：时分秒，表示一个时间（时、分、秒），而不是日期。
+4. LocalDateTime：年月日时分秒，是用来表示日期和时间的，这是一个最常用的类之一。 
 
-- LocalDate、LocalTime、LocalDateTime 类，它们的实例是不可变的对象，分别表示使用 ISO-8601日历系统的日期、时间、日期和时间。
--  它们提供了简单的本地日期或时间，并不包含当前的时间信息，也不包含与时区相关的信息；
-- LocalDate：年月日，代表IOS格式（yyyy-MM-dd）的日期，可以存储 生日、纪念日等日期。 
-- LocalTime：时分秒，表示一个时间（时、分、秒），而不是日期。
--  LocalDateTime：年月日时分秒，是用来表示日期和时间的，这是一个最常用的类之一。 
-- 注：ISO-8601日历系统是国际标准化组织制定的现代公民的日期和时间的表示法，也就是公历。
+```java
+public static void main(String[] args) {
+    // now()：获取当前时间
+    LocalDate ld = LocalDate.now();
+    LocalTime lt = LocalTime.now();
+    LocalDateTime ldt = LocalDateTime.now();
+    System.out.println(ld); // 2022-02-11
+    System.out.println(lt); // 10:09:42.271
+    System.out.println(ldt); // 2022-02-11T10:09:42.271
+    
+    // of()：获取指定的时间 年 月 日 时 分 秒，没有偏移量
+    LocalDateTime ldt2 = LocalDateTime.of(2022,2,11,10,1);
+    System.out.println(ldt2); // 2022-02-11T10:01
+    
+    // getXxx()：获取年、月、日、时、分或秒
+    System.out.println(ldt.getYear());  // 2022
+    System.out.println(ldt.getMonth()); // FEBRUARY
+    System.out.println(ldt.getMonthValue()); // 2
+    System.out.println(ldt.getDayOfWeek());  // FRIDAY
+    
+    // 不可变性的体现：修改后原日期不会被改变，返回值是改变后的
+    // 区别Calendar，改变了Calendar，则是整个都会被改变
+    LocalDate ld2 = ld.withDayOfMonth(22);
+    System.out.println(ld);  // 2022-02-11
+    System.out.println(ld2); // 2022-02-22
 
-LocalDate、LocalTime、LocalDateTime             看API吧，方法太多了
+    LocalTime lt2 = lt.withHour(12);
+    System.out.println(lt);  // 10:23:46.769
+    System.out.println(lt2); // 12:23:46.769
+}
+```
 
 LocalDateTime常用方法：
 
-- now()：静态方法，可通过类直接调用；
+- now()：静态方法，可通过类直接调用。
 - 还有其他的实现类的方法，用于获取年、月、日、时、分、秒，或者添加年份、月份、天数等方法。
-- 查看API手册，开发中尽量使用jdk8中新的。
+- 查看API手册，开发中尽量使用jdk8中新的时间日期API。
 
 ###  Instant时间戳
 
- Instant，时间戳，类似Date类。
+ Instant（瞬时），类似Date类，表示的是时间线上的一端瞬时点，时间线从1970年开始，以毫秒为单位。
 
 ```java
-Date date = new Date();
-// 获取当前时间
-Instant ins = Instant.now();
-// date转换为时间戳
-Instant instant = date.toInstant();
-// 时间戳转换为date
-Date from = Date.from(instant);
-System.out.println(Instant.now());
+public static void main(String[] args) {
+    // now()：获取本初子午线的标准时间，与我们东八区相差了8个小时
+    Instant instant = Instant.now();
+    System.out.println(instant); // 2022-02-11T02:36:32.132Z
+    // 添加偏移量，得到我们东八区的时间
+    OffsetDateTime offsetDateTime = instant.atOffset(ZoneOffset.ofHours(8));
+    System.out.println(offsetDateTime); // 2022-02-11T10:36:32.132+08:00
+    // 获取自1970-1-1 0:0:0 UTC开始的毫秒数
+    System.out.println(instant.toEpochMilli()); // 1644547202924
+    // ofEpochMilli()：通过给定毫秒数获取Instant实例
+    Instant instant1 = Instant.ofEpochMilli(1644547202924L);
+    System.out.println(instant1); // 2022-02-11T02:40:02.924Z
+}
 ```
 
 ### DateTimeFormatter
 
-java.time.format.DateTimeFormatter 类，用于格式化时间日期。
+java.time.format.DateTimeFormatter 类，用于格式化或解析时间日期，类似于SimpleDateFormat。
 
-```java
-// 获取当前时间
-LocalDateTime localDateTime = LocalDateTime.now();
-// 设置格式化时间样式
-DateTimeFormatter dt = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH小时mm分ss秒");
-// 对获取的时间进行格式化
-String format = dt.format(localDateTime);
-System.out.println(format);
-```
+时间格式：
+
+1. 预定义好的标准格式：如`ISO_LOCAL_DATE_TIME`、`ISO_LOCAL_DATE`、`ISO_LOCAL_TIME`等。
+
+   ```java
+   public static void main(String[] args) {
+       /* 1.使用预定义好的标准格式 */
+       DateTimeFormatter dtf = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+       LocalDateTime ldt = LocalDateTime.now();
+       // 将日期格式化为一定格式的字符串
+       String format = dtf.format(ldt);
+       System.out.println(ldt);    // 2022-02-11T10:49:59.147
+       System.out.println(format); // 2022-02-11T10:49:59.147
+       // 字符串 ===> 日期
+       // dtf把ldt转换成 2022-02-11T10:49:59.147 这样的格式，parse时也只能转换这样的格式
+       TemporalAccessor parse = dtf.parse("2022-10-10T10:49:59.147");
+       System.out.println(parse); // {},ISO resolved to 2022-10-10T10:49:59.147
+   }
+   ```
+
+2. 本地化相关的格式：
+
+   - ofLocalizedDateTime(xx)：FormatStyle.LONG  FormatStyle.MEDIUM  FormatStyle.SHORT FormatStyle.SHORT.FULL。
+
+     ```java
+     public static void main(String[] args) {
+         /* 2.使用定义好的本地化相关的格式 */
+         DateTimeFormatter dtf2 = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.LONG);
+         String format2 = dtf2.format(ldt);
+         System.out.println(format2);  // 2022年2月11日 上午11时00分38秒
+     }
+     ```
+
+3. 自定义格式：（常用）
+
+   ```java
+   public static void main(String[] args) {
+       // 获取当前时间
+       LocalDateTime localDateTime = LocalDateTime.now();
+       // 设置格式化时间样式
+       DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH小时mm分ss秒");
+       // 对获取的时间进行格式化
+       String format = dtf.format(localDateTime);
+       System.out.println(format); // 2022年02月11日 11小时07分35秒
+       // 字符串 ===> 日期 注意字符串格式要和DateTimeFormatter设置的一致
+       TemporalAccessor parse = dtf.parse("2022年10月10日 12小时12分12秒");
+       System.out.println(parse); // {},ISO resolved to 2022-10-10T12:12:12
+   }
+   ```
+
+### 其他API
+
+看API文档。ZoneId：时区。ZonedDateTime。Clock。等等......
 
 # 枚举类
 
@@ -1300,27 +1396,31 @@ enum Season{
 
 Enum类的主要成员方法： 
 
-- values()方法：返回枚举类型的对象数组。该方法可以很方便地遍历所有的枚举值
+1. values()方法：返回枚举类型的对象数组。该方法可以很方便地遍历所有的枚举值。
 
   - ```java
-    Season[] arr = Seasom.values（）；
+    Season[] arr = Seasom.values();
     ```
 
-- valueOf(String str)：返回枚举类中对象名是指定字符的对象。如不是，会有运行时异常IllegalArgumentException；
+2. valueOf(String str)：返回枚举类中对象名是指定字符的对象。如不是，会有运行时异常IllegalArgumentException。
 
   - ```java
-    Season[] arr = Seasom.valuesOf（"xxx"）； // 字符串必须为已有的常量名 
+    Season[] arr = Seasom.valuesOf("xxx"); // 字符串必须为已有的常量名 
     ```
 
-- toString()：返回当前枚举类对象常量的名称；
+3. toString()：返回当前枚举类对象常量的名称；
 
-- name()：返回常量名；compareTo()：比较两个枚举常量的位置号。
+4. name()：返回常量名。
 
-- 枚举类在编译阶段会被编译器插入一些静态方法
-- 枚举类本身有个只有编译器能够调用的构造方法，编译器会使用该方法将枚举值实例化为枚举类型的对象
-- 枚举值被实例化后，继承了众多java.lang.Enum中的方法
+5. compareTo()：比较两个枚举常量的位置号。
 
-实现接口的枚举类：
+6. 枚举类在编译阶段会被编译器插入一些静态方法
+
+7. 枚举类本身有个只有编译器能够调用的构造方法，编译器会使用该方法将枚举值实例化为枚举类型的对象
+
+8. 枚举类被实例化后，继承了众多java.lang.Enum中的方法
+
+实现了接口的枚举类：
 
 ```java
 interface Info{

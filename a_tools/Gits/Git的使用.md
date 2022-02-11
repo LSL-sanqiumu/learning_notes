@@ -61,26 +61,26 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 **情况查看：**
 
 1. `$ git ststus`：查看仓库状况，有没有待提交的、有没有修改了的、修改了但还未添加待提交的、仓库是否干净...等等相关信息。
-2. `$ git diff 可指定文件`：查看不同，看看修改了哪些内容。
+2. `$ git diff 可指定文件`：查看修改了哪些内容，注意是版本库中的与工作区的对比。
 3. `$ cat 文件 `：显示文件的全部内容。
 
 # 版本控制
 
-## 版本回退
+## 回退版本
 
 查看修改日志：
 
-1. `$ git log`：从近到远显示所有的提交记录的信息（就像提交的历史时间线一样），如果最后出现`:`时可按Q退出。
-2. `$ git log --pretty=oneline`：将每次的提交记录在一行上显示出来。
+1. `$ git log`：从最近时间开始显示所有的提交记录的信息（就像提交的历史时间线一样），如果最后出现`:`时可按Q退出。
+2. `$ git log --pretty=oneline`：将各次的提交记录分别在另一行上显示出来，一行则为一次提交记录。
   - 该命令显示出来的信息是：`commit-id  提交说明`(commit id 是一个SHA1计算出来的一个非常大的数字，用十六进制表示)。
 
 版本回退：
 
-1. `$ git reset --hard HEAD~`：退回当前版本的前一个版本，回退后，原版本会被丢失。
-   - `HEAD`：指当前版本；`HEAD^`、`HEAD~1`：都是指当前版本的前一个版本。
+1. `$ git reset --hard HEAD~`：退回当前版本的前一个版本，回退后，原版本提交会被丢失。
+   - `HEAD`：指当前版本；`HEAD^`、`HEAD~1`：都是指当前版本的前一个版本；`HEAD~2`：回退两次。
 
 2. `$ git reset --hard commit-id`：使用commit id来指定要回退到哪个版本，日志查看中会显示出commit-id。
-3. `$ git reflog`：用于记录版本提交和回退的操作命令，这样可以找到版本的commit-id，以便确定要回到哪个版本。
+3. `$ git reflog`：用于显示曾执行过的历史指令（提交和回退的），这样可以找到版本的commit-id，以便确定要回到哪个版本。
 
 ## 工作区和暂存区
 
@@ -101,7 +101,7 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 
 可以简单理解为，需要提交的文件修改通通放到暂存区，然后，一次性提交暂存区的所有修改到版本库里。
 
-## 管理修改
+## 添加至暂存区
 
 为什么Git比其他版本控制系统设计得优秀，因为Git跟踪并管理的是修改，而非文件。
 
@@ -111,18 +111,18 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 
 ## 撤销修改
 
-撤销（unstage）还在工作区的文件的修改：
+撤销（unstage）还未提交到暂存区的修改：
 
-1. 手动方式：自己动手进文件里修改。
+1. 手动方式：自己动手进文件里改变修改。
 2. `$ git checkout -- file`：丢弃工作区的修改，file为带后缀的文件全名。
    - 修改文件后但没有git add，就会撤销所有修改。
    - 修改后但git add，执行该命令不能再撤销修改。
    - 如果修改并git add后再把暂存区的修改回退到工作区，执行该命令就能完成撤销。
 
 
-把暂存区的修改回退到工作区：
+将某文件提交到暂存区的修改撤销：
 
-- `$ git reset HEAD file`：撤销提交到暂存区的文件。
+- `$ git reset HEAD file`、` git reset HEAD -- file`：撤销提交到暂存区的某文件的修改（相当于撤销了git add 某个文件的操作），不会影响到工作区。
 
 ## 删除文件
 
@@ -133,8 +133,9 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 
 删除版本库里的文件：
 
-- `git rm file`：该命令将文件从版本库和工作区中删除，然后再commit一次，版本仓库里文件就删除完毕。
-- 手动从工作区删除文件后，使用`git add file`也可以实现删除版本库里的文件。
+- `git rm file`：该命令是将文件从工作区、版本库中删除（此时暂存区不能存在该文件），并把此次删除的修改git add到暂存区，因此还需要commit。
+- `git rm -f file`： 删除工作区和暂存区文件，并且将这次删除的修改动作记录进暂存区。
+- 手动从工作区删除文件后，使用`git add file`、`git commit`也可以实现版本库里文件的删除。
 - 提交到版本库的可以再次恢复。
 
 查看提交到了版本仓库中的文件：`git ls-files `。
@@ -209,10 +210,10 @@ $ git remote rm origin
 
 ## 小结
 
-- 要关联一个远程库，使用命令`git remote add origin git@server-name:path/repo-name.git`。
-- 关联一个远程库时必须给远程库指定一个名字，`origin`是默认的习惯命名。
-- 关联后，使用命令`git push -u origin master`第一次推送master分支的所有内容。
-- 此后，每次本地提交后，只要有提交的必要，就可以使用命令`git push origin master`推送最新修改。
+1. 要关联一个远程库，使用命令`git remote add origin git@server-name:path/repo-name.git`。
+2. 关联一个远程库时必须给远程库指定一个名字，`origin`是默认的习惯命名。
+3. 关联后，使用命令`git push -u origin master`第一次推送master分支的所有内容。
+4. 此后，每次本地提交后，只要有提交的必要，就可以使用命令`git push origin master`推送最新修改。
 
 # 克隆远程仓库
 
@@ -241,87 +242,81 @@ $ git remote rm origin
 
 ## 创建与合并
 
-创建分支：
+1. 创建与切换分支：`git check -b dev `，创建并切换到分支，相当于下面两条指令
 
-- `& git check -b dev `：创建并切换到分支，相当于下面两条指令。
+   ```bash
+   $ git branch dev   # 创建
+   $ git checkout dev # 切换
+   ```
 
-  ```
-  $ git branch dev
-  $ git checkout dev
-  ```
+2. 查看分支：
 
-查看分支：
+   - `git branch`，列出所有分支，当前所在分支前用`*`来标记。
+   - `git log --oneline --graph --decorate --all`：查看分支图。（`--oneline`：日志单行显示 ；`--graph`：分支图显示；` --decorate` ：可显示分支名称；`--all`：显示所有分支）
 
-- `git branch`：列出所有分支，当前分支前用*标记；
+3. 合并分支——将dev分支合并到master分支：
 
-然后，就可以在`dev`分支上正常提交。
+   - 先切换到master分支：`$ git checkout master`；
 
-合并分支：
+   - 再合并：`git merge dev`命令用于合并指定分支到当前分支；
 
-- 先切换到master分支：`$ git checkout master`；
-- dev分支合并到master分支：`git merge dev`命令用于合并指定分支到当前分支；
-- 合并完，删除dev分支：`$ git branch -d dev`
+   - 合并完，删除dev分支：`$ git branch -d dev`。
+
+4. 切换分支：（最新版本的Git提供了新的`git switch`命令来切换分支）
+
+   - `$ git switch -c dev`：创建并切换到新的分支。
+   - `$ git switch master`：切换到指定分支。
 
 因为创建、合并和删除分支非常快，所以Git鼓励你使用分支完成某个任务，合并后再删掉分支，这和直接在`master`分支上工作效果是一样的，但过程更安全。
-
-切换分支：（最新版本的Git提供了新的`git switch`命令来切换分支）
-
-- `$ git switch -c dev`：创建并I切换到新的分支
-- `$ git switch master`：切换到指定分支
 
 **小结：**
 
 Git鼓励大量使用分支：
 
-查看分支：`git branch`
+1. 查看分支：`git branch`
 
-创建分支：`git branch <name>`
+2. 创建分支：`git branch <name>`
 
-切换分支：`git checkout <name>`或者`git switch <name>`
+3. 切换分支：`git checkout <name>`或者`git switch <name>`
 
-创建+切换分支：`git checkout -b <name>`或者`git switch -c <name>`
+4. 创建+切换分支：`git checkout -b <name>`或者`git switch -c <name>`
 
-合并某分支到当前分支：`git merge <name>`
+5. 合并某分支到当前分支：`git merge <name>`
 
-删除分支：`git branch -d <name>`
+6. 删除分支：`git branch -d <name>`
+
 
 ## 解决冲突
 
-是不是这样就可以避免冲突？：
+**是不是这样就可以避免冲突？：**
 
-使用新分支的时候，只在新分支上修改和提交，不去主分支修改和提交，当新分支上的修改完毕并提交后再切回主分支进行合并。（也就是主分支的状态还是在新建分支并切换到新分支时的状态，如下图，当切回master分支时，再执行分支合并，就相当于master分支指到下一个的dev分支，这时两个分支实现了合并成一个master主分支）
+使用新分支的时候，只在新分支上修改和提交，不去主分支修改和提交，当新分支上修改完毕并提交后再切回到主分支合并该分支。（也就是主分支的状态还是在新建分支并切换到新分支时的状态，如下图，当切回master分支时，再执行分支合并，就相当于master分支指到下一个的dev分支，这时两个分支合并成了一个master主分支）
 
 ![](img/git分支.png)
 
-如果出现这样的情况：
+**如果出现这样的情况：**
 
-如下图，当master在node时创建并切换到分支feature1，此时在该分支上进行了修改和提交，然后切换回主分支，在主分支上进行修改和提交，master就到了如图所在的位置，此时合并分支feature，合并分支时master会指进到下一个时间节点，而这时没有下一个时间节点，就算有也不是feature，这时就引发了冲突，master没有指向到要合并的节点。
+如下图，当master在node时创建并切换到分支feature1，此时修改后都在该分支上提交，然后切换回主分支，在主分支上修改后并提交，master就到了如图所在的位置，此时如果合并feature分支，因为合并分支时master会指到其下一个时间节点，而当这时没有下一个时间节点时，就算有也不是feature，这时就会引发冲突，master没有指到要合并的节点，就会报错。
 
 ![](img/分支冲突.png)
 
-- 此时合并会报错，git会整合master、feature中该文件信息，此时目标文件会有<<<<<<<<、====、>>>>>>>>来分割开文件内容；（使用`$ git status`可知道冲突的文件；使用`$ cat file`可查看文件内容；）
+- 此时合并就会报错，git会整合master、feature中该文件信息，此时目标文件内容会被插入`<<<<<<<<、====、>>>>>>>>`来分割开文件中引起冲突的内容。（使用`$ git status`可知道冲突的文件；使用`$ cat file`可查看文件内容。）
 
-解决上述冲突：就是把Git合并失败的文件**手动编辑**为我们希望的内容，再提交，然后就合并成功了（最后删除分支）。
+解决上述冲突：就是把Git合并失败的文件**手动编辑**为我们合并后所期望的内容，再提交，然后就合并成功了（最后删除分支）。（这个解决方法就是在master上将内容修改正确并提交到master，就不用管另一个分支了，直接删除那个分支）
 
-- `$ git log --graph --pretty=oneline --abbrev-commit`：查看分支合并情况
+- `$ git log --graph --pretty=oneline --abbrev-commit`：查看分支合并情况。
 
 - 用`$ git log --graph`命令可以看到分支合并图。
 
 ## 分支管理策略
 
-通常，合并分支时，如果可能，Git会用`Fast forward`模式，但这种模式下，删除分支后，会丢掉分支信息。
+通常合并分支时，如果可能，Git会用`Fast forward`模式，但在这种模式下删除分支后会丢掉分支信息。如果要强制禁用`Fast forward`模式，Git就会在merge时生成一个新的commit，这样，从分支历史上就可以看出分支信息。
 
-如果要强制禁用`Fast forward`模式，Git就会在merge时生成一个新的commit，这样，从分支历史上就可以看出分支信息。
+- `$ git merge --no-ff -m "merge with no-ff" dev`：合并dev分支并创建新的commit，(--no-ff：禁用Fast forward模式）。
 
-`--no-ff`方式的合并：
+分支策略——在实际开发中，我们应该按照几个基本原则来进行分支管理：
 
-- `$ git merge --no-ff -m "merge with no-ff" dev`：合并dev分支并创建新的commit，(--no-ff)禁用Fast forward模式。
-
-分支策略-在实际开发中，我们应该按照几个基本原则进行分支管理：
-
-首先，`master`分支应该是非常稳定的，也就是仅用来发布新版本，平时不能在上面干活；
-
-那在哪干活呢？干活都在`dev`分支上，也就是说，`dev`分支是不稳定的，到某个时候，比如1.0版本发布时，再把`dev`分支合并到`master`上，在`master`分支发布1.0版本；
+首先，`master`分支应该是非常稳定的，也就是仅用来发布新版本，平时不能在上面干活；那在哪干活呢？干活都在`dev`分支上，也就是说，`dev`分支是不稳定的，到某个时候，比如1.0版本发布时，再把`dev`分支合并到`master`上，在`master`分支发布1.0版本；
 
 你和你的小伙伴们每个人都在`dev`分支上干活，每个人都有自己的分支，时不时地往`dev`分支上合并就可以了。
 
@@ -329,28 +324,27 @@ Git鼓励大量使用分支：
 
 ## Bug分支
 
-当你的分支任务还没完成提交时，接到一个修改bug的任务，此时可以使用`$ git stash `保存工作现场，然后开分支修改bug；
+当你的分支任务还没完成不能提交时，接到一个修改bug的任务，此时可以使用`$ git stash `保存工作现场，然后开分支修改bug，操作如下：
 
-- 确定在哪个分支进行修改bug，切换到该分支并创建切换到新分支，修复好后提交，然后进行分支合并；
-- 查看刚刚保存的工作现场：`$ git stash list`
-- 恢复现场：
+1. 先确定在哪个分支进行bug的修改，切换到该分支，并在该分支创建并切换到新分支，修复好后提交，然后再进行分支合并。
+2. 查看刚刚保存的工作现场：`$ git stash list`。
+3. 恢复现场：
   - `$ git stash apply`：恢复后，stash内容并不删除，你需要用`$ git stash drop`来删除；
   - `$ git stash pop`：恢复的同时把stash内容也删了
-  - 可以多次stash，恢复的时候，先用`git stash list`查看，然后恢复指定的stash，用命令：`$ git stash apply stash@{0}`
+  - 可以多次stash，恢复的时候，先用`git stash list`查看，然后恢复指定的stash，用命令：`$ git stash apply stash@{0}`。
 
 小结：
 
-修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；
+1. 修复bug时，我们会通过创建新的bug分支来进行修复，然后合并，最后删除。
 
-当手头工作没有完成时，先把工作现场`git stash`一下，然后去修复bug，修复后，再`git stash pop`，回到工作现场；
+2. 当手头工作没有完成时，先把工作现场`git stash`一下，然后去修复bug，修复后，再`git stash pop`，回到工作现场。
 
-在master分支上修复的bug，想要合并到当前dev分支，可以用`git cherry-pick <commit>`命令，把bug提交的修改“复制”到当前分支，避免重复劳动。
+3. 在master分支上修复的bug，想要合并到当前dev分支，可以用`git cherry-pick <commit>`命令，把master上bug分支提交的修改“复制”到当前分支，避免重复劳动。
+
 
 ## Feature分支
 
-开发一个新feature，最好新建一个分支；
-
-如果要丢弃一个没有被合并过的分支，可以通过`$ git branch -D <name>`强行删除。
+开发一个新feature，最好新建一个分支；如果要丢弃一个没有被合并过的分支，可以通过`$ git branch -D <name>`强行删除。
 
 ## 多人协作
 
@@ -358,28 +352,26 @@ Git鼓励大量使用分支：
 
 **推送分支：**
 
-当你从远程仓库克隆时，实际上Git自动把本地的`master`分支和远程的`master`分支对应起来了，并且，远程仓库的默认名称是`origin`。
+当你从远程仓库克隆时，实际上Git会自动把本地的`master`分支和远程的`master`分支对应起来，并且远程仓库的默认名称是`origin`。
 
-要查看远程库的信息，用`$ git remote`或者，用`git remote -v`显示更详细的信息；
+要查看远程库的信息，可以用`$ git remote`，或者用`git remote -v`显示更详细的信息。
 
-推送分支：就是把该分支上的所有本地提交推送到远程库。推送时，要指定本地分支，这样，Git就会把该分支推送到远程库对应的远程分支上：`$ git push origin master`
-
-如果要推送其他分支，比如`dev`，就改成：`$ git push origin dev`
+推送分支：就是把该分支上的所有本地提交推送到远程库。推送时，要指定本地分支，这样Git就会把该分支推送到远程库对应的远程分支上：`$ git push origin master`（将本地的master分支推送到远程库orgin）。如果要推送其他分支，比如`dev`，就改成：`$ git push origin dev`。
 
 但是，并不是一定要把本地分支往远程推送，那么，哪些分支需要推送，哪些不需要呢？
 
-- `master`分支是主分支，因此要时刻与远程同步；
-- `dev`分支是开发分支，团队所有成员都需要在上面工作，所以也需要与远程同步；
-- bug分支只用于在本地修复bug，就没必要推到远程了，除非老板要看看你每周到底修复了几个bug；
-- feature分支是否推到远程，取决于你是否和你的小伙伴合作在上面开发。
+- `master`分支是主分支，因此要时刻与远程同步。
+- `dev`分支是开发分支，团队所有成员都需要在上面工作，所以也需要与远程同步。
+- bug分支只用于在本地修复bug，就没必要推到远程了，除非老板要看看你每周到底修复了几个bug。
+- feature分支是否推到远程，取决于你是否和你的小伙伴在上面合作开发。
 
 总之，就是在Git中，分支完全可以在本地自己藏着玩，是否推送，视你的心情而定！
 
 **多人协作的工作模式通常是这样：**
 
-1. 首先，可以试图用`git push origin <branch-name>`推送自己的修改；
-2. 如果推送失败，则因为远程分支比你的本地更新，需要先用`git pull`(抓包)试图合并；
-3. 如果合并有冲突，则解决冲突，并在本地提交；
+1. 首先，可以试图用`git push origin <branch-name>`推送自己某分支的修改。
+2. 如果推送失败，则因为远程分支比你的本地新，需要先用`git pull`(抓包)试图合并。
+3. 如果合并有冲突，则解决冲突，并在本地提交。
 4. 没有冲突或者解决掉冲突后，再用`git push origin <branch-name>`推送就能成功！
 
 如果`git pull`提示`no tracking information`，则说明本地分支和远程分支的链接关系没有创建，用命令`git branch --set-upstream-to <branch-name> origin/<branch-name>`。
@@ -388,12 +380,12 @@ Git鼓励大量使用分支：
 
 ### 小结
 
-- 查看远程库信息，使用`git remote -v`；
-- 本地新建的分支如果不推送到远程，对其他人就是不可见的；
-- 从本地推送分支，使用`git push origin branch-name`，如果推送失败，先用`git pull`抓取远程的新提交；
-- 在本地创建和远程分支对应的分支，使用`git checkout -b branch-name origin/branch-name`，本地和远程分支的名称最好一致；
-- 建立本地分支和远程分支的关联，使用`git branch --set-upstream branch-name origin/branch-name`；
-- 从远程抓取分支，使用`git pull`，如果有冲突，要先处理冲突。
+1. 查看远程库信息，使用`git remote -v`。
+2. 本地新建的分支如果不推送到远程，对其他人就是不可见的。
+3. 从本地推送分支，使用`git push origin branch-name`，如果推送失败，先用`git pull`抓取远程的新提交。
+4. 在本地创建与远程分支对应的分支，可使用命令`git checkout -b branch-name origin/branch-name`，本地和远程分支的名称最好一致。
+5. 建立本地分支和远程分支的关联，使用`git branch --set-upstream branch-name origin/branch-name`。
+6. 从远程抓取分支，使用`git pull`，如果有冲突，要先处理冲突。
 
 ## Rebase
 
@@ -409,22 +401,22 @@ Git有一种称为rebase的操作，有人把它翻译成“变基”。
 
 **【注意】：**
 
-- 标签不是按时间顺序列出，而是按字母排序的。
-- 可以用`git show <tagname(标签名)>`查看标签信息；`git tag` 查看所有标签
-- 标签总是和某个commit挂钩。如果这个commit既出现在master分支，又出现在dev分支，那么在这两个分支上都可以看到这个标签。
+1. 标签不是按时间顺序列出，而是按字母排序的。
+2. 可以用`git show <tagname(标签名)>`查看标签信息；`git tag` 查看所有标签。
+3. 标签总是和某个commit挂钩。如果这个commit既出现在master分支，又出现在dev分支，那么在这两个分支上都可以看到这个标签。
 
 **操作标签：**
 
-- 本地标签删除：`$ git tag -d <tagname>`
-- 推送标签到远程：`git push origin <tagname>`
-- 删除远程标签：先删除本地的，然后从远程删除`$ git push origin :refs/tags/<tagname>`
+1. 本地标签删除：`$ git tag -d <tagname>`
+2. 推送标签到远程：`git push origin <tagname>`
+3. 删除远程标签：先删除本地的，然后从远程删除`$ git push origin :refs/tags/<tagname>`
 
 **小结:**
 
-- 命令`git push origin <tagname>`可以推送一个本地标签；
-- 命令`git push origin --tags`可以推送全部未推送过的本地标签；
-- 命令`git tag -d <tagname>`可以删除一个本地标签；
-- 命令`git push origin :refs/tags/<tagname>`可以删除一个远程标签。
+1. 命令`git push origin <tagname>`可以推送一个本地标签。
+2. 命令`git push origin --tags`可以推送全部未推送过的本地标签。
+3. 命令`git tag -d <tagname>`可以删除一个本地标签。
+4. 命令`git push origin :refs/tags/<tagname>`可以删除一个远程标签。
 
 # GitHub
 
@@ -741,12 +733,4 @@ Git有很多图形界面工具，这里我们推荐[SourceTree](https://www.sour
 [使用SourceTree - 廖雪峰的官方网站 (liaoxuefeng.com)](https://www.liaoxuefeng.com/wiki/896043488029600/1317161920364578)
 
 Git的官方网站：[http://git-scm.com](http://git-scm.com/)，英文自我感觉不错的童鞋，可以经常去官网看看。
-
-
-
-
-
-
-
-
 

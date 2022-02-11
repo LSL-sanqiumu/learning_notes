@@ -759,9 +759,9 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
 
 ### 分组查询
 
-实际的应用中，可能有这样的需求，需要先分组再对每一组的数据进行操作，这是需要使用分组查询。
+实际的应用中，可能有这样的需求，需要先分组再对每一组的数据进行操作，这时需要使用分组查询。
 
-分组查询就是根据一个或多个字段分为一组组数据再进行查询操作（判断一个或多个字段值是否相同，如果是相同的则为一组数据，不同的为另一组数据），分组查询一般和分组函数结合来查询特定的数据。
+分组查询就是根据一个或多个字段分为一组组数据再进行查询操作（判断一个或多个字段值是否相同，如果是相同的则为一组数据并去重，不同的为另一组数据并去重），分组查询一般和分组函数结合来查询特定的数据。
 
 **聚合函数（也叫分组函数、多行处理函数）：**
 
@@ -776,20 +776,21 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
   count(1); -- 1 相当于true
   sum(`字段`); avg(`字段`); max(`字段`); min(`字段`); -- 求总和 求平均值 求最大值 求最小值
   ```
-  
+
 - 分组函数使用注意事项：
 
 
-  - 分组函数会自动忽略Null。
-  - **分组函数不能直接使用在where条件子句**，但可以使用在having的条件句中。
-  - 所有分组函数可以组合起来一起用。
+    1. 分组函数会自动忽略Null。
+    2. **分组函数不能直接使用在where条件子句中**，但可以使用在having的条件句中。（因为指令执行有顺序）
+    3. 所有分组函数可以组合起来一起用。
+
 
 
 **分组查询的使用：**（判断一个或多个字段值是否相同，如果是相同的则为一组数据，不同的为另一组数据）
 
 ```mysql
 -- 分组查询，一定要按照下面的格式；要使用where或having时优先使用having
--- 分组字段和group by 后的分组字段应该对应
+-- 分组字段和 group by 后的分组字段应该对应
 select `分组字段`,分组函数 from table_name group by `分组字段`;
 select `分组字段1`,`分组字段2`,...,分组函数 from table_name group by `分组字段1`，`分组字段2`, ...;
 select `分组字段`,分组函数 from table_name group by `分组字段` having 条件; -- 先分组再筛选
@@ -800,7 +801,9 @@ select `分组字段`,分组函数 from table_name group by `分组字段` havin
 select xxx from xxx where xxx group by xxx order by xxx;
 ```
 
+注意：由于默认的 MySQL 配置中 的`sql_mode` 配置为了 `only_full_group`，需要 `GROUP BY` 中包含所有在 `select` 中出现的字段。
 
+- only_full_group_by ：使用这个就是使用和oracle一样的 group 规则，select后的字段都要在group中，或者select后的字段本身是聚合列(SUM、AVG、MAX、MIN) 才行（因为聚合列会根据分组的字段来将数据聚合成一列）。
 
 分组查询实例：
 
@@ -867,13 +870,28 @@ select ... from ... where ... group by ... having ... order by ... limit page,pa
 
 **连接查询：**
 
-连接查询语法根据年代分为SQL92、SQL99，按照表连接的方式分为三类：
+连接查询语法根据年代分为SQL92、SQL99，按照表连接的方式可分为三类：
 
 - 内连接：等值连接、非等值连接、自连接；内连接就是连接的两张表没有主次关系。
 - 外连接：有主次关系（区分主表、从表）。
 - 全连接（几乎不用）。
 
-**内连接：**on后条件用=的就是等值连接，条件不是等值关系就是非等值连接
+连接查询的SQL语句分类：SQLJoins，可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。inner join ... on一种，left join 、right join 、full outer join 和on 、 where分别搭配又分出六种：
+
+![](img/sql-join.png)
+
+### 内连接
+
+**内连接：**（两表特定字段在特定条件存在交集的数据集（我的理解））
+
+```mysql
+inner join -- inner join的就是内连接
+-- inner、as是可以省略的
+select s.id,s.name,g.course,g.scores from student s join grades g on s.id=g.id;
+select s.id,s.name,g.course,g.scores from student as s inner join grades as g on s.id=g.id;
+```
+
+**等值连接：**on后条件用=的就是等值连接，条件不是等值关系就是非等值连接
 
 ```mysql
 -- SQL92语法的等值内连接 结构不清晰，表的连接和筛选都放在了where后面
@@ -886,7 +904,7 @@ select s.name,stu.name from school s, student stu where s.no = c.no and 条件;
 select s.name,stu.name from school s inner join student stu on s.no = c.no;
 ```
 
-**内连接-自连接(了解)：**把一张表当做两张表来进行查询。例子如下：
+**自连接(了解)：**把一张表当做两张表来进行查询。例子如下：
 
 ```mysql
 -- 这里的`school`是指数据库，SQL语句中可以"数据库.数据库表"来指定哪个数据库下的表
@@ -911,20 +929,11 @@ INSERT INTO `SCHool`.`category` (`categoryid`, `pid`, `categoryname`) VALUES (7,
  WHERE a.categoryname = b.categoryname;
 ```
 
-### 连接查询
 
-SQLJoins：可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。
 
-**内连接：**（两表特定字段在特定条件存在交集的数据集（我的理解））
+### 外连接
 
-```mysql
-inner join -- inner join的就是内连接
--- inner、as可以省略
-select s.id,s.name,g.course,g.scores from student s join grades g on s.id=g.id;
-select s.id,s.name,g.course,g.scores from student as s inner join grades as g on s.id=g.id;
-```
-
-**外连接：**(left、right的就是外连接)
+(left、right的就是外连接)
 
 ```mysql
  -- 左外连接，left join的左边为主表，两表特定字段存在交集的数据集 + 主表的其它数据 -> 集合而成的数据集
@@ -943,10 +952,6 @@ select ... from `表1` xxx join `表2` on ...; （四种）
 select ... from `表1` xxx join `表2` on ... where ...;  （三种）
 --  where是为了选数据，选取连接查询后得到的数据
 ```
-
-inner join ... on一种，left join 、right join 、full outer join 和on 、 where搭配分出六种：
-
-![](img/sql-join.png)
 
 使用连接查询的要义：
 
@@ -998,7 +1003,7 @@ INSERT INTO t_class(s_id,specialty,grade) VALUES
 -- 测试各种连接.
 ```
 
-### 更多张表的连接
+### 多表连接
 
 ```mysql
 -- 可以使用inner、right等的join，以内连接为例
@@ -1015,13 +1020,7 @@ join d on a和d连接的条件
  select * from sales as a cross join sales as b;
 ```
 
-
-
 直接使用交叉联结的业务需求比较少见，往往需要结合具体条件。
-
-
-
-
 
 
 
@@ -1208,18 +1207,6 @@ grant all on databasetest.* to `lsl`@`localhost`; -- 为该用户授予该数据
 revoke 权限列表 on 数据库名.表名 from `用户名`@`主机名`;
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
 # ---------------SQL---------------
 
 # 数据库常用函数
@@ -1237,7 +1224,7 @@ revoke 权限列表 on 数据库名.表名 from `用户名`@`主机名`;
 | substr(被截取的字符串，起始下标，截取的长度) |                  取子串（起始下标从1开始）                   |
 |                length(字符串)                |                            取长度                            |
 |                 trim(字符串)                 |                            去空格                            |
-|      str_to_date('字符串'，'日期格式')       |                      将字符串转换成日期                      |
+|      str_to_date('字符串'，'日期格式')       |                      将字符串转换成date                      |
 |     date_format(date型数据，'日期格式')      |                          格式化日期                          |
 |                   format()                   |                          设置千分位                          |
 |              round(1234.567,0)               |                  四舍五入，0表示保留0位小数                  |
@@ -1245,6 +1232,31 @@ revoke 权限列表 on 数据库名.表名 from `用户名`@`主机名`;
 |      ifnull(数据，如果为null时转换的值)      |                   数据为Null时转换为某个值                   |
 |          （Null参与的运算都为Null）          |                                                              |
 |   case..when..then..when..then..else..end    | 当..的时候怎么怎么做，只对查询显示的数据进行操作，不会更改数据库 |
+
+case..when..then..when..then..else..end的三种使用方式：
+
+1. `case 要判断的字段 when 该字段符合啥条件 then 输出唯一字段的具体值 else 输出唯一字段的具体值 end`：
+
+   ```mysql
+   -- 当自动name的值是LL时就为在其名字后追加1，否则追加0
+   select (case name when 'LL' then name+1 else 'LS+0' end) as 名字加颜值 from person;
+   ```
+
+2. 可以对字段值进行范围的判断
+
+   ```mysql
+   -- 当年龄满足18-22时就是青年，否则就是老青年
+   select (case when age between 18 and 22 then '青年' else '老青年' end) as 正值 from  person;
+   ```
+
+3. 可以对多个字段进行判断，并输出唯一结果字段
+
+   ```mysql
+   -- 当满足年龄在18-22时，字段`状态`的值为'真年轻'；当name='LL'时，字段`状态`的值为'活力充沛'
+   select (case when age between 18 and 22 then '真年轻' when name='LL' then '活力充沛' end) as '状态'
+   ```
+
+
 
 ## 其他
 
