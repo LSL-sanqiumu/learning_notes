@@ -2014,23 +2014,23 @@ public class PropertiesTest {
 
 # 集合
 
-数组存储数据的特点和缺点：
-
-- 特点：
-  - 初始化后数组长度确定；
-  - 数组声明的类型，就决定了进行元素初始化时的类型---->存储数据的特点单一；
-- 缺点：
-  - 数组初始化以后，长度就不可变了，不便于扩展 ；
-  - 数组中提供的属性和方法少，不便于进行添加、删除、插入等操作，且效率不高。 同时无法直接获取存储元素的个数 ；
-  - 数组存储的数据是有序的、可以重复的。对于无序的、不重复的需求不能满足。
-
-集合：
-
-- 可以动态保存任意多个对象；有较为方便的方法操作对象；
-
 ## 集合框架体系
 
-背：
+数组存储数据的特点和缺点：
+
+1. 特点：
+  - 初始化后数组长度确定。
+  - 数组声明的类型，就决定了进行元素初始化时的类型---->存储数据的特点单一。
+2. 缺点：
+  - 数组初始化以后，长度就不可变了，不便于扩展 。
+  - 数组中提供的属性和方法少，不便于进行添加、删除、插入等操作，且效率不高。 同时无法直接获取存储元素的个数 。
+  - 数组存储的数据是有序的、可以重复的。对于无序的、不重复的需求不能满足。
+
+集合：（存放对象引用的容器，用于存储和操作对象组）
+
+- 可以动态保存任意多个对象；有较为方便的方法操作对象。
+
+集合体系：
 
 ```
 |---Collection接口：单列集合，用来存储一个一个的对象（父接口是Iterable）
@@ -2042,100 +2042,100 @@ public class PropertiesTest {
 	|---HashMap、LinkedHashMap、TreeMap、Hashtable、Properties
 ```
 
-## Collection
+## Collection概述
 
-### 常用方法
+集合使用了泛型，不指定泛型时添加元素进集合时是默认的Object，可以添加Object及其子类，因为Object是所有类的直接或间接父类，所以任何类型的数据都可以添加进集合，此时也构成多态行为。
 
-1、添加 ：add(Object obj)（添加单个元素对象） 、addAll(Collection coll)（添加多个元素）；
+**Collection接口声明的方法中常用的：**
 
-2、获取有效元素的个数 ：int size() 
+Collection接口是List、Set接口的父接口，其方法的具体实现在子接口中，其定义的抽象方法中常用的有如下：
 
-3、清空集合 ：void clear()
+| 抽象方法                           | 作用                                                         |
+| ---------------------------------- | ------------------------------------------------------------ |
+| boolean add(E e)                   | 添加单个元素对象                                             |
+| boolean  addAll(Collection coll)   | 添加多个元素                                                 |
+| int size()                         | 集合中元素个数                                               |
+| void clear()                       | 清空集合中的元素                                             |
+| boolean isEmpty()                  | 判断是否是空集合                                             |
+| boolean contains(Object obj)       | 判断集合中是否含有obj对象<br>（由equals方法决定比较的是内容还是地址） |
+| boolean containsAll(Collection c)  | 也是调用元素的equals方法来比较的；<br>拿两个集合的元素挨个比较，利用元素的equals方法。 |
+| boolean remove(Object obj)         | 通过元素的equals方法判断是否是要删除的那个元素。<br>只会删除找到的第一个元素 |
+| boolean removeAll(Collection coll) | 删除多个元素（相当于取集合的差集）                           |
+| boolean retainAll(Collection c)    | 把交集的结果存在当前集合中<br>不影响集合c，只影响到方法的调用者 |
+| boolean equals(Object obj)         | 判断两个集合是否相等                                         |
+| Object[] toArray()                 | 集合转成Object数组（注意多态）                               |
+| hashCode()                         | 获取集合对象的哈希值                                         |
+| iterator()                         | 返回迭代器对象，用于集合遍历                                 |
 
-4、是否是空集合 ：boolean isEmpty()
+**迭代器——iterator()方法的使用：**
 
-5、是否包含某个元素 、集合元素：
+```java
+public static void main(String[] args) {
+    Collection<String> c = new ArrayList<>();
+    c.add("a");
+    c.add("b");
+    c.add("c");
+    Iterator<String> iterator = c.iterator();
+    while (iterator.hasNext()){
+        String next = iterator.next();
+        System.out.print(next + " ");
+    }
+}
+```
 
-- boolean contains(Object obj)：判断当前集合中是否含有obj，判断的是内容
-- boolean containsAll(Collection c)：也是调用元素的equals方法来比较的。拿两个集合的元素挨个比较。
+<img src="images/iterator.png" style="zoom:50%;" />
 
-6、删除 ：
+1. `E next()`：将指针下移，并返回指向到的集合元素。
+2. `boolean hasNext()`：判断是否还有下一个元素。
+3. `default void remove()`：移除集合元素（需要指定到集合元素时才能移除元素，移除后要将指针移动到下一个元素才能再次执行该方法）。
 
-- boolean remove(Object obj) ：通过元素的equals方法判断是否是要删除的那个元素。只会删除找到的第一个元素
-- boolean removeAll(Collection coll)：取当前集合的差集
+**集合数组互转：**
 
-7、取两个集合的交集 ：boolean retainAll(Collection c)：把交集的结果存在当前集合中，不影响c
+- 数组 ===> 集合：toArray()，使用数组的toArray()方法。
+- 集合 ===> 数组：Arrays.asList()，使用Arrarys的方法。
 
-8、集合是否相等 ：boolean equals(Object obj) 
-
-9、转成对象数组 ：Object[] toArray() 
-
-10、获取集合对象的哈希值 ：hashCode() 
-
-11、iterator()：返回迭代器对象，用于集合遍历：
-
-- next()：指针下移，将下移以后的集合位置上的元素返回
-
-- hasNext()：判断是否还有下一个元素
-
-- remove()：迭代器指定到集合元素时才能移除元素，移除后不能再移除，要等到下一个元素才能再次移除
-
-- ```java
-  Iterator iterator = 集合.iterator(); // 获取到collection接口下集合的迭代器
-  if（iterator.hasNext()）{ // 指针下是否还有元素
-      iterator.next()；// 指针下移，返回元素
-  }
-  ```
-
-  ![](images/iterator.png)
-
-### 集合数组互转：
-
-- 数组--->集合：toArray()，使用数组的toArray()方法
-- 集合--->数组：Arrays.asList()，使用Arrarys的方法
-
-### foreach循环
-
-JDK5.0新增，用来遍历集合或数组
-
-- for(集合元素类型 局部变量 : 集合对象)
+JDK5.0新增foreash循环（增强for循环），用来遍历集合或数组：
 
 ```java
 for (Object obj : arr) {
-            System.out.println(obj);
+    System.out.println(obj);
 }
-//循环-{取arr的元素给obj--->再执行代码块}，当
+// foreash循环：将arr的元素按顺序赋给obj，再执行代码块内的代码指令，直到遍历完arr才会退出循环
 ```
 
 
 
-## 子接口-List接口
+## Collection-List
 
-存储有序的可重复的数据（存入的数据按顺序存入），就像是动态数组。
+### 概述
 
-实现类：
+List接口下的集合：存储有序的可重复的数据（存入的数据按顺序存入），就像是动态数组。
 
-- ArrayList：JDK1.2，主要使用该实现类，线程不安全，效率高；底层用Object[]存储；
-- LinkedList：JDK1.2，频繁的插入、删除操作，使用该实现类比ArrayList效率高；底层用双向链表存储；
-- Vector：JDK1.0，线程安全，效率低，底层用Object[]存储；
+三个实现类：
+
+1. ArrayList：JDK1.2，主要使用该实现类，线程不安全，效率高；底层用Object[]存储；
+2. LinkedList：JDK1.2，频繁的插入、删除操作，使用该实现类比ArrayList效率高；底层用双向链表存储；
+3. Vector：JDK1.0，线程安全，效率低，底层用Object[]存储；
 
 【面试】比较ArrayList、LinkedList、Vector异同
 
-- 相同：实现了List接口，存储有序的可重复的数据；
+- 相同：都实现了List接口，用于存储有序的可重复的数。
 - 不同：
 
 ### List接口方法
 
-List 集合里添加了一些根据索引来操作集合元素的方法，常用方法如下：
+List 集合里多添加了一些根据索引来操作集合元素的方法，常用方法如下：
 
-- void add(int index, Object ele)：把ele元素插入到index位置
-- boolean addAll(int index, Collection eles)：集合eles作为一个元素插入到index位置，只相当往这插入了一个元素
-- Object get(int index)：获取指定index位置的元素 
-- int indexOf(Object obj)：返回obj在集合中首次出现的位置 
-- int lastIndexOf(Object obj)：返回obj在当前集合中末次出现的位置 
-- Object remove(int index)：移除指定index位置的元素，并返回此元素 
-- Object set(int index, Object ele)：设置（更改）指定index位置的元素为ele 
-- List subList(int fromIndex, int toIndex)：返回从fromIndex到toIndex 位置的子集合（返回范围为[fromIndex， int toIndex)）
+| 方法                                       | 作用                                                         |
+| ------------------------------------------ | ------------------------------------------------------------ |
+| void add(int index, Object ele)            | 把元素ele插入到index位置                                     |
+| boolean addAll(int index, Collection eles) | 将集合eles作为一个元素插入到index位置                        |
+| Object get(int index)                      | 获取指定index位置的元素                                      |
+| int indexOf(Object obj)                    | 返回obj在集合中首次出现的位置                                |
+| int lastIndexOf(Object obj)                | 返回obj在当前集合中末次出现的位置                            |
+| Object remove(int index)                   | 移除指定index位置的元素，并返回此元素                        |
+| Object set(int index, Object ele)          | 设置（更改）index位置的元素为ele                             |
+| List subList(int fromIndex, int toIndex)   | 返回从fromIndex到toIndex 位置的子集合<br>（返回范围为 [fromIndex， int toIndex) ） |
 
 常用方法总结：
 
@@ -2145,23 +2145,29 @@ List 集合里添加了一些根据索引来操作集合元素的方法，常用
 4. 查询：get(int index)
 5. 插入：add(int index, Object obj)
 6. 长度：size()
-7. 遍历：迭代器Iterator           foreach循环     普通的循环
+7. 遍历的三种方式：迭代器Iterator、foreach循环、普通循环。
 
-list集合选择：
+不同情况下List集合的选择：（如何选择ArrayList和LinkedList）
 
-![](images/lsitchose.png)
+1. 改、查的操作多的话，就选用ArrayList。（具体业务中查的操作最多（80%~90%），ArrayList是经常会使用的）
+2. 增、删的操作多的话，就选用LinkdList。
+
+|           | 底层结构 | 增删效率                       | 改查效率 |
+| --------- | -------- | ------------------------------ | -------- |
+| ArrayList | 可变数组 | 较低<br>（扩容方式是数组扩容） | 较高     |
+| LinkdList | 双向链表 | 较高（元素通过链表追加）       | 较低     |
 
 ### ArrayList源码分析
 
-![image-20210923162505809](C:/Users/Scholar/AppData/Roaming/Typora/typora-user-images/image-20210923162505809.png)
+<img src="C:/Users/Scholar/AppData/Roaming/Typora/typora-user-images/image-20210923162505809.png" alt="image-20210923162505809" style="zoom: 67%;" />
 
 - debug时建议把enable那个勾去掉，不然idea在debug时显示的数据是简化的。
 
-结论：
+源码分析结论：
 
-1. 底层维护了一个Object[] elementData数组；
-2. 使用无参构造器创建ArrayList对象，则初始化elementData容量为0，第一次添加后为10；超出容量会自动扩容为原来的1.5倍；
-3. 使用指定大小的构造器，则初始容量为构造器形参值，扩容时也是扩容为初始容量的1.5倍；
+1. 底层维护了一个`Object[] elementData`数组。
+2. 使用无参构造器创建ArrayList对象，则初始化elementData容量为0，第一次添加后为10；超出容量会自动扩容为原来的1.5倍。
+3. 使用指定大小的构造器，则初始容量为构造器形参值，扩容时也是扩容为初始容量的1.5倍。
 4. 
 
 ```java
@@ -2184,9 +2190,9 @@ list.add(11);//超出容量，扩容为原来的1.5倍，原数组复制到新�
 
 ### LinkedList源码分析
 
-- 实现了双向列表和双端队列等特点；
-- 可以添加任意元素(可重复)，包括null；
-- 线程不安全，没有实现同步；
+- 实现了双向列表和双端队列等特点。
+- 可以添加任意元素(可重复)，包括null。
+- 线程不安全，没有实现同步。
 
 ![](images/linklist.png)
 
@@ -2210,24 +2216,22 @@ list.add(123); //将123封装到Node中，创建了Node对象
 
 ### Vector源码分析
 
-1. 底层也是Object[] elementData数组；
-2. 无参的默认容量10，扩容按2倍；有参数的直接按两倍扩容机制；
-3. Vector的操作方法带有锁，是线程安全的（效率不高）；
-4. 考虑线程同步安全的，优先考虑Vector；
+1. 底层也是`Object[] elementData`数组。
+2. 无参的默认容量10，扩容按2倍；有参数的直接按两倍扩容机制。
+3. Vector的操作方法带有锁，是线程安全的（效率不高）。
+4. 考虑线程同步安全的，优先考虑Vector。
 
 ```java
 //new Vector();   创建了长度为10的数组，扩容为2倍	
 ```
 
-总结
-
-关于源码分析：所调用的行为结构的内部逻辑。
+关于源码分析：分析所调用的行为结构的内部逻辑。
 
 
 
-## 子接口-Set接口
+## Collection-Set
 
-Set接口：存放无序、不可重复的数据--->数学中的集合（无序、互异）；
+Set接口：存放无序、不可重复的数据--->数学中的集合（无序、互异）。
 
 Set接口主要实现类：
 
@@ -2236,7 +2240,7 @@ Set接口主要实现类：
 - LinkedHashSet：HashSet的子类，遍历其内部数据时，可以按照添加的顺序遍历；
 - TreeSet：可以按照添加的对象的指定属性来进行排序。
 
-### Set概述
+### 概述
 
 Set的无序性和不可重复性：（以HashSet为例）
 
@@ -2244,7 +2248,7 @@ Set的无序性和不可重复性：（以HashSet为例）
 - 不可重复性：保证添加的元素按照equals()判断返回false；
 - Set的底层是Map的实现类。
 
-### 使用
+### 方法使用
 
 1. Set接口没有定义新的方法，使用的都是Collection接口里的；
 2. 虽然无序，但取出的顺序是固定的（也就是hash值经计算完毕再得出的索引值不会每运行一次就改变一次）；
@@ -2291,13 +2295,13 @@ class Scholar {
 }
 ```
 
-### HashSet
+### HashSet源码分析
 
 底层实际是HaspMap（数组+链表+红黑树），只能存放一个null键。
 
 ![](images/hashset_add.png)
 
-### LinkedHashSet
+### LinkedHashSet源码分析
 
 - HashSet的子类，底层是LiskedMap，底层维护了一个数组加双向列表；
 - 根据hashcode决定元素存储位置，同时使用链表维护元素次序，使得看起来是按添加顺序存储的；
@@ -2305,7 +2309,7 @@ class Scholar {
 
 ![](images/linkedhashset.png)
 
-### TreeSet
+### TreeSet源码分析
 
 往TreeSet中添加数据要求是相同类的对象。
 
@@ -2315,6 +2319,8 @@ class Scholar {
 
 P540
 
+
+
 ## Map
 
 ### 概述
@@ -2323,17 +2329,17 @@ Map：双列数据，存储key-value对的数据--->类似函数y = f(x)。
 
 主要实现类：
 
-- HashMap：主要实现类；线程不安全，效率较高；（底层：数组+链表(JDK7之前；数组+链表+红黑树(JDK8))）；
+1. HashMap：主要实现类；线程不安全，效率较高；（底层：数组+链表(JDK7之前；数组+链表+红黑树(JDK8))）。
   - LinkedHashMap：保证在遍历的时候按添加元素的顺序实现遍历（在HashMap底层结构基础上，添加了一对指针，指向前一个和后一个元素），对于频率的遍历操作，此类执行效率比HashMap高。
-- TreeMap：保证按照添加的key-value来进行排序(按key来排)，实现排序遍历；考虑key的自然排序和定制排序；（底层使用红黑树）；
-- Hashtable：JDK1.0，古老的实现类；线程安全的，效率较低，不能存储null的key-value（出现null会抛异常），使用基本和hashmap一样；
+2. TreeMap：保证按照添加的key-value来进行排序(按key来排)，实现排序遍历；考虑key的自然排序和定制排序；（底层使用红黑树）。
+3. Hashtable：JDK1.0，古老的实现类；线程安全的，效率较低，不能存储null的key-value（出现null会抛异常），使用基本和hashmap一样；
   - Properties：常用来处理配置文件，key和value都是String型。
 
 Map的特点：
 
-- 存储键值对key-value，key可以为null但只能是一个，映射关系：一对一、多对一；
-- 当添加相同的key的值时，相当于是替换；
-- key-value是存在一个HashMap的Node中的（因为Node实现了Entry，因此也可以说一对键值对就是一个Entry）
+1. 存储键值对key-value，key可以为null但只能是一个，映射关系：一对一、多对一。
+2. 当添加相同的key的值时，相当于是替换。
+3. key-value是存在一个HashMap的Node中的（因为Node实现了Entry，因此也可以说一对键值对就是一个Entry）。
 
 key-value源码分析：
 
@@ -2548,7 +2554,7 @@ ArrayList<String> list = new ArrayList<>(); // 泛型对象的创建，<>指定�
 
 1. 泛型指定时只能是引用类型，就是说`ArrayList<String>`的String不能是int等基本数据类型。
 2. 如果在构造器形参中使用了泛型，传入的值可以是创建对象时泛型指定的类型或该类型的子类。
-3. 泛型类型可以不指定，不指定时默认是Object类型。
+3. 泛型类型可以不指定，不指定时默认是指Object类型。
 4. 类型参数能被用来声明返回值类型，并且能作为泛型方法得到的实际参数类型的占位符。
 
 ## 自定义泛型
@@ -2729,9 +2735,7 @@ public void test() throws IOException {
 
 ![](images/IO.png)
 
-RandomAccessFile（任意）。
-
-由末尾的Stream、Reader、Writer就可以确定是哪个流。
+RandomAccessFile（任意）。由末尾的Stream、Reader、Writer就可以确定是哪个流。
 
 ### 流的使用的基本套路
 
