@@ -77,8 +77,7 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 版本回退：
 
 1. `$ git reset --hard HEAD~`：退回当前版本的前一个版本，回退后，原版本提交会被丢失。
-   - `HEAD`：指当前版本；`HEAD^`、`HEAD~1`：都是指当前版本的前一个版本；`HEAD~2`：回退两次。
-
+   - `HEAD`：指当前版本；`HEAD^`、`HEAD~1`：都是指当前版本的前一个版本；`HEAD~n`：回退n次。
 2. `$ git reset --hard commit-id`：使用commit id来指定要回退到哪个版本，日志查看中会显示出commit-id。
 3. `$ git reflog`：用于显示曾执行过的历史指令（提交和回退的），这样可以找到版本的commit-id，以便确定要回到哪个版本。
 
@@ -107,7 +106,7 @@ Git，分布式版本控制系统，由Linux用C语言创建的。
 
 1. `$ git add xx.xxx`后，会把文件添加到暂存区，再次修改文件时是不会改变已经提交到暂存区的文件的，此时提交（`git commit`），提交的是暂存区的文件而非已经再次修改但没有`git add`的文件。使用暂存区对修改进行了跟踪，依赖于文件添加操作。
 
-2. `$ git diff HEAD -- readme.txt`：用于查看**工作区**和**版本库里面**最新版本的区别。
+2. `$ git diff HEAD -- readme.txt`：用于查看**工作区**和**版本库中**最新版本的区别。
 
 ## 撤销修改
 
@@ -249,6 +248,8 @@ $ git remote rm origin
    $ git checkout dev # 切换
    ```
 
+2. 删除分支：`git branch -d dev`。
+
 2. 查看分支：
 
    - `git branch`，列出所有分支，当前所在分支前用`*`来标记。
@@ -258,9 +259,9 @@ $ git remote rm origin
 
    - 先切换到master分支：`$ git checkout master`；
 
-   - 再合并：`git merge dev`命令用于合并指定分支到当前分支；
+   - 再合并分支：`git merge dev`命令用于合并指定分支到当前分支；
 
-   - 合并完，删除dev分支：`$ git branch -d dev`。
+   - 合并完，就删除分支：`$ git branch -d dev`。
 
 4. 切换分支：（最新版本的Git提供了新的`git switch`命令来切换分支）
 
