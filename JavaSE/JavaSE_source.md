@@ -1,4 +1,4 @@
-集合
+# List
 
 ## ArrayList源码分析
 
@@ -16,7 +16,11 @@
 
 ### add()流程探究
 
+使用到的测试代码：
+
 ![](source_img/3.add_1.png)
+
+方法执行流程：（无参构造、首次添加数据）
 
 <img src="source_img/444.svg" style="zoom:150%;" />
 
@@ -63,6 +67,73 @@
    2. 由空参构造器创建的集合，第一次往集合添加元素时才将底层数组对象设置容量，默认为10。
    3. 需要扩容的时候，默认扩容为当前集合容量的1.5倍。
    4. 集合容量有限，最大容量为Integer.MAX_VALUE。
+
+执行到第二个for循环时，会进行扩容：
+
+1. size表示底层数组的下标，当第十一次添加数据时，size=10，此时minCapacity=size+1=11。
+2. 接下来的流程和上面一样，最后会进入grow()方法来进行扩容。
+3. 进入grow方法的扩容过程：
+   1. oldCapacity = elementData.length = 10；
+   2. newCapacity = oldCapacity + (oldCapacity >> 1) = 10 + 10 / 2 = 15；
+   2. newCapacity - minCapacity < 0 不成立；
+   2. newCapacity - MAX_ARRAY_SIZE > 0 不成立；
+   2. elementData = Arrays.copyOf(elementData, newCapacity) ===> 创建新数组并复制旧数据，扩容完成。
+
+如果使用有参构造器，仅是构造器的差别，add()的方法的执行逻辑是没有什么变化的。
+
+```java
+ArrayList arrList = new ArrayList(5);
+```
+
+```java
+public ArrayList(int initialCapacity) {
+        if (initialCapacity > 0) {
+            this.elementData = new Object[initialCapacity];
+        } else if (initialCapacity == 0) {
+            this.elementData = EMPTY_ELEMENTDATA;
+        } else {
+            throw new IllegalArgumentException("Illegal Capacity: "+
+                                               initialCapacity);
+        }
+    }
+```
+
+ArrayList的有参构造器：
+
+1. 传入的参数即为底层elementData数组的初始容量。
+2. 扩容是在add()方法执行中来完成的，扩容时扩容为原来容量的1.5倍。
+
+看源码可以这么做：先去看实现了什么效果，然后带着问题去追源码（是怎么实现这个效果的？）。
+
+## Vector源码分析
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## LinkedList源码分析
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

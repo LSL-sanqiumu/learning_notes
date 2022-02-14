@@ -922,8 +922,6 @@ java.lang.Math提供了一系列静态方法用于科学计算。其方法的参
 | static int round(float a)     | 将参数加上0.5后再向下取整                                    |
 | static long round(double a)   | 将参数加上0.5后再向下取整，结果转换为long型返回              |
 
- 
-
 | Math方法-三角函数运算                  | 作用                                                       |
 | -------------------------------------- | ---------------------------------------------------------- |
 | static double sin(double a)            | 返回角的三角正弦值，参数以孤度为单位                       |
@@ -947,8 +945,6 @@ public static void main(String[] args) {
 1 的反正切值：0.7853981633974483
 120 度的弧度值：2.0943951023931953
 ```
-
-
 
 | Math方法-指数运算                    | 作用                                     |
 | ------------------------------------ | ---------------------------------------- |
@@ -979,15 +975,23 @@ Integer类作为int的包装类，能存储的最大整型值为2^31-1，Long类
 java.math包的BigInteger可以表示不可变的任意精度的整数。BigInteger提供所有Java 的基本整数操作符的对应物，并提供 java.lang.Math的所有相关方法。 另外，BigInteger还提供以下运算：模算术、GCD 计算、质数测试、素数生成、位操作以及一些其他操作。
 
 1. 构造器 `BigInteger(String val)`：根据字符串构建BigInteger对象。
-2. 常用方法
-  - public BigInteger abs()：返回此 BigInteger 的绝对值的 BigInteger。
-  - BigInteger add(BigInteger val) ：返回其值为 (this + val) 的 BigInteger 。
-  - BigInteger subtract(BigInteger val) ：返回其值为 (this - val) 的 BigInteger 。
-  - BigInteger multiply(BigInteger val) ：返回其值为 (this * val) 的 BigInteger 。
-  - BigInteger divide(BigInteger val) ：返回其值为 (this / val) 的 BigInteger。整数 相除只保留整数部分。
-  - BigInteger remainder(BigInteger val) ：返回其值为 (this % val) 的 BigInteger。
-  - BigInteger[] divideAndRemainder(BigInteger val)：返回包含 (this / val) 后跟 (this % val) 的两个 BigInteger 的数组；
-  - BigInteger pow(int exponent) ：返回其值为 (thisexponent) 的 BigInteger。
+2. 常用方法：
+
+     - public BigInteger abs()：返回此 BigInteger 的绝对值的 BigInteger。
+
+     - BigInteger add(BigInteger val) ：返回其值为 (this + val) 的 BigInteger 。
+
+     - BigInteger subtract(BigInteger val) ：返回其值为 (this - val) 的 BigInteger 。
+
+     - BigInteger multiply(BigInteger val) ：返回其值为 (this * val) 的 BigInteger 。
+
+     - BigInteger divide(BigInteger val) ：返回其值为 (this / val) 的 BigInteger。整数 相除只保留整数部分。
+
+     - BigInteger remainder(BigInteger val) ：返回其值为 (this % val) 的 BigInteger。
+
+     - BigInteger[] divideAndRemainder(BigInteger val)：返回包含 (this / val) 后跟 (this % val) 的两个 BigInteger 的数组。
+
+     - BigInteger pow(int exponent) ：返回其值为 (thisexponent) 的 BigInteger。
 
 ## BigDecimal类
 
@@ -1071,7 +1075,7 @@ public static void main(String[] args) {
 
 **如何将"yyyy-MM-dd"格式的字符串转换为java.sql.Date？**
 
-方法一：
+方法一：通过SimpleDateFormat将字符串转换为Date，再通过java.sql.Date的构造器将Date转换为java.sql.Date
 
 ```java
 public static void main(String[] args) {
@@ -1375,12 +1379,12 @@ class Season{
 }
 ```
 
-- JDK5.0，可以使用enum关键字，该类默认继承了java.lang.Enum，所以不能再继承其它的类
+- JDK5.0，可以使用enum关键字，使用该关键字修饰的类默认继承了java.lang.Enum，所以不能再继承其它的类
 
 ```java
 enum Season{
 
-    SPRING("春天", "春意盎然"), // 常量名(实参列表)，使用无参构造器创建枚举对象，则可以省略`(实参列表)`；对象必须在行首
+    SPRING("春天", "春意盎然"), // 常量名(实参列表)，使用无参构造器创建枚举对象时可以省略`(实参列表)`；对象必须在行首
     SUMMER("夏天", "夏日炎炎"),
     AUTUMN("秋天", "秋高气爽"),
     WINTER("冬天", "冬温夏清");
@@ -1398,15 +1402,17 @@ Enum类的主要成员方法：
 
 1. values()方法：返回枚举类型的对象数组。该方法可以很方便地遍历所有的枚举值。
 
-  - ```java
-    Season[] arr = Seasom.values();
-    ```
+     - ```java
+       Season[] arr = Seasom.values();
+       ```
+
 
 2. valueOf(String str)：返回枚举类中对象名是指定字符的对象。如不是，会有运行时异常IllegalArgumentException。
 
-  - ```java
-    Season[] arr = Seasom.valuesOf("xxx"); // 字符串必须为已有的常量名 
-    ```
+     - ```java
+       Season[] arr = Seasom.valuesOf("xxx"); // 字符串必须为已有的常量名 
+       ```
+
 
 3. toString()：返回当前枚举类对象常量的名称；
 
@@ -2226,7 +2232,7 @@ list.add(123); //将123封装到Node中，创建了Node对象
 ### Vector源码分析
 
 1. 底层也是`Object[] elementData`数组。
-2. 无参的默认容量10，扩容按2倍；有参数的直接按两倍扩容机制。
+2. 无参的默认容量10，扩容则扩容为原来的2倍；有参数的直接按两倍扩容机制。
 3. Vector的操作方法带有锁，是线程安全的（效率不高）。
 4. 考虑线程同步安全的，优先考虑Vector。
 
