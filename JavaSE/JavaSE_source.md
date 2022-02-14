@@ -161,9 +161,27 @@ add()的流程如下：
 
 ## LinkedList源码分析
 
+### 构造器
 
+无参构造器源码：
 
+```java
+public LinkedList() {
+}
+```
 
+有参构造器源码：c的元素都转化为LinkedList的元素
+
+```java
+public LinkedList(Collection<? extends E> c) {
+    this();
+    addAll(c);
+}
+```
+
+### add()
+
+<img src="source_img/6.linkedlist_add.png" style="zoom: 50%;" />
 
 
 
