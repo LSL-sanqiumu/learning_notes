@@ -107,21 +107,61 @@ ArrayList的有参构造器：
 
 ## Vector源码分析
 
+### 构造器源码
 
+使用无参构造器，底层elementData数组初始化容量为10：
 
+<img src="source_img/4.vector_cons.png" style="zoom: 67%;" />
 
+使用有参构造器，传入参数即为底层elementData数组初始化容量：
 
+<img src="source_img/4.vector2_cons.png"  />
 
+### add()流程探究
 
+测试代码：
 
+![](source_img/5.v_add.png)
 
+方法流程：
 
+<img src="source_img/555.svg" style="zoom:120%;" />
 
+add()的流程如下：
 
+1. 因为使用无参构造器，底层elementData数组默认初始化容量为10。
 
+2. 使用add()为Vector对象添加基本数据类型的数据，会先进行装箱。
 
+3. add()方法里调用了ensureCapacityHelper()方法，该方法用来确定容量是否需要扩容：
+
+   - 当容量不足时，需要扩容，就会调用grow()方法，该方法源码如下：
+
+     ```java
+     private void grow(int minCapacity) {
+         // 10
+         int oldCapacity = elementData.length;
+         // capacityIncrement=0，所以只要需要扩容就都是扩容2倍
+         int newCapacity = oldCapacity + ((capacityIncrement > 0) ?
+                                          capacityIncrement : oldCapacity);
+         if (newCapacity - minCapacity < 0)
+             newCapacity = minCapacity;
+         if (newCapacity - MAX_ARRAY_SIZE > 0)
+             newCapacity = hugeCapacity(minCapacity);
+         elementData = Arrays.copyOf(elementData, newCapacity);
+     }
+     ```
+
+结论：
+
+1. add()方法被synchronized修饰，加了同步锁，是线程安全的。
+2. Vector每一次扩容都扩为原来的两倍。
+
+使用有参构造器，初始化的容量是传入的参数值，扩容机制在add()的过程中实现，仍然是按两倍扩容的方式扩容。
 
 ## LinkedList源码分析
+
+
 
 
 

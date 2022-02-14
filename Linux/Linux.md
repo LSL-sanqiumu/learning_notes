@@ -517,20 +517,20 @@ tar指令：
 
 组的设置：
 
-- `groupadd 组名`：新增组；
-- `groupdel 组名`：删除组；
-- `cat /etc/group | grep 组名`：查看组信息；
+1. 新增组：`groupadd 组名`。
+2. 删除组：`groupdel 组名`。
+3. 查看组信息：`cat /etc/group | grep 组名`。
 
 组的更换：
 
-- `usermod -g 用户组 用户名`：修改用户的组；
-- `useradd -g 用户组 用户名`：新建用户并指定到用户组；
-- `chgrp 组名 文件名或目录`：修改文件所在组，chgrp后加`-R`可以递归修改目录及目录下文件所属的组。
+1. 修改用户所属组：`usermod -g 用户组 用户名`。
+2. 新建用户并指定到用户组：`useradd -g 用户组 用户名`。
+3. 修改文件所在组：`chgrp 组名 文件名或目录`。（chgrp后加`-R`可以递归修改目录及目录下文件所属的组）
 
 查看：
 
-- `ls -ahl`：查看文件的所有者、所在组；
-- `usermod -d 目录名 用户名 指定用户登录的初始目录`：改变用户所在组并指定用户登录后所在的工作目录（前提要有访问此目录的权限）。
+1. `ls -ahl`：查看文件的所有者、所在组。
+2. `usermod -d 目录名 用户名 指定用户登录的初始目录`：改变用户所在组并指定用户登录后所在的工作目录（前提要有访问此目录的权限）。
 
 ## 权限介绍
 
@@ -644,7 +644,7 @@ Linux采用“载入”的处理方法；Linux将一个分区和一个目录联�
 - `ls -lR /opt | grep "^d" |wc -l`：统计/opt文件夹下全部目录的总数（递归统计）；
 - `tree 目录名`：以树状显示目录结构（如果没有tree，使用`yum install tree`安装）。
 
-## 记一次扩容根目录
+# 记一次扩容根目录
 
 在VMware界面右键点击你创建的计算机进入设置，将硬盘新增到25GB，要先挂机再操作：
 
@@ -703,60 +703,181 @@ Linux采用“载入”的处理方法；Linux将一个分区和一个目录联�
 
 # 网络配置
 
-查看ip配置：
+## NAT网络原理
 
-- Windows下：`ipconfig`；
-- Linux下：`ifconfig`；
+<img src="img/11.NAT.png" style="zoom:67%;" />
 
-测试主机之间的网络连通性：`ping 目的主机`，例如`ping www.baidu.com`。
+1. Linux虚拟机的IP地址为192.168.2.131。
+2. Windows的以太网适配器 VMware Network Adapter VMnet8的IPv4 地址是192.168.2.1。
+3. Linux虚拟机和VMnet8的IP相似，在linux虚拟机`ping 192.168.2.1`可以通，在Windows上ping Linux的也会通。
+4. Windows的无线局域网适配器 WLAN的IPv4 地址是192.168.101.8，以太网适配器通过无线局域网适配器，然后再走网关、路由器等，就可以访问外网了。
 
-其他的先不接触。。。。。。
+## Linux网络配置指令
+
+### 查看ip配置
+
+- Windows下：`ipconfig`。
+- Linux下：`ifconfig`。
+
+![](img/10.ens33.png)
+
+网卡名称ens33，指自动被援模式，ens33下`inet 192.168.137.131`即为主机地址，远程连接就是通过该IP地址，不联网是不会显示该地址的。
+
+- en：标识ethernet。
+- o：主板板载网卡，集成是的设备索引号。
+- p：独立网卡，PCI网卡。
+- s：热插拔网卡，USB之类的扩展槽索引号。
+- nnn（数字）：MAC地址+主板信息计算得出唯一序列。
+
+ping用于测试主机之间的网络连通性：`ping 目的主机`，例如`ping www.baidu.com`。
+
+### 静态ip配置
+
+1. 自动配置，会自动获取到IP地址，避免IP冲突（IP可能会变化，系统界面的网络连接设置可设置为自动）
+
+2. 手动配置：`vim /etc/sysconfig/network-scripts/ifcfg-ens33`（程序员使用）
+
+   <img src="img/12.config.png" style="zoom: 67%;" />
+
+`vim /etc/sysconfig/network-scripts/ifcfg-ens33`，进入该文件后进行设置：
+
+1. 需要设置的是BOOTPROTO以及最后的IP地址、网关、域名解析器，如下：
+
+   ```bash
+   TYPE=Ethernet
+   PROXY_METHOD=none
+   BROWSER_ONLY=no
+   BOOTPROTO=static
+   DEFROUTE=yes
+   IPV4_FAILURE_FATAL=no
+   IPV6INIT=yes
+   IPV6_AUTOCONF=yes
+   IPV6_DEFROUTE=yes
+   IPV6_FAILURE_FATAL=no
+   IPV6_ADDR_GEN_MODE=stable-privacy
+   NAME=ens33
+   UUID=f05d1f02-2a4c-4dd5-b886-0b594f5c7c79
+   DEVICE=ens33
+   ONBOOT=yes
+   #IP地址
+   IPADDR=192.168.137.130
+   #网关
+   GATEWAY=192.168.137.2
+   #域名解析器
+   DNS1=192.168.137.2
+   ```
+
+2. 设置好后，还需要在虚拟网络编辑器里设置：子网IP的前三个和上面设置的IP地址的前三个一样，网关和上面的GATEWAY一样。
+
+   <img src="img/13.changeNetWork.png" style="zoom: 67%;" />
+
+3. 要使设置生效：重启网络服务（`service network restart`）或重启系统（`reboot`）。
+
+4. `ifconfig`再查看IP。
+
+### 主机名和映射
+
+为了记忆方便，或根据需要设置主机名：
+
+- 查看主机名：`hostname`。
+- 修改主机名：`vim etc/hostname`，进入该文件进行修改；修改后需要重启。
+
+设置host映射，这样就可以通过主机名来ping某个系统：
+
+- Windows下设置的方法：在`C:\Windows\System32\drivers\ect\hosts`文件中指定，指定格式`192.168.200.130 lsl`。
+- Linux下设置分方法：在`/etc/hosts`文件中指定，例如`192.168.137.130 lsl`。
+
+主机名解析：
+
+- hosts文件：存放IP与主机名的映射关系的文件。
+- DNS（Domain Name System），域名系统，互联网上域名与IP地址相互映射的一个分布式数据库。
+
+浏览器输入请求地址后的域名解析：
+
+1. 浏览器先查缓存中有没有该域名解析后的IP地址，有就调用；如果没有就检测DNS缓存器，如果有就返回。（本地解析器缓存）
+2. 一般情况下，电脑成功访问某个网页，在一定时间内浏览器或操作系统会缓存DNS解析记录（IP地址），
+   - cmd：`ipconfig /displaydns`——查看DNS域名解析缓存；`ipconfig /flushdns`——手动清除dns缓存。
+3. 没有在缓存中找到，就检查系统中的hosts文件，有就返回，没有就去访问域名服务器进行解析。
+
+- 
 
 # 进程服务防火墙
 
 ## 进程
 
-ps指令：`ps -ef|grep redis`
+在Linux中，每个执行的程序都是一个进程，每一个进程都有一个ID号（pid，进程号）；进程分为前台进程和后台进程。一般系统服务都以后台进程存在，并常驻。
 
-父子进程
+### ps指令
 
-终止进程
+ps指令，用来参考系统中进程的执行状况、是否在执行等，可不加任何参数：
 
-查看进程树
+- `ps [选项]`：`-a`，显示所有进程；`-u`：以用户的格式显示进程；`-x`：显示后台进程运行参数。
+- `ps -aux |grep xxx`：查看某服务。
 
-先不接触。。。。。。
+![](img/14.psall.png)
 
-## 服务
+![](img/15.ps_ef.png)
+
+### 父子进程
+
+- `ps -ef|grep redis`：以全格式查看redis进程（-e：显示所有；-f：全格式），查看进程的父进程。
+
+### 终止进程
+
+1. `kill [选项] 进程号`：通过进程号杀死进程；常用选项是`-9`，表示立刻杀死进程。
+2. `killall 进程名称`：通过进程名称杀死进程，也支持通配符，在系统负载过大而变得很慢的时候有用。
+
+案例：
+
+1. 踢掉某个非法登录的用户：先查出用户通过ssh登录的进程号，然后`kill 进程号`。
+2. 终止远程登录服务，并在适当时候再次重启sshd服务：
+   - 通过进程号kill掉sshd的服务。
+   - 启动服务：`/bin/ststemctl start sshd.service`。
+3. 终止多个gedit：`killall grdit`。
+4. 强制杀掉终端：查看到进程的终端号，然后`kill -9 进程号`。
+
+### 查看进程树
+
+`pstree [选项]`：查看进程树；选项`-p`：显示进程的PID；`-u`：显示进程的所属用户。
+
+- 树状形式显示进程的PID：`pstree -p`。
+- 树状形式显示进程的用户名：`pstree -u`。
+
+
+
+## 服务管理
 
 service-服务是运行在后台的进程，通常都会监听端口来等待其它程序的请求，例如mysqld、sshd、防火墙等，因此又称为守护进程。
 
-- `setup`可以查看所有的服务（使用tab键切换），带`*`的是会开启重启的。（Centos7下可以使用`ls -l /etc/init.d`：查看service指令管理的服务）
-- `service 服务名 [start | stop | restart | reload | status]`：对服务进行管理，开启、停止、重启、查看状态。
+**查看服务状况：**
 
-chkconfig指令：与服务在哪个运行级别的自启动/关闭有关
+1. `setup`可以查看所有的服务（使用tab键切换），带`*`的是会开启重启的。（Centos7下可以使用`ls -l /etc/init.d`：查看service指令管理的服务）
+2. `service 服务名 [start | stop | restart | reload | status]`：对服务进行管理，开启、停止、重启、查看状态。
 
-- `chkconfig --list`：查看服务在几个运行级别的自启动情况；
-- `chkconfig 服务名 --list`：查看单个服务在几个运行级别的自启动情况；
-- `chkconfig --level 运行级别(数字) 服务名 on(或者off)`：设置服务在某运行级别下的自启动；（重启后生效）
+**查看服务在运行级别的自启动情况：**（chkconfig指令：与服务在哪个运行级别的自启动/关闭有关）
 
-systemctl指令：CentOS7后很多指令都使用这个管理
+1. `chkconfig --list`：查看服务在几个运行级别之中的自启动情况；
+2. `chkconfig 服务名 --list`：查看单个服务在几个运行级别的自启动情况；
+3. `chkconfig --level 运行级别(数字) 服务名 on(或者off)`：设置服务在某运行级别下的自启动；（重启后生效）
 
-- `systemctl [start | stop | restart | status] 服务名`：对服务进行管理(立即生效但只是暂时的)，开启、停止、重启、查看状态；
-- 其管理的服务在`/usr/lib/systemd/system`下查看；
-- `systemctl list-unit-files [| grep 服务名]`：查看服务开机自启动状态，可使用grep进行过滤；
-- `systemctl enable 服务名`：设置服务开机自启动（永久生效）；
-- `systemctl disable 服务名`：停止服务开机自启动（永久生效）；
-- `systemctl is-enable 服务名`：查看服务是否是自启动的；
-- **关闭防火墙**：firewalld.service
+**systemctl指令：**CentOS7后很多指令都使用这个管理
+
+1. `systemctl [start | stop | restart | status] 服务名`：对服务进行管理(立即生效但只是暂时的)，开启、停止、重启、查看状态；
+2. 其管理的服务在`/usr/lib/systemd/system`下查看；
+3. `systemctl list-unit-files [| grep 服务名]`：查看服务开机自启动状态，可使用grep进行过滤；
+4. `systemctl enable 服务名`：设置服务开机自启动（永久生效）；
+5. `systemctl disable 服务名`：停止服务开机自启动（永久生效）；
+6. `systemctl is-enable 服务名`：查看服务是否是自启动的；
+7. **关闭防火墙**：firewalld.service
   - `systemctl disable firewalld.service`：开启自启动中移除；（服务名可不加.service）
   - `systemctl stop firewalld.service`：关闭防火墙服务。
 
-firewall指令：
+**firewall——防火墙设置：**
 
-- 打开端口：`firewall-cmd --permanent --add-port=端口号/协议`。
-- 关闭端口：`firewall-cmd --permanent --remove-port=端口号/协议`。
-- 重新载入，使打开或关闭端口生效：`firewall-cmd --reload`。
-- 查询端口开发状态：`firewall-cmd --query-port=端口/协议`。
+1. 打开端口：`firewall-cmd --permanent --add-port=端口号/协议`。
+2. 关闭端口：`firewall-cmd --permanent --remove-port=端口号/协议`。
+3. 重新载入，使打开或关闭端口生效：`firewall-cmd --reload`。
+4. 查询端口开发状态：`firewall-cmd --query-port=端口/协议`。
 
 ![](img/firewalld.png)
 
@@ -764,17 +885,19 @@ Windows的telnet需要在Windows功能里开启 Telnet Client。
 
 ## 动态监控进程
 
-- `top [选项]`：用来显示正在执行的线程，执行一段时间可以更新正在运行的进程（与ps命令的区别），执行后按q退出。
+`top [选项]`：
+
+- 用来显示正在执行的线程，执行一段时间可以更新正在运行的进程（与ps命令的区别），执行后按q可以退出。
 - 选项：`-d 秒数`：指定top命令每隔几秒更新，默认是3秒；`-i`：不显示任何闲置或僵死进程；`-p`：通过指定监控进程ID来监控某个进程。
 
 进入top后的交互：
 
-- 输入P：以CPU使用率排序（默认的）。
-- 输入M：以内存的使用率排序。
-- 输入N：以PID排序。
-- 输入q：退出top。
-- 输入u后回车再输入用户名：监视特定用户。
-- 输入k回车再输入要结束的进程的ID号：终止指定的进程。
+1. 输入P：以CPU使用率排序（默认的）。
+2. 输入M：以内存的使用率排序。
+3. 输入N：以PID排序。
+4. 输入q：退出top。
+5. 输入u后回车再输入用户名：监视特定用户。
+6. 输入k回车再输入要结束的进程的ID号：终止指定的进程。
 
 ## 监控网络状态
 
@@ -791,32 +914,29 @@ RPM  是Red-Hat Package Manager（红帽软件包管理器）的缩写，用于�
 
 rpm包查询：
 
-- `rpm -qa [| grep/more xx]`：查询已安装的rmp包；
-- `rpm -q 软件包名`：查询软件包是否安装；
-- `rpm -qi 软件包名`：查询软件包信息，例如`rpm -qi firefox`；
-- `rpm -ql 软件包名`：查询软件包中文件；
-- `rpm -qf 文件全路径名`：查询文件所属的软件包；
+1. `rpm -qa [| grep/more xx]`：查询已安装的rmp包。
+2. `rpm -q 软件包名`：查询软件包是否安装。
+3. `rpm -qi 软件包名`：查询软件包信息，例如`rpm -qi firefox`。
+4. `rpm -ql 软件包名`：查询软件包中文件。
+5. `rpm -qf 文件全路径名`：查询文件所属的软件包。
 
 rpm包卸载：
 
-- `rpm -e RMP包的名称(名称可以不写全)`：卸载rpm包，如果该包被依赖则删除不成功，`rpm -e --nodsps RMP包的名称`这样可以强制删除（不推荐）；
+- `rpm -e RMP包的名称(名称可以不写全)`：卸载rpm包，如果该包被依赖则删除不成功，`rpm -e --nodsps RMP包的名称`这样可以强制删除（不推荐）。
 
 安装rpm包：
 
-- `rpm -ivh RPM包的全路径名称`：i是install，v是verbose（提示），h是hash（进度条）；
-- 例如：`rpm -ivh /opt/firefox-60.2.2-1.el7.centos.x86_64.rpm `，安装火狐（输入rpm包所在目录后输入头部的一些信息再按tab键可快速补全）；
+1. `rpm -ivh RPM包的全路径名称`：i是install，v是verbose（提示），h是hash（进度条）。
+2. 例如：`rpm -ivh /opt/firefox-60.2.2-1.el7.centos.x86_64.rpm `，安装火狐（输入rpm包所在目录后输入头部的一些信息再按tab键可快速补全）；
 
 ## yum
 
 yum：一个shell前端软件包管理器，基于rpm包管理，能够从指定的服务器自动下载rpm包并安装，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。
 
-查询指令：
+1. 查询指令：`yum list | grep xxx软件(或软件列表)`，用于查询yum服务器是否有需要安装的软件。
 
-- `yum list | grep xxx软件(或软件列表)`：查询yum服务器是否有需要安装的软件；
+2. 安装指令：`yum install xxx`，用于下载安装指定的软件。
 
-安装指令：
-
-- `yum install xxx`：下载安装指定的软件；
 
 # 搭建JavaEE环境
 
@@ -868,31 +988,31 @@ yum：一个shell前端软件包管理器，基于rpm包管理，能够从指定
 
 ![](img/shell.png)
 
-- shell脚本一般以.sh结尾（Linux没有后缀的概念）；
+1. shell脚本一般以.sh结尾（Linux没有后缀的概念）。
 
-- shell脚本文件的格式：固定开头`#!/bin/bash`
+2. shell脚本文件的格式：固定开头`#!/bin/bash`
 
   ```shell
   #!/bin/bash 
   脚本命令
   ```
 
-- shell脚本的注释：单行注释`#`，多行注释`:<<!  !`，多行注释开头和结束符要单独一行；
+3. shell脚本的注释：单行注释`#`，多行注释`:<<!  !`，多行注释开头和结束符要单独一行。
 
-- 要赋予脚本权限，`chmod u+o hello.sh`；
+4. 要赋予脚本权限，`chmod u+o hello.sh`。
 
-- 脚本执行方式：
+5. 脚本执行方式：
 
-  1. 给予了脚本可执行权限：直接在终端输入相对路径或绝对路径，回车即可；
-  2. `sh 脚本`：这种情况可以不加权限就可以执行；
+  - 给予了脚本可执行权限：直接在终端输入相对路径或绝对路径，回车即可。
+  - `sh 脚本`：这种情况可以不加权限就可以执行。
 
 ## shell变量
 
 系统变量和用户自定义变量：
 
-- 系统变量：$HOME、$PATH、$SHELL、$USER等，可使用`echo 系统变量`输出变量值；`set`命令可查看shell中所有的变量；
+1. 系统变量：$HOME、$PATH、$SHELL、$USER等，可使用`echo 系统变量`输出变量值；`set`命令可查看shell中所有的变量。
 
-- 自定义变量：
+2. 自定义变量：
 
   - ```bash
     #!/bin/bash 
@@ -901,37 +1021,37 @@ yum：一个shell前端软件包管理器，基于rpm包管理，能够从指定
     readonly B=2 # 定义静态变量B，静态变量不能被撤销
     ```
 
-  - 定义变量规则：名称可由数字、字母、下划线组成，但不能以数字开头；变量名一般大写；等号两侧不能有空格；
+  - 定义变量规则：名称可由数字、字母、下划线组成，但不能以数字开头；变量名一般大写；等号两侧不能有空格。
 
-  - 命令返回值返回给变量：`A=$(date)`或用反单引号``包住命令；
+  - 命令返回值返回给变量：`A=$(date)`或用反单引号``包住命令。
 
 环境变量设置（环境变量可简单理解为全局变量）：
 
-- `export 变量名=变量值`：将shell变量设置为环境变量或全局变量；
-- `source 配置文件`：让修改后的配置文件立即生效；
-- `echo $变量`：查看变量的值
+1. `export 变量名=变量值`：将shell变量设置为环境变量或全局变量。
+2. `source 配置文件`：让修改后的配置文件立即生效。
+3. `echo $变量`：查看变量的值。
 
 位置参数变量：
 
-- 执行脚本时可以从命令行传入参数给脚本：例如`./myshell.sh 100 200 300 ...`，可传入多个变量值；
-- 脚本内接收传入变量：
-  - `$n`：拿到某个传入参数，n为自然数，$0是命令本身，$1-$9代表参数1-9，如果10个以上，则使用大括号：`${10}`等；
-  - `$*`：拿到所有传入的参数，把传入的参数看作是一个整体；
-  - `$@`：拿到所有传入的参数，把传入的参数区分对待；
-  - `$#`：拿到传入参数个数；
+1. 执行脚本时可以从命令行传入参数给脚本：例如`./myshell.sh 100 200 300 ...`，可传入多个变量值。
+2. 脚本内接收传入变量：
+  - `$n`：拿到某个传入参数，n为自然数，$0是命令本身，$1-$9代表参数1-9，如果10个以上，则使用大括号：`${10}`等。
+  - `$*`：拿到所有传入的参数，把传入的参数看作是一个整体。
+  - `$@`：拿到所有传入的参数，把传入的参数区分对待。
+  - `$#`：拿到传入参数个数。
 
 预定义变量：shell设计者预先定义好的变量
 
-- `$$`：代表当前进程进程号，可获得当前进程号（PID）；
-- `$!`：最后一个后台运行的进程号PID；
-- `$?`：最后一次命令返回的值，是0代表上一个命令执行正确，如果上一个命令执行不正确，具体的返回值由命令来绝定；
+1. `$$`：代表当前进程进程号，可获得当前进程号（PID）。
+2. `$!`：最后一个后台运行的进程号PID。
+3. `$?`：最后一次命令返回的值，是0代表上一个命令执行正确，如果上一个命令执行不正确，具体的返回值由命令来绝定。
 
 ## shell运算符
 
-1. 运算操作表达式：`$((运算式))`或`$[运算式]`、或`expr m + n`（expression：表达式，使用expr要注意运算符之间要有空格）；
-2. expr相对于一个指令，要返回指令的结果使用反引号``包住指令；
-3. 运算符：乘法：`\*`（使用expr才需要转义）；除：/；取余：%；
-4. 推荐使用`$[运算式]`；
+1. 运算操作表达式：`$((运算式))`或`$[运算式]`、或`expr m + n`（expression：表达式，使用expr要注意运算符之间要有空格）。
+2. expr相对于一个指令，要返回指令的结果使用反引号``包住指令。
+3. 运算符：乘法：`\*`（使用expr才需要转义）；除：/；取余：%。
+4. 推荐使用`$[运算式]`。
 5. 判断符：
 
 ![](img/判断符.png)
