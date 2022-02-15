@@ -21,7 +21,7 @@ SQL：（Structure Query Language）结构化查询语言，是一套标准（�
 
 非关系型数据库：（No  SQL）not only
 
-- Redis，MongDB；
+- Redis，MongDB。
 - 对象存储，通过对象自身的属性来决定  。
 
 DBMS：数据库管理系统
