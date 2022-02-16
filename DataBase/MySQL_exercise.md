@@ -1,4 +1,12 @@
-# 单表
+
+
+# 一、简单查询
+
+考察知识点：
+
+> SQL 的书写规则是什么？
+> 如何指定查询条件？
+> SQL 是如何运行的？
 
 ## 重复数据查找
 
@@ -28,6 +36,15 @@ select name from (select name,count(name) as c from student group by name) as t 
 -- 方法2：分组后过滤
 select name from student group by name having count(name) > 1;
 ```
+
+# 二复杂查询
+
+考察知识点：
+
+> 分组汇总
+> 子查询
+> 标量子查询
+> 关联子查询
 
 ## 查找第n高的数据
 
@@ -79,13 +96,21 @@ select ifnull(
     ,null) as '语文成绩第二的分数';
 ```
 
-# 多表
+# 三、多表查询
+
+考察知识点：
+
+> 什么是交叉联结？
+> 什么是交叉联结？
+> 什么是左联结？
+> 什么是右联结？
+> 什么是全联结？
 
 ## 表的联结
 
 ### 联表查询基本操作
 
-**问题：**现在有两个表，“学生表”记录了学生的基本信息，有“学号”、“姓名”。“成绩表”记录了学生选修的课程，以及对应课程的成绩。这两个表通过“学号”进行关联。现在要查**找出所有学生的学号、姓名、课程和成绩**。
+**问题1：**现在有两个表，“学生表”记录了学生的基本信息，有“学号”、“姓名”。“成绩表”记录了学生选修的课程，以及对应课程的成绩。这两个表通过“学号”进行关联。现在要查**找出所有学生的学号、姓名、课程和成绩**。
 
 ```mysql
 create table mysqltest.student(
@@ -937,7 +962,7 @@ from grades group by id;
 +------+----------+----------+
 ```
 
-## 表的自联结应用
+## 自联结应用
 
 一个表，遇到计算时间间隔的问题，使用自联结。
 
@@ -1015,24 +1040,24 @@ create table employees()engine=innodb default charset=utf8;
 
 ```mysql
 create table `userinfo`(
-	id int(2) zerofill not null auto_increment primary key comment '用户ID',
+	id int(2) zerofill not null comment '用户ID',
     appname varchar(10),
     startingtime int,
     nums int,
     logintime date
 )engine=innodb default charset=utf8;
+-- 设计表中数据：
 insert into userinfo(appname,startingtime,nums,logintime) values
 ('相机',1,2,'2018-05-01'),('微信',2,3,'2018-05-02'),
 ('美团',4,2,'2018-05-03'),('微信',6,3,'2018-05-01'),
 ('相机',3,1,'2018-05-03'),('相机',2,3,'2018-05-01'),
 ('相机',2,2,'2018-05-02'),('微信',1,1,'2018-05-01'),
 ('美团',3,2,'2018-05-02'),('相机',4,3,'2018-05-03');
-
 ```
 
-**解：**
+**解：**拆分为三个模块：用户数、留存用户数、留存率，一个个突破。
 
-1.活跃用户数有对应的日期，表示每一行记录记录的是当天的活跃用户数。
+1.日期和活跃用户数。
 
 按每天（登陆时间）分组（group by ），统计应用（相机）每天的活跃用户数（计数函数count）。
 
@@ -1047,7 +1072,7 @@ select logintime,count(distinct id) as 活跃用户数 from userinfo where appna
 +------------+------------+
 ```
 
-2.次日留存用户数
+2.留存用户数
 
 - 次日留存用户数：在今天有登录，并且在明天也有登录的用户数，也就是**时间间隔=1**。
 - 一个表如果涉及到时间间隔，就需要用到自联结，也就是将两个相同的表进行联结。
@@ -1057,32 +1082,42 @@ select logintime,count(distinct id) as 活跃用户数 from userinfo where appna
 ​	2.1：使用自连结找出应用（相机）的每个用户的登录时间与其他时间的映射——时间映射表
 
 ```mysql
-
+select a.id,a.logintime,b.logintime from userinfo a join userinfo b on a.id=b.id where a.appname='相机';
 ```
 
 ​	2.2：再利用时间映射表求出时间间隔
 
 ```mysql
-
+select b.id,timestampdiff(day,a.logintime,b.logintime) as 时间间隔 
+from userinfo a join userinfo b on a.appname='相机' and b.appname='相机' where timestampdiff(day,a.logintime,b.logintime) =1;
 ```
 
 ​	2.2：再根据上面的结果过滤出时间间隔为1的
 
 ```mysql
-
+select c.时间间隔
+from (select timestampdiff(day,a.logintime,b.logintime) as lt from userinfo a join userinfo b on a.appname='相机' and b.appname='相机';) c
+where c.lt=1;
 ```
 
+3.用户留存率
+
+3.1
+
+# 四、SQL高级功能
+
+考察知识点：
+
+> 什么是窗口函数？
+> 如何使用窗口函数？
+> 窗口函数解决3类问题：
+> 1）分组排名2）topN问题3）每个组内比较
 
 
-# 面试题
 
 
 
-
-
-
-
-# 项目实战
+# 五、项目实战题
 
 
 

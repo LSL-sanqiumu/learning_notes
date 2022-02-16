@@ -1,4 +1,10 @@
-# MySql概述
+# MySql
+
+## 学习目的
+
+数据库、表、字段类型、SQL语句的使用、SQL函数的使用、事务、索引、数据库表设计。
+
+## MySql概述
 
 JavaEE是为了企业级Java开发准备的，WEB分为：前端（页面渲染，数据显示）、后台（连接数据库JDBC，链接前端（控制，控制视图跳转，给前端传递数据））、数据库（存储数据）。
 
@@ -12,7 +18,7 @@ SQL：（Structure Query Language）结构化查询语言，是一套标准（�
 
 《MySQL必知必会》《高性能MySQL》《MySQL技术内幕Innodb存储引擎》
 
-## 数据库分类
+### 数据库分类
 
 关系型数据库：(SQL)
 
@@ -29,7 +35,7 @@ DBMS：数据库管理系统
 - 数据库的管理软件，科学有效管理数据，维护和获取数据；
 - MySQL、Oracle等。
 
-## MySQL
+### MySQL
 
 MySQL是一个**关系型数据库管理系统**。
 
@@ -39,11 +45,11 @@ MySQL是一个**关系型数据库管理系统**。
 
 MySQL 是最流行的关系型数据库管理系统之一，在 WEB 应用方面，MySQL是最好的 RDBMS(Relational Database Management System，关系数据库管理系统) 应用软件之一。MySQL是一种关系型数据库管理系统，关系型数据库将数据保存在不同的表中，而不是将所有数据放在一个大仓库内，这样就增加了速度并提高了灵活性。MySQL所使用的 SQL 语言是用于访问数据库的最常用标准化语言。MySQL 软件采用了双授权政策，分为社区版和商业版，由于其体积小、速度快、总体拥有成本低，尤其是开放源码这一特点，一般中小型网站、大型网站的开发都选择 MySQL 作为网站数据库。其可以集群。
 
-# 下载安装
+## 下载安装
 
 官网：[MySQL](https://www.mysql.com/)（建议：安装软件尽量都用压缩包来安装，也就是所谓的绿色版本）
 
-## 安装MySQL5：
+### 安装MySQL5
 
 下载地址：[MySQL :: Download MySQL Community Server](https://dev.mysql.com/downloads/mysql/)
 
@@ -82,7 +88,7 @@ MySQL 是最流行的关系型数据库管理系统之一，在 WEB 应用方面
 - 缺少组件.dll
 - 如果安装失败，可以使用`sc delete mysql`清空服务来重装
 
-## 安装MySQL8:
+### 安装MySQL8
 
 安装了MySQL5的情况下安装MySQL8，先停止启动了的MySQL服务。
 
@@ -135,7 +141,7 @@ default-character-set=utf8mb4
 
 ![](img/mysql.png)
 
-## 安装SQLyog
+### 安装SQLyog
 
 可视化软件，下载：[SQLyog - Download (softonic.com)](https://sqlyog.en.softonic.com/)
 
@@ -155,15 +161,21 @@ default-character-set=utf8mb4
 
    ![](img/createTable.png)
 
-5. 打开新建的表，添加数据，类似Excel的添加，添加完就刷新一下会提示是否保存
+5. 打开新建的表，添加数据，类似Excel的添加，添加完就刷新一下会提示是否保存。
 
 
 
 ## 数据库基本命令
 
+Windows下cmd窗口中进入MySQL数据库管理系统：
+
+```mysql
+mysql -u root -p123456
+```
+
+进入数据库管理系统后的基本命令：
+
 ```sql
-# 连接数据库，进入数据库管理系统
-mysql -u root -p123456;
 # 修改数据库密码
 update mysql.user set authentication_string=password('123456') where user='root' and Host='localhost'; 
 # 刷新权限
@@ -174,7 +186,6 @@ describe xxx;
 exit;
 --   # 单行注释（mysql的本来的注释）
 /**/ # 多行注释
-
 ```
 
 # 表
@@ -433,7 +444,7 @@ MySQL引擎在物理文件上的区别：
 - InnoDB： 在数据库表中只有一个xxx.frm文件，以及上级目录下的 ibdata1文件；
 - MyISAM ：xxx.frm - 表示结构的定义文件，xxx.MYD -数据文件(data)，xxx.MYI-放索引的(index)。
 
-# ---------------SQL---------------
+# -------SQL start-------
 
 数据库xx语言：（CURD(create update retrieve delete)	CV	API）
 
@@ -878,11 +889,11 @@ select ... from ... where ... group by ... having ... order by ... limit page,pa
 
 连接查询的SQL语句分类：SQLJoins，可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。inner join ... on一种，left join 、right join 、full outer join 和on 、 where分别搭配又分出六种：
 
-![](img/sql-join.png)
+<img src="img/sql-join.png" style="zoom: 67%;" />
 
 ### 内连接
 
-**内连接：**（两表特定字段在特定条件存在交集的数据集（我的理解））
+**内连接：**（两表特定字段在特定条件的交集数据集（我的理解））
 
 ```mysql
 inner join -- inner join的就是内连接
@@ -891,7 +902,7 @@ select s.id,s.name,g.course,g.scores from student s join grades g on s.id=g.id;
 select s.id,s.name,g.course,g.scores from student as s inner join grades as g on s.id=g.id;
 ```
 
-**等值连接：**on后条件用=的就是等值连接，条件不是等值关系就是非等值连接
+**等值连接：**on后条件用`=`的就是等值连接，条件不是等值关系就是非等值连接
 
 ```mysql
 -- SQL92语法的等值内连接 结构不清晰，表的连接和筛选都放在了where后面
@@ -923,13 +934,11 @@ INSERT INTO `school`.`category` (`CATEgoryid`, `pid`, `categoryname`) VALUES (8,
 INSERT INTO `school`.`category` (`categoryid`, `pid`, `CAtegoryname`) VALUES (6, 3, 'web开发'); 
 INSERT INTO `SCHool`.`category` (`categoryid`, `pid`, `categoryname`) VALUES (7, 5, 'ps技术');
 # 把一张表当两张表用——通过起两个别名
-# 下面的SQL语句的功能为：选取两表中categoryname都相等的数据的pid、categoryname
+# 下面的SQL92语法语句的功能为：选取两（a、b）表中categoryname都相等的数据的pid、categoryname
  SELECT a.pid,a.categoryname 
  FROM category AS a, category AS b
  WHERE a.categoryname = b.categoryname;
 ```
-
-
 
 ### 外连接
 
@@ -1014,7 +1023,9 @@ join d on a和d连接的条件
 ... 
 ```
 
-### 交叉连结
+### 交叉连接
+
+交叉连接 (笛卡尔积)：返回被连接的两个表所有数据行的笛卡尔积。（n 对 n条映射）
 
 ```mysql
  select * from sales as a cross join sales as b;
@@ -1091,28 +1102,27 @@ from student order by `交换后座位号` asc;
 联合，用于将查询结果联合在一起，结果集重复的数据（整条记录的字段名、字段类型、字段值一致）才会合并成一条：
 
 ```mysql
- select name,age from info where age = 20 union select name,age from info where age = 18;
- +----------+-----+
-| name     | age |
-+----------+-----+
-| 王小楚   |  20 |
-| 王楚     |  20 |
-| 齐永华   |  20 |
-| 诗涵沁   |  18 |
-| 王芳     |  18 |
-| 欧阳晓宇 |  18 |
-+----------+-----+
+ select name,age from info where age = 20 union select school,nowadays from info where age = 20;
++--------------+------------+
+| name         | age        |
++--------------+------------+
+| 王小楚        | 20         |
+| 王楚          | 20         |
+| 齐永华        | 20         |
+| 上海理工大学   | 2022-01-05 |
+| 电子科技大学   | 2022-01-05 |
++--------------+------------+
 select name,age from info where age = 20 union select name,age from info where age = 20;
 +--------+-----+
 | name   | age |
 +--------+-----+
-| 王小楚 |  20 |
-| 王楚   |  20 |
-| 齐永华 |  20 |
+| 王小楚  |  20 |
+| 王楚    |  20 |
+| 齐永华  |  20 |
 +--------+-----+
 ```
 
-- 使用union在进行结果集合并的时候要求两个结果集的列数相同，列的类型可以不同（Oracle下则要求列数、列数据类型都一致）。
+- 使用union在进行结果集合并的时候要求**两个结果集的列数一致**，列的类型可以不同（Oracle下则要求列数、列数据类型都一致）。
 - 一定的场景下，相比联表查询会效率高一些，因为联表查询匹配次数满足笛卡尔积。
 
 
@@ -1207,7 +1217,7 @@ grant all on databasetest.* to `lsl`@`localhost`; -- 为该用户授予该数据
 revoke 权限列表 on 数据库名.表名 from `用户名`@`主机名`;
 ```
 
-# ---------------SQL---------------
+# --------SQL end--------
 
 # 数据库常用函数
 
@@ -1320,11 +1330,11 @@ sum(xx); avg(xx); max(xx); min(xx);
 
 1. `datediff(日期1, 日期2)`：
    - 得到的结果是日期1与日期2相差的天数，如果日期1比日期2大，结果为正；如果日期1比日期2小，结果为负。
-   - `select datediff('2022-01-27','2022-01-29') as compare;`。
+   - `select datediff('2022-01-27','2022-01-29') as compare;` ===> -2。
 2. `timestampdiff(时间类型, 日期1, 日期2)`：
    - 这个函数和上面diffdate的正、负号规则刚好相反；日期1大于日期2，结果为负；日期1小于日期2，结果为正。
    - 在“时间类型”的参数位置，通过添加day、hour、second等关键词，来规定计算天数差、小时数差、还是分钟数差。
-   - `select timestampdiff(day,'2022-01-27','2022-01-29') as compare;`。
+   - `select timestampdiff(day,'2022-01-27','2022-01-29') as compare;` ===> 2。
 
 # MD5加密
 
@@ -1769,14 +1779,14 @@ source 指定.sql文件;
 
 以个人博客为例：
 
-- 收集信息，分析需求
+1. 收集信息，分析需求
   - 用户表（用户登录注销，用户个人信息，写博客，创建分类）
   - 分类表（文章分类，谁创建的）
   - 文章表（文章信息）
   - 友链表（友联信息）
   - [自定义表]（系统信息，某个关键字或一些主字段）key：value
-- 标识实体（需求落地到每个字段）
-- 标识实体之间的关系
+2. 标识实体（需求落地到每个字段）
+3. 标识实体之间的关系
   - 写博客：user->blog
   - 创建分类：user->category
   - 关注：user->user
@@ -1807,14 +1817,14 @@ source 指定.sql文件;
 
 在第二范式的基础上，要求所有的非主键字段必须直接依赖主键，不要产生传递性依赖（满足第一第二范式前提下，确保数据表中的每一列数据都和主键直接相关，而不能间接相关）。
 
-数据库设计三范式是理论上的，实践和理论有时会有偏差，但最终的目的都是为了满足客户的需求，有时候会拿冗余换执行速度，**有时可能会存在数据冗余，但是为了减少表的连接次数，这样做也是合理的，并且对于开发人员来说，SQL语句的编写难度也会降低**（这句话面试时带上）。
+老杜嘱咐：数据库设计三范式是理论上的，实践和理论有时会有偏差，但最终的目的都是为了满足客户的需求，有时候会拿冗余换执行速度，**有时可能会存在数据冗余，但是为了减少表的连接次数，这样做也是合理的，并且对于开发人员来说，SQL语句的编写难度也会降低**（这句话面试时带上）。
 
 规范性和性能的问题：关联查询的表不能超过3张表
 
-- 考虑商业化的需求和目标，（成本和用户体验）数据库的性能更加重要；
-- 规范性能的问题的时候，需要适当考虑一下规范性；
-- 故意给某些表增加一下冗余的字段（从多表查询中变为单表查询）；
-- 故意增加一些计算列（从大数据量降低为小数据量的查询：索引）。
+1. 考虑商业化的需求和目标，（成本和用户体验）数据库的性能更加重要。
+2. 规范性能的问题的时候，需要适当考虑一下规范性。
+3. 故意给某些表增加一下冗余的字段（从多表查询中变为单表查询）。
+4. 故意增加一些计算列（从大数据量降低为小数据量的查询：索引）。
 
 ## 表的设计
 
