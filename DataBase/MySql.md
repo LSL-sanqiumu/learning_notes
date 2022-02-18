@@ -163,6 +163,67 @@ default-character-set=utf8mb4
 
 5. 打开新建的表，添加数据，类似Excel的添加，添加完就刷新一下会提示是否保存。
 
+### Linux下安装MySQL8
+
+**MySQL卸载：**
+
+1. 关闭MySQL服务：`systemctl stop mysqld.service`。
+2. 检查是否安装了MySQL：
+   - `rpm -qa | grep -i mysql`：如果查不到就没有安装。
+   - `systemctl status mysqld.service`：检查是否有MySQL服务。
+3. 卸载查询出的已安装查询：`yum remove xxx xxx xxx ...`。
+4. 删除mysql相关的文件：
+   - `find / -name mysql`：查找相关文件。
+   - `rm -rf xxx`：删除查找到的相关文件。
+   - `rm -rf /etc/my.cnf`：删除.cnf。
+
+**MySQL四大版本：**
+
+1. MySQL Enterprise Edition：企业付费版。
+2. MySQL Community Server：社区版，开源免费。
+3. MySQL Cluster：集群版，开源免费。
+4. MySQL Cluster CGE：高级集群版，付费。
+
+**MySQL包名称说明：**（mysql-8.0.27-1.el7.x86_64.rpm-bundle.tar）
+
+- 软件名称-版本号-发布次数.适合系统.系统架构.rpm-bundle.tar。（el7则是适合CentOS7版本）
+
+**MySQL安装：**（[MySQL :: Download MySQL Community Server (Archived Versions)](https://downloads.mysql.com/archives/community/)）
+
+1. 检测/tmp临时目录：（MySQL安装中会通过mysql用户在/tmp目录下新建tmp_db文件，所以需要给该文件较大的权限）
+   - `chmod -R 777 /tmp`。
+2. 检查依赖：
+   - `rpm -qa | grep libaio`：如果没查到libaio-0.3.109-13.el7.x86_64，就去https://centos.pkgs.org/7/centos-x86_64/libaio-0.3.109-13.el7.x86_64.rpm.html下载。
+   - `rpm -qa | grep net-tools`。
+3. 安装MySQL8：
+   1. （需要卸载系统默认安装的mariadb数据库，（`rpm -qa | grep mariadb`：查看；`rpm -e mariadb-libs-5.5.56-2.el7.x86_64 --nodeps`：卸载））
+   2. `rpm -ivh mysql-community-common-8.0.27-1.el7.x86_64.rpm`。
+   3. `rpm -ivh mysql-community-client-plugins-8.0.27-1.el7.x86_64.rpm`。
+   4. `rpm -ivh mysql-community-libs-8.0.27-1.el7.x86_64.rpm`。
+   5. `rpm -ivh mysql-community-client-8.0.27-1.el7.x86_64.rpm`。
+   6. `rpm -ivh mysql-community-server-8.0.27-1.el7.x86_64.rpm`。
+      1. 安装以上后，可使用`mysqladmin --version`、`rpm -qa | grep -i mysql`查看是否安装完成。
+4. root用户运行mysql服务，需要执行初始化命令：
+   1. `mysqld --initialize --user=mysql`：--initialize是默认以“安全模式”进行初始化，会为root用户生成一个密码并将密码标记为过期，登录后需要设置一个新密码，生成的临时密码在日志中有记录。
+   2. `chown mysql:mysql /var/lib/mysql -R`、`sudo chown -R mysql:mysql /var/log`。
+   3. （查看临时密码：`cat /var/log/mysqld.log`（root@localhost:后就是）；如果没有生成则会显示empty password）
+5. 启动mysql服务并设置：
+   1. 查看mysql服务：`systemctl status mysqld`。
+   2. 启动mysql服务：`systemctl start mysqld.service`。
+      - 如果出现“Job for mysqld.service failed because the control process exited with error code. See "systemctl status mysqld.service" and "journalctl -xe" for details.”错误，可通过journalctl -xe查看错误报告，有可能是/var/lib/mysql目录权限不够，依次执行`setenforce 0`、`chown mysql:mysql /var/lib/mysql -R`、`chmod -R 777 /var/lib/mysql`。
+   3. 设置开机自启动：`systemctl enable mysqld.service`。
+6. 进入数据库：`mysql -uroot -p `（因为我执行时没有生成密码，所以无需输入密码直接回车）。
+7. 进入后修改数据库密码：
+   1. 修改密码：`ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';`。
+   2. 设置密码永不过期：`alter user 'root'@'%' identified by 'root' password expire never;`。
+8. 授予远程访问：`create user 'root'@'%' identified with mysql_native_password by 'root';grant all privileges on *.* to 'root'@'%' with grant option;`；刷新权限`flush privileges;`。（默认情况下不能通过root来进行远程登录）
+   - 如何查看用户是否能远程登录？进入mysql后，`use mysql`，然后`select host,user from user`，就可查出，host是指可使用该用户来登录的主机，如果是host是`%`就表明任何主机都可使用该账户登录。
+9. 因为部分可视化工具，不支持最新版本 mysql 8.0 加密规则，导致无法链接：
+   - 可以修改加密规则：`ALTER USER 'root'@'%' IDENTIFIED BY 'root' PASSWORD EXPIRE NEVER;`。
+   - 或者这样：`ALTER USER 'root'@'%' IDENTIFIED with mysql_native_password by 'root';`。
+10. 关闭防火墙：`systemctl stop firewalld`、`systemctl disable firewalld.service`。
+11. SQL连接。
+
 
 
 ## 数据库基本命令
@@ -1218,6 +1279,12 @@ revoke 权限列表 on 数据库名.表名 from `用户名`@`主机名`;
 ```
 
 # --------SQL end--------
+
+# MySQL架构
+
+
+
+
 
 # 数据库常用函数
 
