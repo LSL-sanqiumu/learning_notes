@@ -1,5 +1,26 @@
 # JVM
 
+Java Virtual Machine：Java虚拟机，Java程序的运行环境（Java二进制字节码的运行环境）。
+
+- 一次编写，到处运行。
+- 自动内存管理、垃圾回收。
+- 数组下标越界检查。
+- 多态。
+
+为什么学习JVM：面试、理解底层的实现原理、（中高级必备知识）。（HotSpot）
+
+<img src="img/8.structure.png" style="zoom:50%;" />
+
+![](img/9.load.png)
+
+# 内存结构
+
+## 程序计时器
+
+Program Counter Register 程序计数器。
+
+
+
 # 编译JDK
 
 [jdk/jdk12: 06222165c35f / (java.net)](https://hg.openjdk.java.net/jdk/jdk12/file/06222165c35f)，点击browse后就跳转到源码目录，然后选择下载何种压缩包（zip、gz、bz2）。
