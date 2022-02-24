@@ -812,7 +812,7 @@ ping用于测试主机之间的网络连通性：`ping 目的主机`，例如`pi
 
 在Linux中，每个执行的程序都是一个进程，每一个进程都有一个ID号（pid，进程号）；进程分为前台进程和后台进程。一般系统服务都以后台进程存在，并常驻。
 
-### ps指令
+### ps指令查看进程
 
 ps指令，用来参考系统中进程的执行状况、是否在执行等，可不加任何参数：
 
@@ -821,7 +821,7 @@ ps指令，用来参考系统中进程的执行状况、是否在执行等，可
 
 ![](img/14.psall.png)
 
-### 父子进程
+### 查看父子进程
 
 - `ps -ef | grep redis`：以全格式查看redis进程（-e：显示所有；-f：全格式），查看进程的父进程。
 
@@ -834,7 +834,7 @@ ps指令，用来参考系统中进程的执行状况、是否在执行等，可
 
 案例：
 
-1. 踢掉某个非法登录的用户：先查出用户通过ssh登录的进程号，然后`kill 进程号`。
+1. 踢掉某个非法登录的用户：先查出用户通过ssh登录的进程号，然后执行`kill 进程号`。
 2. 终止远程登录服务，并在适当时候再次重启sshd服务：
    - 通过进程号kill掉sshd的服务。
    - 启动服务：`/bin/ststemctl start sshd.service`。
@@ -869,22 +869,22 @@ service-服务是运行在后台的进程，通常都会监听端口来等待其
 
 1. 状态管理：`systemctl [start | stop | restart | status] 服务名`，对服务进行管理(立即生效但只是暂时的)，开启、停止、重启、查看状态。
 2. 服务查看：其管理的服务在`/usr/lib/systemd/system`目录中查看。
-3. 自启动设置与查看：
-     1. `systemctl list-unit-files [| grep 服务名]`，查看服务开机自启动状态，可使用grep进行过滤。
-     2. `systemctl enable 服务名`：设置服务开机自启动（永久生效）。
-     3. `systemctl disable 服务名`：停止服务开机自启动（永久生效）。
-     4. `systemctl is-enable 服务名`：查看服务是否是自启动的。
+3. 自启动服务的查看与设置：
+     - `systemctl list-unit-files [| grep 服务名]`，查看服务开机自启动状态，可使用grep进行过滤。
+     - `systemctl enable 服务名`：设置服务开机自启动（永久生效）。
+     - `systemctl disable 服务名`：停止服务开机自启动（永久生效）。
+     - `systemctl is-enable 服务名`：查看服务是否是自启动的。
 
 4. **关闭防火墙服务**：（firewalld.service）
      - `systemctl disable firewalld.service`：从开启自启动中移除。（服务名可不加.service）
 
      - `systemctl stop firewalld.service`：关闭防火墙服务。
 
-**firewall——用于设置防火墙服务：**
+**firewall——用于设置防火墙服务：**（防火墙未关闭时才能设置防火墙）
 
 1. 打开端口：`firewall-cmd --permanent --add-port=端口号/协议`。（一般都是tcp协议）
 2. 关闭端口：`firewall-cmd --permanent --remove-port=端口号/协议`。
-3. 重新载入，使打开或关闭端口生效：`firewall-cmd --reload`。
+3. 防火墙重新载入（使打开或关闭端口生效）：`firewall-cmd --reload`。
 4. 查询端口开发状态：`firewall-cmd --query-port=端口/协议`。
 
 ![](img/firewalld.png)
@@ -909,7 +909,7 @@ Windows的telnet需要在Windows功能里开启 Telnet Client。
 
 ## 监控网络状态
 
-- `netstat [选项]`：查看网络情况，`-an`：按一定顺序排列输出、`-p`：显示哪个进程在调用。
+- `netstat [选项]`：用来查看网络情况；（`-an`：按一定顺序排列输出；`-p`：显示哪个进程在调用）。
 - `ping 对方的ip地址`：检测远程主机是否正常，检测两部主机间的网线或网卡故障。
 
 # rpm与yum
@@ -923,28 +923,28 @@ RPM  是Red-Hat Package Manager（红帽软件包管理器）的缩写，用于�
 rpm包查询：
 
 1. `rpm -qa [| grep/more xx]`：查询已安装的rmp包。
-2. `rpm -q 软件包名`：查询软件包是否安装。
-3. `rpm -qi 软件包名`：查询软件包信息，例如`rpm -qi firefox`。
-4. `rpm -ql 软件包名`：查询软件包中文件。
-5. `rpm -qf 文件全路径名`：查询文件所属的软件包。
+2. `rpm -q 软件包名`：查询软件包是否安装，如果安装了会返回rpm包名。
+3. `rpm -qi 软件包名`：查询已经安装了的软件包的信息，例如`rpm -qi firefox`。
+4. `rpm -ql 软件包名`：显示软件包中的全部文件。
+5. `rpm -qf 文件全路径名`：查询某目录下文件所属的软件包。
 
 rpm包卸载：
 
-- `rpm -e RMP包的名称(名称可以不写全)`：卸载rpm包，如果该包被依赖则删除不成功，`rpm -e --nodsps RMP包的名称`这样可以强制删除（不推荐）。
+1. `rpm -e RMP包的名称(名称可以不写全)`：卸载rpm包，如果该包被依赖则删除会失败。
+2. `rpm -e --nodsps RMP包的名称`：忽略依赖强制删除rpm包（不推荐）。
 
 安装rpm包：
 
 1. `rpm -ivh RPM包的全路径名称`：i是install，v是verbose（提示），h是hash（进度条）。
-2. 例如：`rpm -ivh /opt/firefox-60.2.2-1.el7.centos.x86_64.rpm `，安装火狐（输入rpm包所在目录后输入头部的一些信息再按tab键可快速补全）；
+2. 例如：`rpm -ivh /opt/firefox-60.2.2-1.el7.centos.x86_64.rpm `，安装火狐（输入rpm包所在目录后输入头部的一些信息再按tab键可快速补全）。
 
 ## yum
 
 yum：一个shell前端软件包管理器，基于rpm包管理，能够从指定的服务器自动下载rpm包并安装，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。
 
-1. 查询指令：`yum list | grep xxx软件(或软件列表)`，用于查询yum服务器是否有需要安装的软件。
+1. 查询指令：`yum list | grep xxx软件(或软件列表)`，用于查询yum服务器是否有需要安装的软件的软件包，如果已经安装了会在显示信息后面标有“installed”。
 
 2. 安装指令：`yum install xxx`，用于下载安装指定的软件。
-
 
 # 搭建JavaEE环境
 
@@ -1225,12 +1225,12 @@ echo "备份数据库${DATABASE}成功"
 
 rsyslogd服务：
 
-- `ps aux | grep "rsyslogd" | grep -v "grep" `：查询服务是否启动；
+- `ps aux | grep "rsyslogd" | grep -v "grep" `：查询服务是否启动。
 - `systemctl list-unit-files | grep rsyslog`：查询服务自启动状态。
 
 自定义日志服务：
 
-1. /var/log目录下新建日志文件；
+1. /var/log目录下新建日志文件。
 2. 配置rsyslogd。
 
 日志轮替：
