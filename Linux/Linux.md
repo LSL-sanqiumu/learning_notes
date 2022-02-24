@@ -1,7 +1,3 @@
-root：linux333...
-
-lsl：scholar333...
-
 # Linux
 
 ## Windows下Linux子系统
@@ -452,8 +448,9 @@ vi或vim模式切换：`:wq`（保存并退出）、`:q`（退出）、`:!q`（�
 
 ![](img/date.png)
 
-- 双引号内的可以在+后自由发挥，例如`"+%Y-%m-%d"`。
-- `cal`是显示日历的指令，显示的是当月的日历；如果是`cal 2020`则是显示2020年的整个日历。
+1. 双引号内的可以在+后自由发挥，例如`"+%Y-%m-%d"`。
+2. `s`是时间戳，毫秒数。
+3. `cal`是显示日历的指令，显示的是当月的日历；如果是`cal 2020`则是显示2020年的整个日历。
 
 ## 搜索查找指令
 
@@ -561,12 +558,13 @@ gzip，只能用来压缩文件：
 
 - `r`是4、`w`是2、`x`是1，组合成1-7表示7个权限搭配，rwx = 4 + 2 + 1 = 7。
 - `chmod 751 文件或目录`：给u-所有者7、给g-所有组5、给o-其它组1的权限，相当于·`chmod u=rwx,g=rx,o=x`。
+- `chmod 75 文件或目录`：当只指定一个或两个数字时，默认前面的为0来补满三个数。
 
 修改文件所有者：（change owner）
 
 - `chown 新的所有者(用户) 文件/目录`：改变所有者。
 - `chown -r 新的所有者(用户) 目录`：递归修改目录及目录下的文件的所有者。
-- `chown 新的所有者(用户):新的组 文件/目录`：改变文件/目录的所有者和所在组，也可以使用`-R`。
+- `chown 新的所有者(用户):新的组 文件/目录`：改变文件/目录的所有者和所在组，也可以使用`-R`来更改目录下所有文件或目录的所有者、所在组。
 
 # 任务调度
 
@@ -798,7 +796,7 @@ ping用于测试主机之间的网络连通性：`ping 目的主机`，例如`pi
 
 主机名解析：
 
-- hosts文件：存放IP与主机名的映射关系的文件。
+- hosts文件：是用来存放IP与主机名的映射关系的文件。
 - DNS（Domain Name System），域名系统，互联网上域名与IP地址相互映射的一个分布式数据库。
 
 浏览器输入请求地址后的域名解析：
@@ -807,8 +805,6 @@ ping用于测试主机之间的网络连通性：`ping 目的主机`，例如`pi
 2. 一般情况下，电脑成功访问某个网页，在一定时间内浏览器或操作系统会缓存DNS解析记录（IP地址），
    - cmd：`ipconfig /displaydns`——查看DNS域名解析缓存；`ipconfig /flushdns`——手动清除dns缓存。
 3. 没有在缓存中找到，就检查系统中的hosts文件，有就返回，没有就去访问域名服务器进行解析。
-
-- 
 
 # 进程服务防火墙
 
@@ -825,11 +821,11 @@ ps指令，用来参考系统中进程的执行状况、是否在执行等，可
 
 ![](img/14.psall.png)
 
-![](img/15.ps_ef.png)
-
 ### 父子进程
 
-- `ps -ef|grep redis`：以全格式查看redis进程（-e：显示所有；-f：全格式），查看进程的父进程。
+- `ps -ef | grep redis`：以全格式查看redis进程（-e：显示所有；-f：全格式），查看进程的父进程。
+
+![](img/15.ps_ef.png)
 
 ### 终止进程
 
@@ -854,16 +850,16 @@ ps指令，用来参考系统中进程的执行状况、是否在执行等，可
 
 
 
-## 服务管理
+## 服务管理指令
 
 service-服务是运行在后台的进程，通常都会监听端口来等待其它程序的请求，例如mysqld、sshd、防火墙等，因此又称为守护进程。
 
-**查看服务状况：**
+~~**查看服务状况：**~~
 
 1. `setup`可以查看所有的服务（使用tab键切换），带`*`的是会开启重启的。（Centos7下可以使用`ls -l /etc/init.d`：查看service指令管理的服务）
 2. `service 服务名 [start | stop | restart | reload | status]`：对服务进行管理，开启、停止、重启、查看状态。
 
-**查看服务在运行级别的自启动情况：**（chkconfig指令：与服务在哪个运行级别的自启动/关闭有关）
+~~**查看服务在运行级别的自启动情况：**~~（chkconfig指令：与服务在哪个运行级别的自启动/关闭有关）
 
 1. `chkconfig --list`：查看服务在几个运行级别之中的自启动情况；
 2. `chkconfig 服务名 --list`：查看单个服务在几个运行级别的自启动情况；
@@ -871,22 +867,22 @@ service-服务是运行在后台的进程，通常都会监听端口来等待其
 
 **systemctl指令：**CentOS7后很多指令都使用这个管理
 
-1. `systemctl [start | stop | restart | status] 服务名`：对服务进行管理(立即生效但只是暂时的)，开启、停止、重启、查看状态；
-2. 其管理的服务在`/usr/lib/systemd/system`下查看；
-3. `systemctl list-unit-files [| grep 服务名]`：查看服务开机自启动状态，可使用grep进行过滤；
-4. `systemctl enable 服务名`：设置服务开机自启动（永久生效）；
-5. `systemctl disable 服务名`：停止服务开机自启动（永久生效）；
-6. `systemctl is-enable 服务名`：查看服务是否是自启动的；
-7. **关闭防火墙**：firewalld.service
+1. 状态管理：`systemctl [start | stop | restart | status] 服务名`，对服务进行管理(立即生效但只是暂时的)，开启、停止、重启、查看状态。
+2. 服务查看：其管理的服务在`/usr/lib/systemd/system`目录中查看。
+3. 自启动设置与查看：
+     1. `systemctl list-unit-files [| grep 服务名]`，查看服务开机自启动状态，可使用grep进行过滤。
+     2. `systemctl enable 服务名`：设置服务开机自启动（永久生效）。
+     3. `systemctl disable 服务名`：停止服务开机自启动（永久生效）。
+     4. `systemctl is-enable 服务名`：查看服务是否是自启动的。
 
-     - `systemctl disable firewalld.service`：开启自启动中移除；（服务名可不加.service）
+4. **关闭防火墙服务**：（firewalld.service）
+     - `systemctl disable firewalld.service`：从开启自启动中移除。（服务名可不加.service）
 
      - `systemctl stop firewalld.service`：关闭防火墙服务。
 
+**firewall——用于设置防火墙服务：**
 
-**firewall——防火墙设置：**
-
-1. 打开端口：`firewall-cmd --permanent --add-port=端口号/协议`。
+1. 打开端口：`firewall-cmd --permanent --add-port=端口号/协议`。（一般都是tcp协议）
 2. 关闭端口：`firewall-cmd --permanent --remove-port=端口号/协议`。
 3. 重新载入，使打开或关闭端口生效：`firewall-cmd --reload`。
 4. 查询端口开发状态：`firewall-cmd --query-port=端口/协议`。
