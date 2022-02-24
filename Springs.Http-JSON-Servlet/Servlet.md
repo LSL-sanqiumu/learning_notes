@@ -1,4 +1,4 @@
-# 概述
+# Servlet概述
 
 JavaEE：Java企业版，sun公司为Java程序员准备的一套完成企业级Java开发的庞大的类库；JavaEE5规范包含13个子规范，子规范下还包含其他的规范。
 
@@ -34,11 +34,17 @@ Servlet = Serv + let，相当于服务器＋小程序，**servlet——是服务
 
 我们只需要实现Servlet接口，并把实现好的Java程序类和路径写到配置文件(web.xml)中；web.xml文件：将请求路径和Java小程序绑定。
 
-1. javaweb程序员在编程的时候一直是面向Servlet接口去完成调用，不需要关心Servlet中具体的实现类；
-2. Tomcat服务器是一个实现了Servlet规范和JSP规范的容器，所以也称为servlet容器或jsp容器；
+1. javaweb程序员在编程的时候一直是面向Servlet接口去完成调用，不需要关心Servlet中具体的实现类。
+2. Tomcat服务器是一个实现了Servlet规范和JSP规范的容器，所以也称为servlet容器或jsp容器。
 3. servlet的运行环境叫做web容器或servlet容器，Tomcat就是一个servlet容器；servlet上下文是由Web服务器为每个webapp程序创建的一块共享区域。
 
-# servlet容器
+Servlet的主要接口（javax.servlet包下和javax.servlet.http包下的）：
+
+![](img/servlet.png)
+
+![](img/http.png)
+
+# Servlet容器
 
 参考文章：[不知道这些Servlet规范、容器，还敢说自己是Java程序员? - 掘金 (juejin.cn)](https://juejin.cn/post/7024417658695057439)。
 
@@ -77,13 +83,13 @@ webapps
 		|---。。。。。。
 ```
 
+# 第一个servlet程序
 
+![](img/use_servlet.png)
 
-# servlet的基本知识
+1、创建web项目（也可直接在tomcat的webapps目录下安装约定来直接创建相关的文件）。
 
-## Servlet依赖
-
-servlet的依赖：
+2、导入servlet的依赖。
 
 ```xml
 <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
@@ -95,33 +101,7 @@ servlet的依赖：
 </dependency>
 ```
 
-数据库驱动的依赖：
-
-```xml
-<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
-<dependency>
-    <groupId>org.springframework</groupId>
-    <artifactId>spring-jdbc</artifactId>
-    <version>5.3.8</version>
-</dependency>
-```
-
-web.xml的头部：
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<web-app  xmlns = "http://xmlns.jcp.org/xml/ns/javaee"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jsp.org/xml/ns/javaee/web-app_4_0.xsd"
-          version="4.0"
-          metadata-complete="true"
-          >
-    
-    
-</web-app>
-```
-
-## 第一个servlet程序
+2、创建HelloServlet类，如下：
 
 ```java
 import javax.servlet.Servlet;
@@ -156,7 +136,7 @@ public class HelloServlet implements Servlet
 }
 ```
 
-Servlet4.0下的web.xml文件：
+3、Servlet4.0下的web.xml配置文件，用来将访问路径与servlet程序绑定：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -176,24 +156,25 @@ Servlet4.0下的web.xml文件：
   <display-name>Archetype Created Web Application</display-name>
   
   <servlet>
+     <!-- servlet的名称，自行命名 -->
     <servlet-name>thisIsServletName</servlet-name>
-     <!--如果没有在包里就直接写类名-->
+     <!-- 如果没有在包里就直接写类名 -->
     <servlet-class>HelloServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>thisIsServletName</servlet-name>
-	<!--请求路径随意编写，但是得以/开始-->
-	<!--该路径只是一个虚拟路径，代表一个资源的名称-->
+	<!-- url-pattern：请求路径，可随意编写，但是得以/开始 -->
+	<!-- 该路径只是一个虚拟路径，代表一个资源的名称 -->
     <url-pattern>/hello</url-pattern>
-	<!--可以编写多个url-pattern，以/开始-->
-	<!--注意该路径中不能添加项目名称-->
+	<!-- 可以编写多个url-pattern，以/开始 -->
+	<!-- 注意该路径中不能添加项目名称 -->
 	<url-pattern>/helloworld</url-pattern>
   </servlet-mapping>
 
 </web-app>
 ```
 
-输出到浏览器：
+4、可自行编辑要输出到浏览器的内容：
 
 ```Java
 import javax.servlet.Servlet;
@@ -233,24 +214,68 @@ public class HelloServlet implements Servlet
 }
 ```
 
-总结：
+servlet程序编写步骤总结：
 
-- 编写实现了Servlet接口的类，在重写的service()方法里编写响应操作；
-- 在web.xml文件配置servlet及其虚拟路径；
-- Servlet实现类的字节码文件要放在WEB-INF的classes目录里；
-- 启动Tomcat服务器，访问。
+1. 编写实现了Servlet接口的类，在重写的service()方法里编写响应请求的操作。
+2. 在web.xml文件配置servlet及其虚拟路径。
+3. Servlet实现类的字节码文件要放在WEB-INF的classes目录里。
+4. 启动Tomcat服务器，访问虚拟路径。
+
+# servlet的基本知识
+
+## Servlet依赖
+
+servlet的依赖：
+
+```xml
+<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+数据库驱动的依赖：
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-jdbc</artifactId>
+    <version>5.3.8</version>
+</dependency>
+```
+
+## web.xml
+
+web.xml的头部：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app  xmlns = "http://xmlns.jcp.org/xml/ns/javaee"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jsp.org/xml/ns/javaee/web-app_4_0.xsd"
+          version="4.0"
+          metadata-complete="true"
+          >
+    
+    
+</web-app>
+```
 
 ## web.xml内标签总结
 
-1. 一个webapp只有一个web.xml文件；
+1. 一个webapp只有一个web.xml文件。
 
-2. web.xml文件主要用来配置请求路径和Servlet类名之间的绑定关系；
+2. web.xml文件主要用来配置请求路径和Servlet类名之间的绑定关系。
 
-3. web.xml文件在tomcat服务器启动的阶段被解析；
+3. web.xml文件在tomcat服务器启动的阶段被解析。
 
-4. web.xml文件解析失败会导致webapp启动失败；
+4. web.xml文件解析失败会导致webapp启动失败。
 
-5. web.xml文件中的标签不能随便乱写，因为tomcat服务器早就知道了该文件中编写哪些标签；
+5. web.xml文件中的标签不能随便乱写，因为tomcat服务器早就知道了该文件中编写哪些标签。
 
 6. web.xml文件中的标签也是sun公司制定的servlet规范。
 
@@ -282,7 +307,7 @@ servlet标签用来定义servlet对象，类似于spring中的bean标签，用�
 
 ### welcome-file-list
 
-欢迎页面是webapp根目录下的HTML、JSP、htm页面资源，也可以是servlet对象、其他页面资源。设置欢迎页面在web-app标签里使用如下标签：
+欢迎页面是webapp根目录下的HTML、JSP、htm页面资源，也可以是servlet对象、其他页面资源、.action文件等。设置欢迎页面在web-app标签里使用如下标签：（欢迎页面资源在该webapp的根目录）
 
 ```xml
 <!--开头不需要“/”，可以设置多个欢迎页面，越靠上越优先，当前面的欢迎页面找不到时才使用后面的欢迎页面-->
@@ -293,13 +318,13 @@ servlet标签用来定义servlet对象，类似于spring中的bean标签，用�
 </welcome-file-list>
 ```
 
-欢迎页面设置分为全局设置和局部设置，全局设置在Tomcat服务器的conf目录的web.xml文件里，局部设置为webapp的web.xml，优先使用的是局部配置。
+欢迎页面设置分为全局设置和局部设置，全局设置在Tomcat服务器的conf目录的web.xml文件里，局部设置为webapp的web.xml，优先使用的是局部配置。当访问`http://localhost:8081/s1/`时，如果没有配置映射路径为`/`或`/*`的servlet，那么就能跳转到welcome-file-list所指定的欢迎页。
 
 ### error-page
 
 404和500是HTTP协议状态码，是W3C制定的，正常响应的HTTP协议状态码是200。
 
-* 404 Not Found ：资源未找到；
+* 404 Not Found ：资源未找到。
 * 500 Server Inner Error： 服务器内部错误，一般都是服务器中Java程序出现异常。
 
 当在web.xml中配置错误页面后，服务器会根据响应状态调用对应的错误页面，配置如下：
@@ -316,6 +341,8 @@ servlet标签用来定义servlet对象，类似于spring中的bean标签，用�
     <location>/errorPage/505.html</location>
 </error-page>
 ```
+
+需要注意的是，当配置了以`/`或`/*`为映射路径的servlet时，error-page配置会失效。
 
 ### init-param
 
@@ -386,32 +413,34 @@ servlet标签用来定义servlet对象，类似于spring中的bean标签，用�
 
 servlet中需要用到路径的有四处地方：
 
-1. servlet对象的虚拟路径；
-2. 前端页面资源里的a标签的href属性；
-3. 欢迎页面设置里的`<welcome-file>`标签；
+1. servlet对象的虚拟路径。
+2. 前端页面资源里的a标签的href属性。
+3. 欢迎页面设置里的`<welcome-file>`标签。
 4. 错误页面设置里的`<location></location>`标签。
 
 当在客户端访问服务器资源时，是相对于web服务器的webapps目录，例如访问某个应用，就是`/webappname/xxx`，而在服务器内部的webapp的服务器端处理程序则是相对于该webapp根目录进行寻址定位。
 
-1. `<url-pattern>`标签：以`/`开头，`/`前省略了hostName和webappName；   ---Servlet对象的虚拟路径
-2. `<a href="#">`标签：要以`/webappName`开头，此时`/`前代表的是主机名，如`http://localhost:8080`；  ---浏览器处理的路径
-3. `<welcome-file>`标签：是相对webapp根目录的路径；   
-4. `<location></location>`标签：以`/`开头，相对webapp根目录的路径；不要`/`，此时是相对于WEB-INF，需要通过映射路径才能访问。
+1. `<url-pattern>`标签：以`/`开头，`/`前省略了hostName和webappName；   ---Servlet对象的虚拟路径。
+2. `<a href="#">`标签：要以`/webappName`开头，此时`/`前代表的是主机名，如`http://localhost:8080`。  ---浏览器处理的路径
+3. `<welcome-file>`标签：是相对webapp根目录的路径。
+4. `<location></location>`标签：以`/`开头时是相对webapp根目录的路径；不以`/`时开头时是相对于WEB-INF，此时需要通过映射路径才能访问。
 
 总结：按照以下去进行相对路径定位
 
 1. 前端页面的请求路径是相对于webapps目录；
+
 2. 后端web小程序映射路径相对于项目根目录（webapp）；
+
 3. 相对路径：`/`代表根目录、`../`代表上一级目录、`./`代表当前目录，一般都是从`/`写起，表示作为参考的相对目录。
 
 4. 欢迎页面 
 
-  ```xml
-  <welcome-file-list>
-      <welcome-file>index.html</welcome-file>
-      <welcome-file>WelcomeServlet</welcome-file>
-  </welcome-file-list>
-  ```
+   ```xml
+   <welcome-file-list>
+       <welcome-file>index.html</welcome-file>
+       <welcome-file>WelcomeServlet</welcome-file>
+   </welcome-file-list>
+   ```
 
 
 一个Servlet可以编写多个url-pattern，服务器截断路径与servlet映射路径匹配的路径规则：
@@ -447,6 +476,8 @@ servlet中需要用到路径的有四处地方：
 
 ## Servlet接口
 
+### Servlet与生命周期
+
 Servlet接口的实现类的方法，和servlet的生命周期有一定联系：
 
 ````java
@@ -468,7 +499,7 @@ servlet对象的生命周期：生命周期表示一个Java对象从最初被创
 - Web Container管理Servlet对象的生命周期；
 - 默认情况 下，Servlet对象在Web容器启动阶段不会被实例化。【若希望在web服务器启动阶段实例化Servlet对象，可以进行特殊设置】。
 
-**Servlet对象的生命周期的描述：创建到死亡**
+**对Servlet对象的生命周期的描述：servlet的创建到死亡**
 
 1）浏览器访问URL：http://localhost:8080/prj-servlet-02/life；
 2）web容器截取请求路径：`prj-servlet-02/life`；
@@ -494,16 +525,16 @@ servlet对象的生命周期：生命周期表示一个Java对象从最初被创
 - Servlet对象的`init()`方法只执行一次；
 - Servlet对象的`service()`方法，只要用户请求一次，则执行一次；
 - Servlet对象的`destroy()`方法只执行一次；
-- 第一次启动web容器后，servlet对象被创建后，其长期存在，知道web容器关闭。
+- 第一次启动web容器后，servlet对象被创建后，其长期存在，直到web容器关闭。
 
-**注意：**（Servlet对象-实现Servlet接口的对象）
+**注意：**（Servlet对象：实现Servlet接口的对象）
 
 - `init()`方法执行的时候，Servlet对象已经被创建好了；
-  `destroy()`方法执行的时候，Servlet对象还没被销毁，即将销毁；
+  `destroy()`方法执行的时候，Servlet对象还没被销毁，处于即将销毁状态；
 
 - Servlet对象是单例，但不符合单例，只能称为伪单例（真单例构造方法私有）；
 
-  只实例化一个Servlet对象，多用户多线程访问，使用的是一个Servlet对象；
+  只实例化一个Servlet对象，多用户多线程访问，使用的是同一个Servlet对象；
   Tomcat是支持多线程的，所以Servlet对象是在单实例多线程的环境下运行的；
   那么Servlet对象中若有实例变量，并且实例变量涉及到修改操作，那么这个Servlet对象一定会存在线程安全问题，不建议在Servlet对象中使用实例变量（类的属性），尽量使用局部变量。
 
@@ -516,17 +547,17 @@ servlet对象的生命周期：生命周期表示一个Java对象从最初被创
     <!--此处设置Servlet对象在服务器启动阶段实例化的优先级-->
     <load-on-startup>1</load-on-startup>
 </servlet>
-<servlet-mapping>
-    <servlet-name>hello</servlet-name>
-    <url-pattern>/hello</url-pattern>
-</servlet-mapping>
-
 <servlet>
     <servlet-name>welcome</servlet-name>
     <servlet-class>Welcome</servlet-class>
     <!--此处设置Servlet对象在服务器启动阶段实例化的优先级-->
     <load-on-startup>0</load-on-startup>
 </servlet>
+
+<servlet-mapping>
+    <servlet-name>hello</servlet-name>
+    <url-pattern>/hello</url-pattern>
+</servlet-mapping>
 <servlet-mapping>
     <servlet-name>welcome</servlet-name>
     <url-pattern>/welcome</url-pattern>
@@ -577,6 +608,190 @@ Servlet接口中的这些方法中写什么代码？什么时候使用这些方�
 ````
 
 实际上，服务器启动时会解析web.xml文件，并且将解析的数据存放在Map集合中，当在浏览器中输入请求的路径时，web容器会先在**Map<String, Servlet>**集合找请求路径所对应的Servlet对象，如果没有找到，再去web.xml文件中寻找（**实际上不是去web.xml文件中找此路径对应的完整类名，而是去此Map集合中查找**）。
+
+### Servlet适配器
+
+为了更好地构建Servlet的对象，GenericServlet通过继承和抽象，减少了对方法的重写，也可以提供其它的方法供子类使用，使代码更加优雅。适配器模式。创建servlet对象时继承该抽象类，就可以仅对自己需要的方法进行重写，service()方法是必须要存在的，所以GenericServlet在实现Servlet接口时抽象了service()方法。
+
+**自定义适配器：**
+
+```java
+public abstract class GenericServlet implements Servlet {
+    private ServletConfig config;
+@Override
+public final void init(ServletConfig servletConfig) throws ServletException {
+    this.config = servletConfig;
+    this.init();
+}
+ // 若在初始化时刻需要执行一段特殊的代码，建议重写此无参数的init()方法
+public void init() {}
+@Override
+public ServletConfig getServletConfig() {
+    return config;
+}
+@Override
+public abstract void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException;
+@Override
+public String getServletInfo() {
+    return null;
+}
+@Override
+public void destroy() {
+}
+//-------------------自定义扩展方法，方便子类使用-----------------
+/**
+ * 获取ServletContext Servlet上下文对象
+ * @return javax.servlet.ServletContext 返回Servlet上下文对象
+ */
+public ServletContext getServletContext() {
+    return getServletConfig().getServletContext();
+}
+}
+```
+
+自定义适配器解析：
+
+1. 实现Servlet接口并把service方法抽象。
+2. 提供config属性和其get方法，还有上下文的get方法。
+3. 为了让适配器类中`init(ServletConfig)`中的代码生效，用final修饰限制不被重写，但是为了在初始化时刻可以执行一段初始化代码，就需要写一个无参数的init()方法，并在`init(ServletConfig)`方法里完成调用（这个方法就是专门用来存放初始化代码的方法，通过在init(ServletConfig servletConfig)里调用完成执行初始化代码的功能）。
+
+SUN提供了GenericServlet类（适配器类）：`javax.servlet.GenericServlet`，直接继承该类就好。
+
+### HttpServlet实现类
+
+**为什么会出现该实现类？**
+
+该实现类的出现的原因是因为“前后端请求方式一致”的需求。
+
+1. 需求：前端页面发送的请求方式要与服务器端需要的请求方式一致，也就是：
+
+   - 服务器需要前端发送POST，那么前端就应该发送POST请求，否则服务器应当提示错误信息；
+
+   - 服务器需要前端发送GET，那么前端就应该发送GET请求，否则服务器应当提示错误信息。
+
+2. 怎么完成以上的需求？
+
+   2-1：在Javaweb程序中想办法获取该请求是什么类型的请求：
+
+   如何获取请求方式？**HTTP的请求协议全部信息会被自动封装到`javax.servlet.http.HttpServletRequset`对象中**，可以根据这个接口的String getMethod()方法来获取请求方式。
+
+   ```java
+   //HtppServletRequest extends ServletRequest
+   //将ServletRequest强制转换为带有Http的接口类型
+   HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+   
+   //获取浏览器发送的请求方式
+   String method = httpServletRequest.getMethod();
+   System.out.println(method);
+   ```
+
+   - 疑问：HttpServletRequest 继承自 ServletRequest，为什么可以直接向下转型，将父类转换为子类？
+
+     其实`service()`方法的两个参数servletRequest、servletResponse，实际上并不是`new ServletRequest()`，Tomcat内部实际上是`new HttpServletRequest()`，所以本质上servletRequest是HttpServletRequest，所以我们进行强转并不会报错；同理，`service()`的另一个参数servletResponse本质上也是HttpservletResponse对象。
+
+     ````java
+     //Tomcat内部创建service()的两个参数对象，实际上是使用了多态
+     ServletRequest request = new HttpServletRequest();
+     ServletResponse response = new HttpServletResponse();
+     ````
+
+   2-2：当我们获取到请求方式以后，在Javaweb程序中可以使用Java语言进行判断：
+
+   ```java
+   if("POST".equals(method)) {
+       //.......
+   } else if("GET".equals(method)) {
+       //.......
+   }
+   ```
+
+上述总结：为了达到需求，需要在每一个Servlet实现类中都编写了以下程序，来保证前端请求方式和后台需要的请求方式一致：
+
+````java
+//将ServletRequest、ServletResponse强制转换为带有Http的接口类型
+HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
+
+httpServletResponse.setContentType("text/html;charset=UTF-8");
+PrintWriter writer = httpServletResponse.getWriter();
+
+//获取浏览器发送的请求方式
+String method = httpServletRequest.getMethod();
+System.out.println(method);
+
+
+//login是处理登陆的，要求前端必须发送POST请求
+if("GET".equals(method)) {
+    //后台报出错误
+    writer.print("405-您应当发送POST请求");
+    //前端报出错误
+    throw new RuntimeException("405-您应当发送POST请求");
+}
+
+//如果程序可以执行到这一步，说明用户发送的是POST请求，程序正常执行
+writer.print("正在登陆......");
+````
+
+以上代码在每一个Servlet实现类中都需要编写，能不能封装一下，使得在每一个具体的Servlet类中不用再编写这样的代码，但是还是能够达到同样的效果？SUN公司提供了一个类`HttpServlet`，通过实现该接口即可。
+
+**如何自定义HttpServlet？**
+
+自定义HttpServlet，封装：【prj-servlet-08】
+
+```java
+public class HttpServlet extends GenericServlet {
+    /**
+     *  此方法为原始的service()方法，最先被调用的方法
+     *  方法里调用重载的service(HttpServletRequest, HttpServletResponse)方法
+     */
+    @Override
+    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+        service(request,response);
+    }
+
+    /**
+     * 此方法获取请求方式后进行判断，
+     * 如果是GET请求就执行doGet()
+     * 如果是POST请求就执行doPost()
+     * 此方法没有理由重写，只需要将业务代码写在doGet()或doPost()方法中即可
+     */
+    public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String method = request.getMethod();
+        if("POST".equals(method)) {
+            doPost(request, response);
+        } else if("GET".equals(method)) {
+            doGet(request, response);
+        }
+    }
+
+    /**
+     * 浏览器端是什么请求时，子类继承此父类就应当重写对应的doGet()或者doPost()方法
+     * 在doGet()或者doPost()方法内写业务代码，即将原来的service()内的业务代码写到doXXX()中
+     * 如果HttpServlet子类重写的方法不对应，则会调用没有被覆盖的方法发出警告
+     */
+    public void doPost(HttpServletRequest request, HttpServletResponse response) 
+        throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().print("应当发送GET请求");
+        throw new RuntimeException("应当发送GET请求");
+    }
+
+    public void doGet(HttpServletRequest request, HttpServletResponse response) 
+        throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        response.getWriter().print("应当发送POST请求");
+        throw new RuntimeException("应当发送POST请求");
+    }
+}
+```
+
+总结：前端页面表单form的method是GET或POST，当程序运行时，先进入service()原始方法运行，再运行到重载的service()方法来判断是doGet()还是doPost()方法，再执行相应的方法。如果继承HttpServlet的类重写的方法不对，那么就覆盖不了父类的，就会执行父类的doGet()或doPost()方法，在父类的方法里设置好警示的代码，就达到了判断前后端请求是否一致并发出警告的目的。
+
+所以，我们的Servlet对象继承HttpServlet后，后端需要的是什么请求，那么我们就重写对应的doPost()或doGet()方法，方法内是我们的业务代码，并不需要重写service()方法。（当浏览器发送的请求和后台处理方式不同的话，就会出现405错误）
+
+
 
 ## ServletConfig接口
 
@@ -663,30 +878,31 @@ classDiagram
 - 所有用户若想共享同一个数据，可以将数据放到ServletContext对象中（写到web.xml文件中，或后期通过方法添加）；
 - 一般放到ServletContext对象中的数据不建议是涉及到修改操作的，因为ServletContext是多线程共享的一个对象，修改的时候会存在线程安全问题。
 
-### 方法
+### 常用方法
 
 **ServletContext接口中常用方法：**
 
-- `void setAttribute(String name, Object object)` ：添加数据到Servlet上下文；
-- `Object getAttribute(String name)`：从Servlet上下文中获取数据 ；
-- `void removeAttribute(String name)` ：从Servlet上下文中移除数据；
-- `String getInitParameter(String name)`：根据初始化参数名字获取\<context-param>标签中的初始化参数值；
-- `Enumeration getInitParameterNames()`：获取\<context-param>标签的param-name的集合；
-- `String getRealPath(String path)`：获取文件的绝对路径。
+1. `void setAttribute(String name, Object object)` ：添加数据到Servlet上下文。
+2. `Object getAttribute(String name)`：从Servlet上下文中获取数据 。
+3. `void removeAttribute(String name)` ：从Servlet上下文中移除数据。
+4. `String getInitParameter(String name)`：根据初始化参数名字获取\<context-param>标签中的初始化参数值。
+5. `Enumeration getInitParameterNames()`：获取\<context-param>标签的param-name的集合。
+6. `String getRealPath(String path)`：获取文件的绝对路径。
 
 可使用ServletConfig config对象的getServletContext()获取上下文对象，再使用方法。
 
-### 特点
+### 特点和总结
+
+**特点：**
 
 1. Servlet、ServletConfig、ServletContext之间的关系
 
    - 一个Servlet对应一个ServletConfig对象；
    - 所有的Servlet共享一个ServletContext对象。
-
-2. **ServletContext范围可以完成跨用户传递数据**
+2. **在ServletContext范围可以完成跨用户传递数据**
    A用户在ServletContext中存储了一个数据，B用户可以通过name获取对应的数据。
 
-### 总结
+**总结：**
 
 ServletConfig与ServletContext中的`getInitParameter()`、`getInitParameterNames()`的差异：
 
@@ -698,57 +914,6 @@ ServletContext中的`getInitParameter(String name)`与`getAttribute(String name)
 
 1. `getInitParameter(String name)`获取到的参数是写在web.xml文件`<context-param>`标签中的，获取到的都是字符串参数；
 2. `getAttribute(String name)`获取到的数据是运行时添加到ServletContext中的数据，数据可以是任何类型，不同用户都可以通过name获取到数据。
-
-# 适配器
-
-为了更好的构建Servlet对象，GenericServlet通过继承和抽象，减少了对方法的重写，也可以提供其它的方法供子类使用，使代码更加优雅。适配器模式。创建servlet对象时继承该抽象类，就可以仅对自己需要的方法进行重写，service()方法是必须要存在的，所以GenericServlet在实现Servlet接口时抽象了service()方法。
-
-## servlet里的适配器
-
-自定义适配器：
-
-```java
-public abstract class GenericServlet implements Servlet {
-    private ServletConfig config;
-@Override
-public final void init(ServletConfig servletConfig) throws ServletException {
-    this.config = servletConfig;
-    this.init();
-}
- // 若在初始化时刻需要执行一段特殊的代码，建议重写此无参数的init()方法
-public void init() {}
-@Override
-public ServletConfig getServletConfig() {
-    return config;
-}
-@Override
-public abstract void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException;
-@Override
-public String getServletInfo() {
-    return null;
-}
-@Override
-public void destroy() {
-}
-//-------------------自定义扩展方法，方便子类使用-----------------
-/**
- * 获取ServletContext Servlet上下文对象
- * @return javax.servlet.ServletContext 返回Servlet上下文对象
- */
-public ServletContext getServletContext() {
-    return getServletConfig().getServletContext();
-}
-}
-```
-自定义适配器解析：
-
-- 实现Servlet接口并把service方法抽象；
-- 提供config属性和其get方法，还有上下文的get方法；
-- 为了让适配器类中`init(ServletConfig)`中的代码生效，用final修饰限制不被重写，但是为了在初始化时刻可以执行一段初始化代码，就需要写一个无参数的init()方法，并在`init(ServletConfig)`方法里完成调用（这个方法就是专门用来存放初始化代码的方法，通过在init(ServletConfig servletConfig)里调用完成执行初始化代码的功能）。
-
-## SUN提供了GenericServlet类（适配器）
-
-`javax.servlet.GenericServlet`，直接继承就好。
 
 # HTTP协议
 
@@ -852,140 +1017,6 @@ GET请求和POST请求应该如何选择？
 浏览器将资源缓存后，缓存的资源是和某个特定的路径绑定在一起的，只要浏览器再发送这个相同的请求路径，这个时候浏览器就会去缓存中获取资源，不再访问服务器，以这种方式降低服务器的压力，提高用户体验。
 
 但是有的时候我们并不希望走缓存，希望每一次后台访问服务器，可以在请求路径后面添加时间戳，例如：`http://ip:port/oa/system/logout?timetamp=1234564635423`
-
-# HttpServlet实现类
-
-## 该实现类的出现
-
-（出现的原因）需求：前后端请求方式一致。
-
-1. 需求：前端页面发送的请求方式要与服务器端需要的请求方式一致：
-
-   - 服务器需要前端发送POST，那么前端就应该发送POST请求，否则服务器应当提示错误信息；
-
-   - 服务器需要前端发送GET，那么前端就应该发送GET请求，否则服务器应当提示错误信息。
-
-2. 怎么完成以上的需求？
-
-   2-1：在Javaweb程序中想办法获取该请求是什么类型的请求：
-
-   如何获取请求方式？**HTTP的请求协议全部信息会被自动封装到`javax.servlet.http.HttpServletRequset`对象中**，可以根据这个接口的String getMethod()方法来获取请求方式。
-
-   ```java
-   //HtppServletRequest extends ServletRequest
-   //将ServletRequest强制转换为带有Http的接口类型
-   HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-   
-   //获取浏览器发送的请求方式
-   String method = httpServletRequest.getMethod();
-   System.out.println(method);
-   ```
-
-   - 疑问：HttpServletRequest 继承自 ServletRequest，为什么可以直接向下转型，将父类转换为子类？
-
-     其实`service()`方法的两个参数servletRequest、servletResponse，实际上并不是`new ServletRequest()`，Tomcat内部实际上是`new HttpServletRequest()`，所以本质上servletRequest是HttpServletRequest，所以我们进行强转并不会报错；同理，`service()`的另一个参数servletResponse本质上也是HttpservletResponse对象。
-
-     ````java
-     //Tomcat内部创建service()的两个参数对象，实际上是使用了多态
-     ServletRequest request = new HttpServletRequest();
-     ServletResponse response = new HttpServletResponse();
-     ````
-
-   2-2：当我们获取到请求方式以后，在Javaweb程序中可以使用Java语言进行判断：
-
-   ```java
-   if("POST".equals(method)) {
-       //.......
-   } else if("GET".equals(method)) {
-       //.......
-   }
-   ```
-
-上述总结：为了达到需求，需要在每一个Servlet实现类中都编写了以下程序，来保证前端请求方式和后台需要的请求方式一致：
-
-````java
-//将ServletRequest、ServletResponse强制转换为带有Http的接口类型
-HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-
-httpServletResponse.setContentType("text/html;charset=UTF-8");
-PrintWriter writer = httpServletResponse.getWriter();
-
-//获取浏览器发送的请求方式
-String method = httpServletRequest.getMethod();
-System.out.println(method);
-
-
-//login是处理登陆的，要求前端必须发送POST请求
-if("GET".equals(method)) {
-    //后台报出错误
-    writer.print("405-您应当发送POST请求");
-    //前端报出错误
-    throw new RuntimeException("405-您应当发送POST请求");
-}
-
-//如果程序可以执行到这一步，说明用户发送的是POST请求，程序正常执行
-writer.print("正在登陆......");
-````
-
-以上代码在每一个Servlet实现类中都需要编写，能不能封装一下，使得在每一个具体的Servlet类中不用再编写这样的代码，但是还是能够达到同样的效果？SUN公司提供了一个类`HttpServlet`，通过实现该接口即可。
-
-## 自定义HttpServlet
-
-自定义HttpServlet，封装：【prj-servlet-08】
-
-```java
-public class HttpServlet extends GenericServlet {
-    /**
-     *  此方法为原始的service()方法，最先被调用的方法
-     *  方法里调用重载的service(HttpServletRequest, HttpServletResponse)方法
-     */
-    @Override
-    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-        HttpServletRequest request = (HttpServletRequest) req;
-        HttpServletResponse response = (HttpServletResponse) res;
-        service(request,response);
-    }
-
-    /**
-     * 此方法获取请求方式后进行判断，
-     * 如果是GET请求就执行doGet()
-     * 如果是POST请求就执行doPost()
-     * 此方法没有理由重写，只需要将业务代码写在doGet()或doPost()方法中即可
-     */
-    public void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String method = request.getMethod();
-        if("POST".equals(method)) {
-            doPost(request, response);
-        } else if("GET".equals(method)) {
-            doGet(request, response);
-        }
-    }
-
-    /**
-     * 浏览器端是什么请求时，子类继承此父类就应当重写对应的doGet()或者doPost()方法
-     * 在doGet()或者doPost()方法内写业务代码，即将原来的service()内的业务代码写到doXXX()中
-     * 如果HttpServlet子类重写的方法不对应，则会调用没有被覆盖的方法发出警告
-     */
-    public void doPost(HttpServletRequest request, HttpServletResponse response) 
-        throws IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        response.getWriter().print("应当发送GET请求");
-        throw new RuntimeException("应当发送GET请求");
-    }
-
-    public void doGet(HttpServletRequest request, HttpServletResponse response) 
-        throws IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        response.getWriter().print("应当发送POST请求");
-        throw new RuntimeException("应当发送POST请求");
-    }
-}
-```
-
-总结：前端页面表单form的method是GET或POST，当程序运行时，先进入service()原始方法运行，再运行到重载的service()方法来判断是doGet()还是doPost()方法，再执行相应的方法。如果继承HttpServlet的类重写的方法不对，那么就覆盖不了父类的，就会执行父类的doGet()或doPost()方法，在父类的方法里设置好警示的代码，就达到了判断前后端请求是否一致并发出警告的目的。
-
-所以，我们的Servlet对象继承HttpServlet后，后端需要的是什么请求，那么我们就重写对应的doPost()或doGet()方法，方法内是我们的业务代码，并不需要重写service()方法。（当浏览器发送到请求和后台处理方式不同的话，就会出现405错误）
 
 # 模版方法-设计模式
 
@@ -1346,35 +1377,37 @@ public class Register extends HttpServlet {
 跳转包括转发和重定向，跳转到的资源可以是web服务器中任何一种资源：Servlet、HTML、JSP ......等。
 
 ```java
-//转发：一次请求中，相对的是webapp，只能是用来访问服务器内部资源，不能跨webapp
+// 转发：一次请求中，相对的是webapp，只能是用来访问服务器内部资源，不能跨webapp
 request.getRequestDispatcher("/b").forward(request,response);
-//重定向：两次请求，相对的是webapps，也可以使用绝对路径访问其他服务器的webapp
-//将此路径响应给浏览器，浏览器又向服务器发送请求
+
+// 重定向：两次请求，相对的是webapps，也可以使用绝对路径访问其他服务器的webapp
+// 其作用是：将要重定向到的路径响应给浏览器，再由浏览器向服务器发送请求
 response.sendRedirect(request.getContextPath() + "/b");
-// request.getContextPath() 获取当前的上下文的根目录，也就是webapp根目录，返回的是一个相对路径，相对于webapps
+// request.getContextPath()：获取当前的上下文的根目录，也就是webapp根目录，返回的是一个相对路径，相对于webapps
 ```
 
 异同：
 
-- 相同点：都可以完成资源的跳转；
-- 不同点：
-  - 转发是request对象触发的，服务器内部进行转发；
-  - 重定向是response对象触发的，要将重定向的路径相应给浏览器；
-  - 转发是一次请求，浏览器地址栏上地址不变；
-  - 重定向是两次请求，浏览器地址栏上的地址发生变化；
-  - 重定向路径需要加项目名（webapp跟路径web目录）；
-  - 转发是在本项目内部完成资源的跳转；
+1. 相同点：都可以完成资源的跳转。
+2. 不同点：
+  - 转发是request对象触发的，服务器内部进行转发。
+  - 重定向是response对象触发的，要将重定向的路径相应给浏览器。
+  - 转发是一次请求，浏览器地址栏上地址不变。
+  - 重定向是两次请求，浏览器地址栏上的地址发生变化。
+  - 重定向路径需要加项目名（webapp跟路径web目录）。
+  - 转发是在本项目内部完成资源的跳转。
   - 重定向可以完成跨webapp跳转，例如可以跳转到`https://www.baidu.com`。
 
 什么时候采用转发，什么时候采用重定向？（大部分情况下都使用重定向）
 
-- 若想完成跨app跳转，必须采用重定向；
-- 若在上一个资源中向request范围中存储了数据，希望在下一个资源中从request范围中取出，必须使用转发；
+- 若想完成跨app跳转，必须采用重定向。
+- 若在上一个资源中向request范围中存储了数据，希望在下一个资源中从request范围中取出，必须使用转发。
 - 重定向可以解决浏览器的刷新问题。
 
 重定向原理：
 
 ```java
+// 重定向
 response.sendRedirect("/jd/login");
 ```
 
@@ -1444,13 +1477,7 @@ public class Save extends HttpServlet {
 }
 ```
 
-浏览器刷新，刷新的是浏览器的最后一次请求，使用重定向可以解决浏览器刷新问题。
-
-# 登陆页面
-
-pri-servlet-13
-
-使用到的：登录页面、数据库连接、重定向。
+浏览器刷新时，刷新的是浏览器的最后一次请求（即又向浏览器发起该请求），使用重定向可以解决浏览器刷新问题。
 
 # Cookie类
 
@@ -1775,9 +1802,7 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
 
 **登录拦截：**拦截某一些页面资源，例如后台页面等，设置验证通过后才能运行。
 
-**Filter链：**
-
-在一个web应用中，可以开发编写多个Filter，这些Filter组合起来称之为一个Filter链。
+**Filter链：**在一个web应用中，可以开发编写多个Filter，这些Filter组合起来称之为一个Filter链。
 
 web服务器根据Filter在web.xml文件中的注册顺序，决定优先调用哪个Filter，当第一个Filter的doFilter方法被调用时，web服务器会创建一个代表Filter链的FilterChain对象传递给该方法。在doFilter方法中，开发人员如果调用了FilterChain对象的doFilter方法，则web服务器会检查FilterChain对象中是否还有filter，如果有，则调用第2个filter，如果没有，则调用目标资源。
 
@@ -1832,9 +1857,9 @@ destroy()：
 
 监听器实现类开发规范：三步
 
-1. 根据监听器实际状况选择对应监听器接口进行实现；
+1. 根据监听器实际状况选择对应监听器接口进行实现。
 
-2. 重写监听器接口声明（监听事件处理方法）；
+2. 重写监听器接口声明（监听事件处理方法）。
 
    - ```java
      public class ListenerTest implements ServletContextListener {
