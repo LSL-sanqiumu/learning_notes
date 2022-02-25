@@ -318,7 +318,7 @@ servlet标签用来定义servlet对象，类似于spring中的bean标签，用�
 </welcome-file-list>
 ```
 
-欢迎页面设置分为全局设置和局部设置，全局设置在Tomcat服务器的conf目录的web.xml文件里，局部设置为webapp的web.xml，优先使用的是局部配置。当访问`http://localhost:8081/s1/`时，如果没有配置映射路径为`/`或`/*`的servlet，那么就能跳转到welcome-file-list所指定的欢迎页。
+欢迎页面设置分为全局设置和局部设置，全局设置在Tomcat服务器的conf目录的web.xml文件里，局部设置为webapp的web.xml，优先使用的是局部配置。当访问`http://localhost:8081/s1/`时，如果没有配置映射路径为`/`或`/*`的servlet，那么就能跳转到welcome-file-list所指定的欢迎页（因为该页面资源也是webapp根目录下的资源，由Tomcat配置的servlet——default来处理）。
 
 ### error-page
 
@@ -342,11 +342,11 @@ servlet标签用来定义servlet对象，类似于spring中的bean标签，用�
 </error-page>
 ```
 
-需要注意的是，当配置了以`/`或`/*`为映射路径的servlet时，error-page配置会失效。
+需要注意的是，当配置了以`/`或`/*`为映射路径的servlet时，error-page配置会失效（因为配置了这两个其中的一个，Tomcat底层的名为default的servlet就失效了，这个servlet是用来访问webapp根目录下的资源的，该配置没了也就不能直接访问webapp根目录下的资源了，只能通过servlet去访问）。
 
 ### init-param
 
-`<init-param>`标签，用来定义初始化参数：
+`<init-param>`标签，用来定义某个servlet初始化参数：
 
 1. `<init-param>`标签是初始化参数，定义在`<servlet>`标签中。
 2. `<init-param>`标签内还有`<param-name>`、`<param-value>`标签，`<param-name>`表示key，`<param-value>`表示value。
@@ -474,63 +474,81 @@ servlet中需要用到路径的有四处地方：
 
 ### Servlet与生命周期
 
-Servlet接口的实现类的方法，和servlet的生命周期有一定联系：
+Servlet接口的实现类的方法，和servlet的生命周期有一定联系；Servlet接口的方法如下：
 
 ````java
-public Servlet() // 空参构造方法
-public void init(ServletConfig config) // 初始化方法-被创建时执行，执行只执行一次
-public void service(ServletRequest req, ServletResponse res) // Servlet响应与请求-提供服务
-public void destroy() // 销毁对象前的准备，运行完此方法表示生命快结束了-销毁
+// 初始化方法：被创建时执行，执行只执行一次
+public void init(ServletConfig config)
+// 处理响应与请求：提供服务的方法
+public void service(ServletRequest req, ServletResponse res) 
+// 销毁Servlet对象前的准备，运行完此方法表示Servlet生命快结束了-销毁
+public void destroy() 
 // get方法
 public void ServletConfig getServletConfig() // 返回一个ServletConfig对象，其中包含此Servlet的初始化和启动参数
 public void String getServletInfo() // 返回有关servlet的信息，例如作者，版本和版权
 ````
 
-servlet对象的生命周期：生命周期表示一个Java对象从最初被创建到最终被销毁，经历的所有过程。
+servlet对象的生命周期：生命周期表示一个Java对象从最初被创建到最终被销毁，经历的所有过程。注意：
 
-- Servlet对象的生命周期，javaweb程序员是无权干涉的，包括Servlet对象的相关方法调用，程序员也是无权干涉的。
-- Servlet对象从最初的创建、方法的调用，以及最后被销毁，都是由web容器（比如Tomcat）来管理的。
-- Web Container管理Servlet对象的生命周期。
-- 默认情况 下，Servlet对象在Web容器启动阶段不会被实例化。【若希望在web服务器启动阶段实例化Servlet对象，可以进行特殊设置】。
+1. Servlet对象的生命周期，javaweb程序员是无权干涉的，包括Servlet对象的相关方法调用，程序员也是无权干涉的。
+2. Servlet对象从最初的创建、方法的调用，以及最后被销毁，都是由web容器（比如Tomcat）来管理的。
+3. Web Container管理Servlet对象的生命周期。
+4. 默认情况 下，Servlet对象在Web容器启动阶段不会被实例化。【若希望在web服务器启动阶段实例化Servlet对象，可以进行特殊设置】。
 
 **对Servlet对象的生命周期的描述：servlet的创建到死亡**
 
-1）浏览器访问URL：http://localhost:8080/prj-servlet-02/life；
-2）web容器截取请求路径：`prj-servlet-02/life`；
-3）web容器在容器上下文中寻找请求路径`prj-servlet-02/life`对应的Servlet对象；
-4.1）若没有找到对应的Servlet对象：
+1. 浏览器访问URL：http://localhost:8080/prj-servlet-02/life；
+2. web容器截取请求路径：`prj-servlet-02/life`；
+3. web容器在容器上下文中寻找请求路径`prj-servlet-02/life`对应的Servlet对象；
+   1. 若没有找到对应的Servlet对象：
+      1. 会通过`web.xml`文件中的相关信息，得到请求路径`prj-servlet-02/life`对应的Servlet完整类名；
+      2. 通过反射机制，调用Servlet类的无参构造方法完成Servlet对象的实例化；
+      3. web容器调用Servlet对象的`init()`方法完成初始化；
+      4. web容器调用Servlet对象的`service()`方法提供服务。
+   2. 若找到对应的Servlet对象：web容器直接调用Servlet对象的`service()`方法提供服务。
+4. Servlet对象销毁：
+   - web容器关闭的时候、webApp重新部署的时候、该Servlet对象长时间没有用户访问的时候，web容器就会将Servlet对象销毁，在销毁Servlet对象前，会调用对象的`destroy()`方法进行销毁前的准备。
 
-- 会通过`web.xml`文件中的相关信息，得到请求路径`prj-servlet-02/life`对应的Servlet完整类名；
-- 通过反射机制，调用Servlet类的无参构造方法完成Servlet对象的实例化；
-- web容器调用Servlet对象的`init()`方法完成初始化；
-- web容器调用Servlet对象的`service()`方法提供服务。
+![](img/servlet的生命周期.png)
 
-4.2）若找到对应的Servlet对象：
+1. 初始化阶段：
 
-- web容器直接调用Servlet对象的`service()`方法提供服务。
+   - 当用户第一次向 Servlet 容器发出 HTTP 请求要求访问某个 Servlet 时，Servlet 容器会在整个容器中搜索该 Servlet 对象，发现这个 Servlet 对象没有被实例化，于是创建这个 Servlet 对象，然后调用该对象的 init() 方法完成初始化。
 
-5）Servlet对象销毁：
+     当用户第二次访问这个 Servlet 时，Servlet 容器仍然在容器中搜索该 Servlet 对象，结果找到了该对象的实例，则不去创建而直接使用该对象。
 
-- web容器关闭的时候、webApp重新部署的时候、该Servlet对象长时间没有用户访问的时候，web容器就会将Servlet对象销毁，在销毁Servlet对象前，会调用对象的`destroy()`方法进行销毁前的准备。
+     找到了对应的 Servlet 对象，随后 Servlet 进入到运行阶段。
 
-**总结：**
+     需要注意的是，在 Servlet 的整个生命周期内，它的 init() 方法只被调用一次。
 
-- Servlet对象的`构造方法`只执行一次；
-- Servlet对象的`init()`方法只执行一次；
-- Servlet对象的`service()`方法，只要用户请求一次，则执行一次；
-- Servlet对象的`destroy()`方法只执行一次；
-- 第一次启动web容器后，servlet对象被创建后，其长期存在，直到web容器关闭。
+2. 运行阶段：
 
-**注意：**（Servlet对象：实现Servlet接口的对象）
+   - 这是 Servlet 生命周期中最核心的阶段。在该阶段中，Servlet 容器会为当前的请求创建一个 ServletRequest 对象和一个 ServletResponse 对象（它们分别代表 HTTP 请求和 HTTP 响应），并将这两个对象作为参数传递给 Servlet 的 service() 方法。
 
-- `init()`方法执行的时候，Servlet对象已经被创建好了；
-  `destroy()`方法执行的时候，Servlet对象还没被销毁，处于即将销毁状态；
+     service() 方法从 ServletRequest 对象中获得用户的详细请求信息并处理该请求，通过 ServletResponse 对象生成响应结果。
 
-- Servlet对象是单例，但不符合单例，只能称为伪单例（真单例构造方法私有）；
+     需要强调的是，在 Servlet 的整个生命周期内，用户每次请求访问 Servlet 时，Servlet 容器都会调用一次 Servlet 的 service() 方法，并且创建新的 ServletRequest 和 ServletResponse 对象。
 
-  只实例化一个Servlet对象，多用户多线程访问，使用的是同一个Servlet对象；
-  Tomcat是支持多线程的，所以Servlet对象是在单实例多线程的环境下运行的；
-  那么Servlet对象中若有实例变量，并且实例变量涉及到修改操作，那么这个Servlet对象一定会存在线程安全问题，不建议在Servlet对象中使用实例变量（类的属性），尽量使用局部变量。
+3. 销毁阶段：
+
+   - 当服务器停止时，Servlet 容器需要回收 Servlet 对象所占用的内存，在回收之前，会自动调用该对象的 destroy() 方法做好回收内存前的准备，辟如关闭后台线程。
+
+     和 init() 方法类似，destroy() 方法也只会被调用一次。
+
+     注意：Servlet 对象一旦创建就会驻留在内存中一直等待客户端的访问，直到服务器关闭或项目被移除出容器时，Servlet 对象才会被销毁。
+
+**总结：**对 Servlet 声明周期的几点汇总：
+
+1. Servlet 对象被创建之后执行 init() 方法，并且 init() 方法只执行一次，其主要目的是完成 Servlet 对象的初始化工作。
+2. 对于 Servlet 对象的 service() 方法，只要用户请求一次，那么 service() 方法就执行一次（其它方法都只执行一次）。
+3. Servlet 对象被回收之前，destroy() 方法会被调用，该方法只执行一次，执行的时候 Servlet 对象还在。
+4. Servlet对象是单例，但不符合单例，只能称为伪单例（真单例构造方法私有），只会实例化一个Servlet对象，多用户多线程访问时，使用的也是同一个Servlet对象。
+   Tomcat是支持多线程的，所以Servlet对象是在单实例多线程的环境下运行的；那么Servlet对象中若有实例变量，并且实例变量涉及到修改操作，那么这个Servlet对象一定会存在线程安全问题，不建议在Servlet对象中使用实例变量（类的属性），尽量使用局部变量。
+5. 第一次启动web容器后，servlet对象被创建后，其长期存在，直到web容器关闭。
+
+Servlet 对象的创建、对象的服务提供、对象的销毁等操作皆由 Servlet 容器来管理，Java 程序员的任务只是负责编写 Servlet 类，无法干涉 Servlet 对象的生命周期。
+
+**Servlet对象随容器启动而实例化：**
 
 如希望在**web服务器启动阶段实例化Servlet对象**，需要在`web.xml`文件中进行相关的配置，例如：在`servlet`标签中使用`load-on-startup`标签。(注意：使用`load-on-startup`标签，数字越小，优先级越高)
 
@@ -602,50 +620,6 @@ Servlet接口中的这些方法中写什么代码？什么时候使用这些方�
 ````
 
 实际上，服务器启动时会解析web.xml文件，并且将解析的数据存放在Map集合中，当在浏览器中输入请求的路径时，web容器会先在**Map<String, Servlet>**集合找请求路径所对应的Servlet对象，如果没有找到，再去web.xml文件中寻找（**实际上不是去web.xml文件中找此路径对应的完整类名，而是去此Map集合中查找**）。
-
-### 图解Servlet生命周期
-
-摘自[Servlet生命周期（图解） (biancheng.net)](http://c.biancheng.net/view/8037.html)，可用于面试。
-
-![](img/servlet的生命周期.png)
-
-1. 初始化阶段：
-
-   - 当用户第一次向 Servlet 容器发出 HTTP 请求要求访问某个 Servlet 时，Servlet 容器会在整个容器中搜索该 Servlet 对象，发现这个 Servlet 对象没有被实例化，于是创建这个 Servlet 对象，然后调用该对象的 init() 方法完成初始化。
-
-     当用户第二次访问这个 Servlet 时，Servlet 容器仍然在容器中搜索该 Servlet 对象，结果找到了该对象的实例，则不去创建而直接使用该对象。
-
-     找到了对应的 Servlet 对象，随后 Servlet 进入到运行阶段。
-
-     需要注意的是，在 Servlet 的整个生命周期内，它的 init() 方法只被调用一次。
-
-2.  运行阶段：
-
-   - 这是 Servlet 生命周期中最核心的阶段。在该阶段中，Servlet 容器会为当前的请求创建一个 ServletRequest 对象和一个 ServletResponse 对象（它们分别代表 HTTP 请求和 HTTP 响应），并将这两个对象作为参数传递给 Servlet 的 service() 方法。
-
-     service() 方法从 ServletRequest 对象中获得用户的详细请求信息并处理该请求，通过 ServletResponse 对象生成响应结果。
-
-     需要强调的是，在 Servlet 的整个生命周期内，用户每次请求访问 Servlet 时，Servlet 容器都会调用一次 Servlet 的 service() 方法，并且创建新的 ServletRequest 和 ServletResponse 对象。
-
-3. 销毁阶段：
-
-   - 当服务器停止时，Servlet 容器需要回收 Servlet 对象所占用的内存，在回收之前，会自动调用该对象的 destroy() 方法做好回收内存前的准备，辟如关闭后台线程。
-
-     和 init() 方法类似，destroy() 方法也只会被调用一次。
-
-     注意：Servlet 对象一旦创建就会驻留在内存中一直等待客户端的访问，直到服务器关闭或项目被移除出容器时，Servlet 对象才会被销毁。
-
-**总结：**
-
-对 Servlet 声明周期的几点汇总：
-
-1. Servlet 对象被创建之后执行 init() 方法，并且 init() 方法只执行一次，其主要目的是完成 Servlet 对象的初始化工作。
-2. 对于 Servlet 对象的 service() 方法，只要用户请求一次，那么 service() 方法就执行一次。
-3. Servlet 对象被回收之前，destroy() 方法会被调用，该方法只执行一次，执行的时候 Servlet 对象还在。
-
-Servlet 对象的创建、对象提供服务、对象的销毁等操作皆由 Servlet 容器来管理，Java 程序员的任务只是负责编写 Servlet 类，无法干涉 Servlet 对象的生命周期。
-
-
 
 
 
@@ -849,25 +823,25 @@ public class HttpServlet extends GenericServlet {
 
    - 在`getServletConfig()`，提供公开的get方法，目的是供子类使用，只需要修改return返回值即可；
 
-   - 如下：
+   - ServletConfig对象的装配如下：
 
      ```Java
      public class AServlet implements Servlet {
-     //定义实例变量
-     private ServletConfig config;
+         //定义实例变量
+         private ServletConfig config;
      
-     @Override
-     public void init(ServletConfig servletConfig) throws ServletException {
-         //将局部变量中的servletConfig赋值给实例变量servletConfig
-         this.config = config;
-     }
+         @Override
+         public void init(ServletConfig servletConfig) throws ServletException {
+             //将局部变量中的servletConfig赋值给实例变量servletConfig
+             this.config = config;
+         }
      
-     //这个方法是供子类使用的，在子类中若想获取ServletConfig，可以调用这个方法
-     @Override
-     public ServletConfig getServletConfig() {
-         //返回实例变量servletConfig
-         return config;
-     }
+         //这个方法是供子类使用的，在子类中若想获取ServletConfig，可以调用这个方法
+         @Override
+         public ServletConfig getServletConfig() {
+             //返回实例变量servletConfig
+             return config;
+         }
      }
      ```
 
@@ -920,6 +894,13 @@ classDiagram
 
 ### 常用方法
 
+可使用ServletConfig config对象的getServletContext()获取上下文对象，再使用方法。
+
+```java
+// ServletConfig对象的获取见上面的ServletConfig接口
+ServletContext servletContext = servletConfig.getServletContext();
+```
+
 **ServletContext接口中常用方法：**
 
 1. `void setAttribute(String name, Object object)` ：添加数据到Servlet上下文。
@@ -929,7 +910,7 @@ classDiagram
 5. `Enumeration getInitParameterNames()`：获取\<context-param>标签的param-name的集合。
 6. `String getRealPath(String path)`：获取文件的绝对路径。
 
-可使用ServletConfig config对象的getServletContext()获取上下文对象，再使用方法。
+
 
 ### 特点和总结
 
