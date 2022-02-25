@@ -759,6 +759,8 @@ select * from `table-name`;
 select `字段1`,`字段2`,... from `table-name`;
 -- 查询并起别名，别名是查询结果的列名，原有表结构不会被改变
 select `字段1` [as 别名],`字段2` [as 别名],... from `table-name` [as 别名]; 
+-- \G的使用：在select语句最后添加该参数，可以将每个字段都在一行上显示
+select * from `table-name`\G; 
 ```
 
 去重distinct：
@@ -1156,11 +1158,7 @@ select 字段1,字段2 from table_name order by 2; -- 对第2个字段进行排�
 
 
 
-
-
-
-
-### union
+### 联合union
 
 联合，用于将查询结果联合在一起，结果集重复的数据（整条记录的字段名、字段类型、字段值一致）才会合并成一条：
 
@@ -1201,7 +1199,9 @@ limit 0,5 -- [0,5] 每页6条记录
 limit (n-1)*PageSize,PageSize
 ```
 
-### 过滤
+
+
+### 过滤having
 
 ```SQL
 select ... from xxx having 条件子句; -- 过滤出符合条件的数据，条件子句中可以使用别名
@@ -1822,7 +1822,181 @@ show index from `table_name`\G;
 
 索引失效的第6种情况、第7种情况.............
 
-## 性能分析
+## 性能分析工具
+
+### 查看SQL执行频率
+
+通过该指令查看数据库的insert、delete、update、select的访问频次。
+
+```mysql
+-- 查看服务器状态信息（全局）
+show global status like 'Com_______';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| Com_binlog    | 0     |
+| Com_commit    | 0     |
+| Com_delete    | 0     |
+| Com_insert    | 0     |
+| Com_repair    | 0     |
+| Com_revoke    | 0     |
+| Com_select    | 5     |
+| Com_signal    | 0     |
+| Com_update    | 0     |
+| Com_xa_end    | 0     |
++---------------+-------+
+-- 查看服务器状态信息（当前会话）
+show session status like 'Com_______';
+```
+
+### 慢查询日志
+
+知道权重较高的SQL语句类型后，要对哪些语句进行优化呢？借助慢查询日志定位运行效率低的SQL语句。
+
+```mysql
+-- 查询慢查询日志功能是否开启（默认下是没有开启的）
+show variables like 'slow_query_log';
++----------------+-------+
+| Variable_name  | Value |
++----------------+-------+
+| slow_query_log | OFF   |
++----------------+-------+
+```
+
+开启慢查询日志，需要在MySQL的配置文件`/etc/my.cnf`（Linux系统下）中配置如下信息：
+
+```mysql
+# 开启慢查询日志
+slow_query_log=1
+# 设置慢查询日志的时间为2秒，SQL语句执行时间超2秒就会被视为慢查询，并记录
+long_query_time=2
+```
+
+配置后重启mysqld服务，然后再查看是否开启：
+
+```mysql
+show variables like 'slow_query_log';
++----------------+-------+
+| Variable_name  | Value |
++----------------+-------+
+| slow_query_log | ON    |
++----------------+-------+
+```
+
+配置完成之后，查看慢日志文件`/var/lib/mysql/localhost-slow.log`（会记录执行超过某个时间的SQL语句）。
+
+```linux
+cat /var/lib/mysql/localhost-slow.log
+tail -f /var/lib/mysql/localhost-slow.log 
+```
+
+### profile详情
+
+show profile可以帮助我们了解时间都耗费到哪里去了。
+
+```mysql
+-- 查看是否支持profile操作
+select @@have_profiling;
++------------------+
+| @@have_profiling |
++------------------+
+| YES              |
++------------------+
+-- 查看是否开启
+select @@profiling;
++-------------+
+| @@profiling |
++-------------+
+|           0 |
++-------------+
+-- 开启profile
+set profiling=1;
+```
+
+profile详情的使用：
+
+```mysql
+-- 查看每一条SQL语句的执行耗时
+show profiles;
++----------+------------+--------------------+
+| Query_ID | Duration   | Query              |
++----------+------------+--------------------+
+|        1 | 0.00022275 | select @@profiling |
++----------+------------+--------------------+
+-- 查看指定Query_ID的SQL语句各个阶段的耗时情况
+show profile for query Query_ID;
+-- 查看指定Query_ID的SQL语句CPU的使用情况
+show profile cpu for query Query_ID;
+```
+
+### explain执行计划
+
+explain或desc命令用来获取MySQL如何执行select语句的信息，包括select语句在执行过程中表如何连接和连接的顺序。
+
+```mysql
+-- 语法：直接在select语句前加上关键字explain或desc
+explain select xxx from xxx where xxx;
+desc select xxx from xxx where xxx;
+```
+
+例如：
+
+```mysql
+explain select * from mysql.user;
++---+------------+------+-----------+-----+--------------+-----+--------+-----+-----+----------+--------
+|id |select_type |table |partitions |type |possible_keys |key  |key_len |ref  |rows |filtered  |Extra  |
++---+------------+------+-----------+-----+--------------+-----+--------+-----+-----+----------+--------
+| 1 | SIMPLE     | user  | NULL     | ALL | NULL         | NULL| NULL   | NULL|   4 |   100.00 | NULL  |
++---+------------+------+-----------+-----+--------------+-----+--------+-----+-----+----------+--------
+```
+
+查询结果解释：
+
+1. `id`：select查询的序号值，表示查询中执行select子句或者是操作表的顺序（id相同，执行顺序从上往下；id不同，值越大越先执行）。
+2. `select_type`：表示查询的类型（参考意义不大），常见的有：
+   - SIMPLE：简单表，即不使用表连接或子查询。
+   - PRIMARY：主查询，即外层的查询。
+   - UNION：UNION中的第二个或者后面的查询语句。
+   - SUBOUERY：select、where之后包含了子查询。
+3. `type`：表示连接类型，性能由好到差的连接类型为：null、system、const、eq_ref、ref、range、index、all。（查询时不访问任何表时才可能会出现null，例如`explain select 'C';`）
+   - 访问系统表时才会出现system；根据主键和唯一索引查询一般会出现const；使用非唯一性索引时一般会出现ref；使用了索引但会遍历整个索引树是会出现index；出现all代表的是全表扫描，性能会较差。
+4. `possible_keys`：显示可能应用在这章表上的索引，一个或多个。
+5. `key`：实际使用的索引，如果为null，则没有使用索引。
+6. `key_len`：使用到的索引的字节数，该值为索引字段最大可能长度，并非实际使用长度，在不损失精度性的前提下，长度越短越好。
+7. `rows`：MySQL认为必须要执行的行数，在Innodb引擎的表中，是一个估计值，可能并不总是准确的。
+8. `filtered`：表示返回结果行数占需读取行数的百分比，filtered的值越大越好。
+9. `Extra`：代表额外的信息。
+
+
+
+
+
+## 索引使用原则
+
+什么时候用索引？
+
+- 索引不是越多越好。
+- 不要对常变动的数据加索引。
+- 小数据量的表不需要加索引。
+- 索引一般加在常用来查询的字段上。
+
+验证索引的查询效率：
+
+1. 在某字段未建立索引之前，使用该字段来执行查询，看看耗时多少，例如：
+
+   ```mysql
+   select * from `table_name` where xx=xxx; 
+   ```
+
+2. 针对该字段创建索引。（`create index idx_tablename_xxx on tablename(xxx)`）
+
+3. 然后再次执行相同的select语句，查看耗时。
+
+索引的原则：
+
+
+
+
 
 ## 测试索引效率
 
@@ -1872,16 +2046,7 @@ CREATE INDEX id_app_user_name ON app_user(`name`);
 EXPLAIN SELECT * FROM app_user WHERE `name`='用户999999';
 ```
 
-## 索引原则
 
-- 索引不是越多越好。
-- 不要对常变动的数据加索引。
-- 小数据量的表不需要加索引。
-- 索引一般加在常用来查询的字段上。
-
-关于索引的数据结构：
-
-Hash类型的索引、Btree（innodb默认的）。
 
 # 视图
 
