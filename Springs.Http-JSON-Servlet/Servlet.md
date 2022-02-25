@@ -294,7 +294,7 @@ servlet标签用来定义servlet对象，类似于spring中的bean标签，用�
 ```xml
 <servlet>
     <servlet-name>随便起一个名字</servlet-name>
-    <servlet-class>Servlet接口实现类</servlet-class>
+    <servlet-class>Servlet接口实现类的全路径</servlet-class>
 </servlet>
 <servlet-mapping>
     <servlet-name>和上面名字一样</servlet-name>
@@ -310,7 +310,7 @@ servlet标签用来定义servlet对象，类似于spring中的bean标签，用�
 欢迎页面是webapp根目录下的HTML、JSP、htm页面资源，也可以是servlet对象、其他页面资源、.action文件等。设置欢迎页面在web-app标签里使用如下标签：（欢迎页面资源在该webapp的根目录）
 
 ```xml
-<!--开头不需要“/”，可以设置多个欢迎页面，越靠上越优先，当前面的欢迎页面找不到时才使用后面的欢迎页面-->
+<!-- 开头不需要“/”，可以设置多个欢迎页面，越靠上越优先，当前面的欢迎页面找不到时才使用后面的欢迎页面 -->
 <welcome-file-list>
     <welcome-file>login.html</welcome-file>
     <welcome-file>404.html</welcome-file>
@@ -438,6 +438,7 @@ servlet中需要用到路径的有四处地方：
    </welcome-file-list>
    ```
 
+## url-pattern的设置方式
 
 一个Servlet可以编写多个url-pattern，服务器截断路径与servlet映射路径匹配的路径规则：
 
@@ -462,10 +463,11 @@ servlet中需要用到路径的有四处地方：
   <url-pattern>*.do</url-pattern>
   ```
 
-- 全部匹配
+- 全部匹配（此时访问该webapp下的资源全部都会映射到该servlet）
 
   ```xml
   <url-pattern>/*</url-pattern>
+  <url-pattern>/</url-pattern>
   ```
 
 # Servlet规范的三个重要接口
@@ -632,34 +634,34 @@ Servlet接口中的这些方法中写什么代码？什么时候使用这些方�
 ```java
 public abstract class GenericServlet implements Servlet {
     private ServletConfig config;
-@Override
-public final void init(ServletConfig servletConfig) throws ServletException {
-    this.config = servletConfig;
-    this.init();
-}
- // 若在初始化时刻需要执行一段特殊的代码，建议重写此无参数的init()方法
-public void init() {}
-@Override
-public ServletConfig getServletConfig() {
-    return config;
-}
-@Override
-public abstract void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException;
-@Override
-public String getServletInfo() {
-    return null;
-}
-@Override
-public void destroy() {
-}
-//-------------------自定义扩展方法，方便子类使用-----------------
-/**
- * 获取ServletContext Servlet上下文对象
- * @return javax.servlet.ServletContext 返回Servlet上下文对象
- */
-public ServletContext getServletContext() {
-    return getServletConfig().getServletContext();
-}
+    @Override
+    public final void init(ServletConfig servletConfig) throws ServletException {
+        this.config = servletConfig;
+        this.init();
+    }
+    // 若在初始化时刻需要执行一段特殊的代码，建议重写此无参数的init()方法
+    public void init() {}
+    @Override
+    public ServletConfig getServletConfig() {
+        return config;
+    }
+    @Override
+    public abstract void service(ServletRequest servletRequest, ServletResponse servletResponse) throws ServletException, IOException;
+    @Override
+    public String getServletInfo() {
+        return null;
+    }
+    @Override
+    public void destroy() {
+    }
+    //-------------------自定义扩展方法，方便子类使用-----------------
+    /**
+ 	* 获取ServletContext Servlet上下文对象
+ 	* @return javax.servlet.ServletContext 返回Servlet上下文对象
+ 	*/
+    public ServletContext getServletContext() {
+        return getServletConfig().getServletContext();
+    }
 }
 ```
 
@@ -667,7 +669,7 @@ public ServletContext getServletContext() {
 
 1. 实现Servlet接口并把service方法抽象。
 2. 提供config属性和其get方法，还有上下文的get方法。
-3. 为了让适配器类中`init(ServletConfig)`中的代码生效，用final修饰限制不被重写，但是为了在初始化时刻可以执行一段初始化代码，就需要写一个无参数的init()方法，并在`init(ServletConfig)`方法里完成调用（这个方法就是专门用来存放初始化代码的方法，通过在init(ServletConfig servletConfig)里调用完成执行初始化代码的功能）。
+3. 为了让适配器类中`init(ServletConfig)`中的代码生效，用final修饰限制不被重写，但是为了在初始化时刻可以执行一段初始化代码，就需要写一个无参数的init()方法，并在`init(ServletConfig)`方法里完成调用（这个方法就是专门用来存放初始化逻辑代码的方法，通过在`init(ServletConfig servletConfig)`里调用完成执行初始化代码的功能）。
 
 SUN提供了GenericServlet类（适配器类）：`javax.servlet.GenericServlet`，直接继承该类就好。
 
@@ -675,7 +677,7 @@ SUN提供了GenericServlet类（适配器类）：`javax.servlet.GenericServlet`
 
 **为什么会出现该实现类？**
 
-该实现类的出现的原因是因为“前后端请求方式一致”的需求。
+该实现类的出现的原因是因为解决“前后端请求方式一致”的需求。
 
 1. 需求：前端页面发送的请求方式要与服务器端需要的请求方式一致，也就是：
 
@@ -722,19 +724,19 @@ SUN提供了GenericServlet类（适配器类）：`javax.servlet.GenericServlet`
 上述总结：为了达到需求，需要在每一个Servlet实现类中都编写了以下程序，来保证前端请求方式和后台需要的请求方式一致：
 
 ````java
-//将ServletRequest、ServletResponse强制转换为带有Http的接口类型
+// 将ServletRequest、ServletResponse强制转换为带有Http的接口类型
 HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
 HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
 
 httpServletResponse.setContentType("text/html;charset=UTF-8");
 PrintWriter writer = httpServletResponse.getWriter();
 
-//获取浏览器发送的请求方式
+// 获取浏览器发送的请求方式
 String method = httpServletRequest.getMethod();
 System.out.println(method);
 
 
-//login是处理登陆的，要求前端必须发送POST请求
+// login是处理登陆的，要求前端必须发送POST请求
 if("GET".equals(method)) {
     //后台报出错误
     writer.print("405-您应当发送POST请求");
@@ -742,7 +744,7 @@ if("GET".equals(method)) {
     throw new RuntimeException("405-您应当发送POST请求");
 }
 
-//如果程序可以执行到这一步，说明用户发送的是POST请求，程序正常执行
+// 如果程序可以执行到这一步，说明用户发送的是POST请求，程序正常执行
 writer.print("正在登陆......");
 ````
 
@@ -801,7 +803,7 @@ public class HttpServlet extends GenericServlet {
 }
 ```
 
-总结：前端页面表单form的method是GET或POST，当程序运行时，先进入service()原始方法运行，再运行到重载的service()方法来判断是doGet()还是doPost()方法，再执行相应的方法。如果继承HttpServlet的类重写的方法不对，那么就覆盖不了父类的，就会执行父类的doGet()或doPost()方法，在父类的方法里设置好警示的代码，就达到了判断前后端请求是否一致并发出警告的目的。
+**总结：**前端页面表单form的method是GET或POST，当程序运行时，先进入service()原始方法运行，再运行到重载的service()方法来判断是doGet()还是doPost()方法，再执行相应的方法。如果继承HttpServlet的类重写的方法不对，那么就覆盖不了父类的，就会执行父类的doGet()或doPost()方法，在父类的方法里设置好警示的代码，就达到了判断前后端请求是否一致并发出警告的目的。
 
 所以，我们的Servlet对象继承HttpServlet后，后端需要的是什么请求，那么我们就重写对应的doPost()或doGet()方法，方法内是我们的业务代码，并不需要重写service()方法。（当浏览器发送的请求和后台处理方式不同的话，就会出现405错误）
 
@@ -874,27 +876,35 @@ org.apache.catalina.core.ApplicationContextFacade // 其实现类
 
 **ServletContext到底是什么？什么时候被创建？什么时候被销毁？创建几个？**
 
-- ServletContext被译为：Servlet上下文；
-- 一个webapp只有一个web.xml文件，web.xml文件在服务器启动阶段被解析；
-- 一个webapp只有一个ServletContext对象，ServletContext对象在服务器启动阶段被实例化；
-- ServletContext在服务器关闭的时候被销毁；
-- ServletContext对应的是web.xml文件，是web.xml文件的代表；
-- ServletContext是所有Servlet对象四周环境的代表，被所有Servlet对象共享【在同一个webapp中，所有Servlet对象共享一个四周环境对象，该对象就是ServletContext】；
+1. ServletContext被译为：Servlet上下文。
 
-```mermaid
-classDiagram
-    Servlet01--|> ServletContext对象
-    Servlet02 --|>ServletContext对象
-    Servlet03--|> ServletContext对象
-    ServletContext对象:目的是让Servlet之间传递和共享数据
-```
+2. 配置加载：一个webapp只有一个web.xml文件，web.xml文件在服务器启动阶段被解析。
 
-- 所有用户若想共享同一个数据，可以将数据放到ServletContext对象中（写到web.xml文件中，或后期通过方法添加）；
-- 一般放到ServletContext对象中的数据不建议是涉及到修改操作的，因为ServletContext是多线程共享的一个对象，修改的时候会存在线程安全问题。
+3. ServletContext实例化：一个webapp只有一个ServletContext对象，ServletContext对象在服务器启动阶段被实例化。
+
+4. ServletContext的销毁：ServletContext在服务器关闭的时候被销毁。
+
+5. ServletContext的本质：
+
+   1. ServletContext对应的是web.xml文件，是web.xml文件的代表。
+
+   2. ServletContext是所有Servlet对象四周环境的代表，被所有Servlet对象共享【在同一个webapp中，所有Servlet对象共享一个四周环境对象，该对象就是ServletContext】。
+
+      ```mermaid
+      classDiagram
+          Servlet01--|> ServletContext对象
+          Servlet02 --|>ServletContext对象
+          Servlet03--|> ServletContext对象
+          ServletContext对象:目的是让Servlet之间传递和共享数据
+      ```
+
+6. 所有用户若想共享同一个数据，可以将数据放到ServletContext对象中（写到web.xml文件中，或后期通过方法添加）。
+
+7. 一般放到ServletContext对象中的数据不建议是涉及到修改操作的数据，因为ServletContext是多线程共享的一个对象，修改的时候会存在线程安全问题。
 
 ### 常用方法
 
-可使用ServletConfig config对象的getServletContext()获取上下文对象，再使用方法。
+可使用ServletConfig config对象的getServletContext()方法获取上下文对象，再使用其相关方法。
 
 ```java
 // ServletConfig对象的获取见上面的ServletConfig接口
@@ -903,7 +913,7 @@ ServletContext servletContext = servletConfig.getServletContext();
 
 **ServletContext接口中常用方法：**
 
-1. `void setAttribute(String name, Object object)` ：添加数据到Servlet上下文。
+1. `void setAttribute(String name, Object object)` ：将添加数据到Servlet上下文。
 2. `Object getAttribute(String name)`：从Servlet上下文中获取数据 。
 3. `void removeAttribute(String name)` ：从Servlet上下文中移除数据。
 4. `String getInitParameter(String name)`：根据初始化参数名字获取\<context-param>标签中的初始化参数值。
@@ -916,25 +926,24 @@ ServletContext servletContext = servletConfig.getServletContext();
 
 **特点：**
 
-1. Servlet、ServletConfig、ServletContext之间的关系
+1. Servlet、ServletConfig、ServletContext之间的关系：
 
-   - 一个Servlet对应一个ServletConfig对象；
+   - 一个Servlet对应一个ServletConfig对象。
    - 所有的Servlet共享一个ServletContext对象。
-2. **在ServletContext范围可以完成跨用户传递数据**
-   A用户在ServletContext中存储了一个数据，B用户可以通过name获取对应的数据。
+2. **在ServletContext范围可以完成跨用户传递数据：**A用户在ServletContext中存储了一个数据，B用户可以利用ServletContext对象通过name获取对应的数据。
 
 **总结：**
 
 ServletConfig与ServletContext中的`getInitParameter()`、`getInitParameterNames()`的差异：
 
-1. ServletConfig是每个Servlet对象的配置信息对象，ServletConfig中的`getInitParameter()`与`getInitParameterNames()`获取到的初始化参数是在`<init-param>`标签中的，`<init-param>`标签定义在`<servlet>`标签里面；
+1. ServletConfig是每个Servlet对象的配置信息对象，ServletConfig中的`getInitParameter()`与`getInitParameterNames()`获取到的初始化参数是在`<init-param>`标签中的，`<init-param>`标签定义在`<servlet>`标签里面。
 
 2. ServletContext是所有Servlet对象的共用的四周环境，ServletContext中的`getInitParameter()`与`getInitParameterNames()`获取到的参数是在`<context-param>`标签中的，`<context-param>`标签定义在`<web-app>`标签里面。
 
 ServletContext中的`getInitParameter(String name)`与`getAttribute(String name)`不同：
 
-1. `getInitParameter(String name)`获取到的参数是写在web.xml文件`<context-param>`标签中的，获取到的都是字符串参数；
-2. `getAttribute(String name)`获取到的数据是运行时添加到ServletContext中的数据，数据可以是任何类型，不同用户都可以通过name获取到数据。
+1. `getInitParameter(String name)`：获取到的参数是写在web.xml文件`<context-param>`标签中的，获取到的都是字符串参数。
+2. `getAttribute(String name)`：获取到的数据是程序运行时通过setAttribute(String name, Object object)方法添加到ServletContext中的数据，数据可以是任何类型，不同servlet对象都可以利用该方法通过name获取到数据。
 
 # HTTP协议
 
@@ -990,11 +999,11 @@ username=admin&password=123            请求体
 
 响应协议中要重点掌握的状态码：
 
-- 200 响应成功正常结束；
+- 200：响应成功正常结束。
 
-- 404  资源未找到；
+- 404：资源未找到。
 
-- 500 服务器内部错误。
+- 500：服务器内部错误。
 
 如下是服务器的响应：
 
@@ -1010,34 +1019,36 @@ Date: Thu, 13 Aug 2020 10:15:13 GMT
 
 ## GET与POST的区别
 
-什么情况下浏览器发送的请求是GET请求，什么情况下浏览器发送的请求是POST请求？
+### GET与POST的若干问题
+
+**什么情况下浏览器发送的请求是GET请求，什么情况下浏览器发送的请求是POST请求？**
 
 只有当使用表单form，并且form的标签的method属性设置为method="post"，才是POST请求方式，其余剩下的所有请求方式都是基于GET请求。
 
-GET请求和POST请求有什么区别？
+**GET请求和POST请求有什么区别？**
 
-- GET请求在请求行上提交数据，格式`uri?name=value&name=value`，这种提交方式：最终提交的数据会显示在浏览器地址栏上；
+1. GET请求在请求行上提交数据，格式`uri?name=value&name=value`，这种提交方式：最终提交的数据会显示在浏览器地址栏上。
 
-- POST请求在请求体中提交数据，相对安全，提交格式`name=value&name=value`，这种提交方式最终不会显示在浏览器地址栏上；
-- POST请求在请求体中提交数据，所以POST请求提交的数据没有长度限制【POST可以提交大数据】；
-- GET请求在请求行上提交数据，所以GET请求提交的数据长度有限制；
-- GET请求只能提交字符串数据，POST请求可以提交任何类型的数据，包括视频...，所以**文件上传必须使用POST请求**；
-- GET请求最终的结果，会被浏览器缓存收纳，而POST不会被缓存收纳（为什么GET会被缓存？）。
+2. POST请求在请求体中提交数据，相对安全，提交格式`name=value&name=value`，这种提交方式最终不会显示在浏览器地址栏上。
+3. POST请求在请求体中提交数据，所以POST请求提交的数据没有长度限制【POST可以提交大数据】。
+4. GET请求在请求行上提交数据，所以GET请求提交的数据长度有限制。
+5. GET请求只能提交字符串数据，POST请求可以提交任何类型的数据，包括视频...，所以**文件上传必须使用POST请求**。
+6. GET请求最终的结果，会被浏览器缓存收纳，而POST不会被缓存收纳（为什么GET会被缓存？）。
 
-GET请求和POST请求应该如何选择？
+**GET请求和POST请求应该如何选择？**
 
-- 有敏感数据  ---> POST；
-- 传送的数据不是普通字符串  ----->  POST；
-- 传送的数据非常多 ---->  POST；
-- 这个请求是为了修改服务器端资源 ---->  POST；
-- GET请求多数情况下是**从服务器中读取资源**，这个读取的资源在短时间内不会发生变化，所以GET请求的结果最终会被浏览器缓存起来；
-- POST请求是为了修改服务器端的资源，而每一次修改结果都是不同的，最终结果没有必要被浏览器缓存。
+1. 有敏感数据  ===> POST。
+2. 传送的数据不是普通字符串  ===>  POST。
+3. 传送的数据非常多  ===>  POST。
+4. 这个请求是为了修改服务器端资源  ===>  POST。
+5. GET请求多数情况下是**从服务器中读取资源**，这个读取的资源在短时间内不会发生变化，所以GET请求的结果最终会被浏览器缓存起来。
+6. POST请求是为了修改服务器端的资源，而每一次修改结果都是不同的，最终结果没有必要被浏览器缓存。
 
 ### 缓存解决方案
 
-浏览器将资源缓存后，缓存的资源是和某个特定的路径绑定在一起的，只要浏览器再发送这个相同的请求路径，这个时候浏览器就会去缓存中获取资源，不再访问服务器，以这种方式降低服务器的压力，提高用户体验。
+浏览器将资源缓存后，缓存的资源是和某个特定的路径绑定在一起的，只要浏览器再发送这个相同的请求路径，这个时候浏览器就会去缓存中获取资源，不再访问服务器，这种方式可以降低服务器的压力，提高用户体验。
 
-但是有的时候我们并不希望走缓存，希望每一次后台访问服务器，可以在请求路径后面添加时间戳，例如：`http://ip:port/oa/system/logout?timetamp=1234564635423`
+但是有的时候我们并不希望走缓存，而是希望每一次后台访问都走服务器，那么可以在请求路径后面添加时间戳，例如：`http://ip:port/oa/system/logout?timetamp=1234564635423`
 
 # 模版方法-设计模式
 
@@ -1134,23 +1145,25 @@ public class Test {
 
 # HttpServletRequest接口
 
+**HttpServletRequest接口介绍：**
+
 HttpServletRequest是Servlet规范中重要的接口之一。HttpServletRequest接口的实现类是Web容器负责的，Tomcat服务器有自己的实现。但是程序员还是只需要面向HttpServletRequest接口调用方法即可，不需要关心具体的实现类。
 
 ```java
 public interface HttpServletRequest extends ServletRequest
 ```
 
-HttpServletRequest内容：（封装了HTTP请求协议的全部内容）
+HttpServletRequest内容举例：（HttpServletRequest封装了HTTP请求协议的全部内容）
 
-- 请求方式
+1. 请求方式
 
-- URI
+2. URI
 
-- 协议版本号
+3. 协议版本号
 
-- 表单提交的数据
+4. 表单提交的数据
 
-  ......
+  ......等等
 
 request：HttpServletRequest一般对象的名字叫做：request；HttpServletRequest对象代表一次请求，一次请求执行一次service()方法，对应一个request对象，100个请求对应100个request对象，所以request对象的生命周期是短暂的；【什么是一次请求？到目前为止，我们可以这样理解一次请求：在网页上点击超链接，到最终网页停下来，这就是一次完整的请求；（后面学习重定向，浏览器会自动跳转到其他地址，会重新发送新的请求，这句话就不正确了）】。表单提交的数据被自动封装在request对象中。
 
@@ -1159,6 +1172,8 @@ request：HttpServletRequest一般对象的名字叫做：request；HttpServletR
 ``` url
 username=admin&password=123&sex=boy&interest=sport&interest=music&grade=gz&introduce=student
 ```
+
+**表单数据的封装：**
 
 表单提交的数据会自动封装到request对象中，request对象中有一个Map集合，存储这些数据
 
@@ -1179,13 +1194,13 @@ introduce    {"IAmAStudent"}
 表单提交的数据会封装在request对象的Map集合中，Map集合的key是name，value是一个字符串类型的一维数组。（表单中数据的name对应map集合的key）
 
 ```java
-/*获取浏览器提交的数据*/
+/* 获取浏览器提交的数据 */
 String getParameter(String name)    通过key获取对应的一维数组的首元素（通常该数组只有一个元素，该方法使用最多）
 Map getParameterMap()               获取整个Map集合
 Enumeration getParameterNames()     获取Map集合中全部的key
 String[] getParameterValues(String name)  通过map集合的key获取value
 
-/*获取路径、URL、URI、IP*/
+/* 获取路径、URL、URI、IP */
 String getContextPath()        获取上下文路径（web项目根路径）
 String getMethod()             获取浏览器请求方式
 String getRequestURI()         获取请求的URI
@@ -1193,20 +1208,20 @@ StringBuffer getRequestURL()   获取请求的URL
 String getServletPath()        获取请求的ServletPath，即servlet对应的虚拟路径
 String getRemoteAddr()         获取客户端IP地址
 
-/*从一次请求对应的HttpServletRequest对象范围中增删查数据*/
+/* 从一次请求对应的HttpServletRequest对象范围中增删查数据 */
 Object getAttribute(String name)          从此次请求所对应的request对象范围中获取数据
 void setAttribute(String name, Object o)  从此次请求所对应的request对象范围中存储数据
 void removeAttribute(String name)         从此次请求所对应的request对象范围中删除数据
 
-//将两个servlet对象执行放到同一个请求中，使用转发技术，在一个对象里转发到另一个对象
-/*获取请求转发器，再调用forward()方法，把请求响应传给下一个servlet对象*/
+// 将两个servlet对象执行放到同一个请求中，使用转发技术，在一个对象里转发到另一个对象
+/* 获取请求转发器，再调用forward()方法，把请求响应传给下一个servlet对象 */
 RequestDispatcher getRequestDispatcher(String path)   获取请求转发器
 request.getRequestDispatcher("servlet的虚拟路径").forward(request,response);   //使用
 
-/*编码*/
+/* 编码 */
 void setCharacterEncoding(String env)    覆盖此请求正文中使用的字符编码的名称
 
-/**/
+/* cookie 和 会话*/
 HttpSession getSession()    返回与此请求关联的当前会话，或者如果该请求没有会话，则创建一个。
 Cookie[] getCookies()       返回一个数组，其中包含Cookie 客户端与此请求一起发送的所有对象。
 ```
@@ -1217,41 +1232,38 @@ Cookie[] getCookies()       返回一个数组，其中包含Cookie 客户端与
 
 **数据保存过程中的乱码：**
 
-- 数据保存到数据库表中的时候，数据出现乱码；
-- 导致数据保存过程中的乱码包括以下两种情况：
-  - 前一种情况：在保存之前，数据本身就是乱码（使用的字符集不支持中文），保存到数据库表中的时候一定是乱码；
-  - 第二种情况：保存之前，数据不是乱码，但是由于数据库本身数据库不支持简体中文，保存之后出现乱码。
+数据保存到数据库表中的时候，数据出现乱码；导致数据保存过程中的乱码包括以下两种情况：
+
+1. 前一种情况：在保存之前，数据本身就是乱码（使用的字符集不支持中文），保存到数据库表中的时候一定是乱码；
+2. 第二种情况：保存之前，数据不是乱码，但是由于数据库本身数据库不支持简体中文，保存之后出现乱码。
 
  **数据展示过程中的乱码：**
 
-- 最终显示到网页上的数据出现中文乱码；
+1. 最终显示到网页上的数据出现中文乱码。
 
-- 经过执行Java程序之后的，Java程序负责向浏览器响应的时候的中文乱码，解决方法就是在Java程序中设置响应的内容的类型，以及对应的字符集：
+   - 经过执行Java程序之后的，Java程序负责向浏览器响应的时候的中文乱码，解决方法就是在Java程序中设置响应的内容的类型，以及对应的字符集：
 
-  ````java
-  response.setContentType("text/html;charset=UTF-8");
-  ````
 
-- 没有经过Java程序的，直接访问的是静态页面的：文件编码时字符集，与浏览器解析时使用的字符集要一致，例如文件编码时使用的字符集是UTF-8，那么可以在网页文件中使用`<meta charset="UTF-8">`标签来指定网页编码时使用的字符集。
+   ````java
+   response.setContentType("text/html;charset=UTF-8");
+   ````
+
+2. 没有经过Java程序的，直接访问的是静态页面的：资源文件编码时的字符集要与浏览器解析时使用的字符集一致，例如文件编码时使用的字符集是UTF-8，那么可以在HTML页面资源文件中使用`<meta charset="UTF-8">`标签来指定网页编码时使用的字符集。
 
 **数据传递过程中的乱码：**
 
-- 将数据从浏览器发送给服务器的时候，服务器接收到的数据是乱码的；
-- 原因：ISO-8859-1（国际标准码，不支持中文，兼容ASCII码，也称为Latin1编码），浏览器发送的数据的编码方式，Tomcat默认的解码方式。
+- 将数据从浏览器发送给服务器的时候，服务器接收到的数据是乱码的。
+- 原因：ISO-8859-1（国际标准码，不支持中文，兼容ASCII码，也称为Latin1编码），是浏览器发送的数据的默认编码方式，也是Tomcat默认的解码方式。
 
 ## 数据传送流程
 
 ### GET请求
 
-GET请求的数据会放到请求体，所以会对部分URL进行编码，表单中的数据（键值对）经过URLencode编码后追加到url中
-
-（URLencode编码过程使用的字符集由浏览器决定）。
+GET请求的数据会放到请求体，所以会对部分URL进行编码，表单中的数据（键值对）经过URLencode编码后追加到url中（URLencode编码过程使用的字符集由浏览器决定）。
 
 ![](img/get数据传送.png)
 
-服务器接收到数据进行解码：
-
-以Tomcat7.0为例，Tomcat会使用默认的ISO-8859-1进行解码，此时字符集可能与浏览器端编码的字符集不同而出现乱码。
+服务器接收到数据进行解码：以Tomcat7.0为例，Tomcat会使用默认的ISO-8859-1进行解码，此时字符集可能与浏览器端编码的字符集不同而出现乱码。
 
 ### POST请求
 
@@ -1266,28 +1278,28 @@ POST请求方式的数据会放在请求体中，编码时：将表单中的数�
 万能方式：适用于POST和GET：
 
 ````java
-//拿到从浏览器接收到的数据
-String value = request.getParameter("name");    拿数据
-//将服务器的数据通过ISO-8859-1解码来回归原始状态
-byte[] bytes = dname.getBytes("ISO-8859-1");	解码
-//再重新编码组装
-value = new String(bytes, "UTF-8");				编码组装
+// 拿到从浏览器接收到的数据
+String value = request.getParameter("name");
+// 将服务器的数据通过ISO-8859-1解码来回归原始状态
+byte[] bytes = dname.getBytes("ISO-8859-1");
+// 再重新编码组装
+value = new String(bytes, "UTF-8");
 ````
 
 仅适用于POST请求：只对请求体编码，得在取数据之前设置
 
 ```java
-//告诉服务器请求体使用哪种编码方式
+// 告诉服务器请求体使用哪种编码方式
 request.setCharacterEncoding("UTF-8");
-//获取正确的字符
+// 获取请求提交的数据
 String value = request.getParameter("name");
 ```
 
 仅适用于GET请求：通过修改Tomcat默认的编码字符集
 
-```
-修改CATALINA_HOME/conf/server.xml文件，
-加上URIEncoding="UTF-8"属性，设置请求行上的编码方式，解决GET请求乱码
+```xml
+<!--> 修改CATALINA_HOME/conf/server.xml文件，
+加上URIEncoding="UTF-8"属性，设置请求行上的编码方式，解决GET请求乱码 </!-->
 
 <Connector port="8080" 
 	protocol="HTTP/1.1"
@@ -1302,9 +1314,9 @@ URIEncoding：是将字符通过某种字符集进行编码后，再使用百分
 
 如字符通过UTF-8字符集进行编码后得到的二进制文件，然后将二进制转化为16进制，在每一个字符前面加上%作为分隔：
 
-```
-		  UTF-8							   百分号编码
-"销售部"  ------> E9 94 80 E5 94 AE E9 83 A8 ------> %E9%94%80%E5%94%AE%E9%83%A8
+```ABAP
+		  UTF-8							    百分号编码
+"销售部"  -------> E9 94 80 E5 94 AE E9 83 A8 ---------> %E9%94%80%E5%94%AE%E9%83%A8
 ```
 
 # Servlet线程安全
@@ -1313,47 +1325,47 @@ Servlet是单实例多线程环境下运行的，Servlet对象只有一个，被
 
 **什么时候程序会存在线程安全问题？**
 
-1. 多线程并发；
-2. 有共享数据；
+1. 多线程并发。
+2. 有共享数据。
 3. 共享数据有修改操作。
 
 **JVM中哪些数据存在线程安全问题：**
 
-1. 局部变量内存空间不共享，一个线程一个栈，局部变量在栈中存储，局部变量不会存在线程安全问题；
-2. 常量不会被修改，所以不存在线程安全问题；
+1. 局部变量内存空间不共享，一个线程一个栈，局部变量在栈中存储，局部变量不会存在线程安全问题。
+2. 常量不会被修改，所以不存在线程安全问题。
 3. 所有线程共享一个堆：
-  - 堆内存中new出来的对象在堆内存中存储，对象内部有“实例变量”，所以“实例变量”的内存多线程共享的；实例变量多线程访问，并涉及到修改操作时就会发生线程安全问题；
+     - 堆内存中new出来的对象在堆内存中存储，对象内部有“实例变量”，所以“实例变量”的内存多线程共享的；实例变量多线程访问，并涉及到修改操作时就会发生线程安全问题。
 4. 所有线程共享一个方法区：
-  - 方法区中有静态变量，静态变量的内存也是共享的，若涉及到修改操作，静态变量也存在线程安全问题。
+     - 方法区中有静态变量，静态变量的内存也是共享的，若涉及到修改操作，静态变量也存在线程安全问题。
 
 **数据库线程安全问题：**
 
-线程安全问题不止体现在JVM中，还有可能发生在数据库中，例如：多个线程共享一张表，并且同时去修改一些记录，那么这些记录就存在线程安全问题；
+线程安全问题不止体现在JVM中，还有可能发生在数据库中，例如：多个线程共享一张表，并且同时去修改一些记录，那么这些记录就存在线程安全问题。
 
 **怎么解决数据库中的线程安全问题？至少有两种解决方案：**
 
-1. 第一种方案：在Java程序中使用`synchronized`关键字，线程排队，自然不会在数据库中并发；
-2. 第二种方案：行级锁（悲观锁）；
-3. 第三种方案：事务隔离级别，例如：串行化；
+1. 第一种方案：在Java程序中使用`synchronized`关键字，线程排队，自然不会在数据库中并发。
+2. 第二种方案：行级锁（悲观锁）。
+3. 第三种方案：事务隔离级别，例如：串行化。
 4. 第四种方案：乐观锁。
 
 **怎么解决线程安全问题：**
 
-1. 不使用实例变量（类变量、属性），尽量使用局部变量；
-2. 若必须使用实例变量，可以考虑将该对象变量多例对象，一个线程一个Java对象，实例变量的内存也不会共享；
+1. 不使用实例变量（类变量、属性），尽量使用局部变量。
+2. 若必须使用实例变量，可以考虑将该对象变量多例对象，一个线程一个Java对象，实例变量的内存也不会共享。
 3. 若必须使用单例，那就只能使用`synchronized`线程同步机制，线程一旦排队执行，则吞吐量降低，降低用户体验。
 
 **Servlet怎么解决线程安全问题：**
 
-1. 不使用实例变量，尽量使用局部变量；
+1. 不使用实例变量，尽量使用局部变量。
 2. Servlet是单例的，所以剩下的方式只能考虑使用`synchronized`，线程同步机制。
 
-举例：【prj-servlet-11】
+线程安全举例：【prj-servlet-11】
 
-注册页面，前端填入用户名后，后台Servlet获取用户名，并打印刚刚填写的用户名，
+注册页面，前端填入用户名后，后台Servlet获取用户名，并打印刚刚填写的用户名：
 
-1. 当获取的用户名赋值给全局变量（实例变量）username时，会存在线程安全问题；
-2. synchronized线程同步机制，将修改操作虽然解决了线程安全问题，但是降低了用户体验，线程需要排队进入synchronized代码块；
+1. 当获取的用户名赋值给全局变量（实例变量）username时，会存在线程安全问题。
+2. synchronized线程同步机制，将修改操作虽然解决了线程安全问题，但是降低了用户体验，线程需要排队进入synchronized代码块。
 3. 使用局部变量，局部变量存储在栈中，一个线程一个栈，解决了线程安全问题。
 
 ````java
@@ -1404,20 +1416,28 @@ request.getRequestDispatcher("/b").forward(request,response);
 // 重定向：两次请求，相对的是webapps，也可以使用绝对路径访问其他服务器的webapp
 // 其作用是：将要重定向到的路径响应给浏览器，再由浏览器向服务器发送请求
 response.sendRedirect(request.getContextPath() + "/b");
-// request.getContextPath()：获取当前的上下文的根目录，也就是webapp根目录，返回的是一个相对路径，相对于webapps
+// request.getContextPath()：获取当前的上下文的根目录，也就是webapp根目录（返回的是一个相对路径，相对于webapps）
 ```
 
 异同：
 
 1. 相同点：都可以完成资源的跳转。
 2. 不同点：
-  - 转发是request对象触发的，服务器内部进行转发。
-  - 重定向是response对象触发的，要将重定向的路径相应给浏览器。
-  - 转发是一次请求，浏览器地址栏上地址不变。
-  - 重定向是两次请求，浏览器地址栏上的地址发生变化。
-  - 重定向路径需要加项目名（webapp跟路径web目录）。
-  - 转发是在本项目内部完成资源的跳转。
-  - 重定向可以完成跨webapp跳转，例如可以跳转到`https://www.baidu.com`。
+
+     - 转发是request对象触发的，服务器内部进行转发。
+
+     - 重定向是response对象触发的，要将重定向的路径响应给浏览器。
+
+     - 转发是一次请求，浏览器地址栏上地址不变。
+
+     - 重定向是两次请求，浏览器地址栏上的地址发生变化。
+
+     - 重定向路径需要加项目名（webapp跟路径web目录）。
+
+     - 转发是在本项目内部完成资源的跳转。
+
+     - 重定向可以完成跨webapp跳转，例如可以跳转到`https://www.baidu.com`。
+
 
 什么时候采用转发，什么时候采用重定向？（大部分情况下都使用重定向）
 
@@ -1425,14 +1445,14 @@ response.sendRedirect(request.getContextPath() + "/b");
 - 若在上一个资源中向request范围中存储了数据，希望在下一个资源中从request范围中取出，必须使用转发。
 - 重定向可以解决浏览器的刷新问题。
 
-重定向原理：
+重定向原理：程序执行到以下代码，会将请求路径`/blog/login`反馈给浏览器，浏览器就又向web服务器发送了一次全新的请求：`/blog/login`，浏览器地址栏上最终显示的地址是：`/blog/login`。
 
 ```java
 // 重定向
-response.sendRedirect("/jd/login");
+response.sendRedirect("/blog/login");
 ```
 
-程序执行到以上代码，将请求路径`/jd/login`反馈给浏览器，浏览器又向web服务器发送了一次全新的请求：/jd/login，浏览器地址栏上最终显示的地址是：/jd/login。
+
 
 **解决浏览器的刷新问题：**
 
@@ -1441,11 +1461,9 @@ public class Save extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
         throws ServletException, IOException {
-
-        //解决中文乱码
+        // 解决中文乱码
         request.setCharacterEncoding("UTF-8");
-
-        //获取表单数据
+        // 获取表单数据
         String usercode = request.getParameter("usercode");
         String username = request.getParameter("username");
 
@@ -1506,9 +1524,9 @@ public class Save extends HttpServlet {
 
  Cookie是什么？
 
-- Cookie可以保存会话状态，但是这个会话状态是保留在客户端上的，只要Cookie清除，或者Cookie失效，这个会话状态就没有了；
-- Cookie可以保存在浏览器客户端、保存在浏览器的缓存中（浏览器关闭Cookie消失）、保存在客户端硬盘文件中（浏览器关闭Cookie还在）；
-- 只要是web开发，只要是B/S架构的系统，只要是基于HTTP协议（cookie机制是HTTP协议规定的），就有cookie的存在；
+- Cookie可以保存会话状态，但是这个会话状态是保留在客户端上的，只要Cookie清除，或者Cookie失效，这个会话状态就没有了。
+- Cookie可以保存在浏览器客户端、保存在浏览器的缓存中（浏览器关闭Cookie消失）、保存在客户端硬盘文件中（浏览器关闭Cookie还在）。
+- 只要是web开发，只要是B/S架构的系统，只要是基于HTTP协议（cookie机制是HTTP协议规定的），就有cookie的存在。
 - 常见用于：保留购物车商品状态、免登录操作等。
 
 Java中的cookie当做类来处理，cookie对象由name和value两部分组成，都是字符串类型。
@@ -1532,28 +1550,29 @@ cookie保存在浏览器客户端的缓存或硬盘文件中，cookie与请求�
 
 在默认情况下，未设置Cookie绑定路径的Cookie，会绑定当前访问路径的上一层路径，如：
 
-访问`/webapp/test/a`路径时，服务器发送的Cookie（此Cookie未人为设置绑定路径），那么此Cookie默认绑定的路径为`/webapp/test`，所以访问/webapp/test、/webapp/test/a/c/d都会将此Cookie发送给服务器。
+- 访问`/webapp/test/a`路径时，服务器发送的Cookie（此Cookie未人为设置绑定路径），那么此Cookie默认绑定的路径为`/webapp/test`，所以访问`/webapp/test`、`/webapp/test/a/c/d`都会将此Cookie发送给服务器。
+
 
 如何自定义绑定路径？为什么要绑定？
 
-为了保证cookie和某个特定的路径绑定在一起，可以通过java程序指定绑定路径。
+- 为了保证cookie和某个特定的路径绑定在一起，可以通过java程序指定绑定路径。
 
 - `cookie.setPath(" ")`：用来设置与此Cookie绑定的访问路径。
 
-```java
-cookie.setPath("/webapp19/user");
-//cookie.setPath(request.getContextPath() + "/user");
-```
+  ```java
+  cookie.setPath("/webapp19/user");
+  // cookie.setPath(request.getContextPath() + "/user");
+  ```
 
-当设置与此Cookie绑定的路径时，浏览器在访问此路径，或访问此路径下的其他资源时，浏览器才会将此Cookie发送到服务器。（也就是说，上面的代码设置绑定路径为`/webapp19/user`，那么当浏览器访问`/webapp19/user`路径，或者访问`/webapp19/user`路径下的其他资源时，浏览器才会将此Cookie发送到服务器。
+当设置好与此Cookie绑定的路径时，浏览器将在访问此路径或访问此路径下的其他资源的时候，才会将此Cookie发送到服务器。（也就是说，上面的代码设置绑定路径为`/webapp19/user`，那么当在浏览器访问`/webapp19/user`路径，或者访问`/webapp19/user`路径下的其他资源时，浏览器才会将此Cookie发送到服务器。）
 
 ## Cookie有效时长
 
 默认情况下，没有设置cookie的有效时长，此时cookie保存在浏览器缓存中。当关闭浏览器时cookie才失效；我们可以通过设置cookie有效时长，以保证cookie保存在硬盘里。
 
-- `cookie.setMaxAge(int expiry)`：设置cookie有效时长
-  - expiry > 0：以秒为单位指定Cookie的最长期限，Cookie存储在硬盘文件当中；
-  - expiry < 0：则此Cookie在关闭此窗口页面后即失效；
+- `cookie.setMaxAge(int expiry)`：用来设置cookie的有效时长，expiry为秒数。
+  - expiry > 0：以秒为单位指定Cookie的最长期限，Cookie将存储在硬盘文件当中。
+  - expiry < 0：则此Cookie在关闭此窗口页面后即失效。
   - expiry = 0：则直接删除此Cookie。
 
 ````java
@@ -1564,7 +1583,8 @@ cookie.setMaxAge(60*60*24);
 ## Cookie的获取
 
 ```java
-request.getCookies(); // 返回一个cookie对象数组
+// 获取到一个含cookie对象的数组
+request.getCookies(); 
 ```
 
 # HttpSession类
@@ -1573,45 +1593,45 @@ request.getCookies(); // 返回一个cookie对象数组
 
 ## Session概述
 
-1. Session表示会话，不只是在javaweb中存在，只要是web开发都有这种会话机制；
-2. Cookie可以将会话状态保存在客户端，而HttpSession可以将会话状态保存在服务器端；
-3. HttpSession对象是一个会话级别的对象，一次会话对应一个HttpSession对象；
-4. 在会话进程中，web服务器一直为当前这个用户维护着一个会话对象HttpSession；
+**Session：**
+
+1. Session表示会话，不只是在javaweb中存在，只要是web开发都有这种会话机制。
+2. Cookie可以将会话状态保存在客户端，而HttpSession可以将会话状态保存在服务器端。
+3. HttpSession对象是一个会话级别的对象，一次会话对应一个HttpSession对象。
+4. 在会话进程中，web服务器一直为当前这个用户维护着一个会话对象HttpSession。
 5. 在web容器中，维护了大量的HttpSession对象，换句话说，在web容器中应该有一个“Session”列表。
 
-什么是一次会话？
+**什么是一次会话？**
 
 - 一般可以这样理解：用户打开浏览器，在浏览器上发送多次请求，直到最终浏览器关闭，表示一次完整的会话完成。
 
 - 本质上理解：从Session对象创建到最终session对象超时被web服务器销毁，才是真正意义的一次会话。
 
-思考：为什么当前会话中的每一次请求都可以获取到属于自己的Session会话对象？Session原理？
+**思考：为什么当前会话中的每一次请求都可以获取到属于自己的Session会话对象？Session原理是什么？**
 
-1. 请求：打开浏览器，在浏览器上发送首次请求，访问web服务器；
-2. 创建：然后服务器会创建一个HttpSession对象，该对象代表一个会话，同时生成对应的cookie对象，该Cookie对象的name是JSESSIONID，value是32位长度的字符串；
-3. 绑定：服务器将Cookie的value和HttpSession对象绑定到session列表中(Map集合)；
-4. 发送：服务器将Cookie发送到客户端浏览器，浏览器将Cookie保存到缓存中；
-5. 再次请求时：自动提交缓存中的cookie给服务器；
-6. 接收：服务器接收到cookie，验证name是JSESSIONID后，获取value；
-7. 检索：通过cookie的value去session列表中检索，得到对应的HttpSession对象；
+1. 请求：打开浏览器，在浏览器上发送首次请求，访问web服务器。
+2. 创建：然后服务器会创建一个HttpSession对象，该对象代表一个会话，同时生成对应的cookie对象，该Cookie对象的name是JSESSIONID，value是32位长度的字符串。
+3. 绑定：服务器将Cookie的value和HttpSession对象绑定到session列表中(Map集合)。
+4. 发送：服务器将Cookie发送到客户端浏览器，浏览器将Cookie保存到缓存中。
+5. 再次请求时：自动提交缓存中的cookie给服务器。
+6. 接收：服务器接收到cookie，验证name是JSESSIONID后，获取value。
+7. 检索：通过cookie的value去session列表中检索，得到对应的HttpSession对象。
 
-思考：浏览器禁用cookie会出现什么问题？如何解决？
+**思考：浏览器禁用cookie会出现什么问题？如何解决？**
 
-- 禁用了cookie，导致浏览器不会缓存cookie，在同一个会话中就无法获得对应的session对象，每一次获取的会话都是新的；
-- 如果还想拿到对应的session对象，就得使用URL重写机制；如何重写：（简单了解一下，使用不多）
-  - `http://localhost/prj-servlet-13/user/accessMySelfSession;jsessionid=xxxxxx`；
-  - 重写URL会提高编程复杂度，一般的web站点事不建议禁用cookie的
+1. 禁用了cookie，会导致浏览器不会缓存cookie，在同一个会话中就无法获得对应的session对象，每一次获取的会话就都会是新的。
+2. 如果还想拿到对应的session对象，就得使用URL重写机制；如何重写：（简单了解一下，使用不多）
+  - `http://localhost/prj-servlet-13/user/accessMySelfSession;jsessionid=xxxxxx`。
+  - 重写URL会提高编程复杂度，一般的web站点是不建议禁用cookie的。
 
-思考：浏览器关闭之后，服务器端对应的session对象会被销毁吗？为什么？
+**思考：浏览器关闭之后，服务器端对应的session对象会被销毁吗？为什么？**
 
-- 不会被销毁；
-- 浏览器关闭后，也可以通过重写URL的方式从其他电脑或其他浏览器使用这个Session对象；
-- 因为B/S架构的系统基于HTTP协议，而该协议是一种无连接/无状态的协议；
-- 无连接/无状态：请求瞬间服务器和浏览器的通道打开，响应结束后通道关闭，这样做是为了降低服务器压力。
+1. 不会被销毁。
+2. 浏览器关闭后，也可以通过重写URL的方式从其他电脑或其他浏览器使用这个Session对象；因为B/S架构的系统基于HTTP协议，而该协议是一种无连接/无状态的协议。（无连接/无状态：请求瞬间服务器和浏览器的通道打开，响应结束后通道关闭，这样做是为了降低服务器压力。）
 
 session对象的销毁：
 
-- web系统引入session超时的概念；
+- web系统引入session超时的概念。
 - 当很长一段时间（可自己配置）内没有用户再访问该session对象，session对象超时，web服务器自动回收。
 
 ## 获取对象
@@ -1624,37 +1644,37 @@ HttpSession session = request.getSession(); //和true一样
 HttpSession session = request.getSession(boolean);
 ```
 
-- `getSession(true)`：返回存在的session；如果session不存在，则创建一个新的session对象并返回（无参数默认为true）；
+- `getSession(true)`：返回存在的session；如果session不存在，则创建一个新的session对象并返回（无参数默认为true）。
 - `getSession(false)`：返回存在的session；如果session不存在，则不会创建session对象，返回null。
 
 ##  session超时设置
 
-- 设置Session对象失效时间（两次请求之间的最大时间间隔），优先级 1 > 2 > 3
+设置Session对象失效时间（两次请求之间的最大时间间隔），用下列方式设置超时时的优先级为 1 > 2 > 3。
 
-   1. 通过Java代码实现，单位秒：
+1. 通过Java代码实现，单位秒：
 
-      ```java
-      HttpSession session = request.getSession();
-      session.setMaxInactiveInterval(60*60);
-      ```
+   ```java
+   HttpSession session = request.getSession();
+   session.setMaxInactiveInterval(60*60);
+   ```
 
-   2. 修改项目的web.xml文件，单位分钟：
+2. 修改项目的web.xml文件，单位分钟：
 
-      ```xml
-      <!-- web-app标签内添加 -->
-      <session-config>
-          <session-timeout>60</session-timeout>
-      </session-config>
-      ```
+   ```xml
+   <!-- web-app标签内添加 -->
+   <session-config>
+       <session-timeout>60</session-timeout>
+   </session-config>
+   ```
 
-   3. 修改Tomcat默认配置，单位分钟，默认30分钟：
+3. 修改Tomcat默认配置，单位分钟，默认30分钟：
 
-      ```xml
-      <!-- Tomcat-X/conf/web.xml -->
-      <session-config>
-          <session-timeout>30</session-timeout>
-      </session-config>
-      ```
+   ```xml
+   <!-- Tomcat-X/conf/web.xml -->
+   <session-config>
+       <session-timeout>30</session-timeout>
+   </session-config>
+   ```
 
 ## 常用方法
 
@@ -1738,13 +1758,13 @@ ServletContext、HttpSession、HttpServletRequest：
 
 ## 概述
 
-什么是过滤器?
+**什么是过滤器?**
 
-对web服务器管理的所有web资源：例如Jsp、Servlet、静态图片文件或静态html文件等进行拦截，从而实现一些特殊的功能。例如实现URL级别的权限访问控制、过滤敏感词汇、压缩响应信息等一些高级功能。
+过滤器可以对web服务器管理的所有web资源（例如Jsp、Servlet、静态图片文件或静态html文件等）进行拦截，从而实现一些特殊的功能。例如实现URL级别的权限访问控制、过滤敏感词汇、压缩响应信息等一些高级功能。
 
 Servlet API中提供了一个Filter接口，开发web应用时，如果编写的Java类实现了这个接口，则把这个java类称之为过滤器Filter。通过Filter技术，开发人员可以实现用户在访问某个目标资源之前，对访问的请求和响应进行拦截。注意Filter不是一个Servlet，它不能产生一个response，它能够在一个request到达Servlet之前预处理request，也可以在离开Servlet时处理response。
 
-Filter是如何实现拦截的？
+**Filter是如何实现拦截的？**
 
 Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配置好对哪个web资源进行拦截后，WEB服务器每次在调用web资源的service方法之前，都会先调用一下过滤器的doFilter方法，因此，在该方法内编写代码可达到如下目的：调用目标资源之前，让一段代码执行，是否调用目标资源（即是否让用户访问web资源），等等。
 
@@ -1754,9 +1774,9 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
 
 过滤器实现的三个步骤：
 
-1. 创建一个Java类实现Filter接口；
+1. 创建一个Java类实现Filter接口。
 
-2. 重写doFilter()方法；
+2. 重写doFilter()方法。
 
    ```java
    public class FilterTest implements Filter {
@@ -1773,8 +1793,6 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
        }
    }
    ```
-
-   
 
 3. web.xml中将过滤器实现类注册到服务器。
 
@@ -1859,9 +1877,9 @@ destroy()：
 
 用户在配置filter时，可以使用`<init-param>`为filter配置一些初始化参数，当web容器实例化Filter对象，调用其init()方法时，会把封装了filter初始化参数的filterConfig对象传递进来。因此开发人员在编写filter时，通过filterConfig对象的方法，就可获得一些数据：
 
-- String getFilterName()：得到filter的名称；
-- String getInitParameter(String name)： 返回在部署描述中指定名称的初始化参数的值，如果不存在返回null；
-- Enumeration getInitParameterNames()：返回过滤器的所有初始化参数的名字的枚举集合；
+- String getFilterName()：得到filter的名称。
+- String getInitParameter(String name)： 返回在部署描述中指定名称的初始化参数的值，如果不存在返回null。
+- Enumeration getInitParameterNames()：返回过滤器的所有初始化参数的名字的枚举集合。
 - public ServletContext getServletContext()：返回Servlet上下文对象的引用。
 
 # Listener：监听器
