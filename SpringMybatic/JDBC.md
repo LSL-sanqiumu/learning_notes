@@ -10,7 +10,7 @@ Java DataBase Connectivity（Java语言连接数据库），SUN公司制定的�
 
 驱动下载：
 
-[MySQL :: Download MySQL Connector/J (Archived Versions)](https://downloads.mysql.com/archives/c-j/)，驱动8.0需要jdk1.8+才行，5.1.46既可以满足jdk版本又能满足mysql库是8和5.7，比较好！
+[MySQL :: Download MySQL Connector/J (Archived Versions)](https://downloads.mysql.com/archives/c-j/)，驱动8.0需要jdk1.8+才行，5.1.46既可以满足jdk8版本又能满足mysql库是8和5.7版本的，比较好！
 
 驱动配置：将驱动配置到环境变量的classpath变量上（mysql-connector-java-5.1.46-bin.jar），使用idea时可以使用maven导入依赖。
 
@@ -33,85 +33,68 @@ Java DataBase Connectivity（Java语言连接数据库），SUN公司制定的�
 
 # JDBC编程六步
 
-1. 注册驱动。（有两种方式）
+JDBC编程六步如下：
+
+1. 注册驱动。（有两种注册驱动的方式）
 2. 获取连接（表示JVM的进程和数据库进程之间的通道打开了）。
-3. 获取数据库操作对象（专门执行SQL语句的对象）。
-4. 执行SQL语句。
-5. 处理查询结果集（第4步执行select语句时才有第5步）。
+3. 获取数据库操作对象（用于发送SQL语句到数据库的对象）。
+4. 发送并执行SQL语句。
+5. 处理查询结果集（第4步执行select语句时才有结果集）。
 6. 释放资源。
 
-```properties
-#jdbc.properties文件
-driver=com.mysql.jdbc.Driver
-url=jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
-user=root
-password=123456
-```
-
-使用8.0新版，加载驱动那改成`Class.forName(com.mysql.cj.jdbc.Driver);`，然后url后面还需要加一串字符`&serverTimezone=Asia/Shanghai`。
-
-使用statement
+## 使用Statement
 
 ```java
-//使用资源绑定器绑定资源配置文件
-ResourceBundle bundle = ResourceBundle.getBundle("jdbc");//绑定jdbc.properties文件
-String driver = bundle.getString("driver");
-String url = bundle.getString("url");
-String user = bundle.getString("user"); 
-String password = bundle.getString("password"); 
-
-Connection conn = null;
-//Statement statement = null;  使用这个会存在SQL注入问题
-PreparedStatement ps = null；
-ResultSet rs = null;
-try{	
-    //第一步：注册驱动
-    /*因为com.mysql.jdbc.Driver类里面的静态代码块，所以可以这样注册，而且这样可以从配置文件获取字符串*/
-    Class.forName(driver); 
-
-    //第二步：获取连接，Oracle的URL：jdbc:oracle:thin:@localhost:1521:orcl
-    conn = DriverManager.getConnection(url, user, password);
-    //第三步：获取数据库操作对象
-    //statement = conn.createStatement();
-    String sql = "select * from `t_users` where `username`=?  and `password`=?";
-    //两个问号为占位符，只能填充值
-    ps = conn.prepareStatement(sql);
-    //第四步：执行SQL语句,jdbc中不需要提供分号
-    //String sql = "";//insert delete update
-    //int count = statement.executeUpdate(sql);//专门执行DML语句，返回影响数据库中的记录条数，影响几条数据返回几
-    // 一行为一个记录，或称为一条数据，改动j
-    /* rs = statement.executeQuery("select user as u,password from data_table"); 
-       专门执行DQL语句的方法，返回语句执行结果的集合，如果as重命名，在处理时也得以重命名的来取出*/
-    rs = ps.executeQuery();
-    //第五步：处理结果集
-    while(rs.next()){
-        //光标指向的行有数据，取数据，getString()：不管数据库中数据是什么类型都以String形式取出
-        String data = rs.getString(1);//JDBC中所有下标从1开始，取第一列的数据
-        String data = rs.getString(2);
-        String data = rs.getString("column_name");//以纵行名字获取
-    }
-}catch (SQLException e) {
-    e.printStackTrace();
-}finally {
-    if (rs != null){
-        try {
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+public static void main(String[] args) {
+    String url = "jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false";
+    String user = "root";
+    String passwd = "123456";
+    Connection conn = null;
+    Statement statement = null;
+    ResultSet rs = null;
+    try {
+        // 第一步：加载驱动，如果是Oracle数据库就是：new oracle.jdbc.driver.OracleDriver() */
+        Driver driver = new com.mysql.jdbc.Driver();
+		DriverManager.registerDriver(driver);
+        // 第二步：创建与数据库的连接
+        conn = DriverManager.getConnection(url,user,passwd);
+        // 第三步：获取数据库操作对象
+        statement = conn.createStatement();
+        // 第四步：利用数据库操作对象来执行SQL语句
+        rs = statement.executeQuery("select * from info");
+        // 第五步：处理接收到的结果集
+        while(rs.next()){
+            // JDBC中所有下标从1开始；以下为取第二列的数据
+            String name = rs.getString(2);
+            // 根据字段名字获取
+            String school = rs.getString("school");
+            System.out.println(name + "：" + school);
         }
-    }
-    if (ps != null){
-        try {
-            ps.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }finally {
+        // 第六步：释放资源
+        if (rs != null){
+            try {
+                rs.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
-    }
-    if (conn != null){
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if (statement != null){
+            try {
+                statement.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+        if (conn != null){
+            try {
+                conn.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
     }
 }
@@ -119,153 +102,119 @@ try{
 
 URL：统一资源定位符，网络中某个资源的绝对路径，包括通信协议（jdbc:mysql://）、服务器IP地址（localhost）、软件端口（3306）、资源（database）。通信协议就是通信之前提前定好的数据传送格式。
 
-1. 注册驱动的另一种不长用的方式：
-
-   ```java
-   /* 方式一，不常用；如果是Oracle数据库就是：new oracle.jdbc.driver.OracleDriver() */
-   Driver driver = new com.mysql.jdbc.Driver();
-   DriverManager.registerDriver(driver);
-   ```
-
 ## 使用PreparedStatement
 
+```properties
+#jdbc.properties文件
+driver=com.mysql.jdbc.Driver
+url=jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
+user=root
+passwd=123456
+# 使用8.0新版时，驱动需要改成`Class.forName(com.mysql.cj.jdbc.Driver);`
+# 然后url后面还需要加一串字符`&serverTimezone=Asia/Shanghai`来指定时区。
+```
+
 ```java
-//使用资源绑定器绑定资源配置文件
-ResourceBundle bundle = ResourceBundle.getBundle("jdbc");//绑定jdbc.properties文件
-String driver = bundle.getString("driver");
-String url = bundle.getString("url");
-String user = bundle.getString("user"); 
-String password = bundle.getString("password"); 
+public static void main(String[] args) {
+    // 绑定类路径下的jdbc.properties文件
+    ResourceBundle bundle = ResourceBundle.getBundle("jdbc");
+    String driver = bundle.getString("driver");
+    String url = bundle.getString("url");
+    String user = bundle.getString("user");
+    String passwd = bundle.getString("passwd");
 
-Connection conn = null;
-PreparedStatement ps = null；
-ResultSet rs = null;
-try{	
-    //第一步：注册驱动
-    /*因为com.mysql.jdbc.Driver类里面的静态代码块，所以可以这样注册，而且这样可以从配置文件获取字符串*/
-    Class.forName(driver); 
-
-    //第二步：获取连接，Oracle的URL：jdbc:oracle:thin:@localhost:1521:orcl
-    conn = DriverManager.getConnection(url, user, password);
-    //第三步：获取数据库操作对象
-    String sql = "select * from `t_users` where `username`=?  and `password`=?";
-    //两个问号为占位符，只能填充值
-    ps = conn.prepareStatement(sql);
-    //第四步：执行SQL语句,jdbc中不需要提供分号
-    rs = ps.executeQuery();
-    //第五步：处理结果集
-    while(rs.next()){
-        // 光标指向的行有数据，取数据，getString()：不管数据库中数据是什么类型都以String形式取出
-        String data = rs.getString(1); // JDBC中所有下标从1开始，取第一列的数据
-        //String data = rs.getString(2);
-        /String data = rs.getString("column_name"); // 以纵行名字获取
-    }
-}catch (SQLException e) {
-    e.printStackTrace();
-}finally {
-    if (rs != null){
-        try {
-            rs.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+    Connection conn = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+    try {
+        // 第一步：加载驱动
+        Class.forName(driver);
+        // 第二步：创建与数据库的连接
+        conn = DriverManager.getConnection(url,user,passwd);
+        // 第三步：获取数据库操作对象，注意该方法的prepare，没有d
+        ps = conn.prepareStatement("select * from info");
+        // 第四步：利用数据库操作对象来执行SQL语句
+        rs = ps.executeQuery();
+        // 第五步：处理接收到的结果集
+        while(rs.next()){
+            // JDBC中所有下标从1开始；以下为取第二列的数据
+            String name = rs.getString(2);
+            // 根据字段名字获取
+            String school = rs.getString("school");
+            System.out.println(name + "：" + school);
         }
-    }
-    if (ps != null){
-        try {
-            ps.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }finally {
+        // 第六步：释放资源
+        if (rs != null){
+            try {
+                rs.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
-    }
-    if (conn != null){
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        if (ps != null){
+            try {
+                ps.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }
+        if (conn != null){
+            try {
+                conn.close();
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
     }
 }
 ```
 
-# JDBC中的类
+# JDBC编程涉及的类
 
-## 各个类的说明
+## DriverManager
 
-DriverManager：
+用于加载数据库驱动。
 
 ```java
-//原本是DriverManager.registerDriver(new Driver());看源码，用下述也可以实现
-Class.forName("com.mysql.jdbc.Driver");//规定写法，加载驱动
+// 原本是DriverManager.registerDriver(new com.mysql.jdbc.Driver()); 
+// 看源码，得知用以下代码也可以实现驱动加载
+Class.forName("com.mysql.jdbc.Driver"); // 规定写法，加载驱动
 ```
 
-Connection：
+## Connection
+
+用于获取JVM运行的Java进程与数据库之间的连接。
 
 ```java
 Connection connection = (Connection) DriverManager.getConnection(url,username,password);
-//connection 代表数据库  可以实现数据库设置自动提交、事务提交、事务回滚
-//connection.rollback(); connection.commit(); connection.seyAutoCommit();
+// connection 代表数据库  可以实现数据库设置自动提交、事务提交、事务回滚
+// connection.rollback(); connection.commit(); connection.seyAutoCommit();
 ```
 
-Statement：
+## Statement
+
+### 方法介绍
+
+1. JDBC中的Statement对象用于向数据库发送SQL语句，要完成对数据库的增删改查操作，只需要通过这个对象向数据库发送增删改查语句即可。
+2. Statement对象的方法：
+   - `executeUpdate()`：用于向数据库发送增、删、改的sql语句，executeUpdate执行完后，将会返回一个整数（即增删改语句导致了数据库几行数据发生了变化)。
+   - `executeQuery()`：用于向数据库发送查询语句，该方法会返回代表查询结果的ResultSet对象。
 
 ```java
-//4.获取用来执行SQL的对象Statement
+// 获取用来执行SQL的对象Statement
 Statement statement = connection.createStatement();
-//5.用Statement去执行SQL
+// 用Statement去执行SQL
 String sql = "SELECT * FROM users";
 ResultSet resultSet = statement.executeQuery(sql);
-//statement.executeQuery()：查询操作，返回结果集
-//statement.execute()：执行任何的SQL命令
-//statement.executeUpdate()：更新、插入、删除，返回一个受影响的行数
+// statement.executeQuery()：查询操作（DQL），返回查询结果集
+// statement.execute()：执行任何的SQL语句
+// statement.executeUpdate()：更新、插入、删除（DML），返回一个受影响的记录条数（一行为一个记录（数据））
 ```
 
-URL：
-
-```java
-String url = "jdbc:mysql://localhost:3306/jdbcstudy?useUnicode=true&characterEncoding=utf8&useSSL=false";
-//协议(jdbc:mysql)://主机地址:端口号/数据库名?参数1&参数2&参数3......
-//Oracle：1521
-//jdbc:oracle:thin:@localhost:1521:sid
-```
-
-ResultSet：查询的结果集：封装了有的查询结果
-
-获得指定数据：
-
-```java
-ResultSet resultSet = statement.executeQuery(sql);
-resultSet.getObject();//不知道列类型的情况下使用
-//如果知道列类型
-resultSet.getString();
-resultSet.getString();
-resultSet.getInt();
-resultSet.getDouble();
-```
-
-遍历，指针：
-
-```java
-resultSet.afterLast();//最后面
-resultSet.beforeFirst();//最前面
-resultSet.next();//下一个
-resultSet.previous();//移动到前一行
-resultSet.absolute(row);//移动到指定行
-```
-
-释放资源：
-
-```java
-//释放连接
-resultSet.close();
-statement.cancel();
-connection.close();
-```
-
-## Statement对象
-
-Jdbc中的statement对象用于向数据库发送SQL语句，想完成对数据库的增删改查，只需要通过这个对象向数据库发送增删改查语句即可。
-Statement对象的executeUpdate方法，用于向数据库发送增、删、改的sql语句，executeUpdate执行完后，将会返回一个整数（即增删改语句导致了数据库几行数据发生了变化)。
-Statement.executeQuery方法用于向数据库发送查询语句，executeQuery方法返回代表查询结果的ResultSet对象。
+### 方法测试
 
 1. 工具类（进行以下的测试时注意添加mysql-connector-java依赖）
 
@@ -333,7 +282,7 @@ Statement.executeQuery方法用于向数据库发送查询语句，executeQuery�
    }
    ```
 
-2. 编写增删改的方法：都用executUpdate()
+2. 执行增删改的方法：都用executUpdate()
 
    ```java
    public static void main(String[] args) {
@@ -358,31 +307,78 @@ Statement.executeQuery方法用于向数据库发送查询语句，executeQuery�
        }
    ```
 
-3. 查询的方法
+3. 用于查询的方法
 
    ```java
    public static void main(String[] args) {
-           Connection connection = null;
-           Statement statement = null;
-           ResultSet resultSet = null;
-           try {
-               connection = JdbcUtils.getConnections();
-               statement = connection.createStatement();
-               String sql = "SELECT * FROM `users`";
-               resultSet = statement.executeQuery(sql);
-               while (resultSet.next()){
-                   System.out.println(resultSet.getObject("id"));
-                   System.out.println(resultSet.getObject("NAME"));
-                   System.out.println(resultSet.getObject("PASSWORD"));
-                   System.out.println(resultSet.getObject("email"));
-               }
-           } catch (SQLException e) {
-               e.printStackTrace();
-           }finally {
-               JdbcUtils.release(connection,statement,resultSet);
+       Connection connection = null;
+       Statement statement = null;
+       ResultSet resultSet = null;
+       try {
+           connection = JdbcUtils.getConnections();
+           statement = connection.createStatement();
+           String sql = "SELECT * FROM `users`";
+           resultSet = statement.executeQuery(sql);
+           while (resultSet.next()){
+               System.out.println(resultSet.getObject("id"));
+               System.out.println(resultSet.getObject("NAME"));
+               System.out.println(resultSet.getObject("PASSWORD"));
+               System.out.println(resultSet.getObject("email"));
            }
+       } catch (SQLException e) {
+           e.printStackTrace();
+       }finally {
+           JdbcUtils.release(connection,statement,resultSet);
        }
+   }
    ```
+
+## PreparedStatement
+
+
+
+## 关于URL
+
+```java
+String url = "jdbc:mysql://localhost:3306/jdbcstudy?useUnicode=true&characterEncoding=utf8&useSSL=false";
+// 协议(jdbc:mysql)://主机地址:端口号/数据库名?参数1&参数2&参数3......
+// Oracle的是 jdbc:oracle:thin:@localhost:1521:sid
+```
+
+## ResultSet
+
+ResultSet用于接收查询结果集。
+
+获得指定数据：
+
+```java
+ResultSet resultSet = statement.executeQuery(sql);
+resultSet.getObject(); // 不知道列类型的情况下可使用
+// 如果知道列类型
+resultSet.getString(int columnIndex); // 不管数据库中数据是什么类型都以String形式取出
+resultSet.getInt(int columnIndex);
+resultSet.getDouble(int columnIndex);
+```
+
+遍历，指针：
+
+```java
+resultSet.afterLast(); // 最后面
+resultSet.beforeFirst(); // 最前面
+resultSet.next(); // 下一个
+resultSet.previous(); // 移动到前一行
+resultSet.absolute(row); // 移动到指定行
+```
+
+释放资源：
+
+```java
+// 释放连接资源
+resultSet.close();
+// statement.cancel();
+statement.close();
+connection.close();
+```
 
 # JDBC编程模板
 
@@ -446,31 +442,35 @@ public static void main(String[] args) {
 
 # SQL注入问题
 
+**为什么会出现SQL注入？**
+
 用户输入的信息中含有SQL语句的关键字，并且这些关键字参与SQL语句的编译过程，导致SQL语句被曲解，进而达到SQL注入。
 
-解决：只要用户提供的信息不参与SQL语句的编译过程，就可以解决了。
+**解决SQL注入：**
+
+只要用户提供的信息不参与SQL语句的编译过程，就可以解决了。
 
 要想用户信息不参与SQL语句编译，就必须使用Statement接口的子接口PreparedStatement（预编译的数据库操作对象），PreparedStatement的原理是：预先对SQL语句框架进行编译，然后再给SQL语句传值。
 
-PreparedStatement和Statement：
+**PreparedStatement和Statement：**
 
-- PreparedStatement解决了SQL注入问题；
-- 使用Statement来执行SQL语句，编译一次执行一次；PreparedStatement，编译一次可执行n次，效率高一点；（MySQL中，编译过的SQL语句没有任何改变，再次执行时不会再编译而是直接执行，例如第一次执行语句是先编译再执行，第二次则是直接执行而不用z再经过编译这一过程）
+- PreparedStatement解决了SQL注入问题。
+- 使用Statement来执行SQL语句，编译一次执行一次；PreparedStatement，编译一次可执行n次，效率高一点。（MySQL中，编译过的SQL语句没有任何改变，再次执行时不会再编译而是直接执行，例如第一次执行语句是先编译再执行，第二次则是直接执行而不用再经过编译这一过程）
 - PreparedStatement会在编译阶段做参数类型的安全检查。
 
-综上所述，PreparedStatement使用情况最多，Statement使用很少。业务方面要求支持SQL注入的时候，使用Statement（凡是业务方面要求是需要进行SQL语句拼接的）。实际案例：例如页面的升序、降序，就是往SQL语句后面拼接`order by desc`等。
+综上所述，PreparedStatement使用情况最多，Statement使用很少。业务方面要求支持SQL注入的时候，使用Statement（凡是业务方面的要求是需要进行SQL语句拼接的）。实际案例：例如页面的升序、降序，就是往SQL语句后面拼接`order by desc`等。
 
-# JDBC事务自动提交
+# JDBC事务提交
 
-JDBC中的事务是自动提交的，只要执行任意一条DML语句，则自动提交一次，这是JDBC默认的事务行为；但在实际的业务中，通常都是n条DML语句共同联合才能完成的，必须保证他们这些DML语句在同一个事务中同时成功或同时失败。
+JDBC中的事务是自动提交的，只要执行任意一条DML语句，则自动提交一次，这是JDBC默认的事务行为；但在实际的业务中，通常都是n条DML语句共同联合才能完成的，必须保证这些DML语句在同一个事务中同时成功或同时失败。
 
 ```java
-conn.setAutoCommit(false);
+conn.setAutoCommit(false); // 关闭事务自动提交
 
-conn.commit();
+conn.commit(); // 提交事务
 
 try {
-	conn.rollback();
+	conn.rollback(); // 回滚
 } catch (SQLException e1) {
 	e1.printStackTrace();
 }
@@ -524,17 +524,17 @@ public class DBUtil {
 
 # 悲观锁和乐观锁
 
-悲观锁
+**悲观锁：**事务必须排队执行，数据被锁住，不允许并发。
 
 ```mysql
-select xxx from table_name where xxx='xx' for update
+select xxx from table_name where xxx='xx' for update;
 ```
 
-加上for update后会锁定相应数据，锁定一横行（即锁定一条记录），这也叫行级锁或悲观锁。
+加上`for update`后会锁定相应数据，锁定一横行（即锁定一条记录），这也叫行级锁或悲观锁。
 
-悲观锁：事物必须排队执行，数据被锁住，不允许并发。
+**乐观锁：**（[mysql中的乐观锁是怎么实现的 - MySQL数据库 - 亿速云 (yisu.com)](https://www.yisu.com/zixun/232037.html)）
 
-乐观锁：
+- 乐观锁，大多是基于数据版本( Version )记录机制实现。何谓数据版本?即为数据增加一个版本标识，在基于数据库表的版本解决方案中，一般是通过为数据库表增加一个 "version" 字段来实现。读取出数据时，将此版本号一同读出，之后更新时，对此版本号加一。此时，将提交数据的版本数据与数据库表对应记录的当前版本信息进行比对，如果提交的数据版本号大于数据库表中当前版本号，则予以更新，否则认为是过期数据。
 
 # 数据库连接池
 
