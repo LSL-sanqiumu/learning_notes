@@ -1826,11 +1826,10 @@ show index from `table_name`\G;
 
 - 使用or来分割条件时，要求or两边的条件字段都要有索引，才会走索引。
 
-索引失效的第三种情况：（联合索引失效情况）
+索引失效的第三种情况——最左前缀法则：（联合索引失效情况）
 
-1. 使用复合索引（两个或多个字段联合起来添加索引）的时候，在查找时查找条件没有以复合索引的字段为条件时。
-2. 最左前缀法则：如果使用联合索引，查询时索引的最左列必须存在（与顺序无关），并且不跳过索引中的列；如果最左列不存在，那么查询时索引全部失效；如果跳过某一列，索引将会部分失效（后面的索引字段失效）。（使用联合索引，但查询时不符合最左前缀法则，那么索引失效会部分失效，就不会走失效的索引去进行查询数据了）
-3. 使用联合索引时，如果出现这两个范围查询（>、<）时，范围查询右侧的索引会失效。
+1. 最左前缀法则：如果使用联合索引，查询时索引的最左列必须存在，并且不跳过索引中的列；如果最左列不存在，那么查询时索引全部失效；如果跳过某一列，索引将会部分失效（后面的索引字段失效）。（使用联合索引，但查询时不符合最左前缀法则，那么索引失效会部分失效，就不会走失效的索引去进行查询数据了）
+2. 使用联合索引时，如果出现这两个范围查询（>、<）时，范围查询右侧的索引会失效。
 
 索引失效的第四种情况：
 
@@ -2117,29 +2116,192 @@ CREATE INDEX id_app_user_name ON app_user(`name`);
 EXPLAIN SELECT * FROM app_user WHERE `name`='用户999999';
 ```
 
+# SQL优化
+
+## 数据插入优化
+
+insert优化：
+
+批量插入，但插入应该尽量不超过500~1000条数据。
+
+```mysql
+insert into `table_name` values(),(),...
+```
+
+手动提交事务
+
+```mysql
+start transaction
+insert into `table_name` values(),(),();
+insert into `table_name` values(),(),();
+insert into `table_name` values(),(),();
+commit;
+```
+
+按主键顺序来插入。
+
+一次性大批量插入使用insert时性能会较低，此时可以使用load指令；使用load指令的三步操作：
+
+```cmd
+-- 登录数据库时，加上参数--local-infile
+mysql --local-infile -u root -p
+```
+
+```mysql
+-- 设置全局参数，开启从本地加载文件导入数据的开关
+-- select @@local_infile;
+set global local_infile=1;
+-- 执行load指令将准备好的数据加载到表结构中
+-- 本地数据存储文件/root/sql1.log，属性使用道号分割，每一行都使用换行分割
+-- 属性对应表中字段值，行对应表中每一行记录
+load data local infile '/root/sql1.log' into table 表 fields terminated by ',' lines terminated by '\n'
+```
+
+## 主键优化
+
+在Innodb引擎中，表数据根据主键顺序组织存放，这种存储方式的表也称为索引组织表。
+
+Innodb的逻辑存储结构：
+
+![](img/17.innodb的逻辑结构.png)
+
+按主键顺序插入时，行数据在页中依次存储：
+
+![](img/18.主键顺序插入.png)
+
+### 页分裂
+
+如下，按主键乱序插入时，插入一个主键值为50的数据，此时因为第一页已经放不下了，所以会再开一页，并将第一页的一半之后的数据都移动到新开的那一页，然后再将50插入到那一页数据的后面，插入完成后再对链表指针重新设置；最后结果见下面第二张图，这种现象叫页分裂。
+
+![](img/20.主键乱序插入.png)
+
+![](img/19.页分裂.png)
+
+### 页合并
+
+![](img/21.页合并.png)
+
+### 主键设计原则
+
+1. 满足页面需求的情况下尽量降低主键的长度。
+2. 插入数据时尽量按顺序插入，选择使用auto_increment自增主键。
+3. 尽量不要使用UUID作主键或其它自然主键，如身份证号。
+4. 业务操作时，避免对主键的修改。
+
+## order by优化
+
+order by的SQL语句中使用explain可能会在Extra显示如下两个值：（尽量优化为using index）
+
+![](img/22.orderby优化.png)
+
+根据多个字段来排序，常建立联合索引。
+
+几种情况：
 
 
-# 视图
+
+
+
+![](img/23.ob优化注意.png)
+
+## group by优化
+
+- 分组操作时，可通过索引来提供效率。
+- 分组操作时，索引的使用也是需要满足最左前缀法则的。
+
+
+
+
+
+## limit 优化
+
+![](img/24.lilmit优化.png)
+
+## count优化
+
+![](img/26.count优化2.png)
+
+![](img/25.count优化.png)
+
+## update优化
+
+更新数据时一定要根据索引字段进行更新，否则会将整张表锁住。（Innodb的行锁是针对索引加的锁，不针对记录加的锁，并且该索引不能失效，否则会从行锁升级为表锁）
+
+# MySQL的存储对象
+
+## 视图
 
 ![](img/6.视图.png)
 
-视图，就是站在不同角度去看代同一数据。可以利用视图对象对数据进行CRUD。可以说，视图就是复制表中某些数据而成的另一个表，只不过两个表的数据存在联系，无论哪一个发生改变，都会改变到另一个表的相关内容。
+视图，就是站在不同角度去看代同一数据，视图是一张虚拟存在的表。可以利用视图对象对数据进行CRUD。可以说，视图就是复制表中某些数据而成的另一个表，只不过两个表的数据存在联系，无论哪一个发生改变，都会改变到另一个表的相关内容。不过，视图只保存了查询的SQL逻辑，并不保存查询的结果，视图操作的字段数据来自定义视图时的对应的表，并且是在使用视图的时候**动态生成的**。
 
-创建视图对象：（只有DQL语句才能创建视图对象，as后必须是DQL语句）
-
-```mysql
-create table t_view as select * from `table_name`; -- 将查询结果创建为视图
-```
-
-删除视图对象：
+**创建视图对象：**（只有DQL语句才能创建视图对象，as后必须是DQL语句）
 
 ```mysql
-drop view t_view; 
+-- 创建视图的SQL语法
+create [or replace] view 视图名称[(列名列表)] as select 语句 [with [cascaded | local] check option]
+-- 将查询结果创建为视图
+create view t_view as select * from `table_name`; 
+-- or replace的作用就是把原先该视图的内容替换掉
+create or replace view view_user as select id,`user` from user;
 ```
 
-视图的特点是：通过对视图进行操作，会影响到原表数据；因此可以通过视图对原表的数据进行CRUD。可以多张表关联后的查询数据当作视图，也可以进行CRUD操作。
+**删除视图对象：**
 
-对视图的CRUD操作，和对表的CRUD操作一致，视图名就当是表名。
+```mysql
+drop view [if exists] 视图名称1，视图名称2,...; 
+```
+
+**查询创建的视图：**
+
+```mysql
+-- 查看创建视图的语句
+show create view 视图名称;
+-- 查看视图数据
+select * from 视图名称;
+```
+
+视图的特点是：通过对视图进行操作，会影响到原表数据；因此可以通过视图对原表的数据进行CRUD。可以将多张表关联后的查询数据当作视图，也可以对视图进行CRUD操作。
+
+对视图的CRUD操作，和对表的CRUD操作一致，视图名就当作是表名。
+
+**修改视图：**
+
+```mysql
+-- 该语句即可创建视图也可修改视图，修改时 or replace必须要加上
+create or replace view view_user as select id,`user` from user;
+alter view 视图名称[(列名列表)] as select 语句
+```
+
+**视图的检查选项：**
+
+```mysql
+-- 默认值cascaded：
+create [or replace] view 视图名称[(列名列表)] as select 语句 with cascaded check option;
+create [or replace] view 视图名称[(列名列表)] as select 语句 with local check option;
+```
+
+
+
+
+
+
+
+
+
+## 存储过程
+
+
+
+
+
+## 存储函数
+
+
+
+
+
+## 触发器
 
 # 权限管理和备份
 
