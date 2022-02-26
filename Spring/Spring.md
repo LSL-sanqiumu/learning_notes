@@ -126,7 +126,7 @@ resources文件夹需要beans.xml等文件，xml约束如下：
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans 
-    //---上面两个是基础IOC的约束，必备
+    //---基础IOC的约束，必备
     xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     //---开启注解管理Bean对象的约束
@@ -202,7 +202,7 @@ SSH框架：Struct2 + Spring + Hibernate(全自动)；SSM框架：SpringMVC + Sp
 
 【大多数公司使用SpringBoot进行快速开发，学习SpringBoot前要完全掌握Spring及SpringMVC！】
 
-# 理解IOC理论
+# ~~理解IOC理论~~
 
 ## IOC理论推导
 
@@ -281,14 +281,14 @@ public class UserServiceImpl implements UserService{
 
 从上面可以看出：
 
-- 原始方式中，交由程序主动创建对象(即service层中主动创建的dao层实现类的对象)，控制权在程序员手上；
-- 使用set注入之后，service层程序不主动创建dao层中实现类的对象，而是被动接收对象，该程序变成了被动的接收对象。
+- 原始方式中，交由程序主动创建对象(即service层中主动创建的dao层实现类的对象)，控制权在程序员手上。
+- 使用set注入之后，service层程序中不用主动创建dao层中实现类的对象，而是被动接收对象，该程序变成了被动的接收对象。
 
 由此可以看出，使用set注入之后，我们就能自行地控制对象的创建，主动权到了调用者的手上，service层程序呢不用管对象是怎么创建的，它只负责提供一个接口。
 
 上述就是一个IOC的原型；控制反转的思想，从本质上解决了问题，我们程序员不用再去管理对象的创建(程序中不需要实现类的对象创建)，系统的耦合性也大大降低了，可以更加的专注在业务的实现上！
 
-IoC本质：一种设计思想，DI是实现IoC的一种方式。没有IoC的程序，我们使用面向对象编程，对象的创建与对象的依赖关系完全硬编码在程序中，对象的创建由程序自己控制，控制反转后将对象的创建转移给第三方。（依赖对象的获取由程序创建的方式反转到了由第三方创建的方式）。
+IoC本质：一种设计思想，DI是实现IoC的一种方式。没有IoC的程序，我们使用面向对象编程，对象的创建与对象的依赖关系完全硬编码在程序中，对象的创建由程序自己控制，控制反转后将对象的创建转移给第三方。（依赖对象的获取由程序创建的方式反转到了由第三方（IoC容器）创建的方式）。
 
 ## Spring与IoC：
 
@@ -298,7 +298,7 @@ IoC是Spring框架的核心内容，Spring使用了多种方式完美的实现�
 
 零配置原理：采用XML方式配置Bean的时候，Bean的定义信息是和实现分离的，而采用注解的方式可以把两者合为一体，Bean的定义信息直接以注解的形式定义在实现类中，从而达到了零配置的目的。
 
-IoC定义：控制反转是一种通过描述(XML或注解)并通过第三方去生产或获取特定对象的方式。在Spring中实现控制反转的是IoC容器，其实现策略是依赖注入(Depengency Injection,DI)
+IoC定义：控制反转是一种通过描述（XML或注解）、并通过第三方去生产或获取特定对象的方式。在Spring中实现控制反转的是IoC容器，其实现策略是依赖注入(Depengency Injection,DI)
 
 ## HelloSpring
 
@@ -335,109 +335,180 @@ spring提供的容器也称为ioc容器。
 
 # IoC的实现
 
-依赖注入（DI）是实现IoC的一种方式，而装配是依赖注入的本质；装配就是向bean中注入依赖的过程，而自动注入依赖的过程就是自动装配。
+## 概述
+
+1. 依赖注入（DI）：是实现IoC的一种方式，依赖注入的本质就是装配，装配是依赖注入的具体行为；依赖注入有两种形式（构造器注入或setter注入）。
+2. 装配：创建**应用对象之间协作关系的行为**称为装配，即向bean中注入依赖的过程，而自动注入依赖的过程就是自动装配。
 
 装配机制：（建议显示配置越少越好，尽可能地使用自动配置，当必须要显式配置时尽可能使用JavaConfig）
 
-1. XML中进行显示配置；
-2. Java中的显示配置，（JavaConfig）；
+**装配的几种方式：**
+
+1. 基于XML配置文件。
+2. 基于注解（JavaConfig）。
 3. bean发现机制与自动装配。
 
-## 初识
+## 第一个spring程序
 
-对象都存在于spring容器里，构成的应用的组件被spring容器使用DI管理，spring容器归为两种类型：bean工厂、应用上下文；较常使用的是应用上下文。对象是由spring容器创建的，我们可以使用xml配置文件、JavaConfig、注解来使spring容器创建特定的对象-bean。
+1. 依赖：
 
-### 对象创建
+   ```xml
+   <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
+   <dependency>
+       <groupId>org.springframework</groupId>
+       <artifactId>spring-webmvc</artifactId>
+       <version>5.3.13</version>
+   </dependency>
+   ```
 
-beans.xml文件，一般放于resources目录下，头文件在一定条件下或追加其他内容：
+2. 创建类：
+
+   ```java
+   public class HelloSpring {
+       private String user;
+       public void hello(){
+           System.out.println(user + ":" + "HelloSpring!");
+       }
+   
+       public String getUser() {
+           return user;
+       }
+   
+       public void setUser(String user) {
+           this.user = user;
+       }
+   }
+   ```
+
+3. beans.xml（resources目录下）：
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd">
+   
+       <bean id="hello" class="com.lsl.test.HelloSpring">
+           <property name="user" value="lsl"/>
+       </bean>
+   </beans>
+   ```
+
+4. 通过应用上下文（IoC容器）获取对象：
+
+   ```java
+   public static void main(String[] args) {
+       ApplicationContext a = new ClassPathXmlApplicationContext("beans.xml");
+       HelloSpring hello = a.getBean("hello", HelloSpring.class);
+       hello.hello();
+   }
+   ```
+
+
+
+## 应用上下文简单说明
+
+对象都存在于spring容器里，构成的应用的组件被spring容器使用DI管理，spring容器归为两种类型：bean工厂、应用上下文；较常使用的是应用上下文。对象是由spring容器创建的，我们可以使用xml配置文件、JavaConfig、注解来使spring容器创建特定的对象（bean）。
+
+对象生存于spring容器中，创建好了bean之后就可以通过应用上下文获取bean，相当于获取创建好的对象，一般的获取方式如下：
+
+```java
+public static void main(String[] args){
+    // 容器的获取：使用beans.xml配置文件初始化IoC容器context1
+    ApplicationContext context1 = new ClassPathXmlApplicationContext("beans.xml"); 
+    
+    // 获取对象的方式一：通过get方法和bean的id从容器中获取bean
+    User userTest = (User)context1.getBean("user1"); 
+    System.out.println(userTest.show());
+    // 获取方式二：这样不用再进行强转
+    ApplicationContext context2 = new ClassPathXmlApplicationContext("applicationContext.xml");
+    User user = context2.getBean("user2",User.class);
+}
+```
+
+关于五种常用的应用上下文（IoC容器）：
+
+> org.springframework.context.ApplicationContext;  应用上下文由该接口定义
+
+1. AnnotationConfigApplicationContext：从一个或多个Java配置类中加载spring应用上下文。
+2. AnnotationConfigWebApplicationContext：从一个或多个Java配置类中加载spring web应用上下文。
+3. ClassPathXmlConfigApplicationContext：从类路径下一个或多个xml配置文件加载上下文定义，把应用上下文定义文件作为类资源。
+4. FileSystemXmlApplicationContext：从文件系统下的一个或多个xml配置文件加载上下文定义。
+5. XmlWebApplicationContext：从web应用下的一个或多个xml配置文件加载上下文定义。
+
+## beans.xml简单说明
+
+**关于beans.xml文件：**
+
+beans.xml配置文件是应用上下文的一个配置文件，应用上下文可以根据这个配置文件来初始化IoC容器。
+
+beans.xml文件，一般放于resources目录下，头文件在一定条件下需要追加其他的约束：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-        https://www.springframework.org/schema/beans/spring-beans.xsd">
-    
+                           https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <import resource="beans1.xml"/>
+    <bean id = "" class = "" name = "" scope="">
+    </bean>  
+    <alias name = "user" alias = "xxx"/>   <!-- alias就是别名的意思，为指定的bean对象取一个别名 -->
+    <!--
+ 		id: 定义对象名
+ 		class: 创建对象的类型所在的全限路径（包名+类名）
+ 		name: 别名，可以命名多个，逗号隔开
+ 		scope：作用域，默认为单例模式
+	--> 
 </beans>
 ```
 
-Bean对应Spring容器里的一个Java实例，可以通过在beans.xml文件中创建bean并给其注入属性，还可以给bean创建别名等，创建对象的方法如下：
+**关于import：**用来导入其他的xml文件并进行整合，多用于团队合作
 
-```xml
-<bean id = "" class = "" name = "" scope="">
-</bean>  
-<alias name = "user" alias = "xxx"/>     <!--alias就是别名的意思，为指定的bean对象取一个别名-->
-<!--
-	id: 定义对象名
-	class: 创建对象的类型所在的全限路径（包名+类名）
-	name: 别名，可以命名多个，逗号隔开
-	scope：作用域，默认为单例模式
---> 
-```
-
-关于import：用来导入其他的xml文件并进行整合，多用于团队合作
-
-- applicationContext.xml，总的文件；
+- `applicationContext.xm`l，总的bean配置文件的常用名。
 
 - ```xml
   <import resource = "xxx1.xml"/>
   <import resource = "xxx2.xml"/>
-  ......<!--导入其他的bean.xml文件，整合进一个xml文件-->
+  ......<!-- 用于导入其他的bean.xml文件，整合进一个xml文件中 -->
   ```
 
-### 对象获取与上下文
 
-对象生存于spring容器中，创建好了bean之后就可以通过应用上下文获取bean，相当于获取创建好的对象，一般的获取方式如下：
 
-```java
-ApplicationContext user = new ClassPathXmlApplicationContext("beans.xml"); //拿到bean容器
-User userTest = (User)user.getBean("user3"); //通过get方法和bean的id获取bean
-System.out.println(userTest.show());
-// 这样不用再进行强转
-ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
-User user = context.getBean("user",User.class);
-```
+## 三种装配方式
 
-关于五种常用的应用上下文：
+### 基于XML的装配
 
-> org.springframework.context.ApplicationContext;  应用上下文由该接口定义
+基于XML的装配，Spring提供了两种装配方式：设值注入（Setter Injection）和构造注入（Constructor Injection）
 
-- AnnotationConfigApplicationContext：从一个或多个Java配置类中加载spring应用上下文；
-- AnnotationConfigWebApplicationContext：从一个或多个Java配置类中加载spring web应用上下文；
-- ClassPathXmlConfigApplicationContext：从类路径下一个或多个xml配置文件加载上下文定义，把应用上下文定义文件作为类资源；
-- FileSystemXmlApplicationContext：从文件系统下的一个或多个xml配置文件加载上下文定义；
-- XmlWebApplicationContext：从web应用下的一个或多个xml配置文件加载上下文定义。
+#### 通过构造器注入
 
-## XML显式装配
+为实例对象注入属性，可以通过有参构造器来进行属性注入：
 
-### 依赖注入
-
-依赖注入有三种方式，分别是构造器注入、set方式注入、其他（拓展方式注入）；构造器注入就是通过构造器参数注入的方式。
-
-#### 通过构造器注入：
-
-为实例注入属性，还可以通过有参构造器来进行属性注入：【在配置文件加载的时候，容器内管理的对象就已经开始创建并初始化。】
+- 在配置文件加载的时候，容器内管理的对象就已经开始创建并初始化。
 
 ```xml
-	通过有参构造器来注入属性：
-	<!--方式一：通过构造器参数名字-->
-    <bean id = "user1" class="com.lsl.pojo.User">
-        <constructor-arg name="name" value="梁"/> <!--属性注入-->
-        ......
-    </bean>
-    <!--方式二：下标赋值，构造器参数从0开始-->
-    <bean id = "user2" class="com.lsl.pojo.User">
-        <constructor-arg index="0" value="胜"/>
-    </bean>
-    <!--方式三：通过参数类型注入属性，不建议使用！，如果有多个同一类型会出错-->
-    <bean id = "user3" class="com.lsl.pojo.User">
-        <constructor-arg type="java.lang.String" value="林"/> <!--引用类型得全限命名-->
-    </bean>
+<!-- 通过有参构造器来注入属性：-->
+<!-- 方式一：通过构造器参数名字 -->
+<bean id = "user1" class="com.lsl.pojo.User">
+    <constructor-arg name="name" value="梁"/> <!--属性注入-->
+    ......
+</bean>
+<!--方式二：下标赋值，构造器参数从0开始-->
+<bean id = "user2" class="com.lsl.pojo.User">
+    <constructor-arg index="0" value="胜"/>
+</bean>
+<!--方式三：通过参数类型注入属性，不建议使用！，如果有多个同一类型会出错-->
+<bean id = "user3" class="com.lsl.pojo.User">
+     <!--引用类型的得用全限定名-->
+    <constructor-arg type="java.lang.String" value="林"/>
+</bean>
 ```
 
-#### set方式注入：【重点】
+#### **通过setter方式注入**
 
-set方式注入就是利用set方法来进行注入，在bean里通过property元素来进行注入，不过区分于不同的数据类型，不同的数据类型使用到的元素和属性值有些不一样，此时是通过无参构造器来构建bean所对应的对象？。
+set方式注入就是利用set方法来进行注入，在bean里通过property元素来进行注入，不过区分于不同的数据类型，不同的数据类型使用到的元素和属性值有些不一样，此时是通过默认的无参构造器来构建bean所对应的对象。
 
 1.基本数据类型和String类型的普通值的引入：
 
@@ -532,7 +603,7 @@ set方式注入就是利用set方法来进行注入，在bean里通过property�
 </property>
 ```
 
-#### 拓展方式注入：
+#### 拓展方式注入
 
 命名空间：
 
@@ -555,18 +626,18 @@ set方式注入就是利用set方法来进行注入，在bean里通过property�
 </beans>
 ```
 
-## JavaConfig显式装配
+### 基于注解的装配
 
-JavaConfig是Spring的一个子项目，Spring4之后成为一个核心功能，在SpringBoot中常见。
+JavaConfig就是使用注解来描述Bean配置的组件；JavaConfig是Spring的一个子项目，Spring4之后成为一个核心功能，在SpringBoot中常见。
 
 通过JavaConfig显式配置Spring，相当于是Java类里通过注解把bean注册到容器中，不用在xml中开启注解扫描机制，配置类基本配置流程如下：
 
 1.创建配置类
 
 ```java
-@Configuration  //代表配置类，相当于beans.xml，把当前类注册到容器中，作用和@Component一样
-@ComponentScan("com.lsl.pojo")  //扫描包，可选项，如果不指定扫描包路径，会默认扫描与配置类相同的包及子包
-@Import(LslConfig2.class)       //合并配置类，可选项
+@Configuration  // 代表配置类，相当于beans.xml，把当前类注册到容器中，作用和@Component一样
+@ComponentScan("com.lsl.pojo")  // 扫描包，可选项，如果不指定扫描包路径，会默认扫描与配置类相同的包及子包
+@Import(LslConfig2.class)       // 合并配置类，可选项
 public class LSLConfig {......}
 ```
 
@@ -601,11 +672,11 @@ User user1 = (User) context1.getBean("getUser");  // 相当于content1.getbean("
 
 
 
-## 自动装配
+### 自动装配
 
 自动装配是Spring满足bean依赖的一种方式，通过上下文自动寻找，**自动给bean装配引用类型属性的值**；自动装配有三种装配方式，分别是在xml中显式设置自动装配、在java中显式配置自动装配、隐式的自动装配bean【重要】。
 
-### xml中配置自动装配
+#### xml中配置自动装配
 
 自动装配：（三个过程：1.spring容器中有相应的bean，2.找到要注入的bean，3.spring自动寻找并为指定bean注入bean）
 
@@ -626,7 +697,7 @@ User user1 = (User) context1.getBean("getUser");  // 相当于content1.getbean("
 - 使用byType时，要保证所有声明了的bean的class唯一，并且这个bean需要和被注入的bean的属性的类型一致；
 - 注入的是对象。
 
-### 使用注解配置自动装配
+#### 使用注解配置自动装配
 
 spring从两个角度实现自动化装配：
 
@@ -696,7 +767,7 @@ spring从两个角度实现自动化装配：
 - @Resource默认通过byName方式实现，找不到则通过byType；如果两个都找不到则会报错；
 - 执行顺序不同：@Autowired先通过byType的方式实现，@Resource先过byName方式实现。
 
-## xml与注解整合
+### xml与注解整合
 
 sppring4.0之后，必须导入spring的aop的包；加入如下约束：
 
