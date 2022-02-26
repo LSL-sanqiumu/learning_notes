@@ -15,11 +15,11 @@ Tomcat服务器：Tomcat6实现了sevrlet2.5规范，Tomcat7实现了3.0规范�
 
 架构分类：（S是软件服务器）
 
-- C/S架构：client / server
+1. C/S架构：client / server
   - 娱乐型的，要求用户体验，页面、访问速度好；
   - 缺点：需要安装特定的客户端软件，客户端升级麻烦；
   - 优点：大部分数据集成到客户端软件，只需要从服务器上传少量数据，速度快；客户端页面可以炫酷。
-- B/S架构：browser / server（本质上还是C/S架构，还是客户端访问服务器，只不过客户端是浏览器）
+2. B/S架构：browser / server（本质上还是C/S架构，还是客户端访问服务器，只不过客户端是浏览器）
   - 企业内部使用的办公系统，界面要求不高、访问速度不是很慢，要求升级方便；
   - 优点：不需要特定客户端软件，只需要一个浏览器，升级只需要升级服务器端；
   - 缺点：数据都集成在服务器，发生意外时数据丢失严重，访问速度慢；页面粗糙。
@@ -1524,6 +1524,7 @@ public class Save extends HttpServlet {
 
  Cookie是什么？
 
+- Cookies是一些存储在用户电脑上的小文件。它被设计用来保存一些站点的用户数据，这样能够让服务器为这样的用户定制内容。页面代码能够获取到Cookie值然后发送给服务器。
 - Cookie可以保存会话状态，但是这个会话状态是保留在客户端上的，只要Cookie清除，或者Cookie失效，这个会话状态就没有了。
 - Cookie可以保存在浏览器客户端、保存在浏览器的缓存中（浏览器关闭Cookie消失）、保存在客户端硬盘文件中（浏览器关闭Cookie还在）。
 - 只要是web开发，只要是B/S架构的系统，只要是基于HTTP协议（cookie机制是HTTP协议规定的），就有cookie的存在。
@@ -1534,41 +1535,42 @@ Java中的cookie当做类来处理，cookie对象由name和value两部分组成�
 ## 创建与发送Cookie
 
 ```java
-//创建cookie，可创建多个
+// 创建cookie，可创建多个
 Cookie cookie = new Cookie(String name, String value);
-//设置Cookie有效期，以秒为单位
+// 设置Cookie有效期，以秒为单位
 cookie.setMaxAge(60*60*60);
-//设置Cookie绑定的路径
+// 设置Cookie绑定的路径
 cookie.setPath("/webapp19/user");
-//将cookie发送给浏览器，可以发送多个，默认保存在浏览器缓存
+// 将cookie发送给浏览器，可以发送多个，默认保存在浏览器缓存
 response.addCookie(cookie);
 ```
 
-cookie保存在浏览器客户端的缓存或硬盘文件中，cookie与请求路径是紧密联系的，浏览器提交发送cookie和请求路径有关，服务器通过request的getCookies()方法获取绑定当前路径的所有的cookie。
+1. 服务器端创建cookie，当访问此cookie绑定路径下的页面时就会往客户端发送该cookie。
+2. cookie保存在浏览器客户端的缓存或硬盘文件中，cookie与请求路径是紧密联系的，浏览器提交发送cookie和请求路径有关，然后服务器通过`request`的`getCookies()`方法可以获取绑定了当前路径的所有的cookie。
 
 ## Cookie的绑定路径
 
-在默认情况下，未设置Cookie绑定路径的Cookie，会绑定当前访问路径的上一层路径，如：
+在默认情况下，未设置绑定路径的Cookie会绑定当前访问路径的上一层路径，如：
 
-- 访问`/webapp/test/a`路径时，服务器发送的Cookie（此Cookie未人为设置绑定路径），那么此Cookie默认绑定的路径为`/webapp/test`，所以访问`/webapp/test`、`/webapp/test/a/c/d`都会将此Cookie发送给服务器。
+- 访问`/webapp/test/a`路径时，服务器发送的Cookie（设此Cookie未人为设置绑定路径），那么此Cookie默认绑定的路径为`/webapp/test`，所以访问`/webapp/test`、`/webapp/test/a/c/d`时浏览器都会将此Cookie发送给服务器。
 
 
 如何自定义绑定路径？为什么要绑定？
 
-- 为了保证cookie和某个特定的路径绑定在一起，可以通过java程序指定绑定路径。
+- 为了保证cookie和某个特定的路径绑定在一起，可以通过java程序来设置Cookie的绑定路径。
 
-- `cookie.setPath(" ")`：用来设置与此Cookie绑定的访问路径。
+- `cookie.setPath(" ")`就是用来设置与此Cookie绑定的访问路径的。
 
   ```java
   cookie.setPath("/webapp19/user");
   // cookie.setPath(request.getContextPath() + "/user");
   ```
 
-当设置好与此Cookie绑定的路径时，浏览器将在访问此路径或访问此路径下的其他资源的时候，才会将此Cookie发送到服务器。（也就是说，上面的代码设置绑定路径为`/webapp19/user`，那么当在浏览器访问`/webapp19/user`路径，或者访问`/webapp19/user`路径下的其他资源时，浏览器才会将此Cookie发送到服务器。）
+当设置好与此Cookie绑定的路径时，浏览器将在访问此路径或访问此路径下的其他资源的时，才会将此Cookie发送到服务器。（也就是说，上面的代码设置绑定路径为`/webapp19/user`，那么当在浏览器访问`/webapp19/user`路径，或者访问`/webapp19/user`路径下的其他资源时，浏览器才会将此Cookie发送到服务器。）
 
 ## Cookie有效时长
 
-默认情况下，没有设置cookie的有效时长，此时cookie保存在浏览器缓存中。当关闭浏览器时cookie才失效；我们可以通过设置cookie有效时长，以保证cookie保存在硬盘里。
+默认情况下，没有设置cookie的有效时长，此时cookie是保存在浏览器缓存中的，那么当关闭浏览器的时候cookie也就失效了。我们可以通过设置cookie的有效时长来保证cookie保存在硬盘里，使cookie不那么快失效。
 
 - `cookie.setMaxAge(int expiry)`：用来设置cookie的有效时长，expiry为秒数。
   - expiry > 0：以秒为单位指定Cookie的最长期限，Cookie将存储在硬盘文件当中。
@@ -1579,6 +1581,8 @@ cookie保存在浏览器客户端的缓存或硬盘文件中，cookie与请求�
 //以下设置Cookie有效期为24小时
 cookie.setMaxAge(60*60*24);
 ````
+
+可在浏览器设置里找到相关选项来查看保存在本地的cookie的信息。
 
 ## Cookie的获取
 
@@ -1621,8 +1625,11 @@ request.getCookies();
 
 1. 禁用了cookie，会导致浏览器不会缓存cookie，在同一个会话中就无法获得对应的session对象，每一次获取的会话就都会是新的。
 2. 如果还想拿到对应的session对象，就得使用URL重写机制；如何重写：（简单了解一下，使用不多）
-  - `http://localhost/prj-servlet-13/user/accessMySelfSession;jsessionid=xxxxxx`。
-  - 重写URL会提高编程复杂度，一般的web站点是不建议禁用cookie的。
+
+     - `http://localhost/prj-servlet-13/user/accessMySelfSession;jsessionid=xxxxxx`。
+
+     - 重写URL会提高编程复杂度，一般的web站点是不建议禁用cookie的。
+
 
 **思考：浏览器关闭之后，服务器端对应的session对象会被销毁吗？为什么？**
 
@@ -1639,8 +1646,8 @@ session对象的销毁：
 获取Session对象：
 
 ```java
-HttpSession session = request.getSession(); //和true一样
-//注意：`request.getSession(boolean)`需要一个boolean类型的参数
+HttpSession session = request.getSession(); // 默认和加了true参数值的一样
+// 注意：`request.getSession(boolean)`需要一个boolean类型的参数
 HttpSession session = request.getSession(boolean);
 ```
 
@@ -1649,16 +1656,16 @@ HttpSession session = request.getSession(boolean);
 
 ##  session超时设置
 
-设置Session对象失效时间（两次请求之间的最大时间间隔），用下列方式设置超时时的优先级为 1 > 2 > 3。
+设置Session对象失效时间（两次请求之间的最大时间间隔），用下列三种方式设置超时时的优先级为 1 > 2 > 3。
 
-1. 通过Java代码实现，单位秒：
+1. 方式一：通过Java代码实现，单位秒：
 
    ```java
    HttpSession session = request.getSession();
    session.setMaxInactiveInterval(60*60);
    ```
 
-2. 修改项目的web.xml文件，单位分钟：
+2. 方式二：修改项目的web.xml文件，单位分钟：
 
    ```xml
    <!-- web-app标签内添加 -->
@@ -1667,7 +1674,7 @@ HttpSession session = request.getSession(boolean);
    </session-config>
    ```
 
-3. 修改Tomcat默认配置，单位分钟，默认30分钟：
+3. 方式三：修改Tomcat默认配置，单位分钟，默认30分钟：
 
    ```xml
    <!-- Tomcat-X/conf/web.xml -->
@@ -1696,61 +1703,58 @@ void setMaxInactiveInterval(int interval) //设置session对象失效时间（�
 
 ServletContext、HttpSession、HttpServletRequest：
 
-1. 以上都是范围对象；
+1. 三者都是范围对象：
 
-2. `ServletContext application` 是应用范围；
+   - `ServletContext application` 是应用范围。
 
-3. `HttpSession session` 是会话范围；
+   - `HttpSession session` 是会话范围。
 
-4. `HttpServletRequest request` 是请求范围；
+   - `HttpServletRequest request` 是请求范围。
 
-5. 三个范围的大小 application > session > request 。
+   - 三个范围的大小 application > session > request 。
 
-6. application完成跨用户共享数据；
+2. application可以完成跨用户来共享数据。
 
-   session完成跨请求共享数据，但是这些请求必须在同一个会话当中；
+   session可以完成跨请求来共享数据，但是这些请求必须在同一个会话当中。
 
-   request完成跨Servlet共享数据，但是这些servlet必须在同一个请求当中（请求转发）。
+   request可以完成跨Servlet来共享数据，但是这些servlet必须在同一个请求当中（请求转发）。
 
-7. 使用原则：由小到大尝试，优先使用小范围：
+3. 使用原则：由小到大尝试，优先使用小范围：
 
    例如：登陆成功之后，已经登陆的状态需要保存起来，可以将这个状态保存到session对象中；
 
    登陆成功状态不能保存在request范围中，因为一次请求对应一个request对象；
 
-   登陆成功的状态也不能保存在application范围中，因为登陆成功的状态属于会话级别，不能所有用户共享。
+   登陆成功的状态也不能保存在application范围中，因为登陆成功的状态属于会话级别，不应该所有用户共享。
 
-## else
+## 其他的一些问题：
 
-其他的一些问题：
-
-1. HttpSession对象关联的这个Cookie的name是比较特殊的，在Java中就叫做：JSESSIONID
+1. HttpSession对象关联的这个Cookie的name是比较特殊的，在Java中就叫做：`JSESSIONID`。（jse ssion id）
 
 2. 浏览器禁用Cookie会出现什么问题？
 
-   - 浏览器禁用Cookie，则浏览器缓存中不再保存Cookie
-   - 导致在同一个会话中，无法获取到对应的会话对象
-   - 禁用Cookie之后，每一次获取的会话对象都是新的
+   - 浏览器禁用Cookie，则浏览器缓存中不再保存Cookie，就会导致在同一个会话中，无法获取到对应的会话对象。
+   - 那么禁用Cookie之后，每一次获取到的会话对象将都会是新的。
 
 3. 浏览器禁用Cookie后怎么解决？
 
-   - 浏览器禁用Cookie之后，若还想拿到对应的Session对象，必须使用URL重写机制，怎么重写URL：
+   - 浏览器禁用Cookie之后，若还想拿到对应的Session对象，必须使用URL重写机制，重写URL如下：
 
      ```
      http://localhost:8080/webapp23/testSession;jsessionid=384A8D1CE7821C76EDC445F7D029C46A
      ```
 
-     重写URL会给编程带来难度/复杂度，所以web站点是不建议禁用Cookie
+     重写URL会给编程带来难度和复杂度，所以web站点是不建议禁用Cookie的。
 
-     使用重写URL，即使换浏览器换电脑，只要访问的是同一个jsessionid，就可以得到同一个Session对象
+     使用重写URL，即使换浏览器换电脑，只要访问的是同一个jsessionid，就可以得到同一个Session对象。
 
 4. 浏览器关闭后，服务器端对应的session对象会被销毁吗？
 
-   - 浏览器关闭后，服务器不会销毁session对象；因为B/S架构的系统基于HTTP协议，而HTTP协议是一种无连接/无状态的协议
+   - 浏览器关闭后，服务器不会销毁session对象；因为B/S架构的系统基于HTTP协议，而HTTP协议是一种无连接/无状态的协议。
 
    - 什么是无连接/无状态？
 
-     请求的瞬间浏览器和服务器之间的通道是打开的，请求响应结束后，通道关闭；这样做的目的是降低服务器的压力
+     请求的瞬间浏览器和服务器之间的通道是打开的，请求响应结束后，通道关闭；这样做的目的是降低服务器的压力。
 
 # Filter：过滤器
 
