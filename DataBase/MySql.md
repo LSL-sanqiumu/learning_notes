@@ -2432,6 +2432,7 @@ end if;
 ```
 
 ```mysql
+DELIMITER $$
 create procedure p()
 begin
 	declare score int default 58;
@@ -2441,7 +2442,8 @@ begin
     else set result:='不及格';
     end if;
     select result
-end;
+end$$
+DELIMITER ;
 ```
 
 #### 存储过程的参数
@@ -2449,13 +2451,15 @@ end;
 ![](img/30.存储过程的参数.png)
 
 ```mysql
+DELIMITER $$
 create procedure p(in score int,out result varchar(10))
 begin
     if score >= 85 then set result:='优秀';
     else if score >= 60 set result:='及格';
     else set result:='不及格';
     end if;
-end;
+end$$
+DELIMITER ;
 -- 调用，使用result接收
 call p(68,@result);
 select @result;
@@ -2471,6 +2475,7 @@ case 表达式或变量 when 值1 then 操作1 else when 值2 then 操作2 .... 
 
 ```mysql
 -- case的语法二
+DELIMITER $$
 create procedure pcase(in month int)
 begin
 	declare result varchar(10);
@@ -2481,18 +2486,20 @@ begin
 		when month >=10 and month <=12 then set result:='第四季度';
 	end case;
 	select concat('您输入的月份为：',month,'，所属的季度为：',result);
-end;
+end$$
+DELIMITER ;
 call pcase(4);
 ```
 
 #### 循环
 
-while循环：
+**while循环：**
 
 ```mysql
 -- 条件成立时就执行循环，直到循环条件不成立
 while 条件 do SQL逻辑 end while;
--- 例子
+-- 例子：1到n的累加
+DELIMITER $$
 create procedure pwhile(in n int)
 begin
 	declare total int default 0;
@@ -2501,16 +2508,18 @@ begin
 		set n:=n-1;
 	end while;
 	select total;
-end;
+end$$
+DELIMITER ;
 call pwhile(100);
 ```
 
-repeat循环：
+**repeat循环：**
 
 ```mysql
 -- 先执行一次循环再判断条件是否成立，类似do...while
 repeat SQL逻辑 until 条件 end repeat;
--- 
+-- 1到n的累加
+DELIMITER $$
 create procedure prepeat(in n int)
 begin
 	declare total int default 0;
@@ -2520,28 +2529,331 @@ begin
 	until n<=0
     end repeat;
 	select total;
-end;
+end$$
+DELIMITER ;
 call prepeat(100);
 ```
 
-loop循环：
+**loop循环：**需要加退出逻辑，如果不加则会形成死循环。
+
+- leave：退出循环。
+- iterate：跳过当前循环，开始下一次循环。
 
 ```mysql
+-- 1到n的累加
+DELIMITER $$
+create procedure ploop(in n int)
+begin
+	declare total int default 0;
+	sum:loop
+		if n < 0 then leave sum; end if;
+		set total := total + n;
+		set n:=n-1;
+	end loop sum;
+	select total;
+end$$
+DELIMITER ;
+call ploop(100);
 ```
 
+```mysql
+-- 1到n之间所有的偶数的和
+DELIMITER $$
+create procedure ploop(in n int)
+begin
+	declare total int default 0;
+	sum:loop
+		if n < 0 then leave sum; end if;
+		if n%2 = 1 then set n:=n-1; iterate sum; end if;
+		set total := total + n;
+		set n:=n-1;
+	end loop sum;
+	select total;
+end$$
+DELIMITER ;
+call ploop(100);
+```
 
+### 数据类型-游标
 
+游标（cursor）：用来查询结果集的数据类型，在存储过程和函数中可以对结果集进行循环的处理。语法如下：
 
+```mysql
+-- 声明游标：将查询结果封装到游标
+declare 游标名称 cursor for 查询语句;
+-- 打开游标
+open 游标名称;
+-- 获取游标记录
+fetch 游标名称 into 变量,....;
+-- 关闭游标
+close cursor;
+```
+
+```mysql
+-- 拿出user表中age大于某个值的name,profession封装进游标，再从游标中取出插入到新表中
+DELIMITER $$
+create procedure pcursor(in uage int)
+begin
+	-- 要先声明变量，再声明游标
+	declare uname varchar(100);
+	declare upro varchar(100);
+	declare u_cursor for select name,profession from `user` where age<uage; 
+	create table if not exists user_pro(
+    	id int primary key auto_increment,
+        name varchar(100),
+        profession varchar(100)
+    )engine=innodb default charset=utf8;
+    open u_cursor;
+    while true do 
+    	fetch u_cursor into uname,upro;
+    	insert into user_pro values(null,uname,upro);
+    end while;
+    close cursor;
+end$$
+DELIMITER ;
+call pcursor(22);
+```
+
+【注意】：此时的while循环相当于死循环，当游标中值都遍历完，就会出现错误，如何解决这个问题呢？那就是使用条件处理程序。
+
+### 条件处理程序
+
+![](img/31.条件处理程序.png)
+
+使用条件处理程序解决游标遍历的问题：
+
+```mysql
+DELIMITER $$
+create procedure pcursor(in uage int)
+begin
+	-- 要先声明变量，再声明游标
+	declare uname varchar(100);
+	declare upro varchar(100);
+	declare u_cursor for select name,profession from `user` where age<uage; 
+	-- 条件处理程序，当满足sql状态码为0200时，触发关闭游标的动作，并终止执行当前程序
+	declare exit handler for sqlstate '0200' close u_cursor;
+	create table if not exists user_pro(
+    	id int primary key auto_increment,
+        name varchar(100),
+        profession varchar(100)
+    )engine=innodb default charset=utf8;
+    open u_cursor;
+    while true do 
+    	fetch u_cursor into uname,upro;
+    	insert into user_pro values(null,uname,upro);
+    end while;
+    close cursor;
+end$$
+DELIMITER ;
+call pcursor(22);
+```
 
 
 
 ## 存储函数
 
+存储函数是具有返回值的存储过程，但存储函数的参数只能是int类型的。具体语法：
 
+![](img/32.存储函数.png)
 
+```mysql
+-- 从1到n的累加
+DELIMITER $$
+create function fun1()
+returns int deterministic
+begin
+	declare total int default 0;
+	while n>0 do 
+		set total:=total+n;
+		set n = n-1;
+	end while;
+	return total;
+end$$
+DELIMITER ;
+select fun1(100);
+```
 
+存储函数使用较少，因为存储过程都能实现。
 
 ## 触发器
+
+![](img/33.触发器.png)
+
+**创建触发器：**
+
+```mysql
+-- 触发时期：before（之前）、 after（之后）；触发器类型：insert、update、delete
+create trigger 触发器名称 before/after insert/update/delete
+on 表名称 for each row
+begin 
+	处理逻辑
+end;
+```
+
+**查看触发器：**
+
+```mysql
+show triggers;
+```
+
+**删除触发器：**
+
+```mysql
+-- 没有指定数据库名称，则默认为当前使用的数据库
+drop trigger [数据库名称.]触发器名称;
+```
+
+**触发器案例：**（行级触发器，多少行受影响就触发几次）
+
+```mysql
+CREATE TABLE `user` (
+    `id` bigint(20) NOT NULL COMMENT '主键ID',
+    `name` varchar(255) DEFAULT NULL,
+    `age` int(11) DEFAULT NULL COMMENT '年龄',
+    `email` varchar(50) DEFAULT NULL COMMENT '邮箱',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8
+```
+
+```mysql
+-- 通过触发器记录user表的数据变更日志，将变更日志插入到日志表user_logs中，包含增、删、改
+create table user_logs(
+	id int(11) not null auto_increment,
+    operation varchar(20) not null comment '操作类型，insert/update/delete',
+    operate_time datetime not null comment '操作时间',
+    operate_id int(11) not null comment '操作的ID',
+    operate_params varchar(500) comment '操作参数',
+    primary key(id)
+)engine=innodb default charset=utf8;
+-- 插入数据触发器
+delimiter $$
+create trigger user_insert_trigger after insert on `user` for each row
+begin
+	insert into user_logs values(NULL,'insert',now(),new.id,
+    concat('插入的数据内容为：id=',new.id,'，	name=',new.name,'，age=',new.age,'，email=',new.email));
+end$$
+delimiter ;
+-- 更新数据触发器
+delimiter $$
+create trigger user_update_trigger after update on `user` for each row
+begin
+	insert into user_logs values(NULL,'update',now(),new.id,
+    concat('更新之前的数据内容为：id=',old.id,'，name=',old.name,'，age=',old.age,'，email=',old.email,
+          ' | 更新之后的数据内容为：id=',new.id,'，name=',new.name,'，age=',new.age,'，email=',new.email));
+end$$
+delimiter ;
+-- 删除数据触发器
+delimiter $$
+create trigger user_delete_trigger after delete on `user` for each row
+begin
+	insert into user_logs values(NULL,'delete',now(),old.id,
+    concat('删除之前的数据内容为：id=',old.id,'，name=',old.name,'，age=',old.age,'，email=',old.email));
+end$$
+delimiter ;
+
+```
+
+```mysql
+-- 测试插入数据触发器
+INSERT INTO `user` VALUES(21,'lsllsl',23,'4618@qq.com');
+-- 测试更新数据触发器
+UPDATE `user` SET id=22,`name`='梁胜林',age=100,email='12309@qq.com' WHERE id = 21;
+-- 测试删除数据触发器
+DELETE FROM `user` WHERE id = 22;
+```
+
+# 锁
+
+![](img/34.锁.png)
+
+MySQL中的锁，按锁的粒度分为三类：
+
+1. 全局锁：锁定数据库中所有的表。
+2. 表级锁：每次操作锁住整张表。
+3. 行级锁：每次操作锁住对应的行数据。
+
+## 全局锁
+
+![](img/35.全局锁.png)
+
+加全局锁：
+
+```mysql
+flush tables with read lock;
+```
+
+数据备份指令：
+
+```mysql
+-- cmd窗口执行，不需要进入MySQL
+mysqldump -h 主机地址 -uroot -p123456 数据库名 > 备份存放路径/数据库名.sql
+```
+
+释放全局锁：
+
+```mysql
+unlock tables;
+```
+
+![](img/36.全局锁特点.png)
+
+## 表级锁
+
+表级锁分为三类：表锁、元数据锁（meta data lock，MDL）、意向锁。
+
+**表锁分为两类：**
+
+1. 表共读锁（read lock）：只能读但不能写，会阻塞其它客户端的写操作但不会阻塞读操作。
+2. 表共写锁（write lock）：只能当前客户端读和写，会阻塞其它客户端的读和写操作。
+
+```mysql
+-- 加锁
+lock table 表名1,表名2,... read;
+lock table 表名,.... write;
+-- 释放锁
+unlock tables; -- 客户端断开连接也可释放
+```
+
+**元数据锁：**
+
+自动加锁。
+
+![](img/37.元数据lock.png)
+
+```mysql
+select object_type,object_schema,object_name,lock_type,lock_duration 
+from performance_schema.metadata_locks;
+```
+
+**意向锁：**
+
+当对数据进行update时，而且又是根据主键进行update的，此时MySQL会默认为当前操作数据加上行锁；当另一客户端对该表进行加表锁的时候，需要先去判断当前表内的行级锁和锁类型，而且是一行一行去判断的，那么就会导致效率降低。意向锁就是为了解决这个问题的（解决执行DML语句时加的行锁与加表锁时发生的冲突）。
+
+![](img/38.意向锁.png)
+
+执行DML语句时，会加上行锁，并且对当前表加上一个意向锁；此时另一客户端要为当前表加表锁，会先检查当前表的意向锁的情况，通过意向锁的情况来决定是否可以加锁，如果意向锁和加的锁是兼容的，那就可以加锁，如果不兼容，就会处于阻塞状态，直到行锁释放。
+
+意向锁分为两种：
+
+1. 意向共享锁（IS）：由语句select ...lock in share mode添加。与表锁的
+2. 意向排他锁（IX）：由insert、update、delete、select ...for update添加。
+
+![](img/39.意向共享.png)
+
+```mysql
+-- 查看意向锁及行锁的情况
+select object_schema,object_name,index_name,lock_type,lock_mode,lock_data 
+from performance_schema.data_locks;
+```
+
+## 行级锁
+
+行级锁：
+
+
+
+
 
 # 权限管理和备份
 
@@ -2551,7 +2863,7 @@ SQLyog可视化用户管理：
 
 ![](img/SQLyog用户管理.png)
 
-用户管理：
+## 用户管理
 
 ```SQL
 -- 创建用户 CREATE USER 用户名 IDENTIFIED BY '密码';
@@ -2575,11 +2887,9 @@ REVOKE ALL PRIVILEGES ON *.* FROM 用户;
 DROP USER 用户;
 ```
 
-**备份：**
+## 备份
 
-为了保证重要的数据的安全和方便数据转移。
-
-备份方式：物理拷贝、可视化工具导出、
+为了保证重要的数据的安全和方便数据转移。备份方式：物理拷贝、可视化工具导出、
 
 ![](img/数据库表的转储.png)
 
@@ -2598,7 +2908,7 @@ mysqldump -h localhost -u root -p123456 school student > 存储的地址
 source 指定.sql文件;
 ```
 
-数据导入注意事项：
+数据导入的注意事项：
 
 1. 需要先登陆到数据库服务器上。
 2. 然后需要创建好数据库，并使用创建的数据库（备份的数据库文件名就是）。
