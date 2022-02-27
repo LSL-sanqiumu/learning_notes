@@ -2263,8 +2263,6 @@ select * from 视图名称;
 
 视图的特点是：通过对视图进行操作，会影响到原表数据；因此可以通过视图对原表的数据进行CRUD。可以将多张表关联后的查询数据当作视图，也可以对视图进行CRUD操作。
 
-对视图的CRUD操作，和对表的CRUD操作一致，视图名就当作是表名。
-
 **修改视图：**
 
 ```mysql
@@ -2273,23 +2271,203 @@ create or replace view view_user as select id,`user` from user;
 alter view 视图名称[(列名列表)] as select 语句
 ```
 
-**视图的检查选项：**
+**视图的检查选项说明：**
+
+`with [] check option`：使用了这个选项来创建的视图，MySQL会通过视图检查正在更改的每个行，例如插入、删除、更新，以使修改符合视图的定义。MySQL也允许基于另一个视图来建立视图，加了检查选项时还会检查依赖视图的规则以保持一致性。
 
 ```mysql
 -- 默认值cascaded：
+create [or replace] view 视图名称[(列名列表)] as select 语句 with check option;
+
 create [or replace] view 视图名称[(列名列表)] as select 语句 with cascaded check option;
 create [or replace] view 视图名称[(列名列表)] as select 语句 with local check option;
 ```
 
+以下两个选项用来确定检查的范围
 
+1. `with cascaded check option`：（cascaded：级联）
 
+   ```mysql
+   -- 没有加with check option，操作视图v1时不会检查插入、删除、更新的数据的id是否满足<=20
+   create view v1 as select id,name from stu where id<=20;
+   -- 加了检查选项，操作v2对应数据时，会检查操作是否都满足v2、v1的条件
+   create view v2 as select id,name from v1 where id>=10 with cascaded check option;
+   -- 可以不满足视图v3的条件，但v2加了受检，操作v3时需要满足v2、v1的条件
+   create view v3 as select id,name from v2 where id<=50;
+   ```
 
+2. `with local check option`：（MySQL8.0的效果）
 
+   ```mysql
+   -- 没有加with check option，操作视图v1时不会检查插入、删除、更新的数据的id是否满足<=20
+   create view v1 as select id,name from stu where id<=20;
+   -- 加了检查选项local，操作v2对应数据时，会检查操作是否满足v2的条件，如果v1中没有加受检，则不用检查v1的
+   create view v2 as select id,name from v1 where id>=10 with cascaded local option;
+   -- v3没加则可以不满足视图v3的条件，但v2加了受检，操作v3时需要满足v2的条件，v1没加也不用检查
+   create view v3 as select id,name from v2 where id<=50;
+   ```
 
+![](img/27.视图的更新.png)
+
+视图的作用：
+
+![](img/28.视图作用.png)
 
 
 
 ## 存储过程
+
+什么是存储过程？将过程（SQL语句）存储在MySQL中。
+
+![](img/29.存储过程.png)
+
+特点：封装、复用；可以接收参数也可以返回数据；可以减少网络交互，提升效率。
+
+### 基本语法使用
+
+**存储过程的创建和调用：**（routines：例行程序）
+
+```mysql
+-- 创建
+delimiter $$　　# 将语句的结束符号从分号;临时改为两个$$(也可以是其它)
+create procedure 存储过程的名称([参数列表])
+begin
+SQL语句;
+end$$
+delimiter ;　　 # 将语句的结束符号恢复为分号
+-- 调用
+call 名称([参数]);
+create procedure p1()
+begin
+select * from cook;
+end;
+```
+
+默认情况下，存储过程和默认数据库相关联，如果想指定存储过程创建在某个特定的数据库下，那么在过程名称前面加数据库名称做前缀。 在定义过程时，使用**` DELIMITER $$`**命令将语句的结束符号从分号**`; `**临时改为两个 **`$$`**，使得过程体中使用的分号被直接传递到服务器，而不会被客户端（如mysql）解释。
+
+**查看：**
+
+```mysql
+-- 查询指定数据库中的存储过程及其状态信息
+select * from information_schema.routines where routine_schema='数据库名称';
+select * from information_schema.routines where routine_schema='数据库名称'\G;
+-- 查询某个存储过程的定义
+show create procedure 存储过程名称;
+```
+
+**删除：**
+
+```mysql
+drop procedure if exists 存储过程名称;
+```
+
+
+
+### 涉及的语法结构
+
+#### 变量
+
+系统变量：MySQL服务器提供的，分为两类：
+
+1. 全局变量（global）：所有会话可用。
+2. 会话变量（session）：当前会话可用。
+
+**查询系统变量：**
+
+```mysql
+-- 没加级别默认是session
+show [session | global] variables;
+show [session | global] variables like 'xxx';
+-- 查看指定变量的值，没指定级别默认是session
+select @@[session. | global.]系统变量名;
+select @@autocommit;
+select @@global.version;
+```
+
+**设置系统变量：**
+
+```mysql
+-- 没指定级别默认是session
+set [session | global] 系统变量名=值;
+set @@[session. | global.]系统变量名=值;
+```
+
+【注意】：如果没有指定session或global，则默认是会话变量；mysql服务重新启动后，自定义设置的全局参数会失效，如果用想不是效，那么可以在`/etc/my.cnf`中配置。
+
+**用户定义变量：**用户变量不用提前声明，直接使用`@变量名`即可使用；用户定义变量的作用域为当前连接。
+
+```mysql
+-- 定义并赋值(=与:=作用一致，推荐使用:=)，如果不赋值，则获取到的是null而已
+set @变量1=值1,@变量2=值2 ...;
+set @var_name:=expr,@var_name:=expr ...;
+select @变量名:=值,...;
+-- 将从表中查询到的数据赋给该变量
+select 字段名 into @变量名 from 表名;
+-- 使用，直接使用`@变量名`使用即可
+select @变量名,......;
+```
+
+**局部变量：**（和Java中局部变量类似，在存储过程创建中的begin end直接声明与赋值）
+
+```mysql
+-- 声明，（int、bigint、char、varchar、date、time等）
+declare 变量名 变量类型 [default 指定的默认值];
+-- 赋值
+set 变量名:=值;
+select 字段名 into 变量名 from 表名 ...;
+```
+
+#### if判断
+
+**if语句：**
+
+```mysql
+if 条件 then 
+	....;
+else 条件2 then
+	....;
+else
+	....;
+end if;
+```
+
+```mysql
+create procedure p()
+begin
+	declare score int default 58;
+	declare result varchar(10);
+    if score >= 85 then set result:='优秀';
+    else if score >= 60 set result:='及格';
+    else set result:='不及格';
+    end if;
+    select result
+end;
+```
+
+#### 存储过程的参数
+
+![](img/30.存储过程的参数.png)
+
+```mysql
+create procedure p(in score int,out result varchar(10))
+begin
+    if score >= 85 then set result:='优秀';
+    else if score >= 60 set result:='及格';
+    else set result:='不及格';
+    end if;
+end;
+-- 调用，使用result接收
+call p(68,@result);
+select @result;
+```
+
+#### case判断
+
+```mysql
+10
+```
+
+
 
 
 
