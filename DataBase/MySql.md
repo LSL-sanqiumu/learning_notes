@@ -2464,7 +2464,69 @@ select @result;
 #### case判断
 
 ```mysql
-10
+-- 语法一：当表达式符合某个值就执行相关操作
+-- 和Java中的switch类似
+case 表达式或变量 when 值1 then 操作1 else when 值2 then 操作2 .... end case;
+```
+
+```mysql
+-- case的语法二
+create procedure pcase(in month int)
+begin
+	declare result varchar(10);
+	case
+		when month >=1 and month <=3 then set result:='第一季度';
+		when month >=5 and month <=6 then set result:='第二季度';
+		when month >=7 and month <=9 then set result:='第三季度';
+		when month >=10 and month <=12 then set result:='第四季度';
+	end case;
+	select concat('您输入的月份为：',month,'，所属的季度为：',result);
+end;
+call pcase(4);
+```
+
+#### 循环
+
+while循环：
+
+```mysql
+-- 条件成立时就执行循环，直到循环条件不成立
+while 条件 do SQL逻辑 end while;
+-- 例子
+create procedure pwhile(in n int)
+begin
+	declare total int default 0;
+	while n>0 do 
+		set total:=total+n;
+		set n:=n-1;
+	end while;
+	select total;
+end;
+call pwhile(100);
+```
+
+repeat循环：
+
+```mysql
+-- 先执行一次循环再判断条件是否成立，类似do...while
+repeat SQL逻辑 until 条件 end repeat;
+-- 
+create procedure prepeat(in n int)
+begin
+	declare total int default 0;
+	repeat 
+		set total :=total+n;
+		set n=n-1;
+	until n<=0
+    end repeat;
+	select total;
+end;
+call prepeat(100);
+```
+
+loop循环：
+
+```mysql
 ```
 
 
