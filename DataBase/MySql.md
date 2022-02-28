@@ -2836,20 +2836,108 @@ from performance_schema.metadata_locks;
 
 意向锁分为两种：
 
-1. 意向共享锁（IS）：由语句select ...lock in share mode添加。与表锁的
-2. 意向排他锁（IX）：由insert、update、delete、select ...for update添加。
+1. 意向共享锁（IS）：由语句`select ...lock in share mode`添加。
+2. 意向排他锁（IX）：由`insert`、`update`、`delete`、`select ...for update`添加。
 
 ![](img/39.意向共享.png)
 
 ```mysql
--- 查看意向锁及行锁的情况
+-- 查看意向锁及行锁的情况（可能在MySQL8下才有data_locks这个表吧）
 select object_schema,object_name,index_name,lock_type,lock_mode,lock_data 
 from performance_schema.data_locks;
 ```
 
+
+
 ## 行级锁
 
-行级锁：
+行级锁：每次操作会锁住对应的行数据，锁粒度最小，发生锁冲突的概率最低，并发度最高。Innodb的数据是基于索引组织的，行锁是通过对索引上的索引项加锁来实现的，而不是对记录加锁。行级锁主要分为以下三类：
+
+1. 行锁（Record Lock）：锁定单个行记录的锁，防止其他事务对此进行update和delete。（RC、RR隔离级别下都支持）
+2. 间隙锁（Gap Lock）：
+   - 锁定索引记录的间隙（不包含该记录），确保索引记录的间隙不变，防止其他事务在这个间隙进行insert，产生幻读。（在RR隔离级别下都支持）
+   - 间隙：两索引之间的间隔。
+3. 临键锁（Next-Key Lock）：行锁和间隙锁组合，同时锁住数据，并锁柱数据前面的间隙Gap。（在RR隔离级别下都支持）
+
+![](img/40.两种行锁.png)
+
+什么时候会加行级锁？
+
+![](img/41.行锁的添加.png)
+
+锁优化：
+
+![](img/42.锁-行-级.png)
+
+![](img/43.锁优化.png)
+
+# Innodb引擎
+
+理解为主。
+
+## 逻辑存储结构
+
+![](img/17.innodb的逻辑结构.png)
+
+![](img/17.1innodb存储说明.png)
+
+
+
+## 架构
+
+Innodb引擎，擅长事务处理，具有崩溃恢复特性，日常开发中广泛使用。
+
+![](img/44.innodb架构.png)
+
+**内存结构：**
+
+![](img/44.内存结构1.png)
+
+![](img/45.内存结构2.png)
+
+![](img/46.内存结构3.png)
+
+![](img/47.内存结构4.png)
+
+
+
+**磁盘结构：**
+
+![](img/48.磁盘结构1.png)
+
+![](img/48.磁盘结构2.png)
+
+![](img/48.磁盘结构3.png)
+
+**后台线程：**将Innodb存储引擎缓冲池中的数据在合适时机刷新到磁盘中。
+
+四种后台线程：
+
+![](img/49.后台线程.png)
+
+
+
+## 事务原理
+
+![](img/50.事务原理之事务.png)
+
+![](img/50.事务原理之事务实现.png)
+
+**redo log：**解决事务持久性
+
+
+
+**undo log：**解决事务原子性
+
+![](img/50.事务原理之undolog.png)
+
+
+
+## MVCC
+
+MVCC——多版本并发控制。
+
+![](img/51.MVCC相关概念.png)
 
 
 
