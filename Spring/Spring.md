@@ -1,5 +1,3 @@
-
-
 # spring的配置
 
 使用spring需要导包，导入spring-webmvc的包，由于maven的特性会帮忙把spring-webmvc的所有依赖到的包都导入，其中就包括了spring-core，也就是spring的核心包：
