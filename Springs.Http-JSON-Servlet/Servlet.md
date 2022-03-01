@@ -1237,23 +1237,20 @@ Cookie[] getCookies()       返回一个数组，其中包含Cookie 客户端与
 1. 前一种情况：在保存之前，数据本身就是乱码（使用的字符集不支持中文），保存到数据库表中的时候一定是乱码；
 2. 第二种情况：保存之前，数据不是乱码，但是由于数据库本身数据库不支持简体中文，保存之后出现乱码。
 
- **数据展示过程中的乱码：**
+ **数据展示过程中的乱码——响应后的乱码问题：**
 
-1. 最终显示到网页上的数据出现中文乱码。
+1. 经过执行Java程序之后的，Java程序负责向浏览器响应的时候的出现中文乱码，解决方法就是在Java程序中设置响应的内容的类型，以及对应的编码字符集：（响应默认的是使用ISO-8859-1来进行编码？？）
 
-   - 经过执行Java程序之后的，Java程序负责向浏览器响应的时候的中文乱码，解决方法就是在Java程序中设置响应的内容的类型，以及对应的字符集：
-
-
-   ````java
+   ```java
    response.setContentType("text/html;charset=UTF-8");
-   ````
+   ```
 
 2. 没有经过Java程序的，直接访问的是静态页面的：资源文件编码时的字符集要与浏览器解析时使用的字符集一致，例如文件编码时使用的字符集是UTF-8，那么可以在HTML页面资源文件中使用`<meta charset="UTF-8">`标签来指定网页编码时使用的字符集。
 
-**数据传递过程中的乱码：**
+**数据传递过程中的乱码——服务器接收到乱码：**
 
 - 将数据从浏览器发送给服务器的时候，服务器接收到的数据是乱码的。
-- 原因：ISO-8859-1（国际标准码，不支持中文，兼容ASCII码，也称为Latin1编码），是浏览器发送的数据的默认编码方式，也是Tomcat默认的解码方式。
+- 原因：ISO-8859-1（国际标准码，不支持中文，兼容ASCII码，也称为Latin1编码），是浏览器发送的数据的默认编码方式，也是**Tomcat默认的解码方式**。（现在浏览器的默认字符集大多都是UTF-8；Tomcat9对请求头使用UTF-8解码，对请求体使用ISO-8859-1来解码。）
 
 ## 数据传送流程
 
@@ -1267,35 +1264,47 @@ GET请求的数据会放到请求体，所以会对部分URL进行编码，表�
 
 ### POST请求
 
-POST请求方式的数据会放在请求体中，编码时：将表单中的数据（键值对）经过URLencode编码后放到请求体中（URLencode编码过程使用的字符集默认由网页标签属性设置决定）。
+POST请求方式的数据会放在请求体中，编码时：将表单中的数据（键值对）经过URLencode编码后放到请求体中（URLencode编码过程使用的字符集**默认由网页标签属性设置决定**）。
 
 ![](img/post数据传送.png)
 
 以Tomcat7.0为例，Tomcat服务器会使用默认的ISO-8859-1（国际标准码，不支持中文，兼容ASCII码，也称为Latin1编码）进行解码，此时字符集可能与浏览器端编码的字符集不同而出现乱码（可通过Java程序进行字符集的设置）。
 
-## 解决数据传送过程的乱码
+## 解决服务器接收到乱码的问题
 
-万能方式：适用于POST和GET：
+编码：字符 ===> 字节。
+
+解码：字节 ===> 字符。
+
+**万能方式：**（适用于POST和GET）
+
+Tomcat9在收到浏览器提交的数据后使用UTF-8（对post请求的请求体会使用iso-8859-1解码，Tomcat9前都使用ISO8859-1）对接收到的数据进行解码，使二进制数据变为字符数据。
 
 ````java
 // 拿到从浏览器接收到的数据
 String value = request.getParameter("name");
-// 将服务器的数据通过ISO-8859-1解码来回归原始状态
-byte[] bytes = dname.getBytes("ISO-8859-1");
-// 再重新编码组装
+// 将拿到的数据使用ISO-8859-1编码来还原到未被解码过的数据
+byte[] bytes = value.getBytes("ISO-8859-1");
+// 再重新使用UTF-8进行解码
 value = new String(bytes, "UTF-8");
 ````
 
-仅适用于POST请求：只对请求体编码，得在取数据之前设置
+【注意】：在Tomcat和浏览器默认字符集都是ISO-8859-1的时候才是万能的，在Tomcat9之后，该方式只能用于解决接收post的值的乱码问题。
+
+**仅适用于POST请求：**（只对请求体编码，得在取数据之前设置）
+
+request.setCharacterEncoding()：用来确保发往服务器的参数的编码格式，设置从request中取得的值或从数据库中取出的值的编码格式；而Tomcat默认对请求体使用iso-8859-1来编码，如果没有提前指定时，那么就会按照服务器端对请求体的默认的编码格式（“iso-8859-1”或“UTF-8”）来进行编码（解码），而因为浏览器使用UTF-8进行编码，于是就接收到乱码了。解决：
 
 ```java
-// 告诉服务器请求体使用哪种编码方式
+// 设置post请求提交的参数的编码格式为UTF-8（解码）
 request.setCharacterEncoding("UTF-8");
 // 获取请求提交的数据
 String value = request.getParameter("name");
 ```
 
-仅适用于GET请求：通过修改Tomcat默认的编码字符集
+**仅适用于GET请求：**（通过修改Tomcat默认的编码字符集）
+
+Tomcat9后默认使用UTF-8字符集，所以GET方法可以不设置。
 
 ```xml
 <!--> 修改CATALINA_HOME/conf/server.xml文件，
@@ -1524,11 +1533,11 @@ public class Save extends HttpServlet {
 
  Cookie是什么？
 
-- Cookies是一些存储在用户电脑上的小文件。它被设计用来保存一些站点的用户数据，这样能够让服务器为这样的用户定制内容。页面代码能够获取到Cookie值然后发送给服务器。
-- Cookie可以保存会话状态，但是这个会话状态是保留在客户端上的，只要Cookie清除，或者Cookie失效，这个会话状态就没有了。
-- Cookie可以保存在浏览器客户端、保存在浏览器的缓存中（浏览器关闭Cookie消失）、保存在客户端硬盘文件中（浏览器关闭Cookie还在）。
-- 只要是web开发，只要是B/S架构的系统，只要是基于HTTP协议（cookie机制是HTTP协议规定的），就有cookie的存在。
-- 常见用于：保留购物车商品状态、免登录操作等。
+1. Cookies是一些存储在用户电脑上的小文件。它被设计用来保存一些站点的用户数据，这样能够让服务器为这样的用户定制内容。页面代码能够获取到Cookie值然后发送给服务器。
+2. Cookie可以保存会话状态，但是这个会话状态是保留在客户端上的，只要Cookie清除，或者Cookie失效，这个会话状态就没有了。
+3. Cookie可以保存在浏览器客户端、保存在浏览器的缓存中（浏览器关闭Cookie消失）、保存在客户端硬盘文件中（浏览器关闭Cookie还在）。
+4. 只要是web开发，只要是B/S架构的系统，只要是基于HTTP协议（**cookie机制是HTTP协议规定的**），就有cookie的存在。
+5. cookie常用于：保留购物车商品状态、免登录操作等。
 
 Java中的cookie当做类来处理，cookie对象由name和value两部分组成，都是字符串类型。
 
@@ -1545,7 +1554,7 @@ cookie.setPath("/webapp19/user");
 response.addCookie(cookie);
 ```
 
-1. 服务器端创建cookie，当访问此cookie绑定路径下的页面时就会往客户端发送该cookie。
+1. 服务器端创建cookie，当访问此cookie绑定路径下的页面时服务器端就会往客户端发送cookie。
 2. cookie保存在浏览器客户端的缓存或硬盘文件中，cookie与请求路径是紧密联系的，浏览器提交发送cookie和请求路径有关，然后服务器通过`request`的`getCookies()`方法可以获取绑定了当前路径的所有的cookie。
 
 ## Cookie的绑定路径
@@ -1764,9 +1773,11 @@ ServletContext、HttpSession、HttpServletRequest：
 
 **什么是过滤器?**
 
-过滤器可以对web服务器管理的所有web资源（例如Jsp、Servlet、静态图片文件或静态html文件等）进行拦截，从而实现一些特殊的功能。例如实现URL级别的权限访问控制、过滤敏感词汇、压缩响应信息等一些高级功能。
+过滤器是Servlet规范下的接口，在Tomcat中存在于servlet-api.jar中。
 
-Servlet API中提供了一个Filter接口，开发web应用时，如果编写的Java类实现了这个接口，则把这个java类称之为过滤器Filter。通过Filter技术，开发人员可以实现用户在访问某个目标资源之前，对访问的请求和响应进行拦截。注意Filter不是一个Servlet，它不能产生一个response，它能够在一个request到达Servlet之前预处理request，也可以在离开Servlet时处理response。
+Servlet API中提供了一个Filter接口，开发web应用时，如果编写的Java类实现了这个接口，则把这个java类称之为过滤器Filter。通过Filter技术，开发人员可以实现用户在**访问某个目标资源之前，对访问的请求和响应进行拦截**。注意Filter不是一个Servlet，它不能产生一个response，它能够在一个request到达Servlet之前**预处理request**，也可以**在离开Servlet时处理response**。
+
+总的来说就是过滤器可以对web服务器管理的所有web资源（例如Jsp、Servlet、静态图片文件或静态html文件等）进行拦截，从而实现一些特殊的功能。例如实现URL级别的权限访问控制、过滤敏感词汇、压缩响应信息等一些高级功能。
 
 **Filter是如何实现拦截的？**
 
@@ -1774,11 +1785,11 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
 
 关于filterChain：web服务器在调用doFilter()方法时，会传递一个filterChain对象进来，filterChain对象是Filter接口中最重要的一个对象，它也提供了一个doFilter()方法，开发人员可以根据需求决定是否调用此方法，调用该对象的doFilter()方法，web服务器就会调用web资源的service方法，即web资源就会被访问，否则web资源不会被访问。调用目标资源之后，让一段代码执行。
 
-## 使用
+## 过滤器的实现
 
 过滤器实现的三个步骤：
 
-1. 创建一个Java类实现Filter接口。
+1. 创建一个实现Filter接口的实现类。
 
 2. 重写doFilter()方法。
 
@@ -1786,37 +1797,48 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
    public class FilterTest implements Filter {
        @Override
        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-           response.setCharacterEncoding("utf8");
-           response.setContentType("text/html;charset=utf8");
-           PrintWriter writer = response.getWriter();
-           writer.print("<html>");
-           writer.print("<body>");
-           writer.print("<h1 align='center'>" + "已经被拦截" +"</h1>");
-           writer.print("</body>");
-           writer.print("</html>");
+           request = getParameter("age");
+           if(Integer.valueof(age) < 70){
+               // 资源放行
+               chain.doFilter(request,response);
+           }else{
+               // 资源没放行时执行的操作
+               response.setCharacterEncoding("utf-8");
+               response.setContentType("text/html;charset=utf-8");
+               PrintWriter writer = response.getWriter();
+               writer.print("<html>");
+               writer.print("<body>");
+               writer.print("<h1 align='center'>" + "资源被拦截" +"</h1>");
+               writer.print("</body>");
+               writer.print("</html>");   
+           }
        }
    }
    ```
 
-3. web.xml中将过滤器实现类注册到服务器。
+3. 在web.xml中将过滤器实现类注册到Http服务器。
 
-   ```xml
-   <!-- spring框架的过滤器 -->
-   <filter>
-       <filter-name>filter</filter-name>
-       <filter-class>com.lsl.login.FilterTest</filter-class>
-   </filter>
-   <filter-mapping>
-       <filter-name>filter</filter-name>
-       <!-- 根据servletname和url拦截 -->
-       <servlet-name>success</servlet-name>
-       <!-- 可使用通配符 -->
-       <url-pattern>/login.html</url-pattern>
-   </filter-mapping>
-   ```
+   - ```xml
+      <filter>
+          <filter-name>filter</filter-name>
+          <filter-class>com.lsl.login.FilterTest</filter-class>
+      </filter>
+      <!-- 指定调用何种资源时要被该拦截器拦截 -->
+      <filter-mapping>
+          <filter-name>filter</filter-name>
+          <!-- 访问名为success的servlet时执行拦截 -->
+          <servlet-name>success</servlet-name>
+          <!-- 可使用通配符，访问该页面资源时执行拦截，也可以是某后缀、某目录下等 -->
+          <url-pattern>/login.html</url-pattern>
+      </filter-mapping>
+      ```
+   
+   
+   
+   spring框架中有过滤器的实现类，直接注册即可：
    
    ```xml
-   <!-- spring框架的过滤器 -->
+   <!-- spring框架的过滤器：解决乱码问题的过滤器 -->
    <filter>
      <filter-name>characterEncodingFilter</filter-name>
      <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
@@ -1839,33 +1861,33 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
    </filter-mapping>
    ```
 
-## 应用
+## 过滤器的应用
 
-**增强操作**：拦截页面对request更改编码方式。
+**增强操作**：拦截页面并对request更改编码方式。
 
 **登录拦截：**拦截某一些页面资源，例如后台页面等，设置验证通过后才能运行。
 
-**Filter链：**在一个web应用中，可以开发编写多个Filter，这些Filter组合起来称之为一个Filter链。
+**Filter链：**在一个web应用中，可以开发编写多个Filter，这些Filter组合起来就称之为一个Filter链。
 
-web服务器根据Filter在web.xml文件中的注册顺序，决定优先调用哪个Filter，当第一个Filter的doFilter方法被调用时，web服务器会创建一个代表Filter链的FilterChain对象传递给该方法。在doFilter方法中，开发人员如果调用了FilterChain对象的doFilter方法，则web服务器会检查FilterChain对象中是否还有filter，如果有，则调用第2个filter，如果没有，则调用目标资源。
+**Filter链的执行顺序：**web服务器根据Filter在web.xml文件中的注册顺序来决定优先调用哪个Filter，当第一个Filter的doFilter()方法被调用时，web服务器会创建一个代表Filter链的FilterChain对象，并传递给该doFilter()方法。如果在doFilter()方法中声明调用了FilterChain对象的doFilter()方法，那么web服务器会再次检查FilterChain对象中是否还有过滤器，如果有，那就调用第2个filter，如果没有，则直接访问到目标资源。
 
-访问有过滤器的资源的流程：
+**访问有过滤器的资源的流程：**
 
-将多个过滤器组成过滤器链，每个过滤器在应用程序中执行一个任务，这样有助于确保它们的模块性和复用性。
+（将多个过滤器组成过滤器链，每个过滤器在应用程序中执行一个任务，这样有助于确保它们的模块性和复用性。）
 
 当Web容器收到一个请求时，将发生多个操作：
 
-- 预处理：Web容器对请求执行自己的预处理，在这一步中发生的事情由容器供应商负责；
-- 检查匹配并执行：Web容器检查有没有与所请求的URL匹配的URL模式的过滤器；
-  - Web容器使用一个匹配的URL模式定位第一个过滤器，并执行该过滤器的代码；如果还有其他具有匹配URL模式的过滤器，则继续匹配执行相应代码，持续该过程，直到不再有其他具有匹配URL模式的过滤器。
-- 如果没有发生错误，则将请求传递到目标Servlet，该Servlet将应答传回其调用者。应用到请求上的最后一个过滤器将成功为应用到应答上的第一个过滤器。
-- 最初应用到请求上的第一个过滤器将应答传递给Web容器。
+1. 预处理：Web容器对请求执行自己的预处理，在这一步中发生的事情由容器供应商负责。
+2. 检查匹配并执行：Web容器会检查有没有与所请求的URL匹配的URL模式的过滤器。
+     - Web容器中使用一个匹配URL模式定位第一个过滤器，并执行该过滤器的代码；如果还有其他具有匹配URL模式的过滤器，则继续匹配执行相应代码，持续该过程，直到不再有其他具有匹配URL模式的过滤器。
+3. 如果没有发生错误，则将请求传递到目标Servlet，该Servlet将应答传回其调用者。应用到请求上的最后一个过滤器将成功为应用到应答上的第一个过滤器。
+4. 最初应用到请求上的第一个过滤器将应答传递给Web容器。
 
 `public void doFilter(ServletRequest req,ServletResponse res,FilterChain chain)`是Filter中最核心的方法。参数FilterChain类型的对象是保存多个过滤器执行顺序的对象。
 
-为什么叫过滤器链呢？一个Web容器中可以有多个过滤器，这些过滤器就像珠子被线串在了一起，调用它们的时候一个接一个进行调用。
+为什么叫过滤器链呢？一个Web容器中可以有多个过滤器，这些过滤器就像珠子被线串在了一起，调用它们的时候会按顺序一个接一个来进行调用。
 
-过滤器的调用顺序怎么确定呢？调用过滤器的先后顺序是在web.xml文件中声明的先后顺序。通过调用FilterChain对象的doFilter()方法，可以调用下一个过滤器的doFilter()方法，如果下一个过滤器是最后一个，则调用客户端请求的Servlet、JSP或其他文件。
+过滤器的调用顺序怎么确定呢？调用过滤器的先后顺序是在web.xml文件中声明的先后顺序。并且通过调用FilterChain对象的doFilter()方法，也可以调用下一个过滤器的doFilter()方法，如果下一个过滤器是最后一个，则调用客户端请求的Servlet、JSP或其他文件。
 
 ## Filter的生命周期
 
@@ -1887,46 +1909,6 @@ destroy()：
 - public ServletContext getServletContext()：返回Servlet上下文对象的引用。
 
 # Listener：监听器
-
-## 使用
-
-作用：用于监控**【作用域对象生命周期变化时刻】**和**【作用域对象共享数据变化时刻】**，发生变化时执行相关操作；通过ServletContextListener接口合法地检测全局作用域对象被初始化时刻以及被销毁时刻。
-
-作用域对象：servlet规范中认为在**服务端内存中**可以在某些条件下**为两个servlet之间提供数据共享方案的对象**，称为作用域对象；servletservlet规范下的作用域对象：（jsp规范里则有四个）
-
-- ServletContext：全局作用域对象；
-- HttpSession：会话作用域对象；
-- HttpServletRequest：请求作用域对象。
-
-监听器实现类开发规范：三步
-
-1. 根据监听器实际状况选择对应监听器接口进行实现。
-
-2. 重写监听器接口声明（监听事件处理方法）。
-
-   - ```java
-     public class ListenerTest implements ServletContextListener {
-         @Override
-         public void contextInitialized(ServletContextEvent sce) {
-             System.out.println("servlet上下文初始化完成");
-         }
-     
-         @Override
-         public void contextDestroyed(ServletContextEvent sce) {
-             System.out.println("servlet上下文销毁完成");
-         }
-     }
-     ```
-
-     
-
-3. 在web.xml文件注册监听器实现类到Http服务器（注册到Tomcat等）。
-
-   - ```xml
-       <listener>
-         <listener-class>com.lsl.ListenerTest</listener-class>
-       </listener>
-     ```
 
 ## 八个监听器接口
 
@@ -2014,7 +1996,52 @@ destroy()：
 
    - 触发场景 ：实现HttpSessionBindingListener接口的类，其实例如果被加入至session（HttpSession）对象的属性中，则会呼叫 valueBound()，如果被从session（HttpSession）对象的属性中移除，则会呼叫valueUnbound()，实现 HttpSessionBindingListener接口的类不需在web.xml中设定。
 
-## 应用
+
+
+## 监听器的使用
+
+监听器的作用：用于监控**【作用域对象生命周期变化时刻】**和**【作用域对象共享数据变化时刻】**，并在发生变化时执行相关操作；通过ServletContextListener接口合法地检测全局作用域对象被初始化时刻以及被销毁时刻。
+
+作用域对象：servlet规范中认为在**服务端内存中**可以在某些条件下**为两个servlet之间提供数据共享方案的对象**，称为作用域对象；servletservlet规范下的作用域对象有三个：（jsp规范里则有四个）
+
+1. ServletContext：全局作用域对象。
+2. HttpSession：会话作用域对象。
+3. HttpServletRequest：请求作用域对象。
+
+**监听器实现类开发规范：**
+
+1. 根据监听器实际状况选择对应监听器接口进行实现。（八个监听器接口）
+
+2. 重写监听器接口声明（监听事件处理方法）。
+
+   - ```java
+     // 例子
+     public class ListenerTest implements ServletContextListener {
+         @Override
+         public void contextInitialized(ServletContextEvent sce) {
+             System.out.println("servlet上下文初始化完成");
+             // 此刻要执行的逻辑
+         }
+     
+         @Override
+         public void contextDestroyed(ServletContextEvent sce) {
+             System.out.println("servlet上下文销毁完成");
+             // 此刻要执行的逻辑
+         }
+     }
+     ```
+     
+     
+
+3. 在web.xml文件注册监听器实现类：
+
+   - ```xml
+       <listener>
+         <listener-class>com.lsl.ListenerTest</listener-class>
+       </listener>
+     ```
+
+## 监听器的应用
 
 应用：提高程序运行速度。比如连接数据库，可通过监听在servlet容器创建的时候创建好供使用的Connection，就不用等到使用的时候再创建接口，这样就能减少connection创建的时间，提供程序运行速度。
 
