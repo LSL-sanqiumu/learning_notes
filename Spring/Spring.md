@@ -480,33 +480,45 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
 
 基于XML的装配，Spring提供了两种装配方式：设值注入（Setter Injection）和构造注入（Constructor Injection）
 
-#### 通过构造器注入
+#### 通过有参构造器注入
 
-为实例对象注入属性，可以通过有参构造器来进行属性注入：
+为实例对象注入属性，可以通过有参构造器来进行属性注入；在配置文件加载的时候，ioc容器管理的对象就已经开始创建并初始化。
 
-- 在配置文件加载的时候，容器内管理的对象就已经开始创建并初始化。
+通过有参构造器的参数名（name）、参数类型（type）、参数下标（index）三种方式，必须得为全部构造器形参赋值。
+
+通过构造器参数名字来进行注入：
 
 ```xml
-<!-- 通过有参构造器来注入属性：-->
-<!-- 方式一：通过构造器参数名字 -->
 <bean id = "user1" class="com.lsl.pojo.User">
-    <constructor-arg name="name" value="梁"/> <!--属性注入-->
+    <!-- 为形参赋值 -->
+    <constructor-arg name="name" value="梁"/> 
     ......
 </bean>
-<!--方式二：下标赋值，构造器参数从0开始-->
+```
+
+通过下标赋值，构造器参数下标从0开始：
+
+```xml
 <bean id = "user2" class="com.lsl.pojo.User">
+    <!-- 为形参赋值 -->
     <constructor-arg index="0" value="胜"/>
+    ......
 </bean>
-<!--方式三：通过参数类型注入属性，不建议使用！，如果有多个同一类型会出错-->
+```
+
+通过参数类型注入属性，不建议使用！如果参数中有多个同一类型会出错：
+
+```xml
 <bean id = "user3" class="com.lsl.pojo.User">
-     <!--引用类型的得用全限定名-->
+     <!-- 为形参赋值，使用引用类型的得用全限定类名来指定type -->
     <constructor-arg type="java.lang.String" value="林"/>
+    ......
 </bean>
 ```
 
 #### **通过setter方式注入**
 
-set方式注入就是利用set方法来进行注入，在bean里通过property元素来进行注入，不过区分于不同的数据类型，不同的数据类型使用到的元素和属性值有些不一样，此时是通过默认的无参构造器来构建bean所对应的对象。
+setter方式注入就是利用set方法来进行注入的，注意通过set方法进行注入的都需要先利用类中的无参构造器来构建好对象，然后才通过set方法注入。（无参构造器必须存在）
 
 1.基本数据类型和String类型的普通值的引入：
 
@@ -526,7 +538,8 @@ set方式注入就是利用set方法来进行注入，在bean里通过property�
 ```xml
 <bean id="address" class="com.lsl.pojo.Address"/>
 <bean id = "xxx" class = "xxx.xxx.Xxx">
-    <property name="address" ref="address"/> <!--ref指定bean，name指定的是属性-->
+    <!--ref指定bean，name指定的是属性-->
+    <property name="address" ref="address"/> 
     ......
 </bean>
 ```
@@ -537,9 +550,12 @@ set方式注入就是利用set方法来进行注入，在bean里通过property�
 <bean id = "xxx" class = "xxx.xxx.Xxx">
     <property name="books">
         <array>
-            <value>红楼梦</value>
-            <value>西游记</value>
-            <value>水浒传</value>
+            <value>《红楼梦》</value>
+            <value>《水浒传》</value>
+            <value>《三国演义》</value>
+            <value>《西游记》</value>
+            <null/>
+            <value>""</value>
         </array>
     </property>
 </bean>
@@ -549,10 +565,23 @@ set方式注入就是利用set方法来进行注入，在bean里通过property�
 
 ```xml
 <property name="hobby">
+    <list>
+        <value>"打游戏"</value>
+        <value>"熬夜"</value>
+        <value>"零食"</value>
+        <value>跑步</value>
+        <value>游泳</value>
+        <value>喝水</value>
+    </list>
+</property>
+```
+
+```xml
+<property name="objList">
      <list>
-         <value>跑步</value>
-         <value>游泳</value>
-         <value>喝水</value>
+         <!-- 注入student对象 -->
+         <ref bean="student1"></ref>
+         <ref bean="student2"></ref>
      </list>
 </property>
 ```
@@ -560,10 +589,10 @@ set方式注入就是利用set方法来进行注入，在bean里通过property�
 6.声明为Map集合的注入
 
 ```xml
-<property name="card">
+<property name="idcard">
     <map>
-        <entry key="身份证" value="111111222222222222"/>
-        <entry key="银行卡" value="111111222222222222"/>
+        <entry key="name" value="陆拾陆"/>
+        <entry key="id" value="450821"/>
     </map>
 </property>
 ```
@@ -571,10 +600,10 @@ set方式注入就是利用set方法来进行注入，在bean里通过property�
 7.声明为Set集合的注入
 
 ```xml
-<property name="xx">
+<property name="qq">
     <set>
-        <value>xx</value>
-        <value>xx</value>
+        <value>"1340952319"</value>
+        <value>461826368</value>
     </set>
 </property>
 ```
@@ -582,24 +611,28 @@ set方式注入就是利用set方法来进行注入，在bean里通过property�
 8.注入null值或空字符串
 
 ```xml
+<!-- 注入null -->
 <property name="xx">
     <null/>
 </property>
-<property name="xx" value=""></property> <!--空字符串-->
+<!-- 注入空字符串 -->
+<property name="xx" value=""></property> 
 ```
 
 9.Properties配置类类型
 
 ```xml
-<property name="info">
-	<props>
-        <prop key="driver">com.mysql.ci.jdbc.Driver</prop>
-        <prop key="url">男</prop>
-        <prop key="username">root</prop>
-        <prop key="password">123456</prop>
-	</props>
+<property name="properties">
+    <props>
+        <prop key="driver">com.mysql.jdbc.Driver</prop>
+        <prop key="url">jdbc:mysql://localhost:3306/db</prop>
+        <prop key="user">root</prop>
+        <prop key="passwd">123456</prop>
+    </props>
 </property>
 ```
+
+
 
 #### 拓展方式注入
 
@@ -628,45 +661,47 @@ set方式注入就是利用set方法来进行注入，在bean里通过property�
 
 JavaConfig就是使用注解来描述Bean配置的组件；JavaConfig是Spring的一个子项目，Spring4之后成为一个核心功能，在SpringBoot中常见。
 
-通过JavaConfig显式配置Spring，相当于是Java类里通过注解把bean注册到容器中，不用在xml中开启注解扫描机制，配置类基本配置流程如下：
+通过JavaConfig显式配置Spring，相当于是在Java类里通过注解把bean注册到容器中，此种方式不用在xml中开启注解扫描机制，配置类基本配置流程如下：
 
-1.创建配置类
+1. 创建配置类：
 
-```java
-@Configuration  // 代表配置类，相当于beans.xml，把当前类注册到容器中，作用和@Component一样
-@ComponentScan("com.lsl.pojo")  // 扫描包，可选项，如果不指定扫描包路径，会默认扫描与配置类相同的包及子包
-@Import(LslConfig2.class)       // 合并配置类，可选项
-public class LSLConfig {......}
-```
+   ```java
+   @Configuration  // 代表配置类，相当于beans.xml，把当前类注册到容器中，作用和@Component一样
+   @ComponentScan("com.lsl.pojo")  // 扫描包，可选项，如果不指定扫描包路径，会默认扫描与配置类相同的包及子包
+   @Import(LslConfig2.class)       // 合并配置类，可选项
+   public class LSLConfig {......}
+   ```
 
-2.声明bean：默认情况下，bean的ID与带有@Bean的方法的方法名一致，但可以通过name属性指定
+2. 声明bean：默认情况下，bean的ID与带有@Bean的方法的方法名一致，但可以通过name属性指定：
 
-```java
-public class LSLConfig {
-    @Bean(name="xxx")
-    public xxx setXxx() {......}
-    @Bean  // 创建的bean的id为test
-    public Cat setCat() {
-    	return new Cat();
-    }
-}
-// @Bean注解将会告诉spring-该方法会返回一个对象，该对象要注册为spring应用上下文的bean
-// 默认的bean的id为方法名，例如上面的setCat就是bean的id
-// name属性可以设置新的beanID，设置了name后默认的不再生效，bean的生产是单例
-```
+   ```java
+   public class LSLConfig {
+       @Bean(name="xxx")
+       public xxx setXxx() {......}
+       @Bean(name="mycat")  // 创建的bean的id为mycat
+       public Cat setCat() {
+           return new Cat();
+       }
+   }
+   // @Bean注解将会告诉spring-该方法会返回一个对象，该对象要注册为spring应用上下文的bean
+   // 默认的bean的id为方法名，例如上面的setCat就是bean的默认id（如果没有指定name的话）
+   // name属性可以设置新的beanID，设置了name后默认的不再生效，bean的生产是单例的
+   ```
 
-3.配置好后使用其中的bean
+3. 配置好后使用其中的bean：
 
-```java
-//完全使用了配置类，就只能通过ApplicationContext上下文来获取容器，通过配置类的class对象加载
-ApplicationContext context1 = new AnnotationConfigApplicationContext(LslConfigTest.class);
-User user1 = (User) context1.getBean("getUser");  // 相当于content1.getbean("xxx",Xxx.class);
-```
+   ```java
+   //完全使用了配置类，就只能通过ApplicationContext上下文来获取容器，通过配置类的class对象加载
+   ApplicationContext context1 = new AnnotationConfigApplicationContext(LslConfigTest.class);
+   User user1 = (User) context1.getBean("getUser");  // 相当于content1.getbean("xxx",Xxx.class);
+   ```
 
-4.关于配置类中的属性注入，在对象类中使用@Componet和@Value(" ")：
+4. 关于配置类中的属性注入，在对象类中使用@Componet和@Value(" ")：
 
-- @Componet：用来生成当前类的bean；
-- @Value(" ")：用来注入值；
+   - @Componet：用来生成当前类的bean。
+
+   - @Value(" ")：用来注入值。
+
 
 
 
