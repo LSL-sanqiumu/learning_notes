@@ -263,6 +263,7 @@ web.xml的头部：
     
     
 </web-app>
+<!-- metadata-complete为false时表示启用注解支持 -->
 ```
 
 ## web.xml内标签总结
@@ -1775,30 +1776,37 @@ ServletContext、HttpSession、HttpServletRequest：
 
 过滤器是Servlet规范下的接口，在Tomcat中存在于servlet-api.jar中。
 
-Servlet API中提供了一个Filter接口，开发web应用时，如果编写的Java类实现了这个接口，则把这个java类称之为过滤器Filter。通过Filter技术，开发人员可以实现用户在**访问某个目标资源之前，对访问的请求和响应进行拦截**。注意Filter不是一个Servlet，它不能产生一个response，它能够在一个request到达Servlet之前**预处理request**，也可以**在离开Servlet时处理response**。
+Servlet API中提供了一个Filter接口，开发web应用时，如果编写的Java类实现了这个接口，则把这个java类称之为过滤器Filter。通过Filter技术，开发人员可以实现用户在**访问某个目标资源之前，对访问的请求路径和响应进行拦截**。注意Filter不是一个Servlet，它不能产生一个response，它能够在一个request到达Servlet之前**预处理request**，也可以**在离开Servlet时处理response**。
 
-总的来说就是过滤器可以对web服务器管理的所有web资源（例如Jsp、Servlet、静态图片文件或静态html文件等）进行拦截，从而实现一些特殊的功能。例如实现URL级别的权限访问控制、过滤敏感词汇、压缩响应信息等一些高级功能。
+通过过滤器可以实现URL级别的权限访问控制、过滤敏感词汇、压缩响应信息等一些高级功能。
 
 **Filter是如何实现拦截的？**
 
-Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配置好对哪个web资源进行拦截后，WEB服务器每次在调用web资源的service方法之前，都会先调用一下过滤器的doFilter方法，因此，在该方法内编写代码可达到如下目的：调用目标资源之前，让一段代码执行，是否调用目标资源（即是否让用户访问web资源），等等。
+Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配置好对哪个web资源访问路径进行拦截之后，WEB服务器每次在调用web资源的service方法之前，都会先调用一下过滤器的doFilter方法，因此，在该方法内编写代码可达到如下目的：调用目标资源之前，让一段代码执行来决定是否可以访问目标资源，等等。
 
-关于filterChain：web服务器在调用doFilter()方法时，会传递一个filterChain对象进来，filterChain对象是Filter接口中最重要的一个对象，它也提供了一个doFilter()方法，开发人员可以根据需求决定是否调用此方法，调用该对象的doFilter()方法，web服务器就会调用web资源的service方法，即web资源就会被访问，否则web资源不会被访问。调用目标资源之后，让一段代码执行。
+**拦截器的应用举例：**
 
-## 过滤器的实现
+- 乱码处理：拦截页面并对request更改编码方式，解决乱码问题。
 
-过滤器实现的三个步骤：
+- 权限认证：拦截某一些页面资源，例如后台页面等，设置验证通过后才能运行。
+- 解决用户恶意登录等。
+
+## 过滤器的配置
+
+### 通过xml配置
+
+配置过滤器的三个步骤：
 
 1. 创建一个实现Filter接口的实现类。
 
-2. 重写doFilter()方法。
+2. 重写doFilter()方法，并编写拦截逻辑。
 
    ```java
    public class FilterTest implements Filter {
        @Override
        public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
            request = getParameter("age");
-           if(Integer.valueof(age) < 70){
+           if(Integer.parseInt(age) < 70){
                // 资源放行
                chain.doFilter(request,response);
            }else{
@@ -1833,53 +1841,106 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
       </filter-mapping>
       ```
    
-   
-   
-   spring框架中有过滤器的实现类，直接注册即可：
-   
-   ```xml
-   <!-- spring框架的过滤器：解决乱码问题的过滤器 -->
-   <filter>
-     <filter-name>characterEncodingFilter</filter-name>
-     <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
-     <init-param>
-       <param-name>encoding</param-name>
-       <param-value>utf-8</param-value>
-     </init-param>
-     <init-param>
-       <param-name>forceRequestEncoding</param-name>
-       <param-value>true</param-value>
-     </init-param>
-     <init-param>
-       <param-name>forceResponseEncoding</param-name>
-       <param-value>true</param-value>
-     </init-param>
-   </filter>
-   <filter-mapping>
-     <filter-name>characterEncodingFilter</filter-name>
-     <url-pattern>/*</url-pattern>
-   </filter-mapping>
-   ```
 
-## 过滤器的应用
+`<url-pattern>`的几种形式举例：
 
-**增强操作**：拦截页面并对request更改编码方式。
+1. `<url-pattern>/img/gao.png</url-pattern>`：拦截对某路径下的某个资源。（精确匹配）
+2. `<url-pattern>/img/*</url-pattern>`：对某目录下所有的资源请求都进行拦截。（通配符拦截匹配）
+3. `<url-pattern>/*</url-pattern>`：访问任何资源都进行拦截。（通配符拦截匹配）
+4. `<url-pattern>*.png</url-pattern>`：访问.png后缀的资源都会进行拦截。（后缀拦截匹配）
+5. 不能使用`/`、`/*.png`之类的匹配方式。
 
-**登录拦截：**拦截某一些页面资源，例如后台页面等，设置验证通过后才能运行。
+【注意】：拦截时是和浏览器端站点请求链接比对来决定是否拦截的，不会对转发路径进行拦截。
 
-**Filter链：**在一个web应用中，可以开发编写多个Filter，这些Filter组合起来就称之为一个Filter链。
+### 通过注解配置
 
-**Filter链的执行顺序：**web服务器根据Filter在web.xml文件中的注册顺序来决定优先调用哪个Filter，当第一个Filter的doFilter()方法被调用时，web服务器会创建一个代表Filter链的FilterChain对象，并传递给该doFilter()方法。如果在doFilter()方法中声明调用了FilterChain对象的doFilter()方法，那么web服务器会再次检查FilterChain对象中是否还有过滤器，如果有，那就调用第2个filter，如果没有，则直接访问到目标资源。
+1. 编写实现Filter接口的实现类。
+2. 在doFilter()接口编写拦截逻辑。
+3. 设置拦截路径。
 
-**访问有过滤器的资源的流程：**
+```java
+// 使用注解需要将web.xml中的metadata-complete设置为false
+// filterName为拦截器名字，value为拦截的路径
+@WebFilter(filterName="useAnno",value = "*.png")
+public class FilterTestTwo implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        String age = request.getParameter("age");
+        System.out.println(age);
+        System.out.println("使用注解注册的过滤器");
+        if (Integer.parseInt(age) > 70){
+            chain.doFilter(request,response);
+        }else {
+            response.setCharacterEncoding("utf-8");
+            response.setContentType("text/html;charset=utf-8");
+            PrintWriter writer = response.getWriter();
+            writer.print("<html>");
+            writer.print("<body>");
+            writer.print("<h1 align='center'>" + "资源被拦截" +"</h1>");
+            writer.print("</body>");
+            writer.print("</html>");
+        }
+    }
+}
+```
+
+
+
+### spring框架的过滤器
+
+spring框架中有过滤器的实现类，直接注册即可：
+
+```xml
+<!-- spring框架的过滤器：解决乱码问题的过滤器 -->
+<filter>
+  <filter-name>characterEncodingFilter</filter-name>
+  <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+  <init-param>
+    <param-name>encoding</param-name>
+    <param-value>utf-8</param-value>
+  </init-param>
+  <init-param>
+    <param-name>forceRequestEncoding</param-name>
+    <param-value>true</param-value>
+  </init-param>
+  <init-param>
+    <param-name>forceResponseEncoding</param-name>
+    <param-value>true</param-value>
+  </init-param>
+</filter>
+<filter-mapping>
+  <filter-name>characterEncodingFilter</filter-name>
+  <url-pattern>/*</url-pattern>
+</filter-mapping>
+```
+
+## 过滤器链和优先级
+
+**Filter链：**在一个web应用中，可以开发编写多个Filter，这些Filter组合起来就称之为一个Filter链。（客户端对服务器请求后，服务器在调用servlet之前会执行一组过滤器，那么这组过滤器就成为一条过滤器链）
+
+**Filter链的执行：**当第一个Filter实现类的doFilter()方法被调用时，web服务器会创建一个代表Filter链的FilterChain对象传递给该doFilter()方法，如果在该doFilter()方法中调用了这个FilterChain对象的doFilter()方法，那么web服务器会再次检查FilterChain对象中是否还有过滤器，如果有，那就调用第2个filter，如果没有，则调用放行的目标资源。
 
 （将多个过滤器组成过滤器链，每个过滤器在应用程序中执行一个任务，这样有助于确保它们的模块性和复用性。）
 
-当Web容器收到一个请求时，将发生多个操作：
+**过滤器链的优先级：**
 
-1. 预处理：Web容器对请求执行自己的预处理，在这一步中发生的事情由容器供应商负责。
-2. 检查匹配并执行：Web容器会检查有没有与所请求的URL匹配的URL模式的过滤器。
-     - Web容器中使用一个匹配URL模式定位第一个过滤器，并执行该过滤器的代码；如果还有其他具有匹配URL模式的过滤器，则继续匹配执行相应代码，持续该过程，直到不再有其他具有匹配URL模式的过滤器。
+1. 如果是用注解配置的过滤器，那么会按照类的全名称的字符顺序来决定作用顺序。
+2. 如果使用xml配置的过滤器，web服务器根据Filter在web.xml文件中的**注册顺序**来决定优先执行哪个Filter。
+3. xml配置的方式高于注解方式。
+4. 如果同一个过滤器既使用xml配置又使用注解配置，那么会重复创建，造成同一过滤器执行多次。（最后只配置）
+
+
+
+## Filter的生命周期
+
+过滤器执行地位在servlet之前，客户端发送的请求会先经过过滤器，然后再到达servlet；响应时，会根据执行流程反向地在过滤器链上执行一个个过滤器。
+
+**访问有过滤器的资源的流程：**（当Web容器接收到一个请求时，将发生以下操作）
+
+1. 请求预处理：Web容器对请求执行自己的预处理，在这一步中发生的事情由容器供应商负责。
+2. 检查匹配过滤器并执行：Web容器会检查有没有与所请求的URL匹配的URL模式的过滤器。
+   - Web容器中使用一个匹配URL模式定位第一个过滤器，并执行该过滤器的代码；如果还有其他具有匹配URL模式的过滤器，则继续匹配执行相应代码，持续该过程，直到不再有其他具有匹配URL模式的过滤器。
 3. 如果没有发生错误，则将请求传递到目标Servlet，该Servlet将应答传回其调用者。应用到请求上的最后一个过滤器将成功为应用到应答上的第一个过滤器。
 4. 最初应用到请求上的第一个过滤器将应答传递给Web容器。
 
@@ -1889,15 +1950,14 @@ Filter接口中有一个doFilter方法，当开发人员编写好Filter，并配
 
 过滤器的调用顺序怎么确定呢？调用过滤器的先后顺序是在web.xml文件中声明的先后顺序。并且通过调用FilterChain对象的doFilter()方法，也可以调用下一个过滤器的doFilter()方法，如果下一个过滤器是最后一个，则调用客户端请求的Servlet、JSP或其他文件。
 
-## Filter的生命周期
+`init(FilterConfig filterConfig)throws ServletException`方法：
 
-init(FilterConfig filterConfig)throws ServletException：
-
-和我们编写的Servlet程序一样，Filter的创建和销毁由WEB服务器负责。 web 应用程序启动时，web 服务器将创建Filter 的实例对象，并调用其init方法，完成对象的初始化功能，从而为后续的用户请求作好拦截的准备工作（注：filter对象只会创建一次，init方法也只会执行一次。）开发人员通过init方法的参数，可获得代表当前filter配置信息的FilterConfig对象。
+和我们编写的Servlet程序一样，Filter的创建和销毁是由WEB服务器负责的。 当 web 应用程序启动时，web 服务器就会根据配置文件配置好Filter 的实例对象，并调用其init()方法来完成对象的初始化功能，从而为后续的用户请求作好拦截的准备工作。（注：filter对象只会创建一次，init方法也只会执行一次。）开发人员通过init方法的参数，可获得代表当前filter配置信息的FilterConfig对象。
 
 destroy()：
 
-在Web容器卸载 Filter 对象之前被调用。该方法在Filter的生命周期中仅执行一次。在这个方法中，可以释放过滤器使用的资源。
+- 在Web容器卸载 Filter 对象之前被调用。该方法在Filter的生命周期中仅执行一次。在这个方法中，可以释放过滤器使用的资源。
+
 
 ##  FilterConfig接口
 
@@ -2031,8 +2091,7 @@ destroy()：
      }
      ```
      
-     
-
+   
 3. 在web.xml文件注册监听器实现类：
 
    - ```xml
