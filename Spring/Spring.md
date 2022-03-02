@@ -476,7 +476,7 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
 
 ## 三种装配方式
 
-### 基于XML的装配
+### 基于XML的显式装配
 
 基于XML的装配，Spring提供了两种装配方式：设值注入（Setter Injection）和构造注入（Constructor Injection）
 
@@ -657,17 +657,17 @@ setter方式注入就是利用set方法来进行注入的，注意通过set方�
 </beans>
 ```
 
-### 基于注解的装配
+### JavaConfig
 
-JavaConfig就是使用注解来描述Bean配置的组件；JavaConfig是Spring的一个子项目，Spring4之后成为一个核心功能，在SpringBoot中常见。
-
-通过JavaConfig显式配置Spring，相当于是在Java类里通过注解把bean注册到容器中，此种方式不用在xml中开启注解扫描机制，配置类基本配置流程如下：
+JavaConfig就是**使用注解来描述Bean配置**的组件；JavaConfig是Spring的一个子项目，Spring4之后成为一个核心功能，在SpringBoot中常见。可将JavaConfig（Java配置类）看做是和bean.xml一样的配置文件，用来配置bean、装配等。配置类基本使用流程如下：
 
 1. 创建配置类：
 
    ```java
-   @Configuration  // 代表配置类，相当于beans.xml，把当前类注册到容器中，作用和@Component一样
-   @ComponentScan("com.lsl.pojo")  // 扫描包，可选项，如果不指定扫描包路径，会默认扫描与配置类相同的包及子包
+   // 代表配置类，相当于beans.xml
+   @Configuration 
+   // 扫描包，可选项，如果不指定扫描包路径，会默认扫描与配置类相同的包及子包
+   @ComponentScan("com.lsl.pojo")  
    @Import(LslConfig2.class)       // 合并配置类，可选项
    public class LSLConfig {......}
    ```
@@ -696,26 +696,199 @@ JavaConfig就是使用注解来描述Bean配置的组件；JavaConfig是Spring�
    User user1 = (User) context1.getBean("getUser");  // 相当于content1.getbean("xxx",Xxx.class);
    ```
 
-4. 关于配置类中的属性注入，在对象类中使用@Componet和@Value(" ")：
-
-   - @Componet：用来生成当前类的bean。
-
-   - @Value(" ")：用来注入值。
 
 
+### 基于注解的装配（自动）
 
+spring从两个角度实现自动化装配：
 
-### 自动装配
+- 组件扫描（component scanning）：spring自动发现应用上下文中所创建的bean，注解扫描可通过配置类或是xml配置文件开启。
+- 自动装配（autowiring）：spring会自动满足bean之间的依赖。
 
-自动装配是Spring满足bean依赖的一种方式，通过上下文自动寻找，**自动给bean装配引用类型属性的值**；自动装配有三种装配方式，分别是在xml中显式设置自动装配、在java中显式配置自动装配、隐式的自动装配bean【重要】。
+基于注解的装配的实现流程：（其实就是自动装配）
 
-#### xml中配置自动装配
+1. 开启注解支持。
+2. 组件声明。（即使用@Componet等标记类）
+3. 依赖注入。（即使用@Autowired、@Value等标记属性）
+
+#### 开启注解支持
+
+**使用注解时需要开启注解支持，开启注解支持有两种方式：**
+
+1. 在xml文件中开启注解支持。
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:context="http://www.springframework.org/schema/context"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans
+           https://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           https://www.springframework.org/schema/context/spring-context.xsd">
+   
+       <!-- 扫描包使注解生效，注解生效时默认bean的id为注册进Spring的类的类名小写(多个单词组合时是驼峰形式)，
+      如果要标识bean的id为其他，可在@Component(value="")的value中设置 -->
+       <context:component-scan base-package="com.lsl.useanno,com.lsl.test"/>
+   
+   </beans>
+   ```
+
+2. 在Java配置类中开启注解支持。
+
+   ```java
+   @Configuration
+   @ComponentScan(value = {"com.lsl.useanno","com.lsl.test"}) // 注解扫描，是注解生效
+   public class MyConfig {
+   
+   }
+   ```
+
+关于组件扫描的细节问题：
+
+```xml
+<!-- 
+	use-default-filters：表示不使用默认的filter来对类进行扫描过滤
+	context:include-filter：设置要对带哪个注解的类进行扫描
+    context:exclude-filter：设置要对带哪个注解的类不进行扫描
+-->
+<!-- 如下：扫描com.lsl.test包下带@Controller注解的类，不扫描带@Component的类 -->
+<context:component-scan base-package="com.lsl.test" use-default-filters="false">
+    <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Component"/>
+</context:component-scan>
+```
+
+```xml
+<!-- 像@Resource 、@PostConstruct、@Antowired，spring给我们提供<context:annotation-config/>这个简化配置方式，自动帮你完成声明，来提供这几个注解的支持，但不能提供@Componet等注解的支持 -->
+<context:annotation-config/> 
+
+<!-- component-scan，除了具有annotation-config的功能之外，还具有自动将带有@component,@service,@Repository等注解的对象注册到spring容器中的功能 -->
+<context:component-scan base-package="com.lsl.useanno"/>
+```
+
+#### 组件声明
+
+**使用注解标记要在IoC容器中创建对象的类：**
+
+Spring中将某个类注册进IoC容器的注解：
+
+1. @Componet：常用于普通的类，说明这个类被spring管理了。
+2. @Service：常用于service层。
+3. @Controller：常用于web层，前端控制器。
+4. @Repository：常用于业务层。
+5. **这几个注解的功能是一样的——表明这个类被spring管理了。**
+
+```java
+// 将该类对象注册进IoC容器，value可省略，省略时默认值是首字母小写的类名称-annoTest
+@Component(value = "obj")
+public class AnnoTest {
+    public void add(){
+        System.out.println("我是一个组件，我是一个被IoC管理的类的对象");
+    }
+}
+// 该类注册进IoC容器的对象的名为 ATest（为什么会这样呢......）
+@Component
+public class ATest {
+    public void say(){
+        System.out.println("hello");
+    }
+}
+```
+
+#### 属性注入
+
+**基于注解方式实现属性注入：**
+
+```java
+@Component
+public class Cat {
+    @Value("我的猫") // 注入普通类型属性
+    private String name;
+    @Value("12")
+    private int age;
+
+    public String getName() {
+        return name;
+    }
+}
+```
+
+1. @Autowired：默认根据属性的类型进行自动装配，如果根据类型找不到则再通过名称匹配注入。
+
+   ```java
+   @Component
+   public class MyAnnoTest {
+       @Autowired
+       private Cat cat;
+       public void say(){
+           System.out.println(cat.getName());
+       }
+   }
+   ```
+
+2. @Qualifier：根据IoC中对象名称来匹配注入，需要和@Autowired搭配使用才能起作用。
+
+   ```java
+   @Component
+   public class MyAnnoTest {
+       @Autowired
+       @Qualifier(value = "tac") // 去IoC容器找到名称为tac的bean来注入
+       private Cat cat;
+       public void say(){
+           System.out.println(cat.getName());
+       }
+   }
+   ```
+
+3. @Resource：可以根据类型注入，也可以根据名称匹配注入。
+
+   ```java
+   @Component
+   public class MyAnnoTest {
+       @Resource(name = "tac") // 如果指定name，先根据name匹配注册
+       private Cat cat;
+       public void say(){
+           System.out.println(cat.getName());
+       }
+   }
+   ```
+
+1. @Autowired：
+
+   - 使用@Autowired(required = false)，则当在容器中找不到符合的对象时，仍然可以编译通过；如果为true，则要求容器中必须有符合的对象来供注入。
+   - 在属性上或set方法上都能使用，前提是自动装配的属性在spring容器中存在，且符合xml中byName时的名字要求。
+   - **注意**：通过注解注入到IOC容器的id值默认是其类名（首字母小写）。
+
+2. @Nullable：
+
+   - 标记了这个注解的字段可以为null，任何类型的属性都可以加上；
+
+3. @Autowired和@Qualifier配合
+
+   - ```java
+     	@Autowired
+     	@Qualifier(value = "cat2")
+     	private Cat cat;
+     //使用@Qualifier(value = "cat2")从多个对象中指定一个对象配合@Autowired来注入
+     ```
+
+4. @Resource：java的注解，如果有指定name值则先通过name匹配，然后再是默认通过byName方式查找，如果找不到则通过byType查找(这时查找对象必须唯一，如果有同一类的多个对象则也会报错)，即两种方式都找不到时，才会报错；@Resource(name = "")可通过指定beanID匹配相应对象。
+
+@Autowired和@Resource的区别：
+
+1. 都是用来自动装配，都可以放在属性字段上或写在setter方法上。
+2. @Autowired默认通过byType的方式实现，如果找不到再通过byName，如果两个都找不到则会报错。
+3. @Resource默认通过byName方式实现，找不到则通过byType；如果两个都找不到则会报错。
+4. 执行顺序不同：@Autowired先通过byType的方式实现，@Resource先过byName方式实现。
+
+### xml中配置自动装配
 
 自动装配：（三个过程：1.spring容器中有相应的bean，2.找到要注入的bean，3.spring自动寻找并为指定bean注入bean）
 
-- 使用bean的自动装配属性：autowire，用来指定spring寻找bean的方式；
-- autowire：byName；在容器上下文中寻找和**setXxx方法**后面的值(xxx)对应的beanID（为声明了autowire的bean装配）；
-- autowire：byType；在容器上下文中寻找和自己对象**属性类型**相同的bean（为声明了autowire的bean装配）。
+1. 使用bean的自动装配属性：autowire，用来指定spring寻找bean的方式；
+2. autowire：byName；在容器上下文中寻找和**setXxx方法**后面的值(xxx)对应的beanID（为声明了autowire的bean装配）；
+3. autowire：byType；在容器上下文中寻找和自己对象**属性类型**相同的bean（为声明了autowire的bean装配）。
 
 ```xml
 <bean id="person" class="com.lsl.pojo.People" autowire="byType">-->
@@ -726,81 +899,11 @@ JavaConfig就是使用注解来描述Bean配置的组件；JavaConfig是Spring�
 
 总结：
 
-- 使用byName时，要保证beanID唯一，并且这个bean需要和自动注入的属性的set方法的方法名一致；
-- 使用byType时，要保证所有声明了的bean的class唯一，并且这个bean需要和被注入的bean的属性的类型一致；
-- 注入的是对象。
+1. 使用byName时，要保证beanID唯一，并且这个bean需要和自动注入的属性的set方法的方法名一致。
+2. 使用byType时，要保证所有声明了的bean的class唯一，并且这个bean需要和被注入的bean的属性的类型一致。
+3. 注入的是对象。
 
-#### 使用注解配置自动装配
-
-spring从两个角度实现自动化装配：
-
-- 组件扫描（component scanning）：spring自动发现应用上下文中所创建的bean；
-- 自动装配（autowiring）：spring会自动满足bean之间的依赖。
-
-创建好bean之后，通过spring的自动装配机制，开启注解支持和注解扫描，spring就能自动为注解处注入bean。使用步骤如下：
-
-1. 导入约束，并开启注解支持：`<context:annotation-config/>`用来开启注解支持
-
-   - ```xml
-      <?xml version="1.0" encoding="UTF-8"?>
-      <beans xmlns="http://www.springframework.org/schema/beans"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xmlns:context="http://www.springframework.org/schema/context"
-             xmlns:aop="http://www.springframework.org/schema/aop"
-             xsi:schemaLocation="http://www.springframework.org/schema/beans
-              https://www.springframework.org/schema/beans/spring-beans.xsd
-              http://www.springframework.org/schema/context
-              https://www.springframework.org/schema/context/spring-context.xsd
-              http://www.springframework.org/schema/aop
-              https://www.springframework.org/schema/aop/spring-aop.xsd
-          ">
-          <!-- 扫描包使注解生效，注解生效时默认bean的id为注册进Spring的类的类名小写(多个单词组合时是驼峰形式)，
-      	如果要标识bean的id为其他，可在@Component("")设置 -->
-          <context:component-scan base-packae="com.lsl.pojo"/>
-          <!-- 开启注解支持 -->
-          <context:annotation-config/> 
-      </beans>
-      ```
-
-3. 使用@Component创建bean：组件，放于类上，说明这个类被spring管理了；相当于 `<bean id = "类名小写，驼峰" class = "com.lsl.pojo.类">`；
-
-3. 使用注解进行属性注入：
-
-   - @Autowired：
-
-     - 使用@Autowired(required = false)，则该对象可以为null（？不理解）；
-     - 在属性上或set方法上使用，前提是自动装配的属性在spring容器中存在，且符合xml中byName时的名字要求；
-     - **注意**：通过注解注入到IOC容器的id值默认是其类名（首字母小写）；
-
-   - @Nullable：
-
-     - 标记了这个注解的字段可以为null，任何类型的属性都可以加上；
-
-   - @Autowired和@Qualifier配合
-
-     - ```java
-        	@Autowired
-        	@Qualifier(value = "cat2")
-        	private Cat cat;
-       //使用@Qualifier(value = "cat2")从多个对象中指定一个对象配合@Autowired来注入
-       ```
-
-   - @Resource：java的注解，如果有指定name值则先通过name匹配，然后再是默认通过byName方式查找，如果找不到则通过byType查找(这时查找对象必须唯一，如果有同一类的多个对象则也会报错)，即两种方式都找不到时，才会报错；@Resource(name = "")可通过指定beanID匹配相应对象。
-
-4. 使用应用上下文获取bean进行测试：
-
-   - ```java
-     ApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
-     ```
-
-@Autowired和@Resource的区别：
-
-- 都是用来自动装配，都可以放在属性字段上或写在setter方法上；
-- @Autowired默认通过byType的方式实现，如果找不到再通过byName，如果两个都找不到则会报错；
-- @Resource默认通过byName方式实现，找不到则通过byType；如果两个都找不到则会报错；
-- 执行顺序不同：@Autowired先通过byType的方式实现，@Resource先过byName方式实现。
-
-### xml与注解整合
+## xml与注解整合总结
 
 sppring4.0之后，必须导入spring的aop的包；加入如下约束：
 
@@ -820,45 +923,37 @@ sppring4.0之后，必须导入spring的aop的包；加入如下约束：
     <!-- 扫描包使注解生效，注解生效时默认bean的id为注册进Spring的类的类名小写(多个单词组合时是驼峰形式)，
 	如果要标识bean的id为其他，可在@Component("")设置 -->
     <context:component-scan base-packae="com.lsl.pojo"/>
-    <!-- 开启注解支持 -->
-    <context:annotation-config/> 
 </beans>
 ```
 
-- @Component：组件，放于类上，说明这个类被spring管理了；相当于 `<bean id = "类名小写。。。" class = "com.lsl.pojo.类">`；
-- @Value("")：相当于`<property name = "" value = ""/>`，放在属性字段上或写在setter方法上；
+1. @Component：组件，放于类上，说明这个类被spring管理了；相当于 `<bean id = "类名小写。。。" class = "com.lsl.pojo.类">`。
+2. @Value("")：相当于`<property name = "" value = ""/>`，放在属性字段上或写在setter方法上。
+3. @Component有几个衍生注解，我们在Web开发中会按照mvc三层架构。
 
-- @Component有几个衍生注解，我们在Web开发中会按照mvc三层架构；
-
-   - dao：@Repository；
-   - service：@Service；
-   - controller：@Controller。
+   - dao：@Repository；service：@Service；controller：@Controller。
    - @Component及其衍生的注解功能一样，都代表某个类注册到Spring中，装配Bean。
+4. 自动装配属性，自动依赖注入：
 
-- 自动装配属性，依赖注入：
-
-   - @Autowired：使用@Autowired(required = false)，则该对象可以为空；
-   - @Nullable：标记了这个注解的字段可以为null；
-   - @Autowired和@Qualifier配合。
-
-- 作用域：@Scope("")，指定单例或其他；
+   - @Autowired：先通过类型匹配，匹配不成就使用名称来匹配，两种方式匹配不成功就会报错；使用@Autowired(required = false)，表示可以忽略当前要注入的bean，如果有就直接注入，没有就跳过，不会报错（如果有且按类型会名称都匹配不成功，无法注入，那就还是会报错）。
+   - @Nullable 注解可以使用在方法、属性、参数上，分别表示方法返回值可以为空、属性值可以为空、参数值可以为空。
+   - @Autowired和@Qualifier配合，使用@Qualifier(value="")来指定要注入的bean的名称。
+5. 作用域：@Scope("")，指定单例或其他。
 
 小结，xml与注解：
 
-- xml：应用场景更加广泛，维护更加简单方便；
+- xml：应用场景更加广泛，维护更加简单方便。
 - 注解：与源代码绑定，改动时要修改源代码。
 
 最佳实践：
 
-- xml用于管理bean：只负责对象的创建；
+- xml用于管理bean：只负责对象的创建。
 
-- 注解用于注入：只负责属性的注入；
+- 注解用于注入：只负责属性的注入。
 
-- 【注意】开启注解支持
+- 【注意】需要开启注解扫描（可通过xml或JavaConfig这两种方式开启）
 
   ```xml
   <context:component-scan base-package="com.lsl.pojo"/><!--扫描当前包，使当下包的注解生效-->
-  <context:annotation-config/>
   ```
 
 # IOC底层原理
@@ -867,7 +962,7 @@ IOC基于xml解析、工厂模式、反射实现。IOC思想由IOC容器实现�
 
 IOC容器实现的两种方式：
 
-- BeanFactory：最基本的实现，在获取对象的时候才会去创建对象；
+- BeanFactory：最基本的实现，在获取对象的时候才会去创建对象。
 - ApplicationContext：基于BeanFactory，加载完配置文件后就会把对象都创建。
 
 IOC流程：
