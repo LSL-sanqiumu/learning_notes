@@ -429,11 +429,15 @@ public static void main(String[] args){
 
 > org.springframework.context.ApplicationContext;  应用上下文由该接口定义
 
-1. AnnotationConfigApplicationContext：从一个或多个Java配置类中加载spring应用上下文。
-2. AnnotationConfigWebApplicationContext：从一个或多个Java配置类中加载spring web应用上下文。
-3. ClassPathXmlConfigApplicationContext：从类路径下一个或多个xml配置文件加载上下文定义，把应用上下文定义文件作为类资源。
-4. FileSystemXmlApplicationContext：从文件系统下的一个或多个xml配置文件加载上下文定义。
-5. XmlWebApplicationContext：从web应用下的一个或多个xml配置文件加载上下文定义。
+| ApplicationContext接口实现类          | 作用                                                         |
+| ------------------------------------- | ------------------------------------------------------------ |
+| AnnotationConfigApplicationContext    | 从一个或多个Java配置类中加载spring应用上下文                 |
+| AnnotationConfigWebApplicationContext | 从一个或多个Java配置类中加载spring web应用上下文             |
+| ClassPathXmlConfigApplicationContext  | 从类路径下一个或多个xml配置文件加载上下文定义，把应用上下文定义文件作为类资源 |
+| FileSystemXmlApplicationContext       | 从文件系统下的一个或多个xml配置文件加载上下文定义            |
+| XmlWebApplicationContext              | 从web应用下的一个或多个xml配置文件加载上下文定义             |
+
+
 
 ## beans.xml简单说明
 
@@ -956,20 +960,28 @@ sppring4.0之后，必须导入spring的aop的包；加入如下约束：
   <context:component-scan base-package="com.lsl.pojo"/><!--扫描当前包，使当下包的注解生效-->
   ```
 
-# IOC底层原理
+# IoC底层原理
 
-IOC基于xml解析、工厂模式、反射实现。IOC思想由IOC容器实现，IOC容器底层就是对象工厂。
+IoC基于xml解析、工厂模式、反射实现。IoC思想由IoC容器实现，IoC容器底层就是对象工厂。
 
-IOC容器实现的两种方式：
+IoC容器实现的两种方式：
 
-- BeanFactory：最基本的实现，在获取对象的时候才会去创建对象。
-- ApplicationContext：基于BeanFactory，加载完配置文件后就会把对象都创建。
+- BeanFactory：bean工厂，是IoC容器基本的实现方式，是spring内部的使用接口，不提供开发人员使用；**加载完配置文件时对象还没有被创建，在获取对象的时候才会去创建对象**。
+- ApplicationContext：是BeanFactory的子接口，比其父接口功能更加强大，一般由开发人员进行使用；**加载完配置文件后就会把配置好的bean（对象）都创建**。
+- ApplicationContext有多个实现类。
 
-IOC流程：
+IOC实现演变流程：（场景模拟：User类需要依赖另一个Service类）
 
 ```java
-// 场景模拟：User类需要依赖另一个Service类
-/* 解决方案一：在User类内 new一个Service对象 ===》 存在问题：耦合度高 */
+/* 解决方案一：在User类内 new一个Service对象 ===> 存在问题：耦合度高 */
+public class User{
+    public void test(){
+        Service s = new Service();
+    }
+}
+```
+
+```java
 // 为了降低User类与Service的耦合度
 /* 解决方案二：创建一个ClassFactory，转移耦合度（User类不用再负责依赖对象的创建与生命周期），如下： */
 public class ClassFactory {
@@ -977,14 +989,24 @@ public class ClassFactory {
         return new Service();
     }
 }
+public class User{
+    public void test(){
+        Service s = ClassFactory.getService();
+    }
+}
+```
+
+```java
 /* 解决方案三：
-/* 为了进一步降低耦合度：利用xml文件解析与反射 IOC的流程：如下*/
+/* 为了进一步降低耦合度：利用xml文件解析与反射——实际IoC的流程，如下*/
 // 1.通过xml文件配置对象
 // 2.工厂类，service类和dao类
 public class ClassFactory {
     public static Service getService(){
-        String classValue = class属性值;          // 通过工具解析xml文件
-        Class clazz = Class.forName(classvalue); // 通过反射创建对象
+        // 通过工具解析xml文件
+        String classValue = class属性值;
+        // 通过反射创建对象
+        Class clazz = Class.forName(classvalue); 
         return (Service)clazz.newInstance();
     }
 }
@@ -992,43 +1014,41 @@ public class ClassFactory {
 // 而使用控制反转，再次降低了耦合度（对象是否创建的控制权和属性的控制权在配置文件中（bean管理），ClassFactory只有对象的实现权，实现了解耦）
 ```
 
+![](img/ioc原理.png)
 
+耦合度不可能完全没有，只能尽量地降低耦合度。
 
 # 理解代理模式
 
-代理模式，AOP的底层，面试常见【SpringAOP和SpringMVC】；代理模式：将复杂事务转移到一处专门处理这类复杂事务的功能模块。
+学习目的：知道什么是动态代理以及动态代理能做些什么即可，是理解层面是的掌握，不需要掌握其实现。
 
-分为静态代理和动态代理。
+代理模式，AOP的底层，面试中常见【SpringAOP和SpringMVC】；代理模式：将复杂事务转移到一处专门处理这类复杂事务的功能模块。分为静态代理和动态代理。（代理——代替管理）
+
+代理的作用：
+
+1. 功能增强：在原有的功能上增加新的功能。
+2. 控制访问：代理类不让你访问目标。（例如商家不让用户访问厂家）
 
 ## 静态代理
 
-角色分析：
+静态代理：代理类是你自己手动创建的，并且你所要代理的目标类也是明确的。
 
-- 抽象角色：一般使用接口或抽象类来解决；
-- 真实角色：被代理的角色；
-- 代理角色：代理真实角色，代理真实角色后我们一般会做一些附属操作；
-- 客户：访问代理对象的人。
+**示例：**角色分析：
 
-代理好处：
-
-- 真实角色不用关注其他公共的事务，只需要关注自己的需求目标；
-- 公共的事务交给了代理（事务的分工更明确）；
-- 方便公共事务发生改变时的拓展（（不改变被代理类的情况下）对被代理类的功能进行了拓展）。
-
-缺点：
-
-- 有多少个被代理角色就会有多少个代理类，这样代码量会翻倍，也就导致开发效率降低。
-
-### 示例1：
+1. 抽象角色：一般使用接口或抽象类来解决。（租房操作）
+   - 真实角色：被代理的角色，要实现接口的。（房东或房子）
+   - 代理角色：代理者，代理者一般会有一些附属操作，持有真实角色的引用，要实现接口。（中介）
+2. 客户：访问代理者的人。（要租房子的人）
 
 ```java
+// 接口
 public interface Rent {
     void rent();
 }
 ```
 
 ```java
-// 房子
+// 接口实现类：
 public class Host implements Rent{
     public void rent() {
         System.out.println("招租！");
@@ -1043,7 +1063,7 @@ public class Client {
         // 客户自己找符合自己需求的房源，然后租
         Host host = new Host(); 
         host.rent(); 
-        // 客户把自己的需求提交给代理商，代理商负责匹配自己已有房源
+        // 代理模式：客户把自己的需求提交给代理商，代理商负责匹配已有房源并帮助租客租借父子
         Proxy proxy = new Proxy(new Host());
         proxy.rent();
     }
@@ -1052,21 +1072,21 @@ public class Client {
 
 ```java
 // 代理商
-public class Proxy {
+public class Proxy implements Rent{
     private Host host;
 
     public Proxy() {
     }
-
+	// 代理房子
     public Proxy(Host host) {
         this.host = host;
     }
+    // 代理商业务实现流程：带去看房 ===> 叫中介费 ===> 签订合同
     public void rent(){
         lookHost();
         contract();
         fare();
     }
-    //看房
     public void lookHost(){
         System.out.println("中介带你看房");
     }
@@ -1080,49 +1100,39 @@ public class Proxy {
     public Host getHost() {
         return host;
     }
-
+	// 新增需要代理的房子
     public void setHost(Host host) {
         this.host = host;
     }
 }
 ```
 
+缺点：
 
-
-### 示例2：
-
-
+1. 有多少个被代理角色就会有多少个代理类，这样代码量会翻倍，也就导致开发效率降低。
+2. 接口功能增加或修改会响应众多的实现类，代理类、被代理类都受接口影响。
 
 
 
 ## 动态代理
 
-动态代理解决了静态代理多个代理类对象的问题，其实你可以理解为它把这些多个代理类都归为一个抽象的对象了（这里的抽象不是指抽象类，而是动态创建的一个代理类，不需要像静态代理那样显示的写出来）。
+动态代理解决了静态代理会有多个代理类对象的问题，其实可以理解为动态代理把这些多个代理类都归为一个抽象的对象了（这里的抽象不是指抽象类，而是动态创建的一个代理类，不需要像静态代理那样显式地把所有对象的代理类都写出来）。通过反射机制来创建代理类对象，并动态地指定需要被代理的对象。
 
-动态代理分为两大类类：
+动态代理实现方式有两种：
 
-- 基于接口的：JDK动态代理
-- 基于类的：cglib
-- java字节码实现：javasist
+1. 基于接口的：JDK动态代理——使用Java反射包中的类和接口实现动态代理功能。
+2. 没有接口时，基于类的：CGLIB动态代理（了解）——CGLIB是一个功能强大，高性能的代码生成包。它为没有实现接口的类提供代理，是JDK的动态代理的一个很好的补充。通常可以使用Java的动态代理创建代理，但当要代理的类没有实现接口或者为了更好的性能，CGLIB是一个好的选择。CGLIB通过继承，创建目标类的子类，在子类中重写方法来实现功能的修改，效率较JDK动态代理高。
+3. （java字节码实现：javasist。）
 
-要了解的类：
+JDK动态代理，使用到java.lang.reflext包下的几个类：
 
-- Proxy：代理
-- InvocationHandler：调用处理程序
+1. InvocationHandler：调用处理程序。
+2. Proxy：代理。
+3. Method：方法，通过Method可以执行某个方法。
 
-好处：
 
-- 静态的所以好处
-- 一个动态代理类代理的是一个接口，一般就是对应的一类业务
-- 一个代理类可以代理多个类，只要实现了接口即可
 
-### **示例见example2：**
 
-关于其中的一些解释：
-
-- ProxySubject类：该类为代理类
-- 其持有一个被代理类的父类引用object，在getNewInstance这个函数中，我们传入需要被代理的类对象，将ProxySubject中的Object实例化，同时根据这个传入的object对象，获取其**类加载器**，**接口**，以及其**代理类对象**；通过Proxy类本身的静态方法*newProxyInstance*得到一个代理类对象，并将其返回，后续我们就会操作这个返回的代理类对象。
-- 其中还有一个invoke方法，这里大概的意思就是当我们上述方法创建的代理类对象进行方法调用的时候，都会转化为对invoke方法的调用，例如我们调用通过getNewInstance方法产生的代理类的sell方法，这个sell方法就会传入invoke中，然后转化成对invoke的调用（这里的invoke方法其实就相当于代理类的sell方法，但是它没有写死，而是你传入什么方法，我就调用这个方法，实现了动态调用，与被代理类完全分割开来，完成解耦）。
 
 关于公共的功能在动态代理创建时不能很好的创建，而是直接在被代理类里声明好？那这样的话也就实现不了静态的业务分离啊？？？
 
@@ -1138,7 +1148,7 @@ public class Proxy {
 - **不易理解**。确实不好理解，因为代理类被抽象了。
 - **不够灵活**。这怎么说起呢？因为在所有的代理类在访问函数的时候，会转化为对invoke函数的调用，也就是说在invoke函数里面新增的功能（如例子中的前后增强功能），都会去执行，可是有些时候我们并不想去执行这些功能，这就不得不再去实现一个代理类了。
 
-追加：
+
 
 ## 代理模式和装饰者模式的区别
 
@@ -1156,28 +1166,29 @@ public class Proxy {
 
 ## 概述
 
-参考：
+参考资料：
 
-[什么是面向切面编程AOP？ - 欲眼熊猫的回答 - 知乎 https://www.zhihu.com/question/24863332/answer/48376158](https://www.jianshu.com/p/f1770b9dce27)
+1. [什么是面向切面编程AOP？ - 欲眼熊猫的回答 - 知乎 https://www.zhihu.com/question/24863332/answer/48376158](https://www.jianshu.com/p/f1770b9dce27)
+2. [JavaWeb过滤器.监听器.拦截器-原理&区别-个人总结 - Curiosity - ITeye博客](https://www.iteye.com/blog/hejiajunsh-1776569)
 
-[JavaWeb过滤器.监听器.拦截器-原理&区别-个人总结 - Curiosity - ITeye博客](https://www.iteye.com/blog/hejiajunsh-1776569)
-
-[Comparing Spring AOP and AspectJ | Baeldung](https://www.baeldung.com/spring-aop-vs-aspectj)
+3. [Comparing Spring AOP and AspectJ | Baeldung](https://www.baeldung.com/spring-aop-vs-aspectj)
 
 **什么是面向切面编程AOP？** - 柳树的回答 - 知乎 https://www.zhihu.com/question/24863332/answer/350410712
 
-AOP全称Aspect Oriented Programming意为面向切面编程，也叫做面向方法编程，是通过预编译方式和运行期动态代理的方式实现不修改源代码的情况下给程序动态统一添加功能的技术。**这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程。**
+AOP全称Aspect Oriented Programming，意为面向切面编程，也叫做面向方法编程，是通过预编译方式和运行期动态代理的方式实现在不修改源代码的情况下给程序动态统一地添加功能的技术。**这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程。**
 
-面向切面编程（AOP是Aspect Oriented Program的首字母缩写） ，我们知道，面向对象的特点是继承、多态和封装。而封装就要求将功能分散到不同的对象中去，这在软件设计中往往称为职责分配。实际上也就是说，让不同的类设计不同的方法。这样代码就分散到一个个的类中去了。这样做的好处是降低了代码的复杂程度，使类可重用。
-      但是人们也发现，在分散代码的同时，也增加了代码的重复性。什么意思呢？比如说，我们在两个类中，可能都需要在每个方法中做日志。按面向对象的设计方法，我们就必须在两个类的方法中都加入日志的内容。也许他们是完全相同的，但就是因为面向对象的设计让类与类之间无法联系，而不能将这些重复的代码统一起来。
-    也许有人会说，那好办啊，我们可以将这段代码写在一个独立的类独立的方法里，然后再在这两个类中调用。但是，这样一来，这两个类跟我们上面提到的独立的类就有耦合了，它的改变会影响这两个类。那么，有没有什么办法，能让我们在需要的时候，随意地加入代码呢？**这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程。** 
-      一般而言，我们管切入到指定类指定方法的代码片段称为切面，而切入到哪些类、哪些方法则叫切入点。有了AOP，我们就可以把几个类共有的代码，抽取到一个切片中，等到需要时再切入对象中去，从而改变其原有的行为。
+```nginx
+	面向切面编程（AOP是Aspect Oriented Program的首字母缩写） ，我们知道，面向对象的特点是继承、多态和封装。而封装就要求将功能分散到不同的对象中去，这在软件设计中往往称为职责分配。实际上也就是说，让不同的类设计不同的方法。这样代码就分散到一个个的类中去了。这样做的好处是降低了代码的复杂程度，使类可重用。
+	但是人们也发现，在分散代码的同时，也增加了代码的重复性。什么意思呢？比如说，我们在两个类中，可能都需要在每个方法中做日志。按面向对象的设计方法，我们就必须在两个类的方法中都加入日志的内容。也许他们是完全相同的，但就是因为面向对象的设计让类与类之间无法联系，而不能将这些重复的代码统一起来。
+	也许有人会说，那好办啊，我们可以将这段代码写在一个独立的类独立的方法里，然后再在这两个类中调用。但是，这样一来，这两个类跟我们上面提到的独立的类就有耦合了，它的改变会影响这两个类。那么，有没有什么办法，能让我们在需要的时候，随意地加入代码呢？/**这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程。**/
+	一般而言，我们管切入到指定类指定方法的代码片段称为切面，而切入到哪些类、哪些方法则叫切入点。有了AOP，我们就可以把几个类共有的代码，抽取到一个切片中，等到需要时再切入对象中去，从而改变其原有的行为。
 这样看来，AOP其实只是OOP的补充而已。OOP从横向上区分出一个个的类来，而AOP则从纵向上向对象中加入特定的代码。有了AOP，OOP变得立体了。如果加上时间维度，AOP使OOP由原来的二维变为三维了，由平面变成立体了。从技术上来说，AOP基本上是通过代理机制实现的。 
-     AOP在编程历史上可以说是里程碑式的，对OOP编程是一种十分有益的补充。
+	AOP在编程历史上可以说是里程碑式的，对OOP编程是一种十分有益的补充。
+```
 
-**AOP支持：**
+切面可以理解为——“切入点 + 功能逻辑”。在什么地方切入什么功能，并且可以随意切入，这就是面向切面编程所要实现的。
 
-Spring提供了四种类型的AOP支持，而且在很多方面都借鉴了AspectJ项目：
+**AOP支持：**Spring提供了四种类型的AOP支持，而且在很多方面都借鉴了AspectJ项目：
 
 - 基于代理的经典SpringAOP；
 - 纯POJO切面（需要XML配置）；
@@ -1186,18 +1197,16 @@ Spring提供了四种类型的AOP支持，而且在很多方面都借鉴了Aspec
 
 （前三种都是Spring AOP的变体，Spring AOP构建在动态代理基础上，spring对AOP的支持局限于方法拦截，如果是构造器或属性拦截，则需要使用AspectJ来实现切面）。
 
-切面的实现-由包裹了目标对象的代理类实现，当调用目标对象的方法（被通知方法）时，代理类就会拦截被通知方法，然后执行切面逻辑；将通知类转换为切面也是通过代理来转换。spring框架一般都基于aspectj来实现AOP操作。
+切面的实现——由包裹了目标对象的代理类实现，当调用目标对象的方法（被通知方法）时，代理类就会拦截被通知方法，然后执行切面逻辑；将通知类转换为切面也是通过代理来转换。spring框架一般都基于aspectj来实现AOP操作。
 
 使用AOP织入，先要导入一个依赖包：
 
 ```xml
-<dependencies>
-    <dependency>
-        <groupId>org.aspectj</groupId>
-        <artifactId>aspectjweaver</artifactId>
-        <version>1.9.6</version>
-    </dependency>
-</dependencies>
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.9.6</version>
+</dependency>
 ```
 
 ## 基于注解实现
@@ -1451,6 +1460,10 @@ XML的aop命名空间：
 - AOP的实现无非两个过程：一是创建好能被代理的切面和通知方法、二是使切面生效发挥作用。
 
 # AOP底层原理
+
+
+
+
 
 
 
