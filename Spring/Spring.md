@@ -1116,6 +1116,8 @@ public class Proxy implements Rent{
 
 ## 动态代理
 
+**概述**
+
 动态代理解决了静态代理会有多个代理类对象的问题，其实可以理解为动态代理把这些多个代理类都归为一个抽象的对象了（这里的抽象不是指抽象类，而是动态创建的一个代理类，不需要像静态代理那样显式地把所有对象的代理类都写出来）。通过反射机制来创建代理类对象，并动态地指定需要被代理的对象。
 
 动态代理实现方式有两种：
@@ -1124,29 +1126,125 @@ public class Proxy implements Rent{
 2. 没有接口时，基于类的：CGLIB动态代理（了解）——CGLIB是一个功能强大，高性能的代码生成包。它为没有实现接口的类提供代理，是JDK的动态代理的一个很好的补充。通常可以使用Java的动态代理创建代理，但当要代理的类没有实现接口或者为了更好的性能，CGLIB是一个好的选择。CGLIB通过继承，创建目标类的子类，在子类中重写方法来实现功能的修改，效率较JDK动态代理高。
 3. （java字节码实现：javasist。）
 
+**反射包下类的说明**
+
 JDK动态代理，使用到java.lang.reflext包下的几个类：
 
-1. InvocationHandler：调用处理程序。
-2. Proxy：代理。
-3. Method：方法，通过Method可以执行某个方法。
+1. InvocationHandler：你要干什么；只有一个invoke()方法，代理类要完成的功能就编写在这个方法内。
 
+   ```java
+   // Object proxy：由jdk创建的代理对象，不需要我们注入值
+   // Method method：目标类中的方法，也是由jdk提供
+   // Object[] args：目标类中的方法的参数，也是由jdk提供
+   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable;
+   // 使用：1.实现InvocationHandler接口 2.把原来静态代理要实现的功能写在invoke()方法内
+   ```
 
+2. Method：方法，通过Method可以执行某个类的某个方法。
 
+   ```java
+   method.invoke(目标对象,方法参数); // 执行目标对象的某个方法
+   ```
 
+3. Proxy：原来创建代理对象（之前都是自己通过new来创建）。
 
-关于公共的功能在动态代理创建时不能很好的创建，而是直接在被代理类里声明好？那这样的话也就实现不了静态的业务分离啊？？？
+   ```java
+   // ClassLoader：类加载器，负责向内存中加载对象
+   // 接口
+   // InvocationHandler：需要我们自己实现的，代理类实现的功能就在写这
+   public static Object newProxyInstance(ClassLoader loader,
+                                         Class<?>[] interfaces,
+                                         InvocationHandler h)
+       throws IllegalArgumentException {
+   	......
+   }
+   ```
 
-**动态代理的优劣**
+**JDK动态代理实现：**（理解动态代理是啥实现了啥即可）
 
-**优：**
+1. 创建接口，定义目标类要完成的功能。
 
-- **代码重用性强**。同样的，如果我们代理类的增强功能都一样，使用动态代理可以大大减少代码的编写量。
-- **代理类与被代理类完全解耦**。可以观察到代理类的代码中没有任何与被代理类相关的片段，这就实现了两者的解耦，使得代理类只需要去实现的逻辑，其他的并不关心。
+   ```java
+   public interface UsbShell {
+       float shell(int amount);
+   }
+   ```
 
-**劣：**
+2. 创建目标类并实现接口。（需要代理的目标对象）
 
-- **不易理解**。确实不好理解，因为代理类被抽象了。
-- **不够灵活**。这怎么说起呢？因为在所有的代理类在访问函数的时候，会转化为对invoke函数的调用，也就是说在invoke函数里面新增的功能（如例子中的前后增强功能），都会去执行，可是有些时候我们并不想去执行这些功能，这就不得不再去实现一个代理类了。
+   ```java
+   public class UsbSanDiskFactory implements UsbShell {
+       @Override
+       public float shell(int amount) {
+           System.out.println("目标类的目标方法：卖出n个的价钱为85 * amount");
+           return 85 * amount;
+       }
+   }
+   ```
+
+3. 创建InvocationHandler接口的实现类，并在invoke()方法中完成代理类的功能。（调用目标方法、增强功能）（功能封装）
+
+   ```java
+   public class MyShellHandler implements InvocationHandler {
+   
+       private Object target = null;
+       // 传入哪个对象就给哪个目标对象创建代理
+       public MyShellHandler(Object target){
+           this.target = target;
+       }
+       @Override
+       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+           Object res = null;
+           // 调用目标方法，目标对象没有写死，是动态性的
+           res = method.invoke(target, args);
+           // 功能增强
+           // 代理商加价
+           if(res != null){
+               Float price = (Float) res;
+               price += 25;
+               res = price;
+           }
+           // 送优惠卷
+           System.out.println("送你一个优惠卷，多多消费吧！");
+           return res;
+       }
+   }
+   ```
+
+4. 代理功能实现：
+
+   ```java
+   public class MainShop {
+       public static void main(String[] args) {
+           // 1.创建需要代理的目标对象
+           UsbShell factory = new UsbSanDiskFactory();
+           // 2.创建InvocationHandler对象——功能的封装
+           InvocationHandler handler = new MyShellHandler(factory);
+           // 3.创建代理对象——代理商
+           UsbShell proxy = (UsbShell) Proxy.newProxyInstance(factory.getClass().getClassLoader(),
+                   factory.getClass().getInterfaces(),
+                   handler);
+           // 4.通过动态代理对象执行方法
+           float shell = proxy.shell(1);
+           System.out.println("购买一个付款："+shell);
+           System.out.println("代理对象的类型："+proxy.getClass().getName()); // com.sun.proxy.$Proxy0
+       }
+   }
+   ```
+
+什么是动态代理？使用JDK的反射机制动态创建代理类的对象。
+
+动态代理能做什么？不改变原来目标方法功能的前提下，增强功能。
+
+**动态代理的优劣：**
+
+1. 优点：
+   - **代码重用性强**。同样的，如果我们代理类的增强功能都一样，使用动态代理可以大大减少代码的编写量。
+   - **代理类与被代理类完全解耦**。可以观察到代理类的代码中没有任何与被代理类相关的片段，这就实现了两者的解耦，使得代理类只需要去实现的逻辑，其他的并不关心。
+2. 缺点：
+   - **不易理解**。确实不好理解，因为代理类被抽象了。
+   - **不够灵活**。这怎么说起呢？因为在所有的代理类在访问目标函数的时候，会转化为对invoke()函数的调用，也就是说在invoke函数里面新增的功能都会被执行，可是有些时候我们并不想去执行这些功能，这就不得不再去实现一个代理类了。
+3. 实际应用意义：在不改变原有代码功能逻辑的基础上实现功能代码的增强。（JDK动态代理需要接口，没有接口的就使用CGLIB）
 
 
 
