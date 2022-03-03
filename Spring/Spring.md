@@ -1618,59 +1618,76 @@ JdbcTemplate，spring对JDBC的封装，属于spring-jdbc，定义了一些用�
    </bean>
    ```
 
-2. JdbcTemplate的使用：
+2. JdbcTemplate的常用方法：
+
+   - execute()：可以用于执行任何SQL语句，一般用于执行DDL语句。
+
+   - update()：用于执行新增、修改、删除等语句。
+
+   - batchUpdate()：用于执行批处理相关语句。
+
+   - query()：用于执行查询相关语句。
+
+   - queryForXXX()：用于执行查询相关语句。
+
+     ```java
+     查询基本数据类型包装类对象：
+     <T> T queryForObject(String sql, Class<T> requiredType) throws DataAccessException：根据SQL语句返回某列的值，其中requiredType用于指定该列的数据类型
+     <T> T queryForObject(String sql, Class<T> requiredType, Object… args) throws DataAccessException：同上，该方法可以规避SQL注入
+     ```
+
+     
+
 
 # spring事务处理
 
 事务：数据库操作基本单元，逻辑上的一组操作，对数据库数据的操作，要么都成功、要么都失败。事务操作有四个原则，ACID原则。
 
-spring中的事务管理操作：
+spring中的事务管理操作有两种操作方式：编程式（代码中编写事务代码）和声明式（常用）。
 
-- 两种方式：编程式（代码中编写事务代码）和声明式（常用）。
+声明式事务管理的两种方式：基于注解（常用）和基于XML配置文件；使用AOP实现。
 
-声明式事务管理：两种方式：基于注解（常用）和基于XML配置文件；使用AOP实现。
+关于spring事务管理的API：PlatformTransactionManager，代表事务管理器，针对不同的框架提供了不同的实现类
 
-spring事务管理API：PlatformTransactionManager，代表事务管理器，针对不同的框架提供了不同的实现类
-
-- jdbc：org.springframework.jdbc.datasource.DataSourceTransactionManager；
+- jdbc：org.springframework.jdbc.datasource.DataSourceTransactionManager。
 
 ## 基于注解
 
-1. spring配置中配置事务管理器、开启注解；
-2. 使用@Transactional注解。
+1. spring配置中配置事务管理器、并开启注解。
 
-```xml
-<!-- 配置事务管理器 -->
-<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-    <!-- 注入数据源 -->
-    <property name="dataSource" ref="dataSource"/>
-</bean>
-<!-- 开启事务注解 -->
-<tx:annotation-driven transaction-manager="transactionManager"/>
-```
+   ```xml
+   <!-- 配置事务管理器 -->
+   <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+       <!-- 注入数据源 -->
+       <property name="dataSource" ref="dataSource"/>
+   </bean>
+   <!-- 开启事务注解 -->
+   <tx:annotation-driven transaction-manager="transactionManager"/>
+   ```
 
-@Transactional：用于类上时表示为所有方法都添加上事务，也可只在方法上使用，其与事务相关的属性：
+2. 使用@Transactional注解，该注解用于类上时表示为所有方法都添加上事务，也可只在方法上使用，其与事务相关的属性有：
 
-- propagation：事务传播行为（一个事务方法中调用另一个事务方法（会改变数据库数据的操作），如何管理这个过程中的事务）
+   - propagation：事务传播行为（一个事务方法中调用另一个事务方法（会改变数据库数据的操作），如何管理这个过程中的事务）
 
-  ![](img/事务.png)
+     ![](img/事务.png)
 
-- iosltion：事务隔离级别（解决问题：事务都有隔离性，如果不考虑隔离性，在读的时候就会存在脏读、不可重复读、虚（幻）读等问题）
+   - iosltion：事务隔离级别（解决问题：事务都有隔离性，如果不考虑隔离性，在读的时候就会存在脏读、不可重复读、虚（幻）读等问题）
 
-  - |               属性值                |    含义    | 脏读 | 不可重复读 | 幻读 |
-    | :---------------------------------: | :--------: | :--: | :--------: | :--: |
-    |     Isolation.READ_UNCOMMITTED      | 读未提交的 |  有  |     有     |  有  |
-    |      Isolation.READ_COMMITTED       | 读以提交的 |  无  |     有     |  有  |
-    | Isolation.REPEATABLE_READ（默认的） | 可重复读的 |  无  |     无     |  有  |
-    |       Isolation.SERIALIZABLE        |  串行化的  |  无  |     无     |  无  |
+     - |               属性值                |    含义    | 脏读 | 不可重复读 | 幻读 |
+       | :---------------------------------: | :--------: | :--: | :--------: | :--: |
+       |     Isolation.READ_UNCOMMITTED      | 读未提交的 |  有  |     有     |  有  |
+       |      Isolation.READ_COMMITTED       | 读以提交的 |  无  |     有     |  有  |
+       | Isolation.REPEATABLE_READ（默认的） | 可重复读的 |  无  |     无     |  有  |
+       |       Isolation.SERIALIZABLE        |  串行化的  |  无  |     无     |  无  |
 
-- timeout：超时时间，事务在达到超时时间后还没有提交就会回滚，默认值为-1，（单位是秒）；
+   - timeout：用来设置超时时间，事务在达到超时时间后还没有提交就会回滚，默认值为-1，（单位是秒）。
 
-- readonly：是否只读，设置事务中的操作，如果为true，就只能读取数据而不能进行修改数据的操作；
+   - readonly：是否只读，设置事务中的操作，如果为true，就只能读取数据而不能进行修改数据的操作。
 
-- rollbackFor：回滚，设置出现哪些异常时进行事务的回滚；（rollbackFor = NullPointerException.class）
+   - rollbackFor：设置出现哪些异常时进行事务的回滚；（例如rollbackFor = NullPointerException.class，出现空指针异常时回滚）。
 
-- noRollbackFor：回滚，设置出现哪些异常时进行事务的回滚；（noRollbackFor = NullPointerException.class）
+   - noRollbackFor：设置出现哪些异常时不进行事务的回滚；（noRollbackFor = NullPointerException.class）。
+
 
 ##  基于XML
 
@@ -1680,12 +1697,12 @@ spring事务管理API：PlatformTransactionManager，代表事务管理器，针
 4. （需要依赖：spring-tx、以及aop的）
 
 ```xml
-<!-- 配置事务管理器 -->
+<!-- 1.配置事务管理器 -->
 <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
     <!-- 注入数据源 -->
     <property name="dataSource" ref="dataSource"/>
 </bean>
-<!-- 配置通知 -->
+<!-- 2.配置通知 -->
 <tx:advice id="txadvice">
     <!-- 配置事务参数 -->
     <tx:attributes>
@@ -1693,7 +1710,7 @@ spring事务管理API：PlatformTransactionManager，代表事务管理器，针
         <tx:method name="account*" propagation="REQUIRED"/>
     </tx:attributes>
 </tx:advice>
-<!-- 配置切入点和切面 -->
+<!--3 配置切入点和切面 -->
 <aop:config>
     <!-- 配置切入点 -->
     <aop:pointcut id="pt" expression="execution(* com.lsl.service.ClientService.account())"/>
