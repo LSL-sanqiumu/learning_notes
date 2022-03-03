@@ -73,9 +73,9 @@ springMVC在servlet的基础上，改进了哪些操作？
 
 springmvc的使用步骤：
 
-1. 创建web项目，配置好所需要的依赖；
-2. 创建好中央调度器（其实就是一个servlet）；
-3. 创建控制器（新建Java类使用注解完成控制器的注册，并写好相应的程序逻辑）；
+1. 创建web项目，配置好所需要的依赖。
+2. 创建好中央调度器（其实就是一个servlet）。
+3. 创建控制器（新建Java类使用注解完成控制器的注册，并写好相应的程序逻辑）。
 4. 如果需要的话，可以配置视图解析器，可以简化控制器里的资源路径，也可以引入thymeleaf，使用模板引擎。
 
 ## 中央调度器
@@ -122,14 +122,14 @@ public class FirstController {
     @RequestMapping(value = "/some.do")
     public ModelAndView doSome() {
         ModelAndView mv = new ModelAndView();
-        //相当于request的setAttribute("msg", "xxx");
+        // 相当于request的setAttribute("msg", "xxx");
         mv.addObject("msg","欢迎使用springMVC来开发");
         mv.addObject("fun","执行的是doSome方法");
-        //指定视图路径
-        //相当于request.getRequestDispather("/show.jsp").forward(...)
+        // 指定视图路径
+        // 相当于request.getRequestDispather("/show.jsp").forward(...)
         mv.setViewName("/show.jsp");
-        //mv.setViewName("/WEB-INF/view/show.jsp"); 将视图放进WEB-INF/view里，杜绝用户直接访问
-        //执行此方法后才由框架执行相当于request.setAttribute
+        // mv.setViewName("/WEB-INF/view/show.jsp"); 将视图放进WEB-INF/view里，杜绝用户直接访问
+        // 执行此方法后才由框架执行相当于request.setAttribute
         // 或request.getRequestDispather("/show.jsp").forward(...)操作
         return mv;
     }
@@ -140,7 +140,7 @@ public class FirstController {
         mv.addObject("msg","欢迎使用springMVC来开发");
         mv.addObject("fun","执行的是doSomes方法");
         mv.setViewName("/se.jsp");   
-  		//mv.setViewName("se"); 已配置好视图解析器的时候
+        // mv.setViewName("se"); 已配置好视图解析器的时候
         return mv;
     }
 }
@@ -148,22 +148,25 @@ public class FirstController {
 
 请求-响应过程：
 
-1. 发送请求给tomcat服务器，tomcat服务器截取路径去到web.xml的匹配`/show.jsp`；
-2. 然后根据虚拟路径，请求转到中央调度器DispatcherServlet；
-3. DispatcherServlet根据springmvc.xml文件匹配请求路径对应的方法；
+1. 发送请求给tomcat服务器，tomcat服务器截取路径去到web.xml的匹配`/show.jsp`。
+2. 然后根据虚拟路径，请求转到中央调度器DispatcherServlet。
+3. DispatcherServlet根据springmvc.xml文件匹配请求路径对应的方法。
 4. 框架执行匹配到的方法，把得到的ModelAndView进行处理，转发到shou.jsp。
 
 可看出：中央调度器DispatcherServlet负责创建springmvc容器对象，读取xml配置文件后利用spring注解创建好对应目录里的Controller对象，还负责接收用户请求，匹配到相应的处理方法。
 
 springmvc执行过程源代码分析：
 
-1. tomcat服务器启动，通过`<load-on-startup>1</load-on-startup>`指定的优先级，创建了DispatcherServlet对象；
+1. tomcat服务器启动，通过`<load-on-startup>1</load-on-startup>`指定的优先级，创建了DispatcherServlet对象。
 
-2. DispatcherServlet对象就是一个servlet，当其创建时执行init()方法，根据配置文件创建了对象并放进了ServletContext()
-           init(){
-               WebApplicationContext ctx = new  ClassPathApplicationContext("springmvc.xml");
-               getServletContext().setAttribute(key, ctx);
-           }
+2. DispatcherServlet对象就是一个servlet，当其创建时执行init()方法，根据配置文件创建了对象并放进了ServletContext()。
+
+      ```java
+      init(){
+          WebApplicationContext ctx = new  ClassPathApplicationContext("springmvc.xml");
+          getServletContext().setAttribute(key, ctx);
+      }
+      ```
 
 3. 请求的处理过程
      1）执行servlet的service()
@@ -183,7 +186,7 @@ springmvc执行过程源代码分析：
 
 ## 视图解析器
 
-springmvc.xml里配置好后：mv.setViewName("show")  ===>  return mv后相当于转发到 /WEB-INF/view/show.jsp页面
+springmvc.xml里配置：
 
 ```xml
 <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
@@ -193,6 +196,8 @@ springmvc.xml里配置好后：mv.setViewName("show")  ===>  return mv后相当�
     <property name="suffix" value=".jsp"/>
 </bean>
 ```
+
+配置好上述的视图解析器后，`mv.setViewName("show")`  ===>  return mv后相当于转发到 /WEB-INF/view/show.jsp页面
 
 也可以使用thymeleaf的解析器，使用thymeleaf来渲染页面。
 
@@ -229,53 +234,164 @@ springmvc.xml里配置好后：mv.setViewName("show")  ===>  return mv后相当�
 </beans>
 ```
 
-# 处理器方法内容
+# 注解使用
 
-以下是一个处理器方法，声明了请求映射路径，处理方法有其主要的常用的几个返回值，可以接收一定的请求参数。
+## 用于组件注册
+
+Spring中用于组件注册的有四个功能一致的注解：
+
+1. @Componet、@Controller、@Service、@Repository。
+2. @Controller常用于controller层，用于注册前端控制器。
 
 ```java
-@RequestMapping(value = "/other.do")
-public ModelAndView doOther() {
-    ModelAndView mv = new ModelAndView();
-    mv.addObject("msg","欢迎使用springMVC来开发");
-    mv.addObject("fun","执行的是doOther方法");
-    mv.setViewName("other");
-    return mv;
+@Controller
+public class MyController{
+    
 }
 ```
 
-## 请求映射@RequestMapping
+## 用于指定请求映射
 
-`@RequestMapping(value = "/some.do")`修饰的方法称为处理器方法或控制器方法，将映射路径与方法绑定达到处理对应请求并响应的目的。
+`@RequestMapping(value = "/some.do")`修饰的方法称为处理器方法或控制器方法，将映射路径与请求处理方法绑定，以达到处理对应请求并响应的目的。
 
-- `@Controller`：声明这个类为一个控制器；
-- `@RequestMapping(value = "/some.do")`：请求映射，把请求资源地址与处理方法绑定，请求时会匹配到该地址然后进行相应的操作；
-  - value值唯一，推荐以 / 开始；
-  - 该注解可用于方法或类上面；
-  - 声明了相对于webapp下的一个虚拟路径。
+1. `@RequestMapping(value = "/some.do")`：把请求资源地址与处理方法绑定，请求时会匹配到该地址然后执行相应的处理器方法。
 
-RequestMapping放于类上的作用：所有请求地址的公共部分，叫做模块名称。如下：
+   - value值要是唯一的，推荐以`/`开始，声明的路径是相对于webapp目录的一个虚拟路径（相对路径）。
+
+2. @RequestMapping用于类上时：设置的路径是所有请求地址的公共部分，叫做模块名称。
+
+   ```java
+   @Controller
+   // 该类下所有处理器方法上声明的映射路径都将带 `/test`为前置路径
+   @RequestMapping("/test") 
+   public class MyController{
+       // localhost:8081/webapp名/test/some.do
+       @RequestMapping(value = {"/some.do", "/first.do"}, method = RequestMethod.GET)
+       public String login(){
+           
+       } 
+   }
+   ```
+
+
+
+## 用于接收URL的参数
+
+### @PathVariable
+
+@PathVariable用于接收请求路径中的参数，常是restful风格的请求地址；例如：
 
 ```java
-@RequestMapping("/test") 
-http://localhost:8081/springmvc_02_war/test/some.do
-http://localhost:8081/springmvc_02_war/test/other.do
+// 接收放于请求路径中的参数：http://ip:port/blog/message/1
+@GetMapping("/message/{id}")
+public String test(@PathVariable("id") Long id) {
+    return null;
+}
 ```
 
-RequestMapping的method属性，决定映射什么样的请求方法：
+### @RequestParam
+
+@RequestParam用于接收params方式的请求。
 
 ```java
-@RequestMapping(value = {"/some.do", "/first.do"}, method = RequestMethod.GET)
-//如果不指定method则没有限制
+// http://ip:port/blog/message?id=1&page=2
+@GetMapping("/message")
+public String test(@RequestParam(value="id") Long id,@RequestParam(value="page") Long pageNum) {
+    return null;
+}
+```
+
+### @Validated
+
+@Validated注解可以用一个模型来接收地址栏中的参数。
+
+```java
+// http://ip:port/blog/message?id=1&page=2
+@GetMapping(value = "/test")
+public String test(@Validated User user) {
+    return null;
+}
+```
+
+```java
+// 用户
+public class User(){
+    priate Long id;
+    priate Long page;
+    ......
+}
 ```
 
 
 
-## 表单参数接收
+## 用于接收请求体参数
+
+### @RequestBody
+
+@RequestBody注解用来接收request的body中的参数，@RequestBody可以将多个参数放入到一个实体类或者Map中。
+
+```java
+// 将拿到的数据放入实体类
+@PostMapping(value = "/test")
+public String test(@RequestBody ParameterModel parameterModel) {
+    return null;
+}
+// 将拿到的数据放入Map集合
+@PostMapping(value = "/test)
+public String test(@RequestBody Map<String, Object> paramMap) {
+    return null;
+}
+```
+
+
+
+
+
+## 用于接收请求头参数
+
+### @RequestHeader
+
+@RequestHeader 注解，可以把请求头部分的值绑定到方法的参数上。
+
+```nginx
+/** Request Header **/
+Host                    localhost:8080
+Accept                  text/html,application/xhtml+xml,application/xml;q=0.9
+Accept-Language         fr,en-gb;q=0.7,en;q=0.3
+Accept-Encoding         gzip,deflate
+Accept-Charset          ISO-8859-1,utf-8;q=0.7,*;q=0.7
+Keep-Alive              300
+```
+
+```java
+@GetMapping("/test")
+// 获取到请求头中Accept-Encoding的数据 `gzip,deflate`
+public String test(@RequestHeader("Accept-Encoding") String encoding)  {
+    return null;
+}
+```
+
+### @CookieValue
+
+@CookieValue 可以把Request header中关于cookie的值绑定到方法的参数上。
+
+```nginx
+/** cookie **/
+JSESSIONID=415A4AC178C59DACE0B2C9CA727CDD84
+```
+
+```java
+@GetMapping("/test")
+public String test(@CookieValue("JSESSIONID") String cookie)  {
+    return null;
+}
+```
+
+# 参数自动接收
 
 处理器方法的参数用来对**用户表单请求提交的数据**进行接收，参数类型可以是`HttpServletRequest request`、`HttpServletResponse response`、`HttpSession session`这几个类型，也可以是string、int类型的，等等。
 
-### 自动全局接收
+## 自动全局接收
 
 （HttpServletRequest request、HttpServletResponse response、HttpSession session）这三个由框架自动完成赋值，如下声明后就可以直接调用它们的方法来获取数据了。
 
@@ -293,9 +409,7 @@ public ModelAndView doFirst(HttpServletRequest request, HttpServletResponse resp
 }
 ```
 
-### 自动逐个接收
-
-框架接受请求参数：
+## 自动逐个接收
 
 1. 通过形参逐个接收：框架调用处理器方法时，会按名称（表单提交的数据的name，与顺序无关）把接收到的参数赋给形参，框架还提供把String类型的参数转为int、long、Integer等类型的参数，如`doSecond(String name, int age)`，age也能接收string数据，只要名称对应（前提是字符是纯数字，否则会出现400错误）。
 
@@ -313,7 +427,7 @@ public ModelAndView doSecond(String name, String age) {
 }
 ```
 
-【注意】表单提交请求参数时使用get方式不出现乱码，使用post方式会出现乱码，使用过滤器可解决这个问题（过滤器可以自定义，也可以使用框架的）。使用框架的过滤器：
+【注意】表单提交请求参数时使用get方式时，后台接收到的参数不会出现乱码，但当使用post方式提交时接收到的参数就会乱码，使用过滤器可解决这个问题（过滤器可以自定义，也可以使用框架的）。使用框架的过滤器：
 
 ```xml
 <!--web.xml中-->
@@ -343,7 +457,7 @@ public ModelAndView doSecond(String name, String age) {
 </filter-mapping>
 ```
 
-### 通过自定义类接收
+## 通过自定义类接收
 
 可以通过自定义类对象来接收表单提交的数据，前提是方法的形参对象所对应的类的属性名和表单的请求中的参数名（name）必须一致，框架则会自动创建对应形参的java对象（调用空参构造方法），然后通过调用对象的set方法进行赋值，例如：
 
@@ -379,46 +493,42 @@ public ModelAndView doRe(@RequestParam(value = "rname", required = false) String
 
 springmvc处理器方法的形参还可以以Map、List、数组等方式接收，不过前端显示过程比较复杂，不常用。
 
-## 路径参数接收
-
-使用路径变量时，通过接收路径参数来完成一些数据的获取。
 
 
+# 返回值类型
 
+## ModelAndView
 
+ModelAndView对象，包数据和视图，可对视图执行forward（转发）；处理器方法处理请求后，需要跳转到其他页面资源并在往跳转资源传递数据，此时可以使用该返回值类型。
 
-## 返回值类型
+1. `addObject()`：往容器里放数据，（springmvc容器？）。
 
-### ModelAndView
+2. `setViewName()`：指定需要转发的视图路径。
 
-有数据和视图，对视图执行forward（转发）；处理器处理请求后，需要跳转到其他页面资源并完成在跳转资源之间的数据传递，此时使用该返回值类型。
+3. `return mv`：将用`setViewName()`指定的资源返回，也就相当于转发了，显示的是指定路径下的资源，可结合视图解析器简化路径。
 
-- `addObject()`：往容器里放数据，（springmvc容器？）；
-- `setViewName()`：指定视图路径，相当于转发；
-- `return mv`：将用`setViewName()`指定的资源返回，也就相当于转发了，显示的是指定路径下的资源，可结合视图解析器简化路径。
-
-```java
-@Controller
-public class FirstController {
-    @RequestMapping(value = "/some.do")
-    public ModelAndView doSome() {
-        ModelAndView mv = new ModelAndView();
-        //相当于request的setAttribute("msg", "xxx");
-        mv.addObject("msg","欢迎使用springMVC来开发");
-        mv.addObject("fun","执行的是doSome方法");
-        //指定视图路径
-        //相当于request.getRequestDispather("/show.jsp").forward(...)
-        mv.setViewName("/show.jsp");
-        return mv;
-    }
-}
-```
+   ```java
+   @Controller
+   public class FirstController {
+       @RequestMapping(value = "/some.do")
+       public ModelAndView doSome() {
+           ModelAndView mv = new ModelAndView();
+           //相当于request的setAttribute("msg", "xxx");
+           mv.addObject("msg","欢迎使用springMVC来开发");
+           mv.addObject("fun","执行的是doSome方法");
+           //指定视图路径
+           //相当于request.getRequestDispather("/show.jsp").forward(...)
+           mv.setViewName("/show.jsp");
+           return mv;
+       }
+   }
+   ```
 
 
 
-### String
+## String
 
-表示视图，可以是逻辑名称（例如show.html），也可以是完整的视图路径（例如`/WEB-INF/view/index.html`）。
+String，只表示视图，可以是逻辑名称（例如show.html），也可以是完整的视图路径（例如`/WEB-INF/view/index.html`）。
 
 ```java
 @RequestMapping(value = "/returnString-view.do", method = RequestMethod.POST)
@@ -426,16 +536,16 @@ public String returnStringView(HttpServletRequest request, String name, String a
 
     request.setAttribute("msg",name);
     request.setAttribute("fun",age);
-    /*由框架进行转发*/
-    /*配置了视图解析器时直接返回逻辑名称*/
+    // 由框架进行转发
+    // 配置了视图解析器时，就可以直接返回视图的逻辑名称
     return "show";
-    /*如果返回完整的路径，这时不能使用视图解析器，因为是在返回的值加前缀、后缀的*/
+    /* 如果返回完整的路径，这时不能使用视图解析器，因为视图解析器会在返回的值加前缀、后缀 */
 }
 ```
 
-### void
+## void
 
-不能表示数据，也不能表示视图，在处理ajax时，可以使用其作为返回值，通过HttpServletResponse输出数据，来响应ajax请求，ajax请求服务器返回数据，和视图无关。
+不能表示数据，也不能表示视图，在处理ajax时，可以使用其作为返回值，并通过HttpServletResponse输出数据，来响应ajax请求，ajax用于请求服务器返回数据，和视图无关。
 
 ```xml
 <!-- jackson依赖包 -->
@@ -455,7 +565,7 @@ public String returnStringView(HttpServletRequest request, String name, String a
 
 先会基本的对象-json的转换处理，再去使用框架返回Object对象自动完成json转换，（至于底层原理，看心情吧）。
 
-### Object
+## Object
 
 
 
@@ -590,24 +700,24 @@ Tomcat有一个默认的servlet（conf的web.xml中），服务器启动时创�
 ```xml
 <!-- 过滤器 -->
 <filter>
-  <filter-name>characterEncodingFilter</filter-name>
-  <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
-  <init-param>
-    <param-name>encoding</param-name>
-    <param-value>utf-8</param-value>
-  </init-param>
-  <init-param>
-    <param-name>forceRequestEncoding</param-name>
-    <param-value>true</param-value>
-  </init-param>
-  <init-param>
-    <param-name>forceResponseEncoding</param-name>
-    <param-value>true</param-value>
-  </init-param>
+    <filter-name>characterEncodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <init-param>
+        <param-name>encoding</param-name>
+        <param-value>utf-8</param-value>
+    </init-param>
+    <init-param>
+        <param-name>forceRequestEncoding</param-name>
+        <param-value>true</param-value>
+    </init-param>
+    <init-param>
+        <param-name>forceResponseEncoding</param-name>
+        <param-value>true</param-value>
+    </init-param>
 </filter>
 <filter-mapping>
-  <filter-name>characterEncodingFilter</filter-name>
-  <url-pattern>/*</url-pattern>
+    <filter-name>characterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
 </filter-mapping>
 ```
 

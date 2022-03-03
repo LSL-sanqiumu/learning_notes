@@ -524,7 +524,7 @@ spring:
 
 前端控制器的请求映射路径最前面的`/`不再是代表`localhost:port/webappName/`，而是代表`localhost:port/`。
 
-也可以加上一个前置路径，以后所有的访问都要加上该前置路径，在application.yml中设置：
+也可以加上一个前置路径，以后所有的访问都要加上该前置路径，在application.yml中设置：（配置好以后好，`/`也就代表了`localhost:port/webapp/`）
 
 ```yml
 server:
@@ -532,14 +532,14 @@ server:
 		content-path: /webapp
 ```
 
-设置好`/`也就代表了`localhost:port/webapp/`
+
 
 ### 普通参数接收
 
-- @PathVariable：获取路径变量，可以指定key来获取某一个，也可以直接获取全部变量值；
-- @RequestParam：获取请求参数；
-- @CookieValue：获取cookie；
-- @RequestBody：获取请求体，post请求才有；
+- @PathVariable：获取路径变量，可以指定key来获取某一个，也可以直接获取全部变量值。
+- @RequestParam：获取请求参数。
+- @CookieValue：获取cookie。
+- @RequestBody：获取请求体，post请求才有。
 - @RequestHeader：获取请求头：
 
 ![](img/requestheader.png)
@@ -698,7 +698,7 @@ public Map<String, Object> test(@MatrixVariable(value = "age", pathVar = "path1"
 - WebDataBinder binder = binderFactory.createBinder(webRequest, attribute, name)；WebDataBinder ：web数据绑定器，将请求参数的值绑定到指定的JavaBean里面；
 - WebDataBinder 利用它里面的 Converters 将请求数据转成指定的数据类型。再次封装到JavaBean中；
 - GenericConversionService：在设置每一个值的时候，找它里面的所有converter那个可以将这个数据类型（request带来参数的字符串）转换到指定的类型（JavaBean -- Integer）
-  byte -- > file
+  byte ===> file
 
 ```java
 // 自定义数据绑定：这里自定义绑定value值`name,age`封装成cat对象
@@ -818,7 +818,7 @@ public class WebConfig {
 
 响应分为响应页面和响应数据。
 
-响应数据 ===》内容协商功能：根据客户端接收能力不同，返回不同媒体类型的数据。
+响应数据 ===> 内容协商功能：根据客户端接收能力不同，返回不同媒体类型的数据。
 
 springboot内容协商的实现——springboot底层已经实现好了，当支持：
 
@@ -937,8 +937,6 @@ public class WebConfig implements WebMvcConfigurer{
     }
 }
 ```
-
-
 
 通过：[localhost:8888/test?format=ll](http://localhost:8888/test?format=ll)   访问返回自定义类型成功。
 
@@ -2042,36 +2040,4 @@ static Stream<String> method() {
   ```properties
   spring.profiles.group.myprod[0]=pdd
   ```
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
