@@ -653,9 +653,71 @@ public String returnStringView(HttpServletRequest request, String name, String a
 
 ## Object
 
+**返回Object对象时关于自动转json的底层原理：**
 
+返回Object对象时，该对象可以是String、Integer、自定义对象、Map、List等，返回的结果仅表示数据，和视图无关。
 
+应用：**可以使用对象来表示数据，响应ajax请求**。由于返回的对象基本都是以json格式返回的，所以需要jackson工具协助转换。
 
+```xml
+<!-- jackson依赖包 -->
+<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-core</artifactId>
+    <version>2.12.1</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.12.1</version>
+</dependency>
+```
+
+使用json格式的数据来响应ajax请求，实现步骤：
+
+1. 加入处理json的工具库的依赖，springmvc默认使用的是jackson。
+2. 在springmvc配置文件中加入`<mvc:annotation-driven >`注解驱动。
+3. **在处理器方法上加@ResponseBody注解**（加上注解后，框架会自动把Object对象转换为json数据格式）。
+
+实现原理说明：
+
+1. `<mvc:annotation-driven >`注解驱动：
+
+   - 作用：完成java对象到json、xml、text、二进制等数据的转换；
+
+   - 原理：依靠HttpMessageConveter接口：消息转换器；定义了六个关于数据转换的方法，可以使用其实现类完成数据的转换；
+
+     ```java
+     /*HttpMessageConverter接口的方法 */
+     // 判断能否转：检查处理器方法的返回值是否可以转换为var2表示的数据格式；MediaType 表示数据格式，例如json、xml
+     // 已经定义好了许多数据格式，检测能转为某种数据则停止检查并返回真
+     boolean canWrite(Class<?> var1, @Nullable MediaType var2);
+     
+     void write(T var1, @Nullable MediaType var2, HttpOutputMessage var3) throws IOException, HttpMessageNotWritableException;
+     //实现转换：把处理器方法的返回值对象，调用jackson中的ObjectMapper来实现数据转换为json；如下
+     ObjectMapper mapper = new ObjectMapper();
+     User user = new User("1s", 3, "男");
+     String str = mapper.writeValueAsString(user);
+     ```
+
+   - 驱动加入到配置文件后，会自动创建HttpMessageConveter接口的7个实现类（包括MappingJackson2HttpMessageConverter（使用jackson工具库中的ObjectMapper完成数据格式转换））。
+
+2. |  HttpMessageConveter接口主要实现类  |                             作用                             |
+   | :---------------------------------: | :----------------------------------------------------------: |
+   |       StringMessageConverter        |                负责读取和写出字符串格式的数据                |
+   | MappingJackson2HttpMessageConverter | 负责读取和写入json格式的数据（利用jackson工具库中的ObjectMapper读写json数据，操作Object类型数据） |
+
+返回Object对象时框架的处理流程：
+
+1. 检查是否能转换：调用框架中`ArrayList<HttpMessageConverter>`中的每个canWrite()方法来检查哪个接口实现类可以完成返回值转换为json（MappingJackson2HttpMessageConverter）；
+2. 检查完成再调用实现类的write()方法，完成转换；（调用jackson中的ObjectMapper来实现数据转换为json，返回的content-Type：application/json;charset=utf-8;）
+3. 框架通过@ResponseBody注解把转换后结果输出到浏览器，ajax请求处理完成。
+
+返回Object对象是List集合时得到的是json array。
+
+处理器方法返回值是String，那么有@ResponseBody注解时，表示的是文本数据，content-Type：text/plain;charset=ISO-8859-1，解决这个乱码问题在@RequestMapping加入produces属性，值为"text/plain;charset=utf-8"；处理流程和上面类型，使用StringHttpMessageConverter，默认字符编码ISO-8859-1。
 
 # RESTFul风格
 
@@ -1287,15 +1349,167 @@ public class ExceptionController {
 6. 过滤器可以处理jsp、js、html等资源，拦截器侧重对Controller对象的方法的请求进行拦截，如果请求不被中央调度器接收，那么这个请求也就不会被拦截并执行拦截器逻辑。
 7. 拦截器拦截普通方法请求，过滤器过滤servlet请求响应。
 
-## 通过注解配置SpringMVC
+# 通过注解配置SpringMVC
+
+使用配置类和注解代替web.xml和SpringMVC配置文件的功能。
+
+在Servlet3.0环境中，容器会在类路径中查找实现javax.servlet.ServletContainerInitializer接口的类，如果找到的话就用它来配置Servlet容器。 Spring提供了这个接口的实现，名为SpringServletContainerInitializer，这个类反过来又会查找实现WebApplicationInitializer的类并将配置的任务交给它们来完成。Spring3.2引入了一个便利的WebApplicationInitializer基础实现，名为AbstractAnnotationConfigDispatcherServletInitializer，当我们的类扩展了AbstractAnnotationConfigDispatcherServletInitializer并将其部署到Servlet3.0容器的时候，容器会自动发现它，并用它来配置Servlet上下文。
+
+1. 创建初始化类，用来代替web.xml：
+
+   ```java
+   public class WebInit extends AbstractAnnotationConfigDispatcherServletInitializer {
+   
+       /**
+        * 指定spring的配置类
+        * @return
+        */
+       @Override
+       protected Class<?>[] getRootConfigClasses() {
+           return new Class[]{SpringConfig.class};
+       }
+   
+       /**
+        * 指定SpringMVC的配置类
+        * @return
+        */
+       @Override
+       protected Class<?>[] getServletConfigClasses() {
+           return new Class[]{WebConfig.class};
+       }
+   
+       /**
+        * 指定DispatcherServlet的映射规则，即url-pattern
+        * @return
+        */
+       @Override
+       protected String[] getServletMappings() {
+           return new String[]{"/"};
+       }
+   
+       /**
+        * 添加过滤器
+        * @return
+        */
+       @Override
+       protected Filter[] getServletFilters() {
+           CharacterEncodingFilter encodingFilter = new CharacterEncodingFilter();
+           encodingFilter.setEncoding("UTF-8");
+           encodingFilter.setForceRequestEncoding(true);
+           HiddenHttpMethodFilter hiddenHttpMethodFilter = new HiddenHttpMethodFilter();
+           return new Filter[]{encodingFilter, hiddenHttpMethodFilter};
+       }
+   }
+   ```
+
+2. 创建SpringConfig配置类，用来代替Spring的配置文件：
+
+   ```java
+   @Configuration
+   public class SpringConfig {
+       //ssm整合之后，spring的配置信息写在此类中
+   }
+   ```
+
+3. 创建WebConfig配置类，用来代替SpringMVC的配置文件：
+
+   ```java
+   @Configuration
+   //扫描组件
+   @ComponentScan("com.atguigu.mvc.controller")
+   //开启MVC注解驱动
+   @EnableWebMvc
+   public class WebConfig implements WebMvcConfigurer {
+   
+       //使用默认的servlet处理静态资源
+       @Override
+       public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
+           configurer.enable();
+       }
+   
+       //配置文件上传解析器
+       @Bean
+       public CommonsMultipartResolver multipartResolver(){
+           return new CommonsMultipartResolver();
+       }
+   
+       //配置拦截器
+       @Override
+       public void addInterceptors(InterceptorRegistry registry) {
+           FirstInterceptor firstInterceptor = new FirstInterceptor();
+           registry.addInterceptor(firstInterceptor).addPathPatterns("/**");
+       }
+       
+       //配置视图控制
+       
+       /*@Override
+       public void addViewControllers(ViewControllerRegistry registry) {
+           registry.addViewController("/").setViewName("index");
+       }*/
+       
+       //配置异常映射
+       /*@Override
+       public void configureHandlerExceptionResolvers(List<HandlerExceptionResolver> resolvers) {
+           SimpleMappingExceptionResolver exceptionResolver = new SimpleMappingExceptionResolver();
+           Properties prop = new Properties();
+           prop.setProperty("java.lang.ArithmeticException", "error");
+           //设置异常映射
+           exceptionResolver.setExceptionMappings(prop);
+           //设置共享异常信息的键
+           exceptionResolver.setExceptionAttribute("ex");
+           resolvers.add(exceptionResolver);
+       }*/
+   
+       //配置生成模板解析器
+       @Bean
+       public ITemplateResolver templateResolver() {
+           WebApplicationContext webApplicationContext = ContextLoader.getCurrentWebApplicationContext();
+           // ServletContextTemplateResolver需要一个ServletContext作为构造参数，
+           // 可通过WebApplicationContext 的方法获得
+           ServletContextTemplateResolver templateResolver = new ServletContextTemplateResolver(
+                   webApplicationContext.getServletContext());
+           templateResolver.setPrefix("/WEB-INF/templates/");
+           templateResolver.setSuffix(".html");
+           templateResolver.setCharacterEncoding("UTF-8");
+           templateResolver.setTemplateMode(TemplateMode.HTML);
+           return templateResolver;
+       }
+   
+       //生成模板引擎并为模板引擎注入模板解析器
+       @Bean
+       public SpringTemplateEngine templateEngine(ITemplateResolver templateResolver) {
+           SpringTemplateEngine templateEngine = new SpringTemplateEngine();
+           templateEngine.setTemplateResolver(templateResolver);
+           return templateEngine;
+       }
+   
+       //生成视图解析器并未解析器注入模板引擎
+       @Bean
+       public ViewResolver viewResolver(SpringTemplateEngine templateEngine) {
+           ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
+           viewResolver.setCharacterEncoding("UTF-8");
+           viewResolver.setTemplateEngine(templateEngine);
+           return viewResolver;
+       }
+   }
+   ```
+
+4. 测试功能：
+
+   ```java
+   @RequestMapping("/")
+   public String index(){
+       return "index";
+   }
+   ```
+
+   
 
 
 
 
 
-
-
-## SpringMVC执行流程
+# SpringMVC执行流程
 
 ![](img/springMVC执行流程图.png)
 
@@ -1321,68 +1535,413 @@ public class ExceptionController {
 
 ![](img/流程描述.png)
 
+# SpringMVC执行流程~
+
+## SpringMVC常用组件
+
+1. DispatcherServlet：
+   - 前端控制器，不需要工程师开发，由框架提供。
+   - 作用：统一处理请求和响应，整个流程控制的中心，由它调用其它组件处理用户的请求。
+2. HandlerMapping：
+   - 处理器映射器，不需要工程师开发，由框架提供。
+   - 作用：根据请求的url、method等信息查找Handler，即控制器方法。
+3. Handler：
+   - 处理器，需要工程师开发。
+   - 作用：在DispatcherServlet的控制下Handler对具体的用户请求进行处理。
+4. HandlerAdapter：
+   - 处理器适配器，不需要工程师开发，由框架提供。
+   - 作用：通过HandlerAdapter对处理器（控制器方法）进行执行。
+5. ViewResolver：
+   - 视图解析器，不需要工程师开发，由框架提供。
+   - 作用：进行视图解析，得到相应的视图，例如：ThymeleafView、InternalResourceView、RedirectView。
+6. View：
+   - 视图。
+   - 作用：将模型数据通过页面展示给用户。
+
+## DispatcherServlet初始化过程
+
+DispatcherServlet 本质上是一个 Servlet，所以天然的遵循 Servlet 的生命周期。所以宏观上是 Servlet 生命周期来进行调度。
 
 
-# 返回Object对象时关于自动转json的底层原理
 
-返回Object对象，该对象可以是String、Integer、自定义对象、Map、List等，返回的结果表示数据，和视图无关。应用：**可以使用对象来表示数据，响应ajax请求**。由于返回的对象基本都是以json格式返回的，所以需要jackson工具协助转换。
+1. 初始化WebApplicationContext：（所在类：org.springframework.web.servlet.FrameworkServlet）
 
-```xml
-<!-- jackson依赖包 -->
-<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-<dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-core</artifactId>
-    <version>2.12.1</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-<dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
-    <artifactId>jackson-databind</artifactId>
-    <version>2.12.1</version>
-</dependency>
-```
+   ```java
+   protected WebApplicationContext initWebApplicationContext() {
+       WebApplicationContext rootContext =
+           WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+       WebApplicationContext wac = null;
+   
+       if (this.webApplicationContext != null) {
+           // A context instance was injected at construction time -> use it
+           wac = this.webApplicationContext;
+           if (wac instanceof ConfigurableWebApplicationContext) {
+               ConfigurableWebApplicationContext cwac = (ConfigurableWebApplicationContext) wac;
+               if (!cwac.isActive()) {
+                   // The context has not yet been refreshed -> provide services such as
+                   // setting the parent context, setting the application context id, etc
+                   if (cwac.getParent() == null) {
+                       // The context instance was injected without an explicit parent -> set
+                       // the root application context (if any; may be null) as the parent
+                       cwac.setParent(rootContext);
+                   }
+                   configureAndRefreshWebApplicationContext(cwac);
+               }
+           }
+       }
+       if (wac == null) {
+           // No context instance was injected at construction time -> see if one
+           // has been registered in the servlet context. If one exists, it is assumed
+           // that the parent context (if any) has already been set and that the
+           // user has performed any initialization such as setting the context id
+           wac = findWebApplicationContext();
+       }
+       if (wac == null) {
+           // No context instance is defined for this servlet -> create a local one
+           // 创建WebApplicationContext
+           wac = createWebApplicationContext(rootContext);
+       }
+   
+       if (!this.refreshEventReceived) {
+           // Either the context is not a ConfigurableApplicationContext with refresh
+           // support or the context injected at construction time had already been
+           // refreshed -> trigger initial onRefresh manually here.
+           synchronized (this.onRefreshMonitor) {
+               // 刷新WebApplicationContext
+               onRefresh(wac);
+           }
+       }
+   
+       if (this.publishContext) {
+           // Publish the context as a servlet context attribute.
+           // 将IOC容器在应用域共享
+           String attrName = getServletContextAttributeName();
+           getServletContext().setAttribute(attrName, wac);
+       }
+   
+       return wac;
+   }
+   ```
 
-使用json格式的数据来响应ajax请求，实现步骤：
+2. 创建WebApplicationContext：（所在类：org.springframework.web.servlet.FrameworkServlet）
 
-1. 加入处理json的工具库的依赖，springmvc默认使用的是jackson；
-2. 在springmvc配置文件中加入`<mvc:annotation-driven >`注解驱动；
-3. **在处理器方法上加@ResponseBody注解**（加上注解后，框架会自动把Object对象转换为json数据格式）。
+   ```java
+   protected WebApplicationContext createWebApplicationContext(@Nullable ApplicationContext parent) {
+       Class<?> contextClass = getContextClass();
+       if (!ConfigurableWebApplicationContext.class.isAssignableFrom(contextClass)) {
+           throw new ApplicationContextException(
+               "Fatal initialization error in servlet with name '" + getServletName() +
+               "': custom WebApplicationContext class [" + contextClass.getName() +
+               "] is not of type ConfigurableWebApplicationContext");
+       }
+       // 通过反射创建 IOC 容器对象
+       ConfigurableWebApplicationContext wac =
+           (ConfigurableWebApplicationContext) BeanUtils.instantiateClass(contextClass);
+   
+       wac.setEnvironment(getEnvironment());
+       // 设置父容器
+       wac.setParent(parent);
+       String configLocation = getContextConfigLocation();
+       if (configLocation != null) {
+           wac.setConfigLocation(configLocation);
+       }
+       configureAndRefreshWebApplicationContext(wac);
+   
+       return wac;
+   }
+   ```
 
-实现原理说明：
+3. DispatcherServlet初始化策略：（所在类：org.springframework.web.servlet.DispatcherServlet）
 
-1. `<mvc:annotation-driven >`注解驱动：
+   - FrameworkServlet创建WebApplicationContext后，刷新容器，调用onRefresh(wac)，此方法在DispatcherServlet中进行了重写，调用了initStrategies(context)方法，初始化策略，即初始化DispatcherServlet的各个组件。
 
-   - 作用：完成java对象到json、xml、text、二进制等数据的转换；
-
-   - 原理：依靠HttpMessageConveter接口：消息转换器；定义了六个关于数据转换的方法，可以使用其实现类完成数据的转换；
-
-     ```java
-     /*HttpMessageConverter接口的方法 */
-     // 判断能否转：检查处理器方法的返回值是否可以转换为var2表示的数据格式；MediaType 表示数据格式，例如json、xml
-     // 已经定义好了许多数据格式，检测能转为某种数据则停止检查并返回真
-     boolean canWrite(Class<?> var1, @Nullable MediaType var2);
-     
-     void write(T var1, @Nullable MediaType var2, HttpOutputMessage var3) throws IOException, HttpMessageNotWritableException;
-     //实现转换：把处理器方法的返回值对象，调用jackson中的ObjectMapper来实现数据转换为json；如下
-     ObjectMapper mapper = new ObjectMapper();
-     User user = new User("1s", 3, "男");
-     String str = mapper.writeValueAsString(user);
+   - ```java
+     protected void initStrategies(ApplicationContext context) {
+        initMultipartResolver(context);
+        initLocaleResolver(context);
+        initThemeResolver(context);
+        initHandlerMappings(context);
+        initHandlerAdapters(context);
+        initHandlerExceptionResolvers(context);
+        initRequestToViewNameTranslator(context);
+        initViewResolvers(context);
+        initFlashMapManager(context);
+     }
      ```
 
-   - 驱动加入到配置文件后，会自动创建HttpMessageConveter接口的7个实现类（包括MappingJackson2HttpMessageConverter（使用jackson工具库中的ObjectMapper完成数据格式转换））。
 
-2. |  HttpMessageConveter接口主要实现类  |                             作用                             |
-   | :---------------------------------: | :----------------------------------------------------------: |
-   |       StringMessageConverter        |                负责读取和写出字符串格式的数据                |
-   | MappingJackson2HttpMessageConverter | 负责读取和写入json格式的数据（利用jackson工具库中的ObjectMapper读写json数据，操作Object类型数据） |
 
-返回Object对象时框架的处理流程：
+## DispatcherServlet调用组件处理请求
 
-1. 检查是否能转换：调用框架中`ArrayList<HttpMessageConverter>`中的每个canWrite()方法来检查哪个接口实现类可以完成返回值转换为json（MappingJackson2HttpMessageConverter）；
-2. 检查完成再调用实现类的write()方法，完成转换；（调用jackson中的ObjectMapper来实现数据转换为json，返回的content-Type：application/json;charset=utf-8;）
-3. 框架通过@ResponseBody注解把转换后结果输出到浏览器，ajax请求处理完成。
+1. processRequest()：（所在类：org.springframework.web.servlet.FrameworkServlet）
 
-返回Object对象是List集合时得到的是json array。
+   - FrameworkServlet重写HttpServlet中的service()和doXxx()，这些方法中调用了processRequest(request, response)。
 
-处理器方法返回值是String，那么有@ResponseBody注解时，表示的是文本数据，content-Type：text/plain;charset=ISO-8859-1，解决这个乱码问题在@RequestMapping加入produces属性，值为"text/plain;charset=utf-8"；处理流程和上面类型，使用StringHttpMessageConverter，默认字符编码ISO-8859-1。
+   - ```java
+     protected final void processRequest(HttpServletRequest request, HttpServletResponse response)
+         throws ServletException, IOException {
+     
+         long startTime = System.currentTimeMillis();
+         Throwable failureCause = null;
+     
+         LocaleContext previousLocaleContext = LocaleContextHolder.getLocaleContext();
+         LocaleContext localeContext = buildLocaleContext(request);
+     
+         RequestAttributes previousAttributes = RequestContextHolder.getRequestAttributes();
+         ServletRequestAttributes requestAttributes = buildRequestAttributes(request, response, previousAttributes);
+     
+         WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
+         asyncManager.registerCallableInterceptor(FrameworkServlet.class.getName(), new RequestBindingInterceptor());
+     
+         initContextHolders(request, localeContext, requestAttributes);
+     
+         try {
+             // 执行服务，doService()是一个抽象方法，在DispatcherServlet中进行了重写
+             doService(request, response);
+         }
+         catch (ServletException | IOException ex) {
+             failureCause = ex;
+             throw ex;
+         }
+         catch (Throwable ex) {
+             failureCause = ex;
+             throw new NestedServletException("Request processing failed", ex);
+         }
+     
+         finally {
+             resetContextHolders(request, previousLocaleContext, previousAttributes);
+             if (requestAttributes != null) {
+                 requestAttributes.requestCompleted();
+             }
+             logResult(request, response, failureCause, asyncManager);
+             publishRequestHandledEvent(request, response, startTime, failureCause);
+         }
+     }
+     ```
+
+2. doService()：（所在类：org.springframework.web.servlet.DispatcherServlet）
+
+   - ```java
+     @Override
+     protected void doService(HttpServletRequest request, HttpServletResponse response) throws Exception {
+         logRequest(request);
+     
+         // Keep a snapshot of the request attributes in case of an include,
+         // to be able to restore the original attributes after the include.
+         Map<String, Object> attributesSnapshot = null;
+         if (WebUtils.isIncludeRequest(request)) {
+             attributesSnapshot = new HashMap<>();
+             Enumeration<?> attrNames = request.getAttributeNames();
+             while (attrNames.hasMoreElements()) {
+                 String attrName = (String) attrNames.nextElement();
+                 if (this.cleanupAfterInclude || attrName.startsWith(DEFAULT_STRATEGIES_PREFIX)) {
+                     attributesSnapshot.put(attrName, request.getAttribute(attrName));
+                 }
+             }
+         }
+     
+         // Make framework objects available to handlers and view objects.
+         request.setAttribute(WEB_APPLICATION_CONTEXT_ATTRIBUTE, getWebApplicationContext());
+         request.setAttribute(LOCALE_RESOLVER_ATTRIBUTE, this.localeResolver);
+         request.setAttribute(THEME_RESOLVER_ATTRIBUTE, this.themeResolver);
+         request.setAttribute(THEME_SOURCE_ATTRIBUTE, getThemeSource());
+     
+         if (this.flashMapManager != null) {
+             FlashMap inputFlashMap = this.flashMapManager.retrieveAndUpdate(request, response);
+             if (inputFlashMap != null) {
+                 request.setAttribute(INPUT_FLASH_MAP_ATTRIBUTE, Collections.unmodifiableMap(inputFlashMap));
+             }
+             request.setAttribute(OUTPUT_FLASH_MAP_ATTRIBUTE, new FlashMap());
+             request.setAttribute(FLASH_MAP_MANAGER_ATTRIBUTE, this.flashMapManager);
+         }
+     
+         RequestPath requestPath = null;
+         if (this.parseRequestPath && !ServletRequestPathUtils.hasParsedRequestPath(request)) {
+             requestPath = ServletRequestPathUtils.parseAndCache(request);
+         }
+     
+         try {
+             // 处理请求和响应
+             doDispatch(request, response);
+         }
+         finally {
+             if (!WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted()) {
+                 // Restore the original attribute snapshot, in case of an include.
+                 if (attributesSnapshot != null) {
+                     restoreAttributesAfterInclude(request, attributesSnapshot);
+                 }
+             }
+             if (requestPath != null) {
+                 ServletRequestPathUtils.clearParsedRequestPath(request);
+             }
+         }
+     }
+     ```
+
+3. doDispatch()：（所在类：org.springframework.web.servlet.DispatcherServlet）
+
+   - ```java
+     protected void doDispatch(HttpServletRequest request, HttpServletResponse response) throws Exception {
+         HttpServletRequest processedRequest = request;
+         HandlerExecutionChain mappedHandler = null;
+         boolean multipartRequestParsed = false;
+     
+         WebAsyncManager asyncManager = WebAsyncUtils.getAsyncManager(request);
+     
+         try {
+             ModelAndView mv = null;
+             Exception dispatchException = null;
+     
+             try {
+                 processedRequest = checkMultipart(request);
+                 multipartRequestParsed = (processedRequest != request);
+     
+                 // Determine handler for the current request.
+                 /*
+                     mappedHandler：调用链
+                     包含handler、interceptorList、interceptorIndex
+                     handler：浏览器发送的请求所匹配的控制器方法
+                     interceptorList：处理控制器方法的所有拦截器集合
+                     interceptorIndex：拦截器索引，控制拦截器afterCompletion()的执行
+                 */
+                 mappedHandler = getHandler(processedRequest);
+                 if (mappedHandler == null) {
+                     noHandlerFound(processedRequest, response);
+                     return;
+                 }
+     
+                 // Determine handler adapter for the current request.
+                    // 通过控制器方法创建相应的处理器适配器，调用所对应的控制器方法
+                 HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
+     
+                 // Process last-modified header, if supported by the handler.
+                 String method = request.getMethod();
+                 boolean isGet = "GET".equals(method);
+                 if (isGet || "HEAD".equals(method)) {
+                     long lastModified = ha.getLastModified(request, mappedHandler.getHandler());
+                     if (new ServletWebRequest(request, response).checkNotModified(lastModified) && isGet) {
+                         return;
+                     }
+                 }
+                 
+                 // 调用拦截器的preHandle()
+                 if (!mappedHandler.applyPreHandle(processedRequest, response)) {
+                     return;
+                 }
+     
+                 // Actually invoke the handler.
+                 // 由处理器适配器调用具体的控制器方法，最终获得ModelAndView对象
+                 mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+     
+                 if (asyncManager.isConcurrentHandlingStarted()) {
+                     return;
+                 }
+     
+                 applyDefaultViewName(processedRequest, mv);
+                 // 调用拦截器的postHandle()
+                 mappedHandler.applyPostHandle(processedRequest, response, mv);
+             }
+             catch (Exception ex) {
+                 dispatchException = ex;
+             }
+             catch (Throwable err) {
+                 // As of 4.3, we're processing Errors thrown from handler methods as well,
+                 // making them available for @ExceptionHandler methods and other scenarios.
+                 dispatchException = new NestedServletException("Handler dispatch failed", err);
+             }
+             // 后续处理：处理模型数据和渲染视图
+             processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
+         }
+         catch (Exception ex) {
+             triggerAfterCompletion(processedRequest, response, mappedHandler, ex);
+         }
+         catch (Throwable err) {
+             triggerAfterCompletion(processedRequest, response, mappedHandler,
+                                    new NestedServletException("Handler processing failed", err));
+         }
+         finally {
+             if (asyncManager.isConcurrentHandlingStarted()) {
+                 // Instead of postHandle and afterCompletion
+                 if (mappedHandler != null) {
+                     mappedHandler.applyAfterConcurrentHandlingStarted(processedRequest, response);
+                 }
+             }
+             else {
+                 // Clean up any resources used by a multipart request.
+                 if (multipartRequestParsed) {
+                     cleanupMultipart(processedRequest);
+                 }
+             }
+         }
+     }
+     ```
+
+4. processDispatchResult()：
+
+   - ```java
+     private void processDispatchResult(HttpServletRequest request, HttpServletResponse response,
+                                        @Nullable HandlerExecutionChain mappedHandler, @Nullable ModelAndView mv,
+                                        @Nullable Exception exception) throws Exception {
+     
+         boolean errorView = false;
+     
+         if (exception != null) {
+             if (exception instanceof ModelAndViewDefiningException) {
+                 logger.debug("ModelAndViewDefiningException encountered", exception);
+                 mv = ((ModelAndViewDefiningException) exception).getModelAndView();
+             }
+             else {
+                 Object handler = (mappedHandler != null ? mappedHandler.getHandler() : null);
+                 mv = processHandlerException(request, response, handler, exception);
+                 errorView = (mv != null);
+             }
+         }
+     
+         // Did the handler return a view to render?
+         if (mv != null && !mv.wasCleared()) {
+             // 处理模型数据和渲染视图
+             render(mv, request, response);
+             if (errorView) {
+                 WebUtils.clearErrorRequestAttributes(request);
+             }
+         }
+         else {
+             if (logger.isTraceEnabled()) {
+                 logger.trace("No view rendering, null ModelAndView returned.");
+             }
+         }
+     
+         if (WebAsyncUtils.getAsyncManager(request).isConcurrentHandlingStarted()) {
+             // Concurrent handling started during a forward
+             return;
+         }
+     
+         if (mappedHandler != null) {
+             // Exception (if any) is already handled..
+             // 调用拦截器的afterCompletion()
+             mappedHandler.triggerAfterCompletion(request, response, null);
+         }
+     }
+     ```
+
+## SpringMVC的执行流程
+
+1. 用户向服务器发送请求，请求被SpringMVC 前端控制器 DispatcherServlet捕获。
+2. DispatcherServlet对请求URL进行解析，得到请求资源标识符（URI），判断请求URI对应的映射：
+   1. 映射不存在：
+      - 再判断是否配置了`mvc:default-servlet-handler`，如果没配置，则控制台报映射查找不到，客户端展示404错误。
+      - 如果有配置，则访问目标资源（一般为静态资源，如：JS,CSS,HTML），找不到客户端也会展示404错误。
+   2. 映射存在， 存在则执行下面的流程：
+      1. 根据该URI，调用HandlerMapping获得该Handler配置的所有相关的对象（包括Handler对象以及Handler对象对应的拦截器），最后以HandlerExecutionChain执行链对象的形式返回。
+      2. DispatcherServlet 根据获得的Handler，选择一个合适的HandlerAdapter。
+      3. 如果成功获得HandlerAdapter，此时将开始执行拦截器的preHandler(…)方法【正向】。
+      4. 提取Request中的模型数据，填充Handler入参，开始执行Handler（Controller)方法，处理请求。在填充Handler的入参过程中，根据你的配置，Spring将帮你做一些额外的工作：
+         1. HttpMessageConveter： 将请求消息（如Json、xml等数据）转换成一个对象，将对象转换为指定的响应信息。
+         2. 数据转换：对请求消息进行数据转换。如String转换成Integer、Double等。
+         3. 数据格式化：对请求消息进行数据格式化。 如将字符串转换成格式化数字或格式化日期等。
+         4. 数据验证： 验证数据的有效性（长度、格式等），验证结果存储到BindingResult或Error中。
+      5. Handler执行完成后，向DispatcherServlet 返回一个ModelAndView对象。
+      6. 此时将开始执行拦截器的postHandle(…)方法【逆向】。
+      7. 根据返回的ModelAndView（此时会判断是否存在异常：如果存在异常，则执行HandlerExceptionResolver进行异常处理）选择一个适合的ViewResolver进行视图解析，根据Model和View，来渲染视图。
+      8. 渲染视图完毕执行拦截器的afterCompletion(…)方法【逆向】。
+      9. 将渲染结果返回给客户端。
