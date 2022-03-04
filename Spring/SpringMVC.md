@@ -337,7 +337,7 @@ public String test(@RequestBody ParameterModel parameterModel) {
     return null;
 }
 // 将拿到的数据放入Map集合
-@PostMapping(value = "/test)
+@PostMapping(value = "/test")
 public String test(@RequestBody Map<String, Object> paramMap) {
     return null;
 }
