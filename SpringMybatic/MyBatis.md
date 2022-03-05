@@ -1241,8 +1241,6 @@ MyBatis Generator，简称MBG，专门为MyBatis使用者定制的**代码生成
 
 
 
-
-
 # Log4j
 
 mybatis执行SQL语句后打印SQL语句，可以借助第三方的开源的免费的组件：log4j，该组件专门用来负责记录日志，很多的框架都使用了或集成了该组件，例如spring、springMVC、MyBatis、Hibernate等。
