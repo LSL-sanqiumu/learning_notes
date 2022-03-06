@@ -434,8 +434,8 @@ public static void main(String[] args){
 | AnnotationConfigApplicationContext    | 从一个或多个Java配置类中加载spring应用上下文                 |
 | AnnotationConfigWebApplicationContext | 从一个或多个Java配置类中加载spring web应用上下文             |
 | ClassPathXmlConfigApplicationContext  | 从类路径下一个或多个xml配置文件加载上下文定义，把应用上下文定义文件作为类资源 |
-| FileSystemXmlApplicationContext       | 从文件系统下的一个或多个xml配置文件加载上下文定义            |
 | XmlWebApplicationContext              | 从web应用下的一个或多个xml配置文件加载上下文定义             |
+| FileSystemXmlApplicationContext       | 从文件系统下的一个或多个xml配置文件加载上下文定义            |
 
 
 
@@ -891,8 +891,8 @@ public class Cat {
 自动装配：（三个过程：1.spring容器中有相应的bean，2.找到要注入的bean，3.spring自动寻找并为指定bean注入bean）
 
 1. 使用bean的自动装配属性：autowire，用来指定spring寻找bean的方式；
-2. autowire：byName；在容器上下文中寻找和**setXxx方法**后面的值(xxx)对应的beanID（为声明了autowire的bean装配）；
-3. autowire：byType；在容器上下文中寻找和自己对象**属性类型**相同的bean（为声明了autowire的bean装配）。
+2. `autowire：byName;`：在容器上下文中寻找和**setXxx方法**后面的值(xxx)对应的beanID（为声明了autowire的bean装配）；
+3. `autowire：byType;`：在容器上下文中寻找和自己对象**属性类型**相同的bean（为声明了autowire的bean装配）。
 
 ```xml
 <bean id="person" class="com.lsl.pojo.People" autowire="byType">-->
@@ -967,8 +967,7 @@ IoC基于xml解析、工厂模式、反射实现。IoC思想由IoC容器实现�
 IoC容器实现的两种方式：
 
 - BeanFactory：bean工厂，是IoC容器基本的实现方式，是spring内部的使用接口，不提供开发人员使用；**加载完配置文件时对象还没有被创建，在获取对象的时候才会去创建对象**。
-- ApplicationContext：是BeanFactory的子接口，比其父接口功能更加强大，一般由开发人员进行使用；**加载完配置文件后就会把配置好的bean（对象）都创建**。
-- ApplicationContext有多个实现类。
+- ApplicationContext：是BeanFactory的子接口，比其父接口功能更加强大，一般由开发人员进行使用；**加载完配置文件后就会把配置好的bean（对象）都创建**。（ApplicationContext有多个实现类）
 
 IOC实现演变流程：（场景模拟：User类需要依赖另一个Service类）
 
@@ -1264,7 +1263,7 @@ JDK动态代理，使用到java.lang.reflext包下的几个类：
 
 ## 概述与术语
 
-### 概述
+### AOP概述
 
 参考资料：
 
@@ -1309,18 +1308,20 @@ AOP全称Aspect Oriented Programming，意为面向切面编程，也叫做面�
 </dependency>
 ```
 
-### 术语
+### 相关术语
 
-1. 连接点：类里面哪些方法可以被增强，这些可以被增强的方法就是连接点。
-2. 切入点：实现被真正增强的方法。
-3. 通知（增强）：实际增强的逻辑部分。
-4. 切面：是动作，是将通知应用到切入点的过程。
+1. 连接点（joinPoint）：已经存在的业务方法（类里面哪些方法可以被增强，这些可以被增强的方法就是连接点）。
+2. 切入点（pointCut）：为要添加`advice`的方法划定范围（指定哪些方法需要被切入通知，这些方法就是切入点）。
+3. 通知（advice）：在已存在的业务方法的前、后、异常、最终处加入的方法。
+4. 切面（aspect）：通知方法所在的类，一个 `aspect` 类中可以有多个通知方法。（是动作，是将通知应用到切入点的过程）。
+4. 目标对象（target）：切入点所在的对象，（使用JDK动态代理的AOP，目标对象是接口的实现类的对象）。
+4. 织入（weave）：将通知方法放入到切入点的前、后、异常、最终处。
 
 
 
 ## 基于注解实现
 
-### 注解
+### 注解说明
 
 注解的使用：
 
@@ -1329,8 +1330,8 @@ AOP全称Aspect Oriented Programming，意为面向切面编程，也叫做面�
 | @Aspect         | 标注类为切面                                                 |
 | @Pointcut       | 定义命名的切点，有此标记的方法可代替<br>以下五个注解的切点表达式 |
 | @Before         | 前置通知：在目标方法调用之前执行                             |
+| @AfterReturning | 返回通知：在目标方法返回后调用，比@After早                   |
 | @After          | 最终通知：在目标方法返回或抛出异常时调用                     |
-| @AfterReturning | 后置通知：在目标方法返回后调用，比@After早                   |
 | @AfterThrowing  | 异常通知：在目标方法抛出异常后调用                           |
 | @Around         | 环绕通知：会将目标方法封装起来                               |
 
@@ -1421,10 +1422,10 @@ after切面在invoke()中用try finally 包裹业务代码。业务代码执行�
 
 3. 使用JavaConfig或XML来使切面生效（否则切面类就是一个简单的类、bean）：
 
-   - **使用JavaConfig方式：** 
+   1. **使用JavaConfig方式：** 
 
      ```java
-     @Configuration // 扫描当前类所在包及子包
+     @Configuration 
      // 下面的注解启用AspectJ自动代理，注解生效后将会创建将Audience转换为切面的代理, 代理把Audience转换为切面
      @EnableAspectJAutoProxy 
      public class JavaConfig {
@@ -1447,40 +1448,51 @@ after切面在invoke()中用try finally 包裹业务代码。业务代码执行�
      }
      ```
 
-   - **使用XML方式使切面生效：要在约束处声明好spring的aop命名空间** 
+   2. **使用XML方式使切面生效：要在约束处声明好spring的aop命名空间** 
 
      ```xml
-     <!-- 启用AspectJ自动代理，会为使用@Aspect注解的bean创建一个代理 -->
+     <!-- 启用AspectJ自动代理，会为使用@Aspect注解的类的bean创建一个代理 -->
      <!-- 这个代理会围绕所有该切面的`切点所匹配的bean` -->
      <aop:aspectj-autoproxy /> 
-     <bean id="p" class="com.lsl.pojo.PerformanceImpl"/>
      <bean class="com.lsl.annotation.Audience"/> 
+     <!-- 要创建接口实现类的对象，用于调用方法来观测结果 -->
+     <bean id="p" class="com.lsl.pojo.PerformanceImpl"/>
      ```
 
-4. 测试：
+     ```java
+     /* 测试 */
+     public class Test {
+         public static void main(String[] args) {
+             ApplicationContext apps = new ClassPathXmlApplicationContext("beans.xml");
+             Performance p1 = (Performance) apps.getBean("p");
+             p1.perform(); // 目标方法，切面的通知方法在该方法执行前后执行
+         }
+     }
+     /* 结果 */ 
+     演出前：手机静音
+     演出前：找座位坐下
+     演出啦！！！演出结束啦！！！
+     观看演出：鼓掌，鼓掌
+     ```
 
-   ```java
-   /* 测试 */
-   public class Test {
-       public static void main(String[] args) {
-           ApplicationContext apps = new ClassPathXmlApplicationContext("beans.xml");
-           Performance p1 = (Performance) apps.getBean("p");
-           p1.perform(); // 目标方法，切面的通知方法在该方法执行前后执行
-       }
-   }
-   /* 结果 */ 
-   演出前：手机静音
-   演出前：找座位坐下
-   演出啦！！！演出结束啦！！！
-   观看演出：鼓掌，鼓掌
-   ```
+## 获取目标方法形参
 
-如果切面所要通知的目标方法是有形参的方法，如何访问和使用传递给被通知方法的参数？可利用切面表达式来传参：
+如果切面所要通知的目标方法是有形参的方法，如何将传入的形参值传递给通知方法呢？可利用切面表达式来传参：
 
 ```java
-// 以@Before为例，传入int类型参数
-@Before("execution(* com.lsl.pojo.Performance.perform(int)) && args(指定参数)")
+// 以@AfterReturning例，（其它的通知方法都可使用该方法）
+// .. 表示0到n个参数(也可以指定形参类型：performance(String,int,...))
+// args用来接收参数，接收的数量根据performance()的形参量而定，里面的变量名自定义
+@AfterReturning("execution(* com.lsl.pojo.PerformanceImpl.performance(..)) && args(num,age)")
+// 该方法的形参名必须和args里面的一致，而且类型也要匹配得上
+public void afterReturning(String num,int age){
+    System.out.println("afterReturning" + num + age);
+}
 ```
+
+
+
+
 
 ## 基于XML配置实现
 
@@ -1488,23 +1500,25 @@ after切面在invoke()中用try finally 包裹业务代码。业务代码执行�
 
 XML的aop命名空间：
 
-| aop配置元素               | 用途                                                      |
-| :------------------------ | :-------------------------------------------------------- |
-| `<aop:config>`            | 顶层配置元素，大多数的`<aop:*>`必须包括在`<aop:config>`内 |
-| `<aop:aspect>`            | 定义一个切面                                              |
-| `<aop:aspectj-autoproxy>` | 启用@AspectJ注解驱动的切面                                |
-| `<aop:pointcut>`          | 定义一个切点                                              |
-| `<aop:advisor>`           | 定义AOP通知器                                             |
-| `<aop:before>`            | 定义AOP前置通知                                           |
-| `<aop:after>`             | 定义AOP后置通知                                           |
-| `<aop:after-returning>`   | 定义AOP返回通知                                           |
-| `<aop:after-throwing>`    | 定义AOP异常通知                                           |
-| `<aop:around>`            | 定义AOP环绕通知                                           |
-| `<aop:declare-parents>`   | 以透明的方式为被通知的对象引入额外的接口                  |
+| aop配置元素                                     | 用途                                                         |
+| :---------------------------------------------- | :----------------------------------------------------------- |
+| `<aop:config>`                                  | 顶层配置元素，大多数的`<aop:*>`必须包括在`<aop:config>`内    |
+| `<aop:aspect ref=""> </aop:aspect>`             | 定义一个切面，该标签内用于定义切点和通知，大多用于日志缓存   |
+| `<aop:aspectj-autoproxy />`                     | 启用@AspectJ注解驱动的切面，使用注解时使用                   |
+| `<aop:pointcut id="" expression="切点表达式"/>` | 定义一个切点                                                 |
+| `<aop:advisor advice-ref="" pointcut-ref="" />` | 定义AOP通知器，作用和aop:aspect差不多<br>大多用于事务管理<br>使用见下面~基于Spring的API接口和XML |
+| `<aop:before method="" pointcut=""/>`           | 定义AOP前置通知，pointcut也可使用pointcut-ref来引用切点      |
+| `<aop:after-returning method="" pointcut=""/>`  | 定义AOP返回通知，pointcut也可使用pointcut-ref来引用切点      |
+| `<aop:after method="" pointcut=""/>`            | 定义AOP最终通知，pointcut也可使用pointcut-ref来引用切点      |
+| `<aop:after-throwing method="" pointcut=""/>`   | 定义AOP异常通知，pointcut也可使用pointcut-ref来引用切点      |
+| `<aop:around method="" pointcut=""/>`           | 定义AOP环绕通知，pointcut也可使用pointcut-ref来引用切点      |
+| `<aop:declare-parents>`                         | 以透明的方式为被通知的对象引入额外的接口                     |
+
+
 
 ### 实现步骤
 
-以上面使用注解实现的代码为例，去掉Audience类的注解，然后在XML文件里配置：
+以上面使用注解实现的代码为例，去掉Audience类的注解，然后在XML文件里根据以下操作进行配置（二选一）：
 
 1. 使用除Around外的通知：
 
@@ -1547,6 +1561,14 @@ XML的aop命名空间：
            <aop:around method="watchPro" pointcut-ref="performance"/>
        </aop:aspect>
    </aop:config>
+   ```
+
+3. 测试：
+
+   ```java
+   ApplicationContext app = new ClassPathXmlApplicationContext("beans.xml");
+   Performance p = app.getBean("p", Performance.class);
+   p.performance();
    ```
 
    
