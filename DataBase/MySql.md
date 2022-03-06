@@ -349,12 +349,12 @@ MySQL当前时间：`now（）`获取系统当前时间，并且带有时分秒�
 
 约束种类：
 
-- 非空约束：not null，指示某列不能存储 NULL 值。
-- 唯一性约束：unique， 保证某列的每行的值唯一、不重复，但是都可以为null。
-- 主键约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个或多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。
-- 外键约束：foreign key（FK），用来让两张表的数据之间建立连接，保证数据的一致性和完整性（一个表中的某个字段受到外表的某个字段值的限制，其字段值得完全参考外表的字段值来存储值）。
-- 检查约束：check（MySQL8.0.16版本后开始支持，Oracle也支持）， 保证字段值满足某一个指定的条件。
-- 默认约束：default，保存数据时如果没有指定该字段的值则采用默认值。
+1. 唯一性约束：unique， 保证某列的每行的值唯一、不重复，但是都可以为null。
+2. 主键约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个或多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。
+3. 外键约束：foreign key（FK），用来让两张表的数据之间建立连接，保证数据的一致性和完整性（一个表中的某个字段受到外表的某个字段值的限制，其字段值得完全参考外表的字段值来存储值）。
+4. 检查约束：check（MySQL8.0.16版本后开始支持，Oracle也支持）， 保证约束的字段的值满足某一个指定的条件。
+5. 默认约束：default，保存数据时如果没有指定该字段的值则采用默认值，如果没有设置默认值则为null。
+6. 非空约束：not null，指示某列不能存储 NULL 值。
 
 ## 添加唯一性约束
 
@@ -423,7 +423,7 @@ MySQL的外键约束用来在两个表数据之间建立链接，其中一张表
 - 方案一：数据都存放于一张表；（每个学生的班级信息和班级代号信息可能会重复，造成数据冗余）
 - 方案二：班级表、学生表分表存储不同数据，学生表引用班级表；（添加外键约束，减少数据冗余）
 
-**外键的创建方式一：在创建表的同时添加外键约束**
+**外键的创建方式一：在创建表的同时为其某个字段添加外键约束**
 
 ```mysql
 create table 表名(
@@ -447,24 +447,24 @@ constraint `外键名称` foreign key (`字段`) references `主表名`(主键�
 ```mysql
 -- 主表 
 CREATE TABLE `t_class1` (
-  `id` INT(10) NOT NULL AUTO_INCREMENT COMMENT '学生id',
-  `s_id` INT(10) NOT NULL DEFAULT '1001' COMMENT '学号',
-  `specialty` CHAR(255) DEFAULT NULL,
-  `grade` CHAR(255) DEFAULT NULL,
-  PRIMARY KEY (`id`)
+    `id` INT(10) NOT NULL AUTO_INCREMENT COMMENT '学生id',
+    `s_id` INT(10) NOT NULL DEFAULT '1001' COMMENT '学号',
+    `specialty` CHAR(255) DEFAULT NULL,
+    `grade` CHAR(255) DEFAULT NULL,
+    PRIMARY KEY (`id`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
 -- 从表，被约束的表-创建外键的表，也可以看做为某个字段外扩了一些关联数据
 CREATE TABLE `t_student1`(
-  `id` INT(10) NOT NULL AUTO_INCREMENT COMMENT '学生id',
-  `s_id` INT(10) NOT NULL DEFAULT '1001' COMMENT '学号',
-  `name` CHAR(10) DEFAULT NULL COMMENT '学生姓名',
-  `sex` CHAR(2) DEFAULT NULL COMMENT '性别',
-  `n_place` CHAR(255) DEFAULT NULL COMMENT '籍贯',
-  `age` INT(3) NOT NULL DEFAULT '18' COMMENT '年龄',
-  `g_level` CHAR(10) NOT NULL DEFAULT '无' COMMENT '级别',
-  `phone` CHAR(255) DEFAULT NULL COMMENT '联系电话',
-  PRIMARY KEY (`id`),
-  CONSTRAINT `FK_id` FOREIGN KEY (`s_id`) REFERENCES `t_class1`(`id`)
+    `id` INT(10) NOT NULL AUTO_INCREMENT COMMENT '学生id',
+    `s_id` INT(10) NOT NULL DEFAULT '1001' COMMENT '学号',
+    `name` CHAR(10) DEFAULT NULL COMMENT '学生姓名',
+    `sex` CHAR(2) DEFAULT NULL COMMENT '性别',
+    `n_place` CHAR(255) DEFAULT NULL COMMENT '籍贯',
+    `age` INT(3) NOT NULL DEFAULT '18' COMMENT '年龄',
+    `g_level` CHAR(10) NOT NULL DEFAULT '无' COMMENT '级别',
+    `phone` CHAR(255) DEFAULT NULL COMMENT '联系电话',
+    PRIMARY KEY (`id`),
+    CONSTRAINT `FK_id` FOREIGN KEY (`s_id`) REFERENCES `t_class1`(`id`)
 )ENGINE=INNODB DEFAULT CHARSET=utf8;
 ```
 
@@ -472,8 +472,8 @@ CREATE TABLE `t_student1`(
 
 ```MYSQL
 -- 添加一个叫FK_gradeid的外键约束，外键约束字段为`gradeid`，指向的表为`grade`，和该表的`gradeid`形成关联
--- 从表的`gradeid`的值的选项被主表`grade`的`gradeid`的值限定住
 ALTER TABLE XXX ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`);
+-- 从表的`gradeid`的值的选项被主表`grade`的`gradeid`的值限定住
 ALTER TABLE XXX ADD FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`);
 ```
 
@@ -506,7 +506,7 @@ MySQL引擎在物理文件上的区别：
 
 # -------SQL start-------
 
-数据库xx语言：（CURD(create update retrieve delete)	CV	API）
+（Data）数据xx语言（Language）：（CURD(create update retrieve delete)	CV	API）
 
 - DDL（Definition，数据定义语言）：修改数据表、数据库的结构的语言，如create、drop、alter的都是。
 
@@ -519,7 +519,7 @@ MySQL引擎在物理文件上的区别：
 - TCL（Transaction Control，事务控制语言）：事务提交commit、事务回滚rollback。
 
 
-数据库--->数据库中的表--->表中的信息。
+数据库 ===> 数据库中的表 ===> 表中的信息。
 
 # DDL
 
@@ -789,22 +789,6 @@ SELECT `age`+1 AS 长大一岁 FROM result; -- 指定字段加一后显示，不
 
 ### 条件查询
 
-条件操作符：
-
-|      条件操作符      |      含义      |                           描述                            |
-| :------------------: | :------------: | :-------------------------------------------------------: |
-|   =、>、<、>=、<=    |                |                                                           |
-|        !=、<>        |     不等于     |                                                           |
-| between ... and ...  |  在某个闭区间  |                          [x，y]                           |
-|         and          |    相当于&&    |                          全1为1                           |
-|          or          |   相当于\|\|   |                          有1为1                           |
-|         not          |    相当于！    |                            非                             |
-|       is null        |     是null     |                   null 不能用 = 来比较                    |
-|     is not null      |    不是null    |                                                           |
-|         like         |   含有某个值   |                  模糊查询，结合%或_使用                   |
-|   in(xx,xx,xx,...)   |  符合里面的值  | 某字段的值能对应in里面的某一个数据<br />返回true或者false |
-| not in(xx,xx,xx,...) | 不符合里面的值 |      某字段的值不在这几个值中<br />返回true或者false      |
-
 select语句：
 
 > 语法格式：select `字段1`,`字段2`,... from `table-name` where 条件语句;
@@ -814,6 +798,29 @@ select ... where `字段` = xx; -- 查询字段值为某个值的数据
 select ... where 逻辑判断语句; -- 查询符合该逻辑的数据，可用括号()来决定语句优先级
 select ... where `字段` in (110,120); -- 该字段值是否该集合，如果存在就查询相应数据
 ```
+
+条件操作符：
+
+| 条件操作符          | 含义         | 描述                   |
+| :------------------ | :----------- | :--------------------- |
+| =、>、<、>=、<=     |              |                        |
+| !=、<>              | 不等于       |                        |
+| between ... and ... | 在某个闭区间 | [x，y]                 |
+| and                 | 相当于&&     | 全1为1                 |
+| or                  | 相当于\|\|   | 有1为1                 |
+| not                 | 相当于！     | 非                     |
+| is null             | 是null       | null 不能用 = 来比较   |
+| is not null         | 不是null     |                        |
+| like                | 含有某个值   | 模糊查询，结合%或_使用 |
+
+| 常用于子查询         | 含义           | 描述                                                      |
+| :------------------- | :------------- | :-------------------------------------------------------- |
+| in(xx,xx,xx,...)     | 符合里面的值   | 某字段的值能对应in里面的某一个数据<br />返回true或者false |
+| not in(xx,xx,xx,...) | 不符合里面的值 | 某字段的值不在这几个值中<br />返回true或者false           |
+| exists()             | 存在里面的值   |                                                           |
+| not exists()         | 不存在里面的值 |                                                           |
+
+
 
 ### 模糊查询
 
@@ -829,6 +836,8 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
  where `字段` like '%梁%'; -- 字段值存在某个字符的
  where `字段` like '%\_%'; -- 字段值存在`_`的，要使用转义字符`\`
 ```
+
+
 
 ### 分组查询
 
@@ -1071,7 +1080,7 @@ join d on a和d连接的条件
 
 ### 交叉连接
 
-交叉连接 (笛卡尔积)：返回被连接的两个表所有数据行的笛卡尔积。（每条记录都是 1 对 n条映射）
+交叉连接 (笛卡尔积)：返回被连接的两个表所有数据行的笛卡尔积。（每条记录都是 1 对 n条映射，最终返回m*n条记录）
 
 ```mysql
  select * from sales as a cross join sales as b;
@@ -1387,8 +1396,8 @@ revoke 权限列表 on 数据库名.表名 from `用户名`@`主机名`;
 select 函数 from `table-name`
 count(指定列); -- 行数计数，会忽略所有的null
 count(*); --  不会忽略null
-
-count(1);sum(xx); avg(xx); max(xx); min(xx); -- 聚合函数
+count(1); -- 赋值1再计数和
+sum(xx); avg(xx); max(xx); min(xx);
 ```
 
 分组函数使用注意事项：
