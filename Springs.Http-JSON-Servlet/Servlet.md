@@ -101,7 +101,7 @@ webapps
 </dependency>
 ```
 
-2、创建HelloServlet类，如下：
+3、创建HelloServlet类，如下：
 
 ```java
 import javax.servlet.Servlet;
@@ -136,7 +136,7 @@ public class HelloServlet implements Servlet
 }
 ```
 
-3、Servlet4.0下的web.xml配置文件，用来将访问路径与servlet程序绑定：
+4、Servlet4.0下的web.xml配置文件，用来将访问路径与servlet程序绑定：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -146,13 +146,13 @@ public class HelloServlet implements Servlet
           version="4.0"
           metadata-complete="true"
           >
-		  <!--这是一个合法的xml文件-->
-		  <!--一个webapp只有一个web.xml文件-->
-		  <!--web.xml文件主要用来配置请求路径和Servlet类名之间的绑定关系-->
-		  <!--web.xml文件在tomcat服务器启动的阶段被解析-->
-		  <!--web.xml文件解析失败会导致webapp启动失败-->
-		  <!--web.xml文件中的标签不能随便乱写，因为tomcat服务器早就知道了该文件中编写哪些标签-->
-		  <!--web.xml文件中的标签也是sun公司制定的servlet规范-->
+		  <!-- 这是一个合法的xml文件 -->
+		  <!-- 一个webapp只有一个web.xml文件 -->
+		  <!-- web.xml文件主要用来配置请求路径和Servlet类名之间的绑定关系 -->
+		  <!-- web.xml文件在tomcat服务器启动的阶段被解析 -->
+		  <!-- web.xml文件解析失败会导致webapp启动失败 -->
+		  <!-- web.xml文件中的标签不能随便乱写，因为tomcat服务器早就知道了该文件中编写哪些标签 -->
+		  <!-- web.xml文件中的标签也是sun公司制定的servlet规范 -->
   <display-name>Archetype Created Web Application</display-name>
   
   <servlet>
@@ -174,7 +174,7 @@ public class HelloServlet implements Servlet
 </web-app>
 ```
 
-4、可自行编辑要输出到浏览器的内容：
+5、可自行编辑要输出到浏览器的内容：
 
 ```Java
 import javax.servlet.Servlet;
@@ -192,11 +192,11 @@ public class HelloServlet implements Servlet
 
 	public void service(ServletRequest request,ServletResponse response) 
 		throws IOException,ServletException{
-        //解决中文字符乱码问题，在获取响应流之前设置，且Java源程序的编码格式为ANSI才能成功
+        // 解决响应中文字符乱码问题，在获取响应流之前设置（且Java源程序的编码格式为ANSI才能成功？？）
         response.setContentType("text/html;charset=UTF-8");
         response.setCharacterEncoding("utf8");
-		//将HTML字符串输出到浏览器上，浏览器解释执行
-        //获取输出流对象，流直接指向特定的浏览器客户端
+		// 将HTML字符串输出到浏览器上，浏览器解释执行
+        // 获取输出流对象，流直接指向特定的浏览器客户端
 		PrintWriter out = response.getWriter();
        	out.print("<html>");
 		out.print("<head><title>HelloServlet</title></head>");
@@ -272,11 +272,9 @@ web.xml的头部：
 
 2. web.xml文件主要用来配置请求路径和Servlet类名之间的绑定关系。
 
-3. web.xml文件在tomcat服务器启动的阶段被解析。
+3. web.xml文件在tomcat服务器启动的阶段被解析，解析失败会导致webapp启动失败。
 
-4. web.xml文件解析失败会导致webapp启动失败。
-
-5. web.xml文件中的标签不能随便乱写，因为tomcat服务器早就知道了该文件中编写哪些标签。
+5. web.xml文件中的标签不能随便乱写，因为tomcat服务器早就知道了该文件中应该存在哪些标签。
 
 6. web.xml文件中的标签也是sun公司制定的servlet规范。
 
@@ -1420,10 +1418,10 @@ public class Register extends HttpServlet {
 跳转包括转发和重定向，跳转到的资源可以是web服务器中任何一种资源：Servlet、HTML、JSP ......等。
 
 ```java
-// 转发：一次请求中，相对的是webapp，只能是用来访问服务器内部资源，不能跨webapp
+// 转发（请求）：一次请求中，相对的是webapp，只能是用来访问服务器内部资源，不能跨webapp
 request.getRequestDispatcher("/b").forward(request,response);
 
-// 重定向：两次请求，相对的是webapps，也可以使用绝对路径访问其他服务器的webapp
+// 重定向（响应）：两次请求，相对的是webapps，也可以使用绝对路径访问其他服务器的webapp
 // 其作用是：将要重定向到的路径响应给浏览器，再由浏览器向服务器发送请求
 response.sendRedirect(request.getContextPath() + "/b");
 // request.getContextPath()：获取当前的上下文的根目录，也就是webapp根目录（返回的是一个相对路径，相对于webapps）
@@ -2103,8 +2101,3 @@ destroy()：
 ## 监听器的应用
 
 应用：提高程序运行速度。比如连接数据库，可通过监听在servlet容器创建的时候创建好供使用的Connection，就不用等到使用的时候再创建接口，这样就能减少connection创建的时间，提供程序运行速度。
-
-
-
-
-

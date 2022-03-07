@@ -55,7 +55,7 @@ public static void main(String[] args) {
     try {
         // 第一步：加载驱动，如果是Oracle数据库就是：new oracle.jdbc.driver.OracleDriver() */
         Driver driver = new com.mysql.jdbc.Driver();
-		DriverManager.registerDriver(driver);
+        DriverManager.registerDriver(driver);
         // 第二步：创建与数据库的连接
         conn = DriverManager.getConnection(url,user,passwd);
         // 第三步：获取数据库操作对象
