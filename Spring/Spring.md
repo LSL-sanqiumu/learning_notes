@@ -488,14 +488,15 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
 
 为实例对象注入属性，可以通过有参构造器来进行属性注入；在配置文件加载的时候，ioc容器管理的对象就已经开始创建并初始化。
 
-通过有参构造器的参数名（name）、参数类型（type）、参数下标（index）三种方式，必须得为全部构造器形参赋值。
+通过有参构造器的参数名（name）、参数类型（type）、参数下标（index）三种方式，**注意必须得为构造器的全部形参都赋上值**。
 
 通过构造器参数名字来进行注入：
 
 ```xml
 <bean id = "user1" class="com.lsl.pojo.User">
     <!-- 为形参赋值 -->
-    <constructor-arg name="name" value="梁"/> 
+    <constructor-arg name="name" value="梁"/>
+    <constructor-arg name="xxx" value="xxx"/> 
     ......
 </bean>
 ```
@@ -506,6 +507,7 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
 <bean id = "user2" class="com.lsl.pojo.User">
     <!-- 为形参赋值 -->
     <constructor-arg index="0" value="胜"/>
+    <constructor-arg index="x" value="xxx"/>
     ......
 </bean>
 ```
@@ -516,6 +518,7 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
 <bean id = "user3" class="com.lsl.pojo.User">
      <!-- 为形参赋值，使用引用类型的得用全限定类名来指定type -->
     <constructor-arg type="java.lang.String" value="林"/>
+    <constructor-arg type="xxx" value="xxx"/>
     ......
 </bean>
 ```
@@ -715,7 +718,7 @@ spring从两个角度实现自动化装配：
 2. 组件声明。（即使用@Componet等标记类）
 3. 依赖注入。（即使用@Autowired、@Value等标记属性）
 
-#### 开启注解支持
+#### 开启注解扫描
 
 **使用注解时需要开启注解支持，开启注解支持有两种方式：**
 
@@ -1050,7 +1053,7 @@ public interface Rent {
 // 接口实现类：
 public class Host implements Rent{
     public void rent() {
-        System.out.println("招租！");
+        System.out.println("出租！");
     }
 }
 ```
@@ -1332,7 +1335,7 @@ AOP全称Aspect Oriented Programming，意为面向切面编程，也叫做面�
 | @Before         | 前置通知：在目标方法调用之前执行                             |
 | @AfterReturning | 返回通知：在目标方法返回后调用，比@After早                   |
 | @After          | 最终通知：在目标方法返回或抛出异常时调用                     |
-| @AfterThrowing  | 异常通知：在目标方法抛出异常后调用                           |
+| @AfterThrowing  | 异常通知：在目标方法抛出异常后就会调用<br>如果方法内处理了异常那就是不会抛出，此时不会调用 |
 | @Around         | 环绕通知：会将目标方法封装起来                               |
 
 after切面在invoke()中用try finally 包裹业务代码。业务代码执行完了之后必定执行@After切面的方法。
