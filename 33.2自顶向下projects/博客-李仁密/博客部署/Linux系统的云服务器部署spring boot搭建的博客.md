@@ -96,9 +96,7 @@ public class BlogApplication extends SpringBootServletInitializer {
 
 ![](img-springboot\X.png)
 
-点击后出现以下界面，第一次可能还需要输入你的服务器登陆密码，login as输入root（这里不做新用户创建的说明），登陆成功如下。
-
-需要注意的是输入密码的时候是不显示任何东西的，只有那一个输入标一直停在那，输入完按回车就好。
+点击后出现以下界面，第一次可能还需要输入你的服务器登陆密码，login as输入root（这里不做新用户创建的说明），登陆成功如下。需要注意的是输入密码的时候是不显示任何东西的，只有那一个输入标一直停在那，输入完按回车就好。
 
 ![](img-springboot\X-连接服务器.png)
 
