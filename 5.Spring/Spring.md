@@ -1756,16 +1756,13 @@ spring中的事务管理操作有两种操作方式：编程式（代码中编�
 
 ![](img/scopes.png)
 
-1. 单例模式singleton：（Spring默认机制）；
-2. 原型模式prototype：（每次从容器中get都会产生一个新对象）；
+1. 单例模式singleton：（Spring默认机制）。
+2. 原型模式prototype：（每次从容器中get都会产生一个新对象）。
 3. 其余的只能在web开发中使用。
 
 # bean的生命周期
 
-1. spring容器对bean进行实例化；
-2. spring容器将值或bean的引用注入到bean对应的属性中；
-3. 根据bean实现的接口依次调用相关方法
-   1. 如果实现了
+
 
 
 
@@ -1773,7 +1770,7 @@ spring中的事务管理操作有两种操作方式：编程式（代码中编�
 
 # spring5新特性
 
-
+函数式编程
 
 
 
