@@ -4,15 +4,15 @@
 
 JavaEE是为了企业级Java开发准备的，WEB分为：前端（页面渲染，数据显示）、后台（连接数据库JDBC，链接前端（控制，控制视图跳转，给前端传递数据））、数据库（存储数据）。
 
-数据库：DataBase，简称DB，就是按照一定格式存储数据的一些文件的组合，实际上就是一堆文件。
+**数据库：**DataBase，简称DB，就是按照一定格式存储数据的一些文件的组合，实际上就是一堆文件。
 
-数据库管理系统：DataBaseManagementSystem，简称DBMS，用来管理数据库中的数据的，可对数据库中数据进行增删改查。常见的有：MySQL、Oracle、MS SqlServer、DB2、Sybase等。
+**数据库管理系统：**DataBaseManagementSystem，简称DBMS，用来管理数据库中的数据的，可对数据库中数据进行增删改查。常见的有：MySQL、Oracle、MS SqlServer、DB2、Sybase等。
 
-SQL：（Structure Query Language）结构化查询语言，是一套标准（可在各个DBMS中使用），DBMS负责执行SQL语句来完成对数据库中数据的增删改查。
+**SQL：**（Structure Query Language）结构化查询语言，是一套标准（可在各个DBMS中使用），DBMS负责执行SQL语句来完成对数据库中数据的增删改查。
 
-端口号port：任何一个软件或应用都有的，是应用的唯一代表，用来定位计算机上某个应用或服务的，通常和计算机IP地址结合。
+**端口号port：**任何一个软件或应用都有的，是应用的唯一代表，用来定位计算机上某个应用或服务的，通常和计算机IP地址结合。
 
-《MySQL必知必会》《高性能MySQL》《MySQL技术内幕Innodb存储引擎》
+推荐书籍：《MySQL必知必会》《高性能MySQL》《MySQL技术内幕——Innodb存储引擎》
 
 ### 数据库分类
 
@@ -211,7 +211,7 @@ default-character-set=utf8mb4
 6. 进入数据库：`mysql -uroot -p `（因为我执行时没有生成密码，所以无需输入密码直接回车）。
 7. 进入后修改数据库密码：
    1. 修改密码：`ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';`。
-   2. 设置密码永不过期：`alter user 'root'@'%' identified by 'root' password expire never;`。
+   2. 设置密码永不过期：`alter user 'root'@'localhost' identified by 'root' password expire never;`。
 8. 授予远程访问：`create user 'root'@'%' identified with mysql_native_password by 'root';grant all privileges on *.* to 'root'@'%' with grant option;`；刷新权限`flush privileges;`。（默认情况下不能通过root来进行远程登录）
    - 如何查看用户是否能远程登录？进入mysql后，`use mysql`，然后`select host,user from user`，就可查出，host是指可使用该用户来登录的主机，如果是host是`%`就表明任何主机都可使用该账户登录。
 9. 因为部分可视化工具，不支持最新版本 mysql 8.0 加密规则，导致无法链接：
@@ -251,7 +251,7 @@ exit;
 
 表就是数据库中用来存储数据的一种形式，表的row（横行）被称为数据（或记录），column（纵行，列）被称为字段，字段包括字段类型、字段属性、字段值。
 
-## 字段数据类型
+## 字段的数据类型
 
 关于`数据类型(M)`：
 
@@ -265,7 +265,7 @@ exit;
 5. 关于zerofill：主要是数值位数不满M时，自动在最高位前面补0凑够M个数位，不影响值的存取。然后加入数值的数位大于M，则只会显示M+2个数位。相当于当数值的数位大于M的时候，这个zerofill不生效了。
   - zerofill的用法：指定zerofill后，会变成 int(M) unsigned zerofill，即变成了无符号类型。
 
-### 数值：
+### 整型和浮点型：
 
 | 类型（整数和浮点数） | 描述                           |
 | :------------------- | :----------------------------- |
@@ -280,14 +280,14 @@ exit;
 
 ### 字符串：
 
-| 类型        | 描述                          |
-| :---------- | :---------------------------- |
-| char        | 固定大小的字符串，0-255个字符 |
-| **varchar** | **可变字符串，0-65535**       |
-| tinytext    | 微型文本，2^8 - 1=255         |
-| **text**    | **文本串，2^16 - 1**=65535    |
-| mediumtext  | 约16M                         |
-| longtext    | 约4G                          |
+| 类型        | 描述                             |
+| :---------- | :------------------------------- |
+| char        | 固定大小的字符串，0-255个字符    |
+| **varchar** | **可变字符串，0-65535**（2byte） |
+| tinytext    | 微型文本，2^8 - 1=255            |
+| **text**    | **文本串，2^16 - 1**=65535       |
+| mediumtext  | 约16M                            |
+| longtext    | 约4G                             |
 
 ### 时间日期：
 
@@ -307,11 +307,11 @@ date和datetime的区别：
 
 MySQL当前时间：`now（）`获取系统当前时间，并且带有时分秒信息。
 
-### null：
+### 空
 
-- 表示没有或未知，不要用其进行运算，计算结果也是null。
+null：表示没有或未知，不要用其进行运算，计算结果也将是null。
 
-## 字段数据属性
+## 字段数据的属性
 
 字段属性是字段除数据类型外的属性，一般有以下属性：
 
@@ -349,7 +349,7 @@ MySQL当前时间：`now（）`获取系统当前时间，并且带有时分秒�
 
 约束种类：
 
-1. 唯一性约束：unique， 保证某列的每行的值唯一、不重复，但是都可以为null。
+1. 唯一性约束：unique， 保证某列的每行的值唯一、不重复，**但是都可以为null**。
 2. 主键约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个或多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。
 3. 外键约束：foreign key（FK），用来让两张表的数据之间建立连接，保证数据的一致性和完整性（一个表中的某个字段受到外表的某个字段值的限制，其字段值得完全参考外表的字段值来存储值）。
 4. 检查约束：check（MySQL8.0.16版本后开始支持，Oracle也支持）， 保证约束的字段的值满足某一个指定的条件。
@@ -364,7 +364,7 @@ MySQL当前时间：`now（）`获取系统当前时间，并且带有时分秒�
 -- 创建表时添加
 create table test(
 id int not null auto_increment primary key,
-acct varchar(255) unique  -- 列级约束
+acct varchar(255) unique,  -- 列级约束
 pswd varchar(255) not null
 )engine = innodb default charset=utf8;
 -- 创建表后添加，通过modify或change修改字段结构
@@ -378,11 +378,14 @@ create table test(
 id int,
 acct varchar(255),
 pswd varchar(255),
-unique(id,acct) -- 约束没有添加在列的后面，称为表级约束
+unique(id,acct) -- 表级约束
 )engine=innodb default charset=utf8;
 ```
 
 在需要给多个字段联合起来添加一个约束的时候，需要使用表级约束。
+
+1. 列级约束：在列定义时声明，列级约束只能用来约束某一列。（六种约束都可定义为列级约束）
+2. 表级约束：在列的定义最后再声明，常用于对多个列来进行约束，必须要指定约束字段。（主键、外键、唯一、检查，这四种可定义表级约束）
 
 
 
@@ -392,7 +395,7 @@ unique(id,acct) -- 约束没有添加在列的后面，称为表级约束
 
 表中的数据中有些字段信息可能是重复的，为了区分这种重复，就引入了约束，协助身份标识；任何一张表都应该有主键约束，主键约束一张表只能有一个。
 
-作为主键的字段必须是：not null + unique（非空、唯一：主键值不能是null，也不能重复）；添加主键约束的操作如下：
+**作为主键的字段必须是：not null + unique（非空、唯一：主键值不能是null，也不能重复）**。添加主键约束的操作如下：
 
 ```mysql
 create table `table_name`(
@@ -407,29 +410,30 @@ create table `table_name`(
 # 开发中不建议使用复合主键，建议使用单一主键
 ```
 
-主键值建议类型：int、bigint、char等类型，不建议使用varchar来作主键；主键值一般都是数字，一般都是定长的。
+主键值建议是这些数据类型：int、bigint、char等类型，不建议使用varchar来作主键；主键值一般都是数字，一般都是定长的。
 
 自然主键和业务主键：
 
-- 自然主键：主键值是一个自然数，和业务没关系；（开发中使用更多）
-- 业务主键：主键值和业务紧密关联；（例如拿银行账号作主键值）
+- 自然主键：主键值是一个自然数，和业务没关系。（开发中使用更多）
+- 业务主键：主键值和业务紧密关联。（例如拿银行账号作主键值）
 
 ## 添加外键约束
 
-MySQL的外键约束用来在两个表数据之间建立链接，其中一张表的一个字段被另一张表中对应的字段约束。也就是说，设置外键约束至少要有两种表，被约束的表叫做从表（子表），另一张叫做主表（父表），属于主从关系；其中主表中的关联字段叫做主键，从表中的关联字段叫做外键。外键约束主要作用就是能够让表与表之间的数据建立关联，使数据更加完整，关联性更强
+MySQL的外键约束用来在两个表数据之间建立连接，其中一张表的一个字段被另一张表中对应的字段约束着。也就是说，设置外键约束至少要有两种表，被约束的表叫做从表（子表），另一张用来约束的表叫做主表（父表），属于主从关系；其中主表中的关联字段叫做主键，从表中的关联字段叫做外键。外键约束主要作用就是能够让表与表之间的数据建立关联，使数据更加完整，关联性更强。
 
 业务背景：设计数据库表，描述班级和学生的信息
 
-- 方案一：数据都存放于一张表；（每个学生的班级信息和班级代号信息可能会重复，造成数据冗余）
-- 方案二：班级表、学生表分表存储不同数据，学生表引用班级表；（添加外键约束，减少数据冗余）
+- 方案一：数据都存放于一张表。（每个学生的班级信息和班级代号信息可能会重复，造成数据冗余）
+- 方案二：班级表、学生表分表存储不同数据，学生表引用班级表。（添加外键约束，减少数据冗余）
+
+含外键的表叫从表，外键指向的表叫主表，主表约束从表。
 
 **外键的创建方式一：在创建表的同时为其某个字段添加外键约束**
 
 ```mysql
 create table 表名(
-字段定义...
-主键定义...
-constraint `外键名称` foreign key (`字段`) references `主表名`(主键字段) 属性
+	字段定义...
+	[constraint] `外键名称` foreign key (`外键字段名`) references `主表`(主表字段) [属性]
 )engine=innodb default charset=utf8；
 -- constraint ：用于设置外键约束名称，可以省略
 -- foreign key：外键设置，用于指定从表的外键字段
@@ -437,7 +441,7 @@ constraint `外键名称` foreign key (`字段`) references `主表名`(主键�
 -- 属性可选，属性说明：
 	-- CASCADE：主表删除或修改记录时，从表也会对关联记录的外键字段进行修改。
 	-- RESTRICT：删除或修改主表记录，子表中若有关联记录，则不允许主表删除或修改。
-	-- SET NULL：主表删除或修改主表记录时，从表会将关联记录的外键字段设为null。
+	-- SET NULL：主表删除或修改主表记录时，从表会将关联记录的外键字段设为null。（innodb不支持）
 	-- ON UPDATE CASCADE：主表修改记录时，从表关联记录的外键字段也会修改。（将CASCADE改为RESTRICT，意思相反）
 	-- ON DELETE CASCADE：主表删除记录时，从表关联记录的外键字段也会删除。（将CASCADE改为RESTRICT，意思相反）
 ```
@@ -471,17 +475,33 @@ CREATE TABLE `t_student1`(
 **外键的创建方式二：在创建表完成之后再添加外键约束**
 
 ```MYSQL
--- 添加一个叫FK_gradeid的外键约束，外键约束字段为`gradeid`，指向的表为`grade`，和该表的`gradeid`形成关联
-ALTER TABLE XXX ADD CONSTRAINT `FK_gradeid` FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`);
--- 从表的`gradeid`的值的选项被主表`grade`的`gradeid`的值限定住
-ALTER TABLE XXX ADD FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`);
+alter table 表名 add [constraint `外键名称`] foreign key (`外键字段名`) references `主表`(`主表列名`) [属性];
+-- 可以不自定义外键名称
+alter table 表名 add foreign key (`外键字段名`) references `主表`(`主表列名`);
 ```
+
+**外键的删除：**
+
+```mysql
+alter table 表名 drop foreign key 外键名; 
+```
+
+**查看外键：**
+
+```mysql
+-- 查看数据库中某张表的外键
+SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE  WHERE constraint_schema='数据库'  AND table_name='表';
+-- 通过查看建表语句来查看外键
+show create table 表;
+```
+
+
 
 **其他注意的点：**
 
-- 删除有外键关系的表，需要先删除被引用的表（主表），然后再删除有引用其他表的表；
-- 外键值可以为null；
-- 外键引用主表中的某个字段，被引用的字段不一定是主键，但至少具有唯一性。
+1. 删除有外键关系的表时，需要先删除主表，然后再删除从表。
+2. 外键值可以为null。
+3. 外键引用主表中的某个字段，被引用的字段不一定是主键，但至少具有唯一性。
 
 以上操作都是物理外键，数据库级别的外键，不建议使用！
 
@@ -489,20 +509,6 @@ ALTER TABLE XXX ADD FOREIGN KEY (`gradeid`) REFERENCES `grade`(`gradeid`);
 
 - 数据库就是单纯的表，只用来存数据，只有行和列。
 - 使用多张表就创建外键。
-
-# 了解引擎
-
-存储引擎：用于实现数据的存储、索引的建立、数据更新查询的实现。
-
-![](img/引擎.png)
-
-
-数据库在物理空间存在的位置：所有的数据库文件都存在 data 目录下，一个文件夹就对应一个数据库。（数据库本质还是文件存储！）
-
-MySQL引擎在物理文件上的区别：
-
-- InnoDB： 在数据库表中只有一个xxx.frm文件，以及上级目录下的 ibdata1文件；
-- MyISAM ：xxx.frm - 表示结构的定义文件，xxx.MYD -数据文件(data)，xxx.MYI-放索引的(index)。
 
 # -------SQL start-------
 
@@ -555,7 +561,20 @@ MySQL引擎在物理文件上的区别：
 
 创建表：
 
+```mysql
+-- 语法
+CREATE TABLE [IF NOT NULL] 表名(
+    `字段名` 列数据类型(长度) [属性] [索引] [说明],
+    `字段名` 列数据类型(长度) [属性] [索引] [说明],
+    `字段名` 列数据类型(长度) [属性] [索引] [说明],
+    ......
+    `字段名` 列数据类型(长度) [属性] [索引] [说明],
+    PRIMARY KEY(`字段名`)
+)[引擎] [表类型] [字符集设置] [说明];
+```
+
 ```SQL
+-- 示例
 CREATE TABLE IF NOT EXISTS `students`(
 `id` INT(4) NOT NULL AUTO_INCREMENT COMMENT '学号',
 `name` VARCHAR(30) NOT NULL DEFAULT '匿名' COMMENT '姓名',
@@ -568,22 +587,11 @@ PRIMARY KEY(`id`)
 )ENGINE=INNODB DEFAULT CHARSET=utf8; 
 ```
 
-```SQL
-CREATE TABLE [IF NOT NULL] 表名(
-    `字段名` 列数据类型(长度) [属性] [索引] [说明],
-    `字段名` 列数据类型(长度) [属性] [索引] [说明],
-    `字段名` 列数据类型(长度) [属性] [索引] [说明],
-    ......
-    `字段名` 列数据类型(长度) [属性] [索引] [说明],
-    PRIMARY KEY(`字段名`)
-)[引擎] [表类型] [字符集设置] [说明];
-```
-
 将查询结果创建为一个表——复制表：
 
 ```mysql
 -- 将查询结果当做一张表新建
-create table `table_name` as select ... from ......
+create table `table_name` as select ... from ......;
 ```
 
 删除表：
@@ -595,21 +603,22 @@ DROP TABLE IF EXISTS `table-name`;       -- 删除表
 ## 常用查看命令
 
 ```sql
-SHOW CREATE DATABASE `database_name`; -- 显示创建数据库的语句
-SHOW CREATE TABLE `table_name`; -- 显示创建表的语句
-DESC `table_name`; -- 显示表的结构 （describe table_）
+SHOW CREATE DATABASE `database_name`; -- 查看创建数据库的语句
+SHOW CREATE TABLE `table_name`; -- 查看创建表的语句
+describe `table_name`; -- 查看表的结构 （describe table_name）
+DESC `table_name`; -- 查看表的结构
 
-show status; -- 显示广泛的服务器状态信息
-show grants; -- 显示授予用户的安全权限
-show errors; -- 显示错误信息
-show warnings; -- 显示警告信息
-show variables like 'character%'; -- 查看字符集设置
+show status; -- 查看广泛的服务器状态信息
+show grants; -- 查看授予用户的安全权限
+show errors; -- 查看错误信息
+show warnings; -- 查看警告信息
+show variables like 'character%'; -- 查看数据库、系统、服务等使用的字符集
 ```
 
 ```mysql
 -- 查看表的注释等信息
-USE information_schema;
-SELECT * FROM TABLES WHERE TABLE_SCHEMA='数据库名' AND TABLE_NAME='表名'
+use information_schema;
+select * from tables where TABLE_SCHEMA='数据库名' and TABLE_NAME='表名';
 ```
 
 设置数据库表的字符集编码：`CHARSET=utf8`，不设置的话，会是mysql默认的字符集编码~（不支持中文！）；MySQL中，utf8mb4才是真正的utf8。
@@ -617,22 +626,30 @@ SELECT * FROM TABLES WHERE TABLE_SCHEMA='数据库名' AND TABLE_NAME='表名'
 **MySQL的默认编码是Latin1，不支持中文，但可以修改：**
 
 - 第一种就是创表的时候就修改，charset=utf8。
-
-
-- 第二种：在my.ini中配置默认的编码：`character-set-server=utf8`。（但不建议使用此种方法，因为第一种是sql上的修改，换台电脑也能运行，但第二种是物理上的修改，如果另一个的数据库ini配置里没有这句话，那就运行不了了）。
+- 第二种：在my.ini中配置默认的编码：`character-set-server=utf8`。（但不建议使用此种方法，因为第一种是sql上的修改，换台电脑也能运行，但第二种是物理上的修改，如果另一个的数据库my.ini配置里没有这句，那就运行不了了）。
 
 ## 修改表结构
 
 对表的结构层的修改：
 
 ```mysql
-ALTER TABLE `table-name` RENAME AS `new-tablename`;       -- 修改表名
-ALTER TABLE `table-name` ADD 字段名 类型与属性;      -- 添加新字段
--- alter table `info` add name char(20) NOT NULL default '你是？';
-ALTER TABLE `table-name` MODIFY 字段名 字段属性;   -- 修改字段类型、属性和约束
--- alter table `info` modify age int(3) not null default 18;
-ALTER TABLE `table-name` CHANGE 字段名 新字段名 字段属性; -- 相当于modify加多了一个修改字段名的功能
-ALTER TABLE `table-name` DROP 字段名;    -- 删除字段
+ -- 修改表名
+alter table `table-name` rename as `new-tablename`;      
+-- 添加新字段
+alter table `table-name` add 字段名 类型与属性;      
+ -- 修改字段类型、属性和约束
+alter table `table-name` modify 字段名 字段属性;  
+-- 相当于modify加多了一个修改字段名的功能
+alter table `table-name` change 字段名 新字段名 字段属性; 
+ -- 删除字段
+alter table `table-name` drop 字段名;   
+```
+
+```mysql
+-- 示例1：修改info表的age字段的结构
+alter table `info` modify age int(3) not null default 18;
+-- 示例2：修改info表的name字段的结构
+alter table `info` add name char(20) NOT NULL default '你是？';
 ```
 
 ```mysql
@@ -2880,9 +2897,29 @@ from performance_schema.data_locks;
 
 ![](img/43.锁优化.png)
 
+
+
+
+
+
+
 # Innodb引擎
 
 理解为主。
+
+## 了解引擎
+
+存储引擎：用于实现数据的存储、索引的建立、数据更新查询的实现。
+
+![](img/引擎.png)
+
+
+数据库在物理空间存在的位置：所有的数据库文件都存在 data 目录下，一个文件夹就对应一个数据库。（数据库本质还是文件存储！）
+
+MySQL引擎在物理文件上的区别：
+
+- InnoDB： 在数据库表中只有一个xxx.frm文件，以及上级目录下的 ibdata1文件；
+- MyISAM ：xxx.frm - 表示结构的定义文件，xxx.MYD -数据文件(data)，xxx.MYI-放索引的(index)。
 
 ## 逻辑存储结构
 
