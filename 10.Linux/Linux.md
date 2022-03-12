@@ -992,16 +992,16 @@ yum：一个shell前端软件包管理器，基于rpm包管理，能够从指定
 4. exoprt PATH=$JAVA_HOME/bin:$PATH
 5. source /etc/profile
 
-## 安装Tomcat
+## Linux下安装Tomcat
 
-1. 解压压缩包，移动：`mv xx /usr/local/tomcat`；
-2. 进入Tomcat的bin目录，执行`./startup.sh`；
-3. 开放8080端口：
-   - `firewall-cmd --permanent --add-port=8080/tcp`；
-   - `firewall-cmd --reload`：重新载入使生效；
-   - `firewall-cmd --query-port=8080/tcp`：查询。
-4. 访问：http://192.168.137.128:8080/
-5. 设置开机重启。
+1. 安装好JDK并配置好环境变量。
+2. 解压压缩包，移动：`mv xx /usr/local/tomcat`。
+3. 进入Tomcat的bin目录，`vim setclasspath.sh`配置JAVA_HOME。
+4. 进入Tomcat的bin目录，执行`sudo ./startup.sh`。
+4. 确保端口开放。
+4. 设置开机重启。
+
+
 
 ## 安装IDEA
 
