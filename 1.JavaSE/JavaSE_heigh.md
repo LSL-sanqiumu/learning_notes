@@ -3957,16 +3957,3 @@ Collectors其他的API：
 Optional类：一个可以为null的容器对象，如果值存在则isPresent()方法返回true，调用get()方法会返回该对象。
 
 ![](images/optional.png)
-
-
-
-
-
-
-
-
-
-
-
-​	
-
