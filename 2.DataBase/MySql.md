@@ -265,7 +265,7 @@ exit;
 5. 关于zerofill：主要是数值位数不满M时，自动在最高位前面补0凑够M个数位，不影响值的存取。然后加入数值的数位大于M，则只会显示M+2个数位。相当于当数值的数位大于M的时候，这个zerofill不生效了。
   - zerofill的用法：指定zerofill后，会变成 int(M) unsigned zerofill，即变成了无符号类型。
 
-### 整型和浮点型：
+### 数值：
 
 | 类型（整数和浮点数） | 描述                           |
 | :------------------- | :----------------------------- |
@@ -280,14 +280,14 @@ exit;
 
 ### 字符串：
 
-| 类型        | 描述                             |
-| :---------- | :------------------------------- |
-| char        | 固定大小的字符串，0-255个字符    |
-| **varchar** | **可变字符串，0-65535**（2byte） |
-| tinytext    | 微型文本，2^8 - 1=255            |
-| **text**    | **文本串，2^16 - 1**=65535       |
-| mediumtext  | 约16M                            |
-| longtext    | 约4G                             |
+| 类型        | 描述                                   |
+| :---------- | :------------------------------------- |
+| char        | 固定大小的字符串，0-255个字符（1byte） |
+| **varchar** | **可变字符串，0-65535**（2byte）       |
+| tinytext    | 微型文本，2^8 - 1=255 （1byte）        |
+| **text**    | **文本串，2^16 - 1**=65535（2byte）    |
+| mediumtext  | 约16M                                  |
+| longtext    | 约4G                                   |
 
 ### 时间日期：
 
@@ -301,11 +301,11 @@ exit;
 
 date和datetime的区别：
 
-- date是短日期，只包含年月日，datetime是长日期，包含年月日时分秒；
-- MySQL短日期默认格式：%Y-%m-%d；
-- MySQL长日期默认格式：%Y-%m-%d %h-%i-%s；
+- date是短日期，只包含年月日，datetime是长日期，包含年月日时分秒。
+- MySQL短日期默认格式：`%Y-%m-%d`。
+- MySQL长日期默认格式：`%Y-%m-%d %h-%i-%s`。
 
-MySQL当前时间：`now（）`获取系统当前时间，并且带有时分秒信息。
+MySQL当前时间：`now()`获取系统当前时间，并且带有时分秒信息。
 
 ### 空
 
@@ -345,16 +345,16 @@ null：表示没有或未知，不要用其进行运算，计算结果也将是n
 
 什么是约束（constraint）？
 
-在创建表时，我们可以给表中的字段加上一些约束，来保证这个表中的数据的完整性、有效性，约束的作用就是为了保证表中数据的有效性。（约束，为保证数据完整性而对数据添加的一些限制，在创建表或修改表时可以添加）
+约束，为保证数据完整性而对数据添加的一些限制，在创建表或修改表时可以添加。（作用就是为了保证表中数据的有效性、完整性）
 
 约束种类：
 
-1. 唯一性约束：unique， 保证某列的每行的值唯一、不重复，**但是都可以为null**。
-2. 主键约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个或多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。
-3. 外键约束：foreign key（FK），用来让两张表的数据之间建立连接，保证数据的一致性和完整性（一个表中的某个字段受到外表的某个字段值的限制，其字段值得完全参考外表的字段值来存储值）。
-4. 检查约束：check（MySQL8.0.16版本后开始支持，Oracle也支持）， 保证约束的字段的值满足某一个指定的条件。
-5. 默认约束：default，保存数据时如果没有指定该字段的值则采用默认值，如果没有设置默认值则为null。
-6. 非空约束：not null，指示某列不能存储 NULL 值。
+1. **唯一性**约束：unique， 保证某列的每行的值唯一、不重复，**但是都可以为null**。
+2. **非空**约束：not null，指示某列不能存储 NULL 值。
+3. **主键**约束：primary key（简称PK），NOT NULL 和 UNIQUE 的结合。确保某列（或两个或多个列的结合）有唯一标识，有助于更容易更快速地找到表中的一个特定的记录。
+4. **外键**约束：foreign key（FK），用来让两张表的数据之间建立连接，保证数据的一致性和完整性（一个表中的某个字段受到外表的某个字段值的限制，其字段值得完全参考外表的字段值来存储值）。
+5. **检查**约束：check（MySQL8.0.16版本后开始支持，Oracle也支持）， 保证约束的字段的值满足某一个指定的条件。
+6. **默认**约束：default，保存数据时如果没有指定该字段的值则采用默认值，如果没有设置默认值则为null。
 
 ## 添加唯一性约束
 
@@ -367,7 +367,7 @@ id int not null auto_increment primary key,
 acct varchar(255) unique,  -- 列级约束
 pswd varchar(255) not null
 )engine = innodb default charset=utf8;
--- 创建表后添加，通过modify或change修改字段结构
+-- 创建表后添加，通过modify或change修改字段结构来添加唯一性约束
 alter table `test` modify acct varchar(255) unique;
 ```
 
@@ -402,12 +402,12 @@ create table `table_name`(
 	id int(10) primary key auto_increment, # 行级(列级)约束，一个字段作主键：单一主键
     ...
 );
+# 开发中不建议使用复合主键，建议使用单一主键
 create table `table_name`(
 	id int(10) not null,
     ...,
-    primary key(字段1，字段2，...)  # 表级约束，主要是给表添加包含多个字段的约束，组成复合主键
+    primary key(`字段1`，`字段2`，...)  # 表级约束，主要是给表添加包含多个字段的约束，组成复合主键
 );
-# 开发中不建议使用复合主键，建议使用单一主键
 ```
 
 主键值建议是这些数据类型：int、bigint、char等类型，不建议使用varchar来作主键；主键值一般都是数字，一般都是定长的。
@@ -435,7 +435,7 @@ create table 表名(
 	字段定义...
 	[constraint] `外键名称` foreign key (`外键字段名`) references `主表`(主表字段) [属性]
 )engine=innodb default charset=utf8；
--- constraint ：用于设置外键约束名称，可以省略
+-- constraint ：用于设置外键约束名称，可以省略，默认的外键约束名称为外键字段名
 -- foreign key：外键设置，用于指定从表的外键字段
 -- references：主表及主键设置，用于指定主表和主键
 -- 属性可选，属性说明：
@@ -483,46 +483,45 @@ alter table 表名 add foreign key (`外键字段名`) references `主表`(`主�
 **外键的删除：**
 
 ```mysql
-alter table 表名 drop foreign key 外键名; 
+alter table 表名 drop foreign key 外键名;
 ```
 
 **查看外键：**
 
 ```mysql
 -- 查看数据库中某张表的外键
-SELECT * FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE  WHERE constraint_schema='数据库'  AND table_name='表';
+select * from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where constraint_schema='数据库' and table_name='从表名';
+-- 使结果每个列分行显示
+select * from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where constraint_schema='数据库' and table_name='从表名'\G;
 -- 通过查看建表语句来查看外键
-show create table 表;
+show create table `表名`;
 ```
 
 
 
-**其他注意的点：**
+**注意的点：**
 
-1. 删除有外键关系的表时，需要先删除主表，然后再删除从表。
+1. 删除有外键关系的表时，**需要先删除主表，然后再删除从表**。
 2. 外键值可以为null。
-3. 外键引用主表中的某个字段，被引用的字段不一定是主键，但至少具有唯一性。
+3. 外键引用主表中的某个字段，**主表中被引用的字段不一定是主键，但至少具有唯一性（要有唯一性约束）**。
 
 以上操作都是物理外键，数据库级别的外键，不建议使用！
 
-最佳实践：
-
-- 数据库就是单纯的表，只用来存数据，只有行和列。
-- 使用多张表就创建外键。
+最佳实践：数据库就是单纯的表，只用来存数据，只有行和列。使用多张表就创建外键。
 
 # -------SQL start-------
 
 （Data）数据xx语言（Language）：（CURD(create update retrieve delete)	CV	API）
 
-- DDL（Definition，数据定义语言）：修改数据表、数据库的结构的语言，如create、drop、alter的都是。
+1. DDL（Definition，数据定义语言）：修改数据表、数据库的结构的语言，如create、drop、alter的都是。
 
-- DML（Manipulation，数据操作语言）：对表内数据进行增删改操作的，如insert、update、delete。
+2. DML（Manipulation，数据操作语言）：对表内数据进行增删改操作的，如insert、update、delete。
 
-- DQL（Query，数据查询语言）：用来查询索引数据，有select关键字的语句都是。
+3. DQL（Query，数据查询语言）：用来查询索引数据，有select关键字的语句都是。
 
-- DCL（Control ，数据控制语言）：DCL用来授予或回收访问数据库的某种特权，并控制数据库操纵事务发生的时间及效果，对数据库实行监视等，例如授权grant、撤销权限revoke...。
+4. DCL（Control ，数据控制语言）：DCL用来授予或回收访问数据库的某种特权，并控制数据库操纵事务发生的时间及效果，对数据库实行监视等，例如授权grant、撤销权限revoke...。
 
-- TCL（Transaction Control，事务控制语言）：事务提交commit、事务回滚rollback。
+5. TCL（Transaction Control，事务控制语言）：事务提交commit、事务回滚rollback。
 
 
 数据库 ===> 数据库中的表 ===> 表中的信息。
@@ -533,7 +532,7 @@ show create table 表;
 
 ## 数据库
 
-1. 创建数据库（使用命令创建不设置字符集时是默认的字符集(不支持中文)，值得注意的是MySQL中，utf8mb4才是真正的utf8）
+1. 创建数据库（使用命令创建数据库时，如果不设置字符集则是默认的字符集(不支持中文)，值得注意的是MySQL中，utf8mb4才是真正的utf8）
 
    ```mysql
    create database [if not exists] database_name CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -625,8 +624,8 @@ select * from tables where TABLE_SCHEMA='数据库名' and TABLE_NAME='表名';
 
 **MySQL的默认编码是Latin1，不支持中文，但可以修改：**
 
-- 第一种就是创表的时候就修改，charset=utf8。
-- 第二种：在my.ini中配置默认的编码：`character-set-server=utf8`。（但不建议使用此种方法，因为第一种是sql上的修改，换台电脑也能运行，但第二种是物理上的修改，如果另一个的数据库my.ini配置里没有这句，那就运行不了了）。
+1. 第一种就是创表的时候就修改，charset=utf8。
+2. 第二种：在my.ini中配置默认的编码：`character-set-server=utf8`。（但不建议使用此种方法，因为第一种是sql上的修改，换台电脑也能运行，但第二种是物理上的修改，如果另一个的数据库my.ini配置里没有这句，那就运行不了了）。
 
 ## 修改表结构
 
@@ -1749,8 +1748,6 @@ hash索引的特点：
 
 - Memory。
 - Innodb中具有自适应hash功能，在Innodb中，hash索引是存储引擎根据B+Tree索引在指定条件下自动构建的。
-
-
 
 
 
