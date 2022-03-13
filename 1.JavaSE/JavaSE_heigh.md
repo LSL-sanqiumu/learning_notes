@@ -4,21 +4,30 @@
 
 ## 概念
 
-**程序：**编写的代码都是为了实现特定的功能，实现这些功能所需要的代码就是一条条逻辑指令，一条条逻辑指令组合成了一个程序，也就是说，程序就是为了完成特定的任务，用编程语言写出来的一条条逻辑指令的集合体。
+**程序：**编写的代码都是为了实现特定的功能，实现这些功能所需要的代码就是一条条逻辑指令，一条条逻辑指令组合成了一个程序，也就是说，**程序就是为了完成特定的任务，用编程语言写出来的一条条逻辑指令的集合体。**程序是指令、数据及其组织形式的描述。
 
-**进程：**正在运行中的程序，是资源分配的单位（系统在运行时会为每个进程分配不同的内存区域）
+**进程：**程序的一次执行过程，是线程的容器，是操作系统资源分配的基本单位（系统在运行时会为每个进程分配不同的内存区域）
 
 既然程序就是用来实现功能的，但它只是一堆指令的集合体，就像军令在军队内才起作用，那么程序的这些指令也得有特定的环境才能发挥作用。当有了适合的环境程序才能被执行起来，我们称这些**在特定环境里已经执行的程序为进程，也就是运行中的程序。**
 
 **生命周期：**进程自身产生、存在、消亡的过程，称为进程的生命周期。
 
-**线程与多线程：**线程是调度和执行的单位（每个线程拥有独立的运行栈和程序计数器PC）
+**线程与多线程：**线程是处理器任务调度和执行的基本单位（每个线程拥有独立的运行栈和程序计数器PC）
 
 一个复杂的多功能的程序内部存在这样的分层情况，内部会分为不同的程序模块来执行不同的命令，以便完成各个功能。当我们需要用程序实现某个任务时，我们先运行程序，然后使用程序某个命令(功能)，这个命令对应一条程序的执行路径，而当使用多个命令时，就有多条执行路径在运行。线程就是这里的程序内部的执行路径，或者说是程序执行区域，而当这个进程同一时间**可以并行执行多个线程**时，这个程序就是支持多线程的。
 
-并行：多个CPU同时执行多个任务；并发：一个CPU（采用时间片方式）同时执行多个任务 。	 	
+**并行和并发：**
 
-多线程优缺点，什么时候要使用多线程？
+- 并行：单位时间内多个处理器同时执行多个任务。
+- 并发：一个处理器按时间片方式轮流执行多个任务 。	 	
+
+**多线程优缺点，什么时候要使用多线程？**
+
+1. 优点：当一个线程进入等待或阻塞状态，CPU可以先去执行其他线程，提供CPU的利用率。
+2. 缺点：
+   - 频繁的上下文切换会影响多线程的执行速度。
+   - 资源限制：在进行并发编程时，程序的执行速度受限于计算机的硬件或软件资源。（并发编程中，程序执行变快是因为将程序中串行执行的部分变成并发执行，如果因为资源限制，并发执行的部分仍在串行执行，程序执行将会变得更慢，因为程序并发需要上下文切换和资源调度）
+   - 死锁。
 
 
 
@@ -563,7 +572,7 @@ class Customer extends Thread {
 
 **JDK8中的源码显示：**
 
-- String类被final修饰——不可被继承的；底层是声明为final的char数组，地址不变。（final的value[]可利用数组改变里面的某些值）
+- String类被final修饰——不可被继承的；底层是声明为final的char数组，地址不变。（final的value[]可利用数组改变里面的某些值，但String内没有操作该数组内的值的方法，因此该值、地址不可变）
 - 实现了Serializable和Comparable接口，表示支持序列化（可在网络传输）、可使用compareTo()比较大小。
 - 内部定义`final char value[]`用于存储字符串数据。
 
@@ -571,9 +580,9 @@ class Customer extends Thread {
 
 1. 不可变的字符序列（不可变性）：
 
-     - 原有地址不可变：当对字符串型变量重新赋值，不会在原地址上更改内容，而是得重新指定新的地址赋值，拼接一个字符串也是得新指定区域后再赋值；
-
+     - 原有地址不可变：当对字符串型变量重新赋值，不会在原地址上更改内容，而是得重新指定新的地址赋值，拼接一个字符串也是得新指定区域后再赋值。
      - 当调用String的replace()方法时也是如此，也是重新指定内存区域来进行赋值的。
+     - 不可变的好处：线程安全、常量池优化（String对象创建后会在字符串常量池中缓存，下次创建同样的对象会直接返回缓存的引用）、可缓存hash值（String的hash值经常被使用，例如用String类型数据做HashMap的key时，不可变特性使得hash值不变，计算hash值时只需要进行一次计算）。
 
 
 2. 字面量赋值：
@@ -604,11 +613,11 @@ class Customer extends Thread {
    System.out.println(s1 == s2); // true
    ```
 
-2. 变量与字面量的拼接或变量与变量的拼接都在堆空间中（拼接式中，只要有一个是变量名，结果就在堆中，**注意**声明为final的变量已经是一个常量（使用new的方式创建的字符串，final后的变量与字面量或常量池常量拼接，最后仍然是在堆空间引用））。
+2. 变量与字面量的拼接或变量与变量的拼接都在堆空间中（拼接式中，只要有一个是变量名，结果就在堆中，注意声明为final的变量已经是一个常量（使用new的方式创建的字符串，final后的变量与字面量或常量池常量拼接，最后仍然是在堆空间引用））。
 
    ```java
    String s1 = "12"; // 常量池中
-   final String s2 = "12"; // 常量池中
+   final String s2 = "12"; // 常量池中-常量池常量
    String s3 = "12" + s1; // 堆中
    String s4 = "12" + s2; // 常量池中
    String s5 = "1212"; // 常量池中
@@ -720,27 +729,27 @@ sb1.append('a'); // value[0] = 'a';
 sb1.append('b'); // value[1] = 'b';
 
 StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".length + 16];
-
 // System.out.println(sb2.length); // 3
-// 扩容问题：如果要添加的数据底层数组盛不下，那就需要扩容底层数组；默认情况下，扩容为原来容量的 2倍 + 2，同时将原有数组中的元素复制到新数组中
-// （指导意义：开发中建议大家使用：StringBuffer(int capacity)或StringBuilder(int capacity),先指定好容量）
+
+// 扩容问题：如果要添加的数据在底层数组盛不下，那就需要扩容底层数组；默认情况下，扩容为原来容量的 2倍 + 2，同时将原有数组中的元素复制到新数组中
+// （指导意义：开发中建议大家使用：StringBuffer(int capacity)或StringBuilder(int capacity),先指定好容量，减少扩容几率）
 ```
 
 ### StringBuffer常用方法
 
-- **`append(xxx)`**：提供了很多的append()方法，用于进行字符串拼接 ；
+1. **`append(xxx)`**：提供了很多的append()方法，用于进行字符串拼接 ；
 
-- **`delete(int start,int end)`**：删除指定位置的内容 ；
+2. **`delete(int start,int end)`**：删除指定位置的内容 ；
 
-- **`replace(int start, int end, String str)`**：把[start,end)位置替换为str ；
+3. **`replace(int start, int end, String str)`**：把[start,end)位置替换为str ；
 
-- **`insert(int offset, xxx)`**：在指定位置插入xxx字符串，插入位置的字符串不会被替换掉 ；
+4. **`insert(int offset, xxx)`**：在指定位置插入xxx字符串，插入位置的字符串不会被替换掉 ；
 
-- **`reverse()`**：把当前字符序列逆转；
+5. **`reverse()`**：把当前字符序列逆转；
 
-- 当append和insert时，如果原来value数组长度不够，会扩容。 
+6. 当append和insert时，如果原来value数组长度不够，会扩容。 
 
-- 如上这些方法支持方法链操作。 方法链的原理：
+7. 如上这些方法支持方法链操作。 方法链的原理：（返回当前对象，然后就可以再调用自身方法了）
 
   ```java
   @Override
@@ -784,9 +793,9 @@ StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".len
 
 **【注意】StringBuilder 和 StringBuffer 非常类似，均代表可变的字符序列，而且提供相关功能的方法也一样**。
 
-### StringBuilder线程
+## StringBuilder
 
-StringBuilder线程不安全。
+StringBuilder线程不安全，方法和StringBuffer差不多。
 
 ```java
 public static void main(String[] args) throws InterruptedException {
@@ -802,7 +811,7 @@ public static void main(String[] args) throws InterruptedException {
         });
         t.start();
     }
-    Thread.sleep(100); // 主线程等一会，等各线程都执行完毕再向下执行
+    Thread.sleep(100); // 主线程等一会，等各线程都执行完毕再向下执行，结束主线程
     System.out.println(sb.length());
 }
 ```
@@ -811,19 +820,19 @@ public static void main(String[] args) throws InterruptedException {
 
 ## Java比较器
 
-Java中的对象，正常情况下只能使用比较运算符来比较（==或!=），不能使用>和<来进行比较，但是在实际的开发场景下，往往需要对多个对象进行比较后再排序，因此就需要java.lang.Comparable 接口和java.util.Comparator接口。
+Java中的对象，正常情况下只能使用比较运算符来比较（==或!=），不能使用>和<来进行比较，但是在实际的开发场景下，往往需要对多个对象进行比较后再排序，因此就需要java.lang.Comparable 接口和java.util.Comparator接口，这两个接口的声明的方法可以认为是用于实现比较规则的规范。
 
 ### Comparable接口
 
 > 接口java.lang.Comparable ，是用于自然排序的比较器接口
 
-java.lang.Comparable 接口的`compareTo()`方法是用于对对象进行大小比较的，具体实现是在接口实现类中，其实现类重写其`compareTo(obj)`方法的规则如下：
+`java.lang.Comparable`的`compareTo()`方法是用于对对象进行**大小比较**的，具体实现是在接口实现类中，其实现类重写`compareTo(obj)`方法的规则如下：
 
 - 如果当前对象this大于形参对象obj，则返回正整数。
 - 如果当前对象this小于形参对象obj，则返回负整数。
 - 如果当前对象this等于形参对象obj，则返回零。
 
-排序中需要对对象进行大小的比较，那就可以调用该方法来进行大小的比较，从而再执行其他操作来完成排序。
+**排序中需要对对象进行大小的比较，那就可以调用该方法来进行大小的比较，从而再执行其他操作来完成排序。**
 
 Comparable接口的应用——用于排序中的比较：
 
@@ -862,6 +871,7 @@ Comparator实现类要重写`compare(Object o1,Object o2)`方法，用来比较�
 // 使用Comparator 的对象来对多个对象进行整体排序的比较
 public static void main(String[] args) {
     String[] arr = new String[]{"A","I","H","G","H","D","B"};
+    // 使用Comparator对象的compare()方法来充当sort()方法的比较规则
     Arrays.sort(arr, new Comparator<String>() {
         @Override
         public int compare(String o1, String o2) {
