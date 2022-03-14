@@ -435,7 +435,7 @@ create table 表名(
 	字段定义...
 	[constraint] `外键名称` foreign key (`外键字段名`) references `主表`(主表字段) [属性]
 )engine=innodb default charset=utf8；
--- constraint ：用于设置外键约束名称，可以省略，默认的外键约束名称为外键字段名
+-- constraint ：用于设置外键约束名称，可以省略，默认的外键约束名称为`从表名_ibfk_1`
 -- foreign key：外键设置，用于指定从表的外键字段
 -- references：主表及主键设置，用于指定主表和主键
 -- 属性可选，属性说明：
@@ -535,25 +535,25 @@ show create table `表名`;
 1. 创建数据库（使用命令创建数据库时，如果不设置字符集则是默认的字符集(不支持中文)，值得注意的是MySQL中，utf8mb4才是真正的utf8）
 
    ```mysql
-   create database [if not exists] database_name CHARACTER SET utf8 COLLATE utf8_general_ci;
+   create database [if not exists] database_name character set utf8 collate utf8_general_ci;
    ```
 
 2. 删除数据库
 
    ```mysql
-   drop database [if exists] xxx;
+   drop database [if exists] 数据库名;
    ```
 
 3. 使用数据库
 
    ```sql
-   use `xxx` -- 表名或字段名是特殊字符，就带 ``
+   use `数据库名`; -- 数据库名、表名或字段名是特殊字符，就带 ``
    ```
 
 4. 查看数据库
 
    ```mysql
-   show databases -- 查看所有的数据库
+   show databases; -- 查看管理系统中所有的数据库
    ```
 
 ## 创建、删除表
@@ -602,10 +602,10 @@ DROP TABLE IF EXISTS `table-name`;       -- 删除表
 ## 常用查看命令
 
 ```sql
-SHOW CREATE DATABASE `database_name`; -- 查看创建数据库的语句
-SHOW CREATE TABLE `table_name`; -- 查看创建表的语句
+show create database `database_name`; -- 查看创建数据库的语句
+show create table `table_name`; -- 查看创建表的语句
 describe `table_name`; -- 查看表的结构 （describe table_name）
-DESC `table_name`; -- 查看表的结构
+desc `table_name`; -- 查看表的结构
 
 show status; -- 查看广泛的服务器状态信息
 show grants; -- 查看授予用户的安全权限
@@ -620,7 +620,7 @@ use information_schema;
 select * from tables where TABLE_SCHEMA='数据库名' and TABLE_NAME='表名';
 ```
 
-设置数据库表的字符集编码：`CHARSET=utf8`，不设置的话，会是mysql默认的字符集编码~（不支持中文！）；MySQL中，utf8mb4才是真正的utf8。
+设置数据库表的字符集编码：`CHARSET=utf8`，不设置的话，会是mysql默认的字符集编码Latin1（不支持中文！）；MySQL中，utf8mb4才是真正的utf8。
 
 **MySQL的默认编码是Latin1，不支持中文，但可以修改：**
 
@@ -667,9 +667,10 @@ alter table 表名 modify column 字段名 字段类型 comment '修改后的字
 插入单条数据：
 
 ```mysql
-insert into `表`(`字段`,...) value(数据,...); -- 数据都需要与字段类型对应
--- insert into t_student(birth) values(now());
--- 数据和字段要一一对应，字段可省略（省略字段时默认全部字段）
+insert into `表`(`字段`,...) value(数据,...); -- 数据的类型都需要与字段的类型对应
+-- 例子： 
+insert into t_student(birth) values(now());
+-- 数据和字段要一一对应，字段可省略（省略字段时默认是全部字段）
 insert into `表` value(数据,...);
 ```
 
@@ -678,30 +679,33 @@ insert into `表` value(数据,...);
 ```mysql
 -- 插入一条或多条数据
 INSERT INTO `表`(`字段`) VALUES (数据1),(数据2),(数据3),(数据4),...;
-INSERT INTO `表`(`字段`,`字段`,`字段`,...) VALUES (数据1,数据2,数据3),(数据1,数据2,数据3),...; 
+INSERT INTO `表`(`字段1`,`字段2`,`字段3`,...) VALUES (数据1,数据2,数据3),(数据11,数据22,数据33),...; 
 ```
 
-将查询结果插入到一张表中：
+将查询结果插入到一张表中：（查询到的结果要符合所要插入的表的结构）
 
 ```mysql
--- 查询到的结果要符合目标表的结构
 insert into `表` select ... from ...;  -- 很少用
 ```
 
 
 
-为表插入date类型的数据：函数`str_to_date('字符串日期', '日期格式')`：
+为表插入date类型的数据：（函数`str_to_date('字符串日期', '日期格式')`）
 
-- date类型的数据不能直接通过字符串的形式添加，要插入date类型的数据就要使用函数`str_to_date('字符串日期', '日期格式')`把varchar类型转换为date类型，字符串日期要和日期格式对应`str_to_date('2013-9-1','%Y-%m-%d')`；
+1. date类型的数据不能直接通过字符串的形式添加，要插入date类型的数据就要使用函数`str_to_date('字符串日期', '日期格式')`把varchar类型转换为date类型，字符串日期要和日期格式对应`str_to_date('2013-9-1','%Y-%m-%d')`。（详细用法可去教程网站去了解）
+2. mysql的日期时间格式有：%Y（年）、%m（月）、%d（日）、%h（时）、%i（分）、%s（秒）。
+3. 如果字符串日期格式是`%Y-%m-%d`，那就不用写函数，会自动帮转换。
 
-- mysql的日期格式：%Y（年）、%m（月）、%d（日）、%h（时）、%i（分）、%s（秒）；
-- 如果字符串日期格式是`%Y-%m-%d`，那就不用写函数，会自动帮转换。
+`date_format(Date, format)`函数：将日期转换成特定格式的字符串
 
-date_format函数：将日期转换成特定格式的字符串
+```mysql
+select date_format('2022-03-14','%Y:%m:%d');
+```
 
-- `date_format(时间日期类型数据, '日期格式')`：通常用于查询日期时，设置展示的日期格式；
-- 例如：`select id,name,date_format(birth,%m/%d/%Y) as birth from t_user;` 
-- 该函数会将日期转换成特定格式的字符串。
+```mysql
+-- `date_format(时间日期类型数据, '日期格式')`：通常用于查询日期时，设置展示的日期格式。
+select id,name,date_format(birth,%m/%d/%Y) as birth from t_user;
+```
 
 ## 修改
 
@@ -725,24 +729,24 @@ update `table-name` set `字段1`=新值1,`字段2`=新值2,... where `字段3`=
 ```mysql
 -- delete属于DML语句   只删除数据，但数据在硬盘上的存储空间不会被释放
 -- 缺点：删除效率低   优点：支持回滚，数据可以恢复
-delete from `table-name` [where 条件] -- 从指定表删除符合条件的数据，没有条件时会删除整张表
+delete from `table-name` [where 条件]; -- 从指定表删除符合条件的数据，没有条件时会删除整张表
 
 -- truncate 清空数据库表中的数据，但表的结构和索引约束不会变
 -- 删除效率高，不支持回滚，数据不可恢复，属于DDL操作
-truncate `table-name`  
+truncate `table-name`;
 ```
 
 `delete`和`truncate`区别：
 
-- 相同点：都能删除数据，但不会影响表的结构。
-- 不同点：
+1. 相同点：都能删除数据，但不会影响表的结构。
+2. 不同点：
   - truncate会重新设置自增列的计数器为0。
   - truncate不会影响事务。
 
 【了解】delete删除的问题：重启数据库会出现以下现象
 
-- InnoDB：自增列会从1开始（自增量存在于内存，重启内存会丢失，自增列重新开始计数）。
-- MyISAM：继续从上一个自增量开始（自增量存在于文件，文件存在就不会丢失自增量）。
+1. InnoDB：自增列会从1开始（自增量存在于内存，重启内存会丢失，自增列重新开始计数）。
+2. MyISAM：继续从上一个自增量开始（自增量存在于文件，文件存在就不会丢失自增量）。
 
 # DQL
 
@@ -773,21 +777,21 @@ FROM table_name [as table_alias]
 select * from `table-name`;
 -- 查询多个字段的数据
 select `字段1`,`字段2`,... from `table-name`;
--- 查询并起别名，别名是查询结果的列名，原有表结构不会被改变
+-- 查询并起别名，别名是查询结果的列名，原有表结构是不会被改变滴
 select `字段1` [as 别名],`字段2` [as 别名],... from `table-name` [as 别名]; 
--- \G的使用：在select语句最后添加该参数，可以将每个字段都在一行上显示
-select * from `table-name`\G; 
+-- \G的使用：查看字段较多的表时，使用该参数可以更直观观察数据
+select * from `table-name` \G; 
 ```
 
 去重distinct：
 
 ```SQL
--- 去掉某字段的重复数据再显示该字段数据，（distinct关键字？）只能出现在所有字段最前方
+-- 去掉某字段的重复数据再显示该字段数据，distinct只能出现在所有字段最前方
 select distinct `字段` from `table-name`;
--- 联合多个字段来去重，数据中指定字段都相同时才会去重
+-- 联合多个字段来去重，distinct后指定的字段都相同时才会去重
 select distinct `字段1`,`字段2`,... from `table-name`;
 -- 可以出现在函数内
-select count(distinct `字段`) from `table-name`; -- 去掉该字段重复的数据后剩下的记录条数
+select 字段x,count(distinct `字段1`,...) from `table-name`; -- 去掉该字段重复的数据后剩下的记录条数
 ```
 
 其他操作：
@@ -812,7 +816,7 @@ select语句：
 ```mysql
 select ... where `字段` = xx; -- 查询字段值为某个值的数据
 select ... where 逻辑判断语句; -- 查询符合该逻辑的数据，可用括号()来决定语句优先级
-select ... where `字段` in (110,120); -- 该字段值是否该集合，如果存在就查询相应数据
+select ... where `字段` in (110,120); -- 该字段值是否有在该集合里的，如果有就查询相应数据
 ```
 
 条件操作符：
@@ -948,15 +952,17 @@ select user_id,the_year,count(price) as '订单数量' from t_order group by use
 
 当两张表进行连接查询，没有任何条件限制，**最终查询结果条数**，是两张表条数的乘积，这种现象被称为笛卡尔积现象，由笛卡尔发现的一种数学现象。  ——由该现象可知数据库底层查询是先从表中拿出数据，也就是from先行，这时匹配的次数是每张表的数据条数的乘积；因此，表的连接次数越多，匹配的次数就越多，查询的效率就越低了。
 
-联表查询中，**加条件是为了避免笛卡尔积现象，查询出有效的组合记录（使查询结果条数不是m*n）**，但是匹配的次数是一次都没有少的，联表查询加条件和效率并没有什么关系，因此联表查询中尽量降低表的连接才是提高效率的方法。
+联表查询中，**加条件是为了避免笛卡尔积现象，查询出有效的组合记录（使查询结果条数不是m*n）**，但是匹配的次数是一次都没有少的，联表查询加条件和效率并没有什么关系，联表查询中尽量降低表的连接才是提高效率的方法。
 
 **连接查询：**
 
 连接查询语法根据年代分为SQL92、SQL99，按照表连接的方式可分为三类：
 
-- 内连接：等值连接、非等值连接、自连接；内连接就是连接的两张表没有主次关系。
-- 外连接：有主次关系（区分主表、从表）。
-- 全连接（几乎不用）。
+1. 内连接：等值连接、非等值连接、自连接；内连接就是连接的两张表没有主次关系。
+2. 外连接：有主次关系（区分主表、从表）。
+3. 全连接（几乎不用）。
+
+SQL92、SQL99的区别可参考：[SQL92 与 SQL99 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/295071589)。
 
 连接查询的SQL语句分类：SQLJoins，可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。inner join ... on一种，left join 、right join 、full outer join 和on 、 where分别搭配又分出六种：
 
