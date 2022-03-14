@@ -1046,10 +1046,10 @@ Date date = new Date();
 Date dates = new Date(1000); 
 ```
 
-两个方法的使用：
+记住这两个方法的使用：
 1. getTime()：获取时间戳，返回自 1970 年 1 月 1 日 00:00:00 GMT 以来到此 Date 对象创建的时间——毫秒数。 
 2. toString()：把此 Date 对象转换为以下形式的 String： dow mon dd hh:mm:ss zzz yyyy ，其中： dow 是周几 (Sun, Mon, Tue,  Wed, Thu, Fri, Sat)，zzz是时间标准，yyyy是年份；例如 Fri Oct 01 09:54:27 CST 2021。
-3. 其它很多方法都过时了。
+3. 其它很多方法都过时了，可不理会。
 
 **关于GMT和CST：**
 
@@ -1062,11 +1062,12 @@ Date dates = new Date(1000);
 
 ### java.sql.Date
 
-其继承了java.util.Date类，对应数据库中的date字段类型，数据库中的数据封装到Java中就使用该类，date ===> java.sql.Date，该Date是专门用来匹配数据库的date。
+java.sql.Date继承了java.util.Date类，该Date是专门用来匹配数据库的date类型的（ java.sql.Date的输出时间格式和数据库中的date类型的格式一致）。
 
-实例化：`java.sql.Date date = new java.sql.Date(毫秒数)`，输出的时间格式为yyyy-mm-dd，与数据库date的默认格式一致。
+**1.java.sql.Date的实例化：**`java.sql.Date date = new java.sql.Date(毫秒数)`，输出的时间格式为yyyy-MM-dd，与数据库date的默认格式一致。
 
 ```java
+// 有两个构造器，另一个已经标记为过期
 public static void main(String[] args) {
     java.sql.Date d = new Date(24*60*60*1000);
     System.out.println(d);
@@ -1074,7 +1075,7 @@ public static void main(String[] args) {
 1970-01-02 // 输出
 ```
 
-java.util.Date ===> java.sql.Date：转换为数据库中的时间，使用sql.Date的构造器，把毫秒数扔进构造器即可。
+**2.使用java.util.Date获取当前时间戳来将当前时间转换为yyyy-MM-dd的时间格式：**（使用java.sql.Date的构造器，把毫秒数扔进构造器即可）
 
 ```java
 public static void main(String[] args) {
@@ -1085,25 +1086,9 @@ public static void main(String[] args) {
 2022-02-10 // 输出
 ```
 
-**如何将"yyyy-MM-dd"格式的字符串转换为java.sql.Date？**
+**3.如何将"yyyy-MM-dd"格式的字符串转换为java.sql.Date？**
 
-方法一：通过SimpleDateFormat将字符串转换为Date，再通过java.sql.Date的构造器将Date转换为java.sql.Date
-
-```java
-public static void main(String[] args) {
-    SimpleDateFormat sdf =  new SimpleDateFormat("yyyy-MM-dd");
-    String time = "2007-7-12";
-    try {
-        java.util.Date date = sdf.parse(time);
-        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-        System.out.println(sqlDate);
-    } catch (Exception ex) {
-        System.out.println(ex.getMessage());
-    }
-}
-```
-
-方法二：如果格式已经符合日期格式，那么可以直接通过java.sql.Date的静态方法`valueOf(String str)`将字符串转化为java.sql.Date对象
+方法一：如果格式已经符合日期格式，那么可以直接通过java.sql.Date的静态方法`valueOf(String str)`将字符串转化为java.sql.Date对象
 
 ```java
 public static void main(String[] args) {
@@ -1113,27 +1098,55 @@ public static void main(String[] args) {
 }
 ```
 
-
-
-### SimpleDateFormat类
-
-> java.text.SimpleDateFormat  可以将日期对象格式化成一定格式字符，或将字符串格式化为Date对象
-
-使用format()方法将日期转换为字符串：转换成的默认格式为`21-10-1 上午10:50`
+方法二：通过SimpleDateFormat将字符串转换为Date，再通过java.sql.Date的构造器将Date转换为java.sql.Date
 
 ```java
+public static void main(String[] args) {
+    // 设置时间格式
+    SimpleDateFormat sdf =  new SimpleDateFormat("yyyy-MM-dd");
+    String time = "2007-7-12";
+    try {
+        // time字符串的格式必须要和SimpleDateFormat设置的一致
+        java.util.Date date = sdf.parse(time);
+        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+        System.out.println(sqlDate);
+    } catch (Exception ex) {
+        System.out.println(ex.getMessage());
+    }
+}
+```
+
+
+
+### SimpleDateFormat
+
+> java.text.SimpleDateFormat  可以将日期对象格式化为一定格式的字符，或将字符串格式化为java.util.Date对象
+
+**使用format()方法将日期转换为字符串：**（转换成的默认格式为`21-10-1 上午10:50`，java.util.Date及其子类java.sql.Date）
+
+```java
+/* 默认情况下 */
 public static void main(String[] args) {
     SimpleDateFormat sdf = new SimpleDateFormat();
     Date d = new Date();
     String sd = sdf.format(d);
     System.out.println(sd); // 22-2-10 下午3:20
 }
+/* 将时间转换为指定的字符串 */
+public static void main(String[] args) {
+    Date date = new Date();
+    // 设置时间格式
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd hh:mm:ss");
+    // 调用 SimpleDateFormat对象的 format()方法格式化时间
+    String showTime = sdf.format(date);
+    System.out.println(showTime); // 2022:02:10 03:30:41
+}
 ```
 
-使用 parse() 方法将字符串转换为日期：
+**使用 parse() 方法将字符串转换为java.util.Date：**
 
 ```java
-// 默认情况下
+// 默认的格式：22-2-10 下午3:20
 public static void main(String[] args) throws ParseException {
    SimpleDateFormat sdf = new SimpleDateFormat();
     Date parse = sdf.parse("22-2-10 下午3:20");
@@ -1144,27 +1157,12 @@ public static void main(String[] args) throws ParseException {
 
 ```java
 public static void main(String[] args) throws ParseException {
-    // 这里要指明日期格式，指明的格式和parse()方法的参数的一致，否则会报异常
-    // 如果不指明，则是默认的格式：22-2-10 下午3:20
+    // 这里指明的格式和parse()方法的传入参数要一致，否则转换时会报异常
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     Date date = sdf.parse("2022-01-10");
     System.out.println(date); 
 }
 // 输出：Mon Jan 10 00:00:00 CST 2022
-```
-
-自定义时间日期格式：
-
-```java
-public static void main(String[] args) {
-    Date date = new Date();
-    // 设置时间格式
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd hh:mm:ss");
-    // 调用 SimpleDateFormat对象的 format()方法格式化时间
-    String showTime = sdf.format(date);
-    System.out.println(showTime);
-}
-2022:02:10 03:30:41 // 输出内容
 ```
 
 常见的时间格式：
@@ -1175,7 +1173,7 @@ public static void main(String[] args) {
 
 1. 格式化：日期 ===> 字符串：调用SimpleDateFormat类的format()方法。
 2. 解析：字符串 ===> 日期：调用SimpleDateFormat类的parse()方法。
-3. 注意解析时字符串的格式要和所用的SimpleDateFormat对象的时间格式一致。
+3. 注意解析时字符串的格式要和所用的SimpleDateFormat对象设置的时间格式一致。
 
 ### Calendar类
 
@@ -1192,21 +1190,21 @@ Calendar examole = Calendar.getInstance();
 
 ```java
 public static void main(String[] args) throws ParseException {
-    // 1
     Calendar c = Calendar.getInstance();
+    // 1：获取
     int week = c.get(Calendar.DAY_OF_WEEK); // 周几
     int day = c.get(Calendar.DAY_OF_MONTH); // 今天是多少号
     int dy = c.get(Calendar.DAY_OF_YEAR);   // 今天是今年的第几天
     System.out.println("今年的第"+dy+"天"+"是"+ day +"号" + "是周" + (week-1));
-    // 2
+    // 2：更改
     c.set(Calendar.DAY_OF_MONTH,3);  // 把今天更改为这个月的3号
     System.out.println("更改后今天是" + c.get(Calendar.DAY_OF_MONTH) +"号");
-    // 3
+    // 3：更改
     c.add(Calendar.DAY_OF_MONTH,3);  // 把今天的号数加3
     System.out.println("将号数加3后变为了"+c.get(Calendar.DAY_OF_MONTH)+"号");
-    // 4
-    Date time = c.getTime(); // 转换为Date对象，输出：Sun Feb 06 15:49:07 CST 2022
-    // 5
+    // 4：获取
+    Date time = c.getTime(); // 获取当前时间的Date对象，输出：Sun Feb 06 15:49:07 CST 2022
+    // 5：设置
     Date d = new Date(1000);
     c.setTime(d); // 设置日历类的Date属性值，这个Date变为了日历类的数据，日历类的年月日等也跟着改变
     System.out.println(c.get(Calendar.DAY_OF_MONTH));
@@ -1219,7 +1217,7 @@ public static void main(String[] args) throws ParseException {
 
 ### 概述
 
-与时间日期相关的包：
+与时间日期相关的五个包：
 
 1. **java.time —— 包含值对象的基础包** 
 2. java.time.chrono —— 提供对不同的日历系统的访问 
@@ -1236,7 +1234,7 @@ public static void main(String[] args) throws ParseException {
 3. 格式化：格式化只对Date有用，对Calendar则不行。
 4. 不是线程安全的，不能处理闰秒。
 
-为解决这些问题，就有了后面的新的时间日期API。Java8中时间日期API吸收了Joda-Time的精华，新的java.time包含了所有关于本地日期（LocalDate）、本地时间（LocalTime）、本地日期时间（LocalDateTime）、时区（ZonedDateTime）和持续时间（Duration）的类。Date新增了toInstant()方法，用于把Date转换为新的表现形式。
+为解决这些问题，就有了后面的新的时间日期API。Java8中时间日期API吸收了Joda-Time的精华，新的java.time包含了所有关于本地日期（LocalDate）、本地时间（LocalTime）、本地日期时间（LocalDateTime）、时区（ZonedDateTime）和持续时间（Duration）的类。java.util.Date新增了toInstant()方法，用于把Date转换为新的表现形式。
 
 ### LocalDateTime
 
@@ -1283,9 +1281,9 @@ public static void main(String[] args) {
 
 LocalDateTime常用方法：
 
-- now()：静态方法，可通过类直接调用。
-- 还有其他的实现类的方法，用于获取年、月、日、时、分、秒，或者添加年份、月份、天数等方法。
-- 查看API手册，开发中尽量使用jdk8中新的时间日期API。
+1. now()：静态方法，可通过类直接调用。
+2. 还有其他的实现类的方法，用于获取年、月、日、时、分、秒，或者添加年份、月份、天数等方法。
+3. 查看API手册，开发中尽量使用jdk8中新的时间日期API。
 
 ###  Instant时间戳
 
