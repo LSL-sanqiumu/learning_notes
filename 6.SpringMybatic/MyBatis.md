@@ -1411,8 +1411,3 @@ SqlMapper配置文件在开发中的存放规范与命名规范：
 ```java
 int save2(String id, String name, String birth);
 ```
-
-
-
-
-

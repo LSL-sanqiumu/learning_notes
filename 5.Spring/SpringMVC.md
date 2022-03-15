@@ -4,11 +4,11 @@ spring web mvc是spring框架的一部分，导入springmvc的依赖也就导入
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>5.3.8</version>
-        </dependency>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.3.8</version>
+</dependency>
 ```
 
 web.xml里配置中央调度器（也就是相当配置了一个servlet）：
@@ -80,28 +80,36 @@ springmvc的使用步骤：
 
 ## 中央调度器
 
-中央调度器DispatcherServlet，负责接收用户的对资源的请求，接收到请求后会调用控制器对象并返回请求处理结果（返回的是视图或其它）给前端来进行展示，是一个Servlet，其父类继承了HttpServlet，DispatcherServlet也叫做前端控制器（front controller）。
+中央调度器DispatcherServlet，负责接收用户的对资源的请求，接收到请求后会调用控制器对象的处理器方法并返回请求处理结果（返回的是视图或其它）给前端来进行展示。DispatcherServlet是一个Servlet，其父类继承了HttpServlet，DispatcherServlet也叫做前端控制器（front controller）。通过中央调度器可以访问webapp下所有可访问的资源，访问WEB-INF目录下的资源则必须经中央调度器。
 
-配置中央调度器如下：
+**配置中央调度器如下：**
 
 ```xml
 <!-- web.xml -->
 <servlet>
-        <servlet-name>myspringmvc</servlet-name>
-        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-		<!-- 上下文的配置（resource里的资源在导出后会加载进classpath） -->
-        <init-param>
-            <param-name>contextConfigLocation</param-name>
-            <param-value>classpath:springmvc.xml</param-value> 
-        </init-param>
-        <!-- 服务器启动便创建好调度器，越小创建（执行）越早 -->
-        <load-on-startup>1</load-on-startup> 
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>myspringmvc</servlet-name>
-        <url-pattern>*.do</url-pattern>
-    </servlet-mapping>
+    <servlet-name>myspringmvc</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <!-- 上下文的配置（resource里的资源在导出后会加载进classpath），初始化SpringMVC容器 -->
+    <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:springmvc.xml</param-value> 
+    </init-param>
+    <!-- 服务器启动便创建好调度器，越小创建（执行）越早 -->
+    <load-on-startup>1</load-on-startup> 
+</servlet>
+<servlet-mapping>
+    <servlet-name>myspringmvc</servlet-name>
+    <url-pattern>*.do</url-pattern>
+</servlet-mapping>
 ```
+
+**关于中央调度器的url-pattern：**
+
+1. 在没有特殊要求的情况下，常使用后缀匹配的方式，如写`*do`。
+2. 如果写成`/*`，所有的`.jsp`资源将失效，报404。
+3. 如果写成`/`（RESTful风格下会这样做），那么HTML、css、js、图片等静态资源将会失效，必须要对静态资源处理才能访问（见目录：静态资源处理）。
+
+**关于init-param：**
 
 在tomcat服务器启动后创建DispatcherServlet对象实例，为什么要这样？创建该实例的过程中会同时创建springmvc容器对象，并读取springmvc的配置文件，把这个配置文件中对象都创建好，当用户发起请求就可直接使用controller对象。DispatcherServlet对象就是一个servlet，当其创建时执行init()方法，会进行初始化：
 
@@ -112,94 +120,24 @@ init(){
 }
 ```
 
-## 前端控制器
-
-前端控制器Controller，里面的方法可以对应多个请求路径。
-
-```java
-@Controller
-public class FirstController {
-    @RequestMapping(value = "/some.do")
-    public ModelAndView doSome() {
-        ModelAndView mv = new ModelAndView();
-        // 相当于request的setAttribute("msg", "xxx");
-        mv.addObject("msg","欢迎使用springMVC来开发");
-        mv.addObject("fun","执行的是doSome方法");
-        // 指定视图路径
-        // 相当于request.getRequestDispather("/show.jsp").forward(...)
-        mv.setViewName("/show.jsp");
-        // mv.setViewName("/WEB-INF/view/show.jsp"); 将视图放进WEB-INF/view里，杜绝用户直接访问
-        // 执行此方法后才由框架执行相当于request.setAttribute
-        // 或request.getRequestDispather("/show.jsp").forward(...)操作
-        return mv;
-    }
-    @RequestMapping(value = {"/se.do", "/otherdo"})
-    public ModelAndView doSomes() {
-        ModelAndView mv = new ModelAndView();
-
-        mv.addObject("msg","欢迎使用springMVC来开发");
-        mv.addObject("fun","执行的是doSomes方法");
-        mv.setViewName("/se.jsp");   
-        // mv.setViewName("se"); 已配置好视图解析器的时候
-        return mv;
-    }
-}
-```
-
-请求-响应过程：
-
-1. 发送请求给tomcat服务器，tomcat服务器截取路径去到web.xml的匹配`/show.jsp`。
-2. 然后根据虚拟路径，请求转到中央调度器DispatcherServlet。
-3. DispatcherServlet根据springmvc.xml文件匹配请求路径对应的方法。
-4. 框架执行匹配到的方法，把得到的ModelAndView进行处理，转发到shou.jsp。
-
-可看出：中央调度器DispatcherServlet负责创建springmvc容器对象，读取xml配置文件后利用spring注解创建好对应目录里的Controller对象，还负责接收用户请求，匹配到相应的处理方法。
-
-springmvc执行过程源代码分析：
-
-1. tomcat服务器启动，通过`<load-on-startup>1</load-on-startup>`指定的优先级，创建了DispatcherServlet对象。
-
-2. DispatcherServlet对象就是一个servlet，当其创建时执行init()方法，根据配置文件创建了对象并放进了ServletContext()。
-
-      ```java
-      init(){
-          WebApplicationContext ctx = new  ClassPathApplicationContext("springmvc.xml");
-          getServletContext().setAttribute(key, ctx);
-      }
-      ```
-
-3. 请求的处理过程
-     1）执行servlet的service()
-
-
-   ```java
-     protected void service(HttpServletRequest request, HttpServletResponse response)
-     protected void doService(HttpServletRequest request, HttpServletResponse response)
-     DispatcherServlet.doDispatch(request, response){
-         调用MyController的.doSome()方法
-     }
-   ```
-
-```txt
-  doDispatch：springmvc中DispatcherServlet的核心方法， 所有的请求都在这个方法中完成的。
-```
-
 ## 视图解析器
 
-springmvc.xml里配置：
+视图解析器负责将逻辑视图名解析为具体的视图对象。
+
+**springmvc.xml里配置视图解析器：**
 
 ```xml
 <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
     <!--前缀：视图文件路径 相对于webapp-->
     <property name="prefix" value="/WEB-INF/view/"/>
     <!--后缀：视图文件的拓展名-->
-    <property name="suffix" value=".jsp"/>
+    <property name="suffix" value=".html"/>
 </bean>
 ```
 
-配置好上述的视图解析器后，`mv.setViewName("show")`  ===>  return mv后相当于转发到 /WEB-INF/view/show.jsp页面
+配置好上述的视图解析器后，`mv.setViewName("show")`  ===>  return mv后相当于转发到 `/WEB-INF/view/show.jsp`页面，返回的都将被加上视图解析器配置好的前后缀。
 
-也可以使用thymeleaf的解析器，使用thymeleaf来渲染页面。
+也可以使用thymeleaf的解析器，使用thymeleaf来渲染页面，如下：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -212,7 +150,7 @@ springmvc.xml里配置：
     <context:component-scan base-package="com.lsl.crowd.controller"/>
     <!-- 视图器的配置，为了简化控制器的视图路径 -->
 
-    <!-- thymeleaf的视图解析器 会与ContentNegotiatingViewResolver冲突 -->
+    <!-- thymeleaf的视图解析器会与ContentNegotiatingViewResolver冲突 -->
     <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
         <property name="characterEncoding" value="UTF-8"/>
         <property name="templateEngine" ref="templateEngine"/>
@@ -234,7 +172,68 @@ springmvc.xml里配置：
 </beans>
 ```
 
-# 注解使用
+
+
+## 前端控制器
+
+前端控制器Controller，里面的方法可以对应多个请求路径。（路径都是相对于webapp的根路径，`/WEB-INF/`路径下的资源不能直接访问，需要经过中央调度器访问）
+
+```java
+// 不使用视图解析器时
+@Controller
+public class FirstController {
+    @RequestMapping(value = "/some.do")
+    public ModelAndView doSome() {
+		ModelAndView mv = new ModelAndView();
+        //  将视图放进WEB-INF/view里，杜绝用户直接访问
+        mv.setViewName("/WEB-INF/view/show.html");
+        // return相当于：request.getRequestDispather("/show.jsp").forward(...)操作
+        return mv;
+    }
+    @RequestMapping(value = {"/se.do", "/otherdo"})
+    public ModelAndView doSomes() {
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("msg","欢迎使用springMVC来开发");
+        mv.addObject("fun","执行的是doSomes方法");
+        mv.setViewName("/se.jsp");   
+        return mv;
+    }
+}
+```
+
+
+
+```java
+// 使用视图解析器时
+@Controller
+public class FirstController {
+    @RequestMapping(value = "/some.do")
+    public ModelAndView doSome() {
+		ModelAndView mv = new ModelAndView();
+        mv.setViewName("show");
+        return mv;
+    }
+    @RequestMapping(value = {"/se.do", "/otherdo"})
+    public ModelAndView doSomes() {
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("msg","欢迎使用springMVC来开发");
+        mv.addObject("fun","执行的是doSomes方法");
+        mv.setViewName("se");   
+        return mv;
+    }
+}
+```
+
+请求-响应过程：
+
+1. 发送请求给tomcat服务器，tomcat服务器截取路径去到web.xml的匹配`/show.html`。
+2. 然后根据虚拟路径，请求转到中央调度器DispatcherServlet。
+3. DispatcherServlet根据springmvc.xml文件匹配请求路径对应的方法。
+4. 框架执行匹配到的方法，把得到的ModelAndView进行处理，转发到show.html。
+
+中央调度器DispatcherServlet负责创建springmvc容器对象，读取xml配置文件后利用spring注解创建好对应目录里的Controller对象，还负责接收用户请求，匹配到相应的处理方法。
+
+# 处理器内-注解使用
 
 ## 用于组件注册
 
@@ -325,9 +324,11 @@ public String test(@PathVariable("id") Long id) {
 }
 ```
 
+@PathVariable只支持一个属性value，类型是为String，代表绑定的路径变量。可不指定value，但接收形参的名称必须和接收的路径变量的名称一致。 
+
 ### @RequestParam
 
-@RequestParam用于接收params方式的请求（接收请求参数）。
+`@RequestParam`：用于接收params方式的请求（接收get方法、post方法的请求携带的参数）。
 
 ```java
 // http://ip:port/blog/message?id=1&page=2
@@ -337,7 +338,7 @@ public String test(@RequestParam(value="id") Long id,@RequestParam(value="page")
 }
 ```
 
-`@RequestParam`：用于接收请求参数，用来处理**逐个接收数据时**请求参数名（name）和方法参数名不一致的情况。
+常用来处理**逐个接收数据时**请求参数名（name）和处理器方法中形参参数名不一致的情况。
 
 ```java
 @RequestMapping(value = "/re.do", method = RequestMethod.POST)
@@ -385,7 +386,7 @@ public class User(){
 
 ### @RequestBody
 
-@RequestBody注解用来接收request的body中的参数，@RequestBody可以将多个参数放入到一个实体类或者Map中。
+@RequestBody注解用来接收request的body中的参数，@RequestBody可以将多个参数放入到一个实体类或者Map中。（不能通过GET方法发送请求体）
 
 ```java
 // 将拿到的数据放入实体类
@@ -402,7 +403,7 @@ public String test(@RequestBody Map<String, Object> paramMap) {
 
 ## @ResponseBody
 
-@ResponseBody用于标识一个控制器方法，可以将该方法的返回值直接作为响应报文的响应体响应到浏览器。
+@ResponseBody用于标识一个控制器方法，可以**将该方法的返回值直接作为响应报文的响应体**响应到浏览器。（通常都是使用json工具解析成json格式的数据后再响应到浏览器，出于最小依赖的考虑，Json解析第一选择可能就是Jackson）
 
 ```java
 @RequestMapping("/test")
@@ -449,6 +450,18 @@ public String testResponseBody(){
 
 @RestController注解是springMVC提供的一个复合注解，标识在控制器的类上时就相当于为类添加了@Controller注解，并且为其中的每个方法添加了@ResponseBody注解。
 
+```java
+@RestController
+public class MyController {
+
+    @RequestMapping("/index/in.do")
+    public User index(){
+        User user = new User("lsl",22);
+        return user;
+    }
+}
+```
+
 
 
 ## 用于接收请求头参数
@@ -475,7 +488,11 @@ public String test(@RequestHeader("Accept-Encoding") String encoding)  {
 }
 ```
 
-@RequestHeader注解一共有三个属性：value、required、defaultValue，用法同@RequestParam
+@RequestHeader注解一共有三个属性：value、required、defaultValue，用法同@RequestParam。
+
+1. value：指定为形参赋值的请求参数的参数名（name），指定后当前请求必须传key为value的数据，如果没有传这个数据并且没有设置defaultValue，则报错。
+2. required：是否必须传输此参数。
+3. defaultValue：不管required属性值为true或false，当value所指定的请求参数没有传输或传输的值为`""`空字符时，则使用默认值为形参赋值。
 
 ### @CookieValue
 
@@ -495,7 +512,11 @@ public String test(@CookieValue("JSESSIONID") String cookie)  {
 
 属性：value、required、defaultValue，用法同@RequestParam。
 
-# 参数自动接收
+1. value：指定为形参赋值的请求参数的参数名（name），指定后当前请求必须传key为value的数据，如果没有传这个数据并且没有设置defaultValue，则报错。
+2. required：是否必须传输此参数。
+3. defaultValue：不管required属性值为true或false，当value所指定的请求参数没有传输或传输的值为""时，则使用默认值为形参赋值。
+
+# 处理器内-请求参数自动接收
 
 处理器方法的参数用来对**用户表单请求提交的数据**进行接收，参数类型可以是`HttpServletRequest request`、`HttpServletResponse response`、`HttpSession session`这几个类型，也可以是string、int类型的，等等。
 
@@ -509,7 +530,7 @@ public ModelAndView doFirst(HttpServletRequest request, HttpServletResponse resp
     ModelAndView mv = new ModelAndView();
 
     mv.addObject("msg","欢迎使用springMVC来开发");
-    mv.addObject("fun","执行的是doOther方法");
+    mv.addObject("fun","执行的是doFirst方法");
 
     mv.setViewName("first");
 
@@ -581,13 +602,13 @@ public ModelAndView doOb(Student student) {
 }
 ```
 
-# 返回值类型
+# 处理器内-返回值类型
 
 ## ModelAndView
 
 ModelAndView对象，包数据和视图，可对视图执行forward（转发）；处理器方法处理请求后，需要跳转到其他页面资源并在往跳转资源传递数据，此时可以使用该返回值类型。
 
-1. `addObject()`：往容器里放数据，（springmvc容器？）。
+1. `addObject()`：往请求域放数据，相当于`request的setAttribute("msg", "xxx");`。
 
 2. `setViewName()`：指定需要转发的视图路径。
 
@@ -599,12 +620,12 @@ ModelAndView对象，包数据和视图，可对视图执行forward（转发）�
        @RequestMapping(value = "/some.do")
        public ModelAndView doSome() {
            ModelAndView mv = new ModelAndView();
-           //相当于request的setAttribute("msg", "xxx");
+           // 相当于request的setAttribute("msg", "xxx");
            mv.addObject("msg","欢迎使用springMVC来开发");
            mv.addObject("fun","执行的是doSome方法");
-           //指定视图路径
-           //相当于request.getRequestDispather("/show.jsp").forward(...)
+           // 指定视图路径
            mv.setViewName("/show.jsp");
+           // 相当于request.getRequestDispather("/show.jsp").forward(...)
            return mv;
        }
    }
@@ -834,7 +855,7 @@ Tomcat有一个默认的servlet（conf的web.xml中）会在服务器启动时�
 
 # 解决POST请求乱码
 
-SpringMVC中处理编码的过滤器一定要配置到其他过滤器之前，否则无效。
+SpringMVC中处理编码的过滤器一定要配置到其他过滤器之前，否则无效。（浏览器端与服务端编码不一致导致获取到的数据出现乱码）
 
 ```xml
 <!-- 过滤器 -->
@@ -860,7 +881,7 @@ SpringMVC中处理编码的过滤器一定要配置到其他过滤器之前，�
 </filter-mapping>
 ```
 
-# 域对象共享数据
+# 处理器内-域对象共享数据
 
 ## 向Request域共享数据
 
@@ -885,9 +906,9 @@ public ModelAndView testModelAndView(){
      * View主要用于设置视图，实现页面跳转
      */
     ModelAndView mav = new ModelAndView();
-    //向请求域共享数据
+    // 向请求域共享数据
     mav.addObject("key", "hello,ModelAndView");
-    //设置视图，实现页面跳转
+    // 设置视图，实现页面跳转
     mav.setViewName("success");
     return mav; // 转发
 }
@@ -946,6 +967,8 @@ public String testSession(HttpSession session){
 
 ## 向application域共享数据
 
+通过HttpSession获取到servlet上下文，再把数据送入。
+
 ```java
 @RequestMapping("/testApplication")
 public String testApplication(HttpSession session){
@@ -988,8 +1011,6 @@ public String testRequestEntity(RequestEntity<String> requestEntity){
 输出结果： requestHeader:[host:“localhost:8080”, connection:“keep-alive”, content-length:“27”, cache-control:“max-age=0”, sec-ch-ua:"" Not A;Brand";v=“99”, “Chromium”;v=“90”, “Google Chrome”;v=“90"”, sec-ch-ua-mobile:"?0", upgrade-insecure-requests:“1”, origin:“http://localhost:8080”, user-agent:“Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36”] requestBody:username=admin&password=123 
 */
 ```
-
-
 
 
 
@@ -1094,7 +1115,7 @@ public ModelAndView forwardTest(String name, String rage){
 }
 ```
 
-重定向：**不经过视图解析器**；第一次请求的参数会被转为string，作为第二次请求的get参数使用；（重定向是两次请求，且重定向不能定向到WEB-INF目录下的资源）
+重定向：**不经过视图解析器**；第一次请求携带的参数会被转为String，并作为第二次请求的get参数使用；（重定向是两次请求，且重定向不能定向到WEB-INF目录下的资源）
 
 ```java
 @RequestMapping(value="/redirect.do")
@@ -1503,13 +1524,8 @@ public class ExceptionController {
    }
    ```
 
-   
 
-
-
-
-
-# SpringMVC执行流程
+# ~~SpringMVC执行流程~~
 
 ![](img/springMVC执行流程图.png)
 
