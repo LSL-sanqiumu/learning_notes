@@ -331,7 +331,7 @@ IoC是一种编程思想，将主动的程序变成被动的接收。（通过`n
 
 spring提供的容器也称为ioc容器。
 
-# IoC的实现
+# IoC的实现使用
 
 ## 概述
 
@@ -1262,7 +1262,7 @@ JDK动态代理，使用到java.lang.reflext包下的几个类：
 
 对于装饰者模式没有对其装饰者的控制权的意思是，装饰者永远是对其被装饰者的功能进行提升的，就是被装饰着原有的东西在装饰者中不可以舍弃。例如你有一个刚刚买了的房子，在装修之后，人把厨房的门砌死了，装修完后少了个厨房，那就亏了，装饰者模式就是这个意思，它只是对被装饰者进行一层修饰，原有的东西不会改变。
 
-# AOP的实现
+# AOP的实现使用
 
 ## 概述与术语
 
@@ -1624,11 +1624,12 @@ AOP底层，就是使用动态代理实现。（动态代理可以做到不改�
 
 # JdbcTemplate
 
-JdbcTemplate，spring对JDBC的封装，属于spring-jdbc，定义了一些用来操作数据库的方法。
+JdbcTemplate，是spring对JDBC的封装，属于spring-jdbc，定义了一些用来操作数据库的方法，使用JdbcTemplate时如果需要事务管理和异常控制，可引入spring-tx。
 
 1. 使用JdbcTemplate，需要做以下配置：
 
    ```xml
+   <!-- 组件扫描 -->
    <context:component-scan base-package="com.lsl"/>
    <!-- 使用druid连接池，连接数据库 -->
    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" destroy-method="isClosed">
@@ -1637,7 +1638,7 @@ JdbcTemplate，spring对JDBC的封装，属于spring-jdbc，定义了一些用�
        <property name="username" value="root"/>
        <property name="password" value="123456"/>
    </bean>
-   <!-- 创建JdbcTemplate对象的配置 -->
+   <!-- 创建JdbcTemplate对象，并配置数据源 -->
    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
        <property name="dataSource" ref="dataSource"/>
    </bean>
@@ -1646,35 +1647,61 @@ JdbcTemplate，spring对JDBC的封装，属于spring-jdbc，定义了一些用�
 2. JdbcTemplate的常用方法：
 
    - execute()：可以用于执行任何SQL语句，一般用于执行DDL语句。
+- update()：用于执行新增、修改、删除等语句。
+   - batchUpdate()：用于执行批处理相关语句，批量添加、修改、删除。
+- query()及queryForXxx()：用于执行查询相关语句。
 
-   - update()：用于执行新增、修改、删除等语句。
+```java
+// 查询基本数据类型包装类对象：
+// 根据SQL语句返回某列的值，其中requiredType是sql返回结果的类型
+<T> T queryForObject(String sql, Class<T> requiredType) throws DataAccessException
+    Integer integer = j.queryForObject("select count(*) from info", Integer.class);
+    System.out.println(integer);
+// 作用同上，该方法可以规避SQL注入
+<T> T queryForObject(String sql, Class<T> requiredType, Object… args) throws DataAccessException
+// 返回对象
+queryForObject(String sql, RowMapper<T> rowMapper, @Nullable Object... args)
+    // RowMapper：接口，使用其实现类完成对查询结果的封装
+    // Object... args：SQL语句值
+```
 
-   - batchUpdate()：用于执行批处理相关语句。
+```java
+JdbcTemplate j = app.getBean("jdbcTemplate", JdbcTemplate.class);
+// 增加
+j.update("insert into info value(?,?,?)",v1,v2,v3);
+// 更改
+j.update("update info set name=? age=? where id=?",v1,v2,v3);
+// 删除
+j.update("delete from info where id=?",v1);
+// 查询-返回对象
+j.queryForObject("select * from info where id=?",new BeanPropertyRowMapper<>(Student.class),id);
+// 查询-返回集合
+List<Map<String, Object>> maps = j.queryForList("select * from info");
+System.out.println(maps.get(0).get("name"));
+// 批量操作：batchArgs为SQL语句中的批量参数值，执行时遍历batchArgs并执行SQL
+j.batchUpdate(String sql,List<Object[]> batchArgs);
+```
 
-   - query()：用于执行查询相关语句。
-
-   - queryForXXX()：用于执行查询相关语句。
-
-     ```java
-     查询基本数据类型包装类对象：
-     <T> T queryForObject(String sql, Class<T> requiredType) throws DataAccessException：根据SQL语句返回某列的值，其中requiredType用于指定该列的数据类型
-     <T> T queryForObject(String sql, Class<T> requiredType, Object… args) throws DataAccessException：同上，该方法可以规避SQL注入
-     ```
-
-     
-
-
-# spring事务处理
+# spring声明式事务
 
 事务：数据库操作基本单元，逻辑上的一组操作，对数据库数据的操作，要么都成功、要么都失败。事务操作有四个原则，ACID原则。
 
 spring中的事务管理操作有两种操作方式：编程式（代码中编写事务代码）和声明式（常用）。
 
-声明式事务管理的两种方式：基于注解（常用）和基于XML配置文件；使用AOP实现。
+**声明式事务管理的两种方式：基于注解（常用）和基于XML配置文件的；Spring事务管理底层使用AOP实现。**
 
 关于spring事务管理的API：PlatformTransactionManager，代表事务管理器，针对不同的框架提供了不同的实现类
 
 - jdbc：org.springframework.jdbc.datasource.DataSourceTransactionManager。
+
+```xml
+<!-- 使用声明式事务所需依赖 -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-tx</artifactId>
+    <version>5.3.13</version>
+</dependency>
+```
 
 ## 基于注解
 
@@ -1690,13 +1717,13 @@ spring中的事务管理操作有两种操作方式：编程式（代码中编�
    <tx:annotation-driven transaction-manager="transactionManager"/>
    ```
 
-2. 使用@Transactional注解，该注解用于类上时表示为所有方法都添加上事务，也可只在方法上使用，其与事务相关的属性有：
+2. 使用@Transactional注解，该注解用于类上时表示为所有方法都添加上事务，也可只在方法上使用，该注解的属性有：
 
-   - propagation：事务传播行为（一个事务方法中调用另一个事务方法（会改变数据库数据的操作），如何管理这个过程中的事务）
+   1. propagation：事务传播行为（一个事务方法中调用另一个事务方法（会改变数据库数据的操作），如何管理这个过程中的事务）
 
      ![](img/事务.png)
 
-   - iosltion：事务隔离级别（解决问题：事务都有隔离性，如果不考虑隔离性，在读的时候就会存在脏读、不可重复读、虚（幻）读等问题）
+   2. iosltion：事务隔离级别（用于解决这些问题：事务都有隔离性，如果不考虑隔离性，在读的时候就会存在脏读、不可重复读、虚（幻）读等问题）
 
      - |               属性值                |    含义    | 脏读 | 不可重复读 | 幻读 |
        | :---------------------------------: | :--------: | :--: | :--------: | :--: |
@@ -1705,19 +1732,34 @@ spring中的事务管理操作有两种操作方式：编程式（代码中编�
        | Isolation.REPEATABLE_READ（默认的） | 可重复读的 |  无  |     无     |  有  |
        |       Isolation.SERIALIZABLE        |  串行化的  |  无  |     无     |  无  |
 
-   - timeout：用来设置超时时间，事务在达到超时时间后还没有提交就会回滚，默认值为-1，（单位是秒）。
+   3. timeout：用来设置超时时间，事务在达到超时时间后还没有提交就会回滚，默认值为-1，（单位是秒）。
 
-   - readonly：是否只读，设置事务中的操作，如果为true，就只能读取数据而不能进行修改数据的操作。
+   4. readonly：是否只读，设置事务中的操作，如果为true，就只能读取数据而不能进行修改数据的操作。
 
-   - rollbackFor：设置出现哪些异常时进行事务的回滚；（例如rollbackFor = NullPointerException.class，出现空指针异常时回滚）。
+   5. rollbackFor：设置出现哪些异常时进行事务的回滚；（例如rollbackFor = NullPointerException.class，出现空指针异常时回滚）。
 
-   - noRollbackFor：设置出现哪些异常时不进行事务的回滚；（noRollbackFor = NullPointerException.class）。
+   6. noRollbackFor：设置出现哪些异常时不进行事务的回滚；（noRollbackFor = NullPointerException.class）。
+
+```java
+@Component
+@Transactional // 为每个方法都加上事务
+public class Service {
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+    public String transMoney(){
+        jdbcTemplate.update("update account set money=1000 where id=1");
+        jdbcTemplate.update("update account set money=1000 where id=2");
+        int i = 1/0; 
+        return "success";
+    }
+}
+```
 
 
 ##  基于XML
 
-1. spring配置中配置事务管理器；
-2. 配置通知；
+1. 在xml配置文件配置事务管理器。
+2. 配置事务通知规则。
 3. 配置切入点和切面。
 4. （需要依赖：spring-tx、以及aop的）
 
@@ -1731,26 +1773,91 @@ spring中的事务管理操作有两种操作方式：编程式（代码中编�
 <tx:advice id="txadvice">
     <!-- 配置事务参数 -->
     <tx:attributes>
-        <!-- 指定在哪种规则的方法上添加事务 -->
+        <!-- 指定在使用哪种规则命名的方法上添加事务 -->
         <tx:method name="account*" propagation="REQUIRED"/>
     </tx:attributes>
 </tx:advice>
 <!--3 配置切入点和切面 -->
 <aop:config>
-    <!-- 配置切入点 -->
-    <aop:pointcut id="pt" expression="execution(* com.lsl.service.ClientService.account())"/>
-    <!-- 配置切面 -->
+    <aop:pointcut id="pt" expression="execution(* com.lsl.service.ClientService.*(..))"/>
+    <!-- 将事务的通知添加到切点方法上 -->
     <aop:advisor advice-ref="txadvice" pointcut-ref="pt"/>
 </aop:config>
 ```
 
-## 基于配置类（全注解）
+## 基于配置类（完全注解）
 
-按配置类的使用方式来创建对应的dataSource、事务管理器。
+按配置类的使用方式来创建对应的dataSource、事务管理器、JdbcTemplate，开启事务、数据扫描，最后在需要添加事务的方法上或其所在类上使用@Transactional注解。
 
-- `@EnableTransactionManagement`：开启事务；
-- @Transactional：为方法加上事务；
+- `@EnableTransactionManagement`：开启事务。
+- @Transactional：为方法加上事务。
 - `ComponentScan(basePackages="")`：注解扫描。
+
+```java
+// 配置类
+@Configuration
+@ComponentScan("com.lsl")
+@EnableTransactionManagement
+public class TransConfig {
+    @Bean
+    public DruidDataSource dataSource(){
+        DruidDataSource dataSource = new DruidDataSource();
+        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        dataSource.setUsername("root");
+        dataSource.setPassword("123456");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/mysqltest?characterEncoding=utf8&useUnicode=true&useSSL=false");
+        return dataSource;
+    }
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource dataSource){
+        JdbcTemplate jt = new JdbcTemplate();
+        // 会从IOC容器中根据类型找到
+        jt.setDataSource(dataSource);
+        return jt;
+    }
+    @Bean
+    public DataSourceTransactionManager transactionManager(DataSource dataSource){
+        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
+        transactionManager.setDataSource(dataSource);
+        return transactionManager;
+    }
+}
+```
+
+```java
+// 目标方法
+@Component
+@Transactional
+public class Service {
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+    public String accountChange(){
+        jdbcTemplate.update("update account set money=1000 where id=1");
+        jdbcTemplate.update("update account set money=1000 where id=2");
+        int i = 1/0;
+        return "success";
+    }
+}
+```
+
+```java
+// 测试
+public class Context {
+    public static void main(String[] args) {
+        ApplicationContext app = new AnnotationConfigApplicationContext(TransConfig.class);
+        Service s = app.getBean("service", Service.class);
+        s.accountChange();
+    }
+}
+```
+
+
+
+## 传统的JDBC事务处理
+
+
+
+
 
 # Bean Scopes作用域
 
