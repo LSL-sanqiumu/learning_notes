@@ -1,130 +1,4 @@
-# MyBatis
-
-```java
-// jdbc 六步骤
-Connection conn = null;
-PreparedStatement ps =null;
-Result rs = null;
-try{
-    Class.forName("com.mysql.jdbc.Driver");
-    String url = "jdbc:mysql://localhost:3306/jdbctest?"; 
-    String name = "root";
-    String password = "123456";
-    conn = DriverManager.getConnection(url, name, password);
-    String sql = "";
-    ps = conn.preparedStatement(sql);
-    rs = ps.executeQuery();
-    while(rs.next()){
-        String id = rs.getString("id");
-        String name = rs.getString("name");
-        String age = rs.getString("age");
-        
-        Student s = new Student();
-        s.setId(id);
-        s.setName(name);
-        s.setAge(age);
-    }
-    
-}catch (Exception){
-    
-}finally{
-    if(rs != null){
-        try{
-            rs.close();
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-    if(ps != null){
-        try{
-            ps.close();
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-    if(conn != null){
-        try{
-            conn.close();
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-## 依赖
-
-依赖：
-
-```xml
-<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
-<dependency>
-    <groupId>org.mybatis</groupId>
-    <artifactId>mybatis</artifactId>
-    <version>3.5.6</version>
-</dependency>
-<!-- mybatis 整合 spring -->
-<dependency>
-    <groupId>org.mybatis</groupId>
-    <artifactId>mybatis-spring</artifactId>
-    <version>2.0.6</version>
-</dependency>
-<!-- 还需要用来连接数据库的依赖 -->
-```
-
-resources目录下的配置：mybatis-config.xml（全局配置）、jdbc.properties（配置信息）、BlogMapper.xml（SQL映射文件）
-
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE configuration
-        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-config.dtd">
-<configuration>
-    <properties resource="jdbc.properties"/>
-    <environments default="development">
-        <environment id="development">
-            <transactionManager type="JDBC"/>
-            <dataSource type="POOLED">
-                <property name="driver" value="${jdbc.driver}"/>
-                <property name="url" value="${jdbc.url}"/>
-                <property name="username" value="${jdbc.username}"/>
-                <property name="password" value="${jdbc.password}"/>
-            </dataSource>
-        </environment>
-    </environments>
-    <mappers>
-        <!-- 引入映射器 -->
-        <mapper resource="BlogMapper.xml"/>
-    </mappers>
-</configuration>
-```
-
-```properties
-# jdbc.properties
-jdbc.driver=com.mysql.cj.jdbc.Driver
-jdbc.url=jdbc:mysql://localhost:3306/jdbctest?characterEncoding=utf8
-jdbc.username=root
-jdbc.password=123456
-```
-
-BlogMapper.xml 定义SQL语句：
-
-```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="BlogMapper">
-    <!--mybatis会自动创建对象并把查询结果放到对象对应的属性上，需要告知resultType（结果的数据类型）-->
-    <!--查询结果集的列名一定要和对象的属性名对应，不对应的时候使用as起别名-->
-    <!--select语句的id用于标识，通过id可以使用该SQL语句-->
-    <select id="getAll" resultType="com.lsl.domain.Student">
-        select id as sid,name as sname,birth as sbirth from t_student
-    </select>
-</mapper>
-```
-
-## 概述
+# MyBatis概述
 
 MyBatis是什么？MyBatis用来干什么？
 
@@ -152,11 +26,16 @@ JDBC缺点：
 
 2. sql语句编写在java程序中，sql语句不支持配置，所以就会导致后面要修改语句的时候得重新修改源代码，而重新修改后又得重新编译/重新部署等，并且修改java源代码违反了开闭原则OCP。（互联网分布式架构方面的项目，并发量很大，系统需要不断的优化，各方面的优化，其中有一条非常重要的优化是SQL优化）。------SQL语句可以写到配置文件中，此条确定并不那么主要。
 
-# MyBatic的单独使用
+# MyBatic-quickstart
+
+使用Mybatis来操作数据库可分为以下四个步骤：
+
+1. 导入相关的依赖。
+2. 配置MyBatis的全局配置，通常命名为mybatis-config.xml（在使用spring整合mybatis时可不使用该配置文件）。
+3. 配置映射器，通常是映射器文件和映射器接口。
+4. 使用。
 
 ## 一：依赖导入
-
-需要导入mybatis的依赖和数据库驱动的依赖：
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
@@ -172,19 +51,161 @@ JDBC缺点：
     <artifactId>mysql-connector-java</artifactId>
     <version>8.0.21</version>
 </dependency>
-<!-- mybatis 整合 spring的时候需要的依赖 -->
-<dependency>
-    <groupId>org.mybatis</groupId>
-    <artifactId>mybatis-spring</artifactId>
-    <version>2.0.6</version>
-</dependency>
 ```
 
 
 
 ## 二：全局配置
 
-**mybatis-config.xml，放于类路径下：**
+mybatis-config.xml（全局配置）、jdbc.properties（配置信息），放于类路径下。
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <environments default="test">
+        <environment id="test">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/mysqltest?characterEncoding=utf8&amp;useUnicode=true&amp;useSSL=false&amp;serverTimezone=Asia/Shanghai"/>
+                <property name="username" value="root"/>
+                <property name="password" value="123456"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="TestMapper.xml"/>
+    </mappers>
+</configuration>
+```
+
+
+
+## 三：配置映射器
+
+**创建mapper接口：**
+
+MyBatis中的mapper接口相当于以前的dao层，但是区别在于，mapper仅仅是接口，不需要提供实现类；当调用接口中的方法时，会自动匹配到与接口方法绑定了的SQL语句。
+
+```java
+public interface TestMapper {
+    School getAll();
+}
+```
+
+**创建映射文件：**
+
+xxxMapper.xml，放于类路径下或者是其绑定接口所在路径下，这里是放于类路径下：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lsl.dao.TestMapper">
+    <!-- resultType：指定结果封装 -->
+    <!-- SQL语句末尾不需要分号 -->
+    <select id="getAll" resultType="com.lsl.pojo.School">
+        select * from school where pid=1
+    </select>
+</mapper>
+```
+
+
+
+## 四：操作实现
+
+**映射文件与接口绑定的情况下：**（映射文件使用namespace来绑定了接口，映射文件与接口不在同一目录下，则接口名与映射文件名可以不同）
+
+```java
+public class TestMybatis {
+    public static void main(String[] args) throws IOException {
+        // 获取核心配置文件
+        InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+        // 通过SqlSessionFactoryBuilder获取SqlSessionFactory
+        SqlSessionFactoryBuilder ssfb = new SqlSessionFactoryBuilder();
+        SqlSessionFactory sqlSessionFactory = ssfb.build(is);
+        // 获取SqlSession，其代表Java程序和数据库之间的会话
+        SqlSession sqlSession = sqlSessionFactory.openSession();
+        // 获取mapper接口对象（使用动态代理返回接口实现类）
+        TestMapper mapper = sqlSession.getMapper(TestMapper.class);
+        // 根据mapper接口找到
+        School all = mapper.getAll();
+        System.out.println(all.toString());
+    }
+}
+```
+
+**SqlSessionFactory：**每个基于 MyBatis 的应用都是以一个 SqlSessionFactory 的实例为核心的，构建 SqlSessionFactory时可以使用Java配置类来初始化或者使用xml配置来初始化。
+
+**SqlSession：**事务开启与业务代码：通过SqlSessionFactory对象的openSession()方法开启会话、事务，该方法会返回一个SqlSession对象（SqlSession等同于Connection），一个专门用来执行SQL语句的一个会话对象。
+
+**映射文件没有绑定相关接口的情况下：**（此时映射文件的namespace可以随便设置一个）
+
+修改一下mapper文件：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="test">
+    <select id="getAll" resultType="com.lsl.pojo.School">
+        select * from school where pid=${id}
+    </select>
+</mapper>
+```
+
+```java
+public static void main(String[] args) throws IOException {
+    // 获取核心配置文件
+    InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
+    // 通过SqlSessionFactoryBuilder获取SqlSessionFactory
+    SqlSessionFactoryBuilder ssfb = new SqlSessionFactoryBuilder();
+    SqlSessionFactory sqlSessionFactory = ssfb.build(is);
+    // 获取SqlSession，其代表Java程序和数据库之间的会话
+    SqlSession sqlSession = sqlSessionFactory.openSession();
+    // 通过SqlSession对象的方法来从映射文件获取到SQL语句并执行
+    Object getAll = sqlSession.selectOne("getAll", 1);
+    System.out.println(getAll);
+    sqlSession.commit();
+}
+```
+
+ **关于sqlSession对象的一些方法说明：**
+
+1. ```java
+  // 增，返回造成影响的记录条数，"save"映射文件中SQL语句的id
+  sqlSession.insert("save", stu);  // 传参
+  sqlSession.insert("save"); // 不传入参数，直接执行指定SQL语句
+  ```
+
+2. ```java
+  // 修改，返回造成影响的记录条数，"update"映射文件中SQL语句的id
+  sqlSession.update("update", stu2); 
+  ```
+
+3. ```java
+  // 查询，"getXxx"映射文件中SQL语句的id
+  sqlSession.selectOne("getById", "1"); // 查，返回某条数据，后面是传参
+  sqlSession.selectList("getAll"); // 查，返回List集合
+  ```
+
+4. ```java
+  // 删除，"delete"映射文件中SQL语句的id
+  sqlSession.delete("delete","2"); // 删除，返回造成影响的记录条数
+  ```
+
+5. ```java
+  // 当Mapper.xml使用命名空间时（命名空间指定要绑定的接口），接口和Mapper.xml文件会绑定，接口的方法对应mapper文件中的sql语句
+  // 此时就可以使用这个得到接口对象，从而调用接口的方法来实现对数据库的操作
+  sqlSession.getMapper(TestMapper.class); 
+  ```
+
+# 全局配置说明
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -199,17 +220,8 @@ JDBC缺点：
         <!-- 是否开启驼峰命名自动映射，即从经典数据库列名 A_COLUMN 映射到经典 Java 属性名 aColumn -->
     	<setting name="mapUnderscoreToCamelCase" value="true"/>
     </settings>
-    <!-- 环境设置 可设置多个数据库环境 default用来选择使用的数据库环境 -->
+    <!-- 环境设置 可设置多个数据库环境 default属性用来选择要使用的数据库环境 -->
     <environments default="test">
-        <environment id="development">
-            <transactionManager type="JDBC" />
-            <dataSource type="POOLED">
-                <property name="driver" value="${jdbc.driver}"/>
-                <property name="url" value="${jdbc.url}"/>
-                <property name="username" value="${jdbc.username}"/>
-                <property name="password" value="${jdbc.password}"/>
-            </dataSource>
-        </environment>
         <environment id="test">
             <transactionManager type="JDBC" />
             <dataSource type="POOLED">
@@ -219,8 +231,17 @@ JDBC缺点：
                 <property name="password" value="123456"/>
             </dataSource>
         </environment>
+        <environment id="development">
+            <transactionManager type="JDBC" />
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driver}"/>
+                <property name="url" value="${jdbc.url}"/>
+                <property name="username" value="${jdbc.username}"/>
+                <property name="password" value="${jdbc.password}"/>
+            </dataSource>
+        </environment>
     </environments>
-    <!-- 用来数据库厂商别名 -->
+    <!-- 用来给数据库厂商起别名 -->
      <databaseIdProvider type="DB_VENDOR">
   		<property name="SQL Server" value="sqlserver"/>
   		<property name="DB2" value="db2"/>
@@ -236,15 +257,15 @@ JDBC缺点：
 jdbc.properties：
 
 ```properties
-driver=com.mysql.cj.jdbc.Driver
-url=jdbc:mysql://localhost:3306/jdbctest?characterEncoding=utf8
-username=root
-password=123456
+jdbc.driver=com.mysql.cj.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost:3306/jdbctest?characterEncoding=utf8
+jdbc.username=root
+jdbc.password=123456
 ```
 
-**MyBatis的全局配置：**MyBatis可以单独使用，当单独使用的时候需要mybatis-config.xml配置文件，该文件为MyBatis的全局配置文件，主要配置MyBatis的数据源（DataSource）、事务管理（TransactionManager）、以及打印SQL语句、开启二级缓存、设置实体类别名等功能。
+**MyBatis的全局配置：**MyBatis可以单独使用，当单独使用的时候需要配置好`mybatis-config.xml`（常用这个来命名）全局配置，主要配置MyBatis的数据源（DataSource）、事务管理（TransactionManager）、以及打印SQL语句、开启二级缓存、设置实体类别名等功能。
 
-**XxxMapper.xml文件：**MyBatis是"半自动"的ORM框架，即SQL语句需要开发者自定义，MyBatis的关注点在POJO与SQL之间的映射关系。那么SQL语句在哪里配置并自定义呢？就是在Mapper.xml中配置。
+**XxxMapper.xml文件：**MyBatis是"半自动"的ORM框架，即SQL语句需要开发者自定义，MyBatis的关注点在POJO与SQL语句之间的映射关系。那么SQL语句在哪里配置并自定义呢？就是在Mapper.xml中配置。
 
 ![](img/globalconfig.png)
 
@@ -252,59 +273,61 @@ password=123456
 
 **三种映射器：**
 
-1. 纯XML映射器。
-2. xml+接口的映射器。
+1. 纯XML映射器，此时需要通过SqlSession的对象的方法来调用映射器中配置好的SQL语句。
+2. xml+接口的映射器，此时可通过`sqlSession.getMapper(XxxMapper.class)`来获取接口的实现类对象，然后再执行方法即可执行绑定的SQL语句。
 3. xml+注解的映射器，使用 Configuration 对象注册 Mapper 接口。
 
-其他配置项说明
-
-在Mybatis全局配置文件中可以为某个Java类起别名：(注意配置文件内各标签的顺序有要求)
+**在Mybatis全局配置文件中可以为某个Java类起别名：**(注意配置文件内各标签的顺序有要求)
 
 ```xml
-<!-- 默认类名小写 -->
+<!-- 默认的别名为类名小写 -->
 <typeAliases>
-        <typeAlias type="com.lsl.domain.Student" alias="Student"/>
+    <typeAlias type="com.lsl.domain.Student" alias="Student"/>
+    ......
 </typeAliases>
 <!--自动为某个包下所有的类起别名，别名默认为类名小写-->
 <typeAliases>
-        <package name="com.lsl.domain"/>
+    <package name="com.lsl.domain"/>
 </typeAliases>
 <!-- @Alias注解也可以为类起别名 -->
 ```
 
-引入映射器的三种方式（告诉mybatis到哪去寻找SQL映射语句的文件（mapper.xml））：
-
-
-
-## 三：配置映射器
-
-### 基本使用
-
-xxxMapper.xml，放于类路径下或者是绑定接口所在路径下，基本格式如下：
+**全局配置中映射文件引入的三种方式：**
 
 ```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper
-        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.lsl.dao.BlogMapper">
-    <!-- mybatis会自动创建对象并把查询结果放到对象对应的属性上，需要告知resultType -->
-    <!-- 查询结果集的列名一定要和对象的属性名对应，不对应的时候使用as起别名 -->
-    <!-- select语句的id用于标识，通过id可以使用该SQL语句 -->
-    <!-- SQL语句末尾不需要分号 -->
-    <select id="getAll" resultType="com.lsl.domain.Student">
-        select id as sid,name as sname,birth as sbirth from t_student
-    </select>
-</mapper>
+<!-- 使用相对于类路径的资源引用 -->
+<mappers>
+  <mapper resource="org/mybatis/builder/AuthorMapper.xml"/>
+  <mapper resource="org/mybatis/builder/BlogMapper.xml"/>
+  <mapper resource="org/mybatis/builder/PostMapper.xml"/>
+</mappers>
+<!-- 使用完全限定资源定位符（URL），绝对路径 -->
+<mappers>
+  <mapper url="file:///var/mappers/AuthorMapper.xml"/>
+  <mapper url="file:///var/mappers/BlogMapper.xml"/>
+  <mapper url="file:///var/mappers/PostMapper.xml"/>
+</mappers>
+<!-- 使用映射器接口实现类的完全限定类名 -->
+<mappers>
+  <mapper class="org.mybatis.builder.AuthorMapper"/>
+  <mapper class="org.mybatis.builder.BlogMapper"/>
+  <mapper class="org.mybatis.builder.PostMapper"/>
+</mappers>
+<!-- 将包内的映射器接口实现全部注册为映射器 -->
+<mappers>
+  <package name="org.mybatis.builder"/>
+</mappers>
 ```
 
+这些配置会告诉 MyBatis 去哪里找映射文件，剩下的细节就应该是每个 SQL 映射文件了。
 
+# 映射器配置说明
 
-### 元素与细节
+## 元素与细节
 
-#### namespace
+### namespace元素
 
-将映射文件与接口绑定，要求接口中声明的方法和映射文件中定义的SQL方法的id一致，使用namespace就可以面向接口编程了。
+将映射器文件与接口绑定，要求接口中声明的方法和映射文件中定义的SQL方法的id一致，使用namespace就可以面向接口编程了。
 
 #### parameterType
 
@@ -427,8 +450,8 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 **`#{}和${}`的区别 ：**（都可以取pojo和map的值）
 
-- `#{}`：以预编译的显式将参数设置到SQL语句中；PreparedStatement。
-- `${}`：取出值直接封装进SQL语句中；Statement。（原生jdbc不支持使用占位符的地方就可以使用这个，分表、排序等场景）
+1. `#{}`：以预编译的显式将参数设置到SQL语句中；PreparedStatement。
+2. `${}`：取出值直接封装进SQL语句中；Statement。（原生jdbc不支持使用占位符的地方就可以使用这个，分表、排序等场景）
 
 参数封装为Map的源码分析（了解）：
 
@@ -842,121 +865,13 @@ jackson插件依赖：
 </dependency>
 ```
 
-java对象 <----> json字符串可以互相转换。
+java对象 <===> json字符串可以互相转换。
 
 ```java
 // 通过ObjectMapper将对象转为json字符串
 ObjectMapper om = new ObjectMapper();
 String json = om.writeValueAsStream(java对象); 
 ```
-
-## 四：操作数据库的具体实现
-
-### 基本操作
-
-**一：SqlSessionFactory：**每个基于 MyBatis 的应用都是以一个 SqlSessionFactory 的实例为核心的。构建 SqlSessionFactory时可以使用Java代码初始化的方式或使用xml配置初始化方式，这里用xml配置初始化的方式来构建 SqlSessionFactory，如下：
-
-```java
-String resource = "mybatis-config.xml";
-//加载配置文件
-InputStream inputStream = Resources.getResourceAsStream(resource);
-//通过SqlSessionFactoryBuilder()获得SqlSessionFactory 的实例
-SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream); 
-```
-
-**二：SqlSession：**事务开启与业务代码：通过SqlSessionFactory对象的openSession()方法开启会话、事务，该方法会返回一个SqlSession对象（SqlSession等同于Connection），一个专门用来执行SQL语句的一个会话对象。
-
-```java
-public class MainTest {
-    public static void main(String[] args) {
-        SqlSession sqlSession = null;
-        try {
-            String resource = "mybatis-config.xml";
-            InputStream inputStream = Resources.getResourceAsStream(resource);
-            SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-            //事务提交机制关闭，等同于：conn.setAutoCommit(false)
-            //SqlSession等同于Connection，专门用来执行SQL语句的一个会话对象
-            //开启事务
-            sqlSession = sqlSessionFactory.openSession();
-            //执行核心业务代码，调用BlogMapper.xml里的SQL语句
-            List<Student> student = sqlSession.selectList("getAll");
-            for(Student s : student){
-                System.out.println(s.getSid() + s.getSname() + s.getSbirth() );
-            }
-            //没有异常则事务结束，提交
-            sqlSession.commit();
-        } catch (IOException e) {
-            if (sqlSession != null){
-                //回滚
-                sqlSession.rollback();
-            }
-            e.printStackTrace();
-        } finally {
-            if (sqlSession != null){
-                sqlSession.close();
-            }
-        }
-    }
-}
-```
-
- 关于sqlSession对象的一些方法说明：
-
-1. ```java
-  // 增，返回造成影响的记录条数
-  sqlSession.insert("save", stu);  // 传参
-  sqlSession.insert("save"); // 不传入参数，直接执行指定SQL语句
-  ```
-
-2. ```java
-  // 修改，返回造成影响的记录条数
-  sqlSession.update("update", stu2); 
-  ```
-
-3. ```java
-  // 查询
-  sqlSession.selectOne("getById", "1"); // 查，返回某条数据，后面是传参
-  sqlSession.selectList("getAll"); // 查，返回List集合
-  ```
-
-4. ```java
-  // 删除
-  sqlSession.delete("delete","2"); // 删除，返回造成影响的记录条数
-  ```
-
-5. ```java
-  // 当Mapper.xml使用命名空间时（命名空间指定要绑定的接口），接口和Mapper.xml文件会绑定，接口的方法对应mapper文件中的sql语句
-  // 此时就可以使用这个得到接口对象，从而调用接口的方法来实现对数据库的操作
-  sqlSession.getMapper(TestMapper.class); 
-  ```
-
-
-
-
-### 使用数据库连接池操作
-
-可以通过第三方的依赖来获取数据库连接，进而操作数据库。具体操作见文件：JDBC.md。
-
-### 使用总结
-
-1. 熟悉配置：（依赖的话导入mybatis的依赖，因为要连接数据库，所以还要mysql-connector-java驱动依赖）
-
-   - mybatis-config.xml：相当于配置数据库驱动、数据库连接，还要映射SQL语句文件；
-   - mapper.xml：SQL语句文件，用来声明SQL语句；
-   - jdbc.properties：为避免mybatis-config.xml失效，将mybatis-config.xml里面的用来配置驱动、连接数据库的值放到这个文件然后再加载到mybatis-config.xml里使用；
-
-2. Java中使用SQL语句：
-
-   1. 通过配置文件mybatis-config.xml来创建SqlSessionFactory（得先加载文件到内存）：
-
-      ```java
-      String resource = "mybatis_config.xml";
-      // 字节输入流 加载文件
-      InputStream ras = Resources.getResourceAsStream(resource); 
-      SqlSessionFactory ssf = new SqlSessionFactoryBuilder().build(ras);
-      ```
-
-   2. 获取SqlSession（等同于Connection），通过这个进行事务处理、执行语句等操作。
 
 # maven-配置导出问题
 
@@ -1016,16 +931,25 @@ MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它
     <artifactId>spring-webmvc</artifactId>
     <version>5.3.8</version>
 </dependency>
+<!-- druid 数据库连接池 -->
 <dependency>
     <groupId>com.alibaba</groupId>
     <artifactId>druid</artifactId>
     <version>1.1.8</version>
 </dependency>
+<!-- JDBC -->
 <!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-jdbc</artifactId>
     <version>5.3.8</version>
+</dependency>
+<!-- 数据库驱动 -->
+<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.21</version>
 </dependency>
 ```
 
