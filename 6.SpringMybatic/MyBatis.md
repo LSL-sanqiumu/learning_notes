@@ -69,6 +69,7 @@ try{
     <artifactId>mybatis-spring</artifactId>
     <version>2.0.6</version>
 </dependency>
+<!-- 还需要用来连接数据库的依赖 -->
 ```
 
 resources目录下的配置：mybatis-config.xml（全局配置）、jdbc.properties（配置信息）、BlogMapper.xml（SQL映射文件）
@@ -92,7 +93,8 @@ resources目录下的配置：mybatis-config.xml（全局配置）、jdbc.proper
         </environment>
     </environments>
     <mappers>
-        <mapper resource="BlogMapper.xml"/> <!-- 指定SQL语句文件 -->
+        <!-- 引入映射器 -->
+        <mapper resource="BlogMapper.xml"/>
     </mappers>
 </configuration>
 ```
@@ -105,8 +107,9 @@ jdbc.username=root
 jdbc.password=123456
 ```
 
+BlogMapper.xml 定义SQL语句：
+
 ```xml
-<!-- BlogMapper.xml 定义SQL语句 -->
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
@@ -125,31 +128,31 @@ jdbc.password=123456
 
 MyBatis是什么？MyBatis用来干什么？
 
-MyBatis和Hibernate是一个持久层框架，专门封装JDBC，用于简化JDBC编程；
+MyBatis和Hibernate是一个持久层框架（将数据持久化到磁盘），专门封装JDBC，用于简化JDBC编程。
 
 框架：框架在表现形式上就是别人写好编译好的一堆字节码文件，通常打成jar包，使用框架把框架的jar包导入classpath当中就可以了；使用框架的目的：提高开发的效率，很多繁琐重复的程序已经被提前封装好，直接使用就行了；所有的java框架都是基于反射机制+XML配置一起完成的。
 
 JDBC缺点：
 
-- 重复代码多，会降低开发效率（rs.getXxx()取数据库数据并setXxx(xx)封装数据的时候，开发繁琐）；
+1. 重复代码多，会降低开发效率（`rs.getXxx()`取数据库数据并`setXxx(xx)`封装数据的时候，开发繁琐）。
 
   ```java
-   while(rs.next()){
-          String id = rs.getString("id");
-          String name = rs.getString("name");
-          String age = rs.getString("age");
-          
-          Student s = new Student();
-          s.setId(id);
-          s.setName(name);
-          s.setAge(age);
-      }
-  //而mybatis框架中：封装了JDBC代码，使用反射机制帮我们自动创建对象并给属性赋值
+  while(rs.next()){
+      String id = rs.getString("id");
+      String name = rs.getString("name");
+      String age = rs.getString("age");
+  
+      Student s = new Student();
+      s.setId(id);
+      s.setName(name);
+      s.setAge(age);
+  }
+  // 而mybatis框架中封装了JDBC代码，使用反射机制帮我们自动创建对象并给属性赋值
   ```
 
-- sql语句编写在java程序中，sql语句不支持配置，所以就会导致后面要修改语句的时候得重新修改源代码，而重新修改后又得重新编译/重新部署等，并且修改java源代码违反了开闭原则OCP。（互联网分布式架构方面的项目，并发量很大，系统需要不断的优化，各方面的优化，其中有一条非常重要的优化是SQL优化）。------SQL语句可以写到配置文件中，此条确定并不那么主要。
+2. sql语句编写在java程序中，sql语句不支持配置，所以就会导致后面要修改语句的时候得重新修改源代码，而重新修改后又得重新编译/重新部署等，并且修改java源代码违反了开闭原则OCP。（互联网分布式架构方面的项目，并发量很大，系统需要不断的优化，各方面的优化，其中有一条非常重要的优化是SQL优化）。------SQL语句可以写到配置文件中，此条确定并不那么主要。
 
-# MyBatic使用步骤
+# MyBatic的单独使用
 
 ## 一：依赖导入
 
@@ -169,7 +172,7 @@ JDBC缺点：
     <artifactId>mysql-connector-java</artifactId>
     <version>8.0.21</version>
 </dependency>
-<!-- mybatis 整合 spring的时候需要 -->
+<!-- mybatis 整合 spring的时候需要的依赖 -->
 <dependency>
     <groupId>org.mybatis</groupId>
     <artifactId>mybatis-spring</artifactId>
@@ -179,20 +182,9 @@ JDBC缺点：
 
 
 
-## 二：mybatis全局配置文件
+## 二：全局配置
 
-MyBatis可以单独使用，当单独使用的时候需要mybatis-config.xml配置文件，该文件为MyBatis的全局配置文件，主要配置MyBatis的数据源（DataSource）、事务管理（TransactionManager）、以及打印SQL语句、开启二级缓存、设置实体类别名等功能。XxxMapper.xml文件：MyBatis是"半自动"的ORM框架，即SQL语句需要开发者自定义，MyBatis的关注点在POJO与SQL之间的映射关系。那么SQL语句在哪里配置自定义呢？就在Mapper.xml中配置。
-
-![](img/globalconfig.png)
-
-映射器是 MyBatis 中最重要的文件，文件中包含一组 SQL 语句（例如查询、添加、删除、修改），这些语句称为映射语句或映射 SQL 语句。映射器由 Java 接口和 XML 文件（或注解）共同组成。
-
-映射器有以下两种实现方式。
-
-- 通过 XML 文件方式实现，比如我们在 mybatis-config.xml 文件中描述的 XML 文件，用来生成 mapper。
-- 通过注解的方式实现，使用 Configuration 对象注册 Mapper 接口。
-
-### **mybatis-config.xml**
+**mybatis-config.xml，放于类路径下：**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -234,7 +226,7 @@ MyBatis可以单独使用，当单独使用的时候需要mybatis-config.xml配�
   		<property name="DB2" value="db2"/>
   		<property name="Oracle" value="oracle" />
 	</databaseIdProvider>
-    <!-- 映射器配置 -->
+    <!-- 映射器引入 -->
     <mappers>
         <mapper resource="BlogMapper.xml"/>
     </mappers>
@@ -250,9 +242,21 @@ username=root
 password=123456
 ```
 
+**MyBatis的全局配置：**MyBatis可以单独使用，当单独使用的时候需要mybatis-config.xml配置文件，该文件为MyBatis的全局配置文件，主要配置MyBatis的数据源（DataSource）、事务管理（TransactionManager）、以及打印SQL语句、开启二级缓存、设置实体类别名等功能。
 
+**XxxMapper.xml文件：**MyBatis是"半自动"的ORM框架，即SQL语句需要开发者自定义，MyBatis的关注点在POJO与SQL之间的映射关系。那么SQL语句在哪里配置并自定义呢？就是在Mapper.xml中配置。
 
-### 其他配置项说明
+![](img/globalconfig.png)
+
+映射器是 MyBatis 中最重要的文件，文件中包含一组 SQL 语句（例如查询、添加、删除、修改），这些语句称为映射语句或映射 SQL 语句。**映射器由 Java 接口和 XML 文件（或注解）共同组成，也可以是纯xml的映射器。**
+
+**三种映射器：**
+
+1. 纯XML映射器。
+2. xml+接口的映射器。
+3. xml+注解的映射器，使用 Configuration 对象注册 Mapper 接口。
+
+其他配置项说明
 
 在Mybatis全局配置文件中可以为某个Java类起别名：(注意配置文件内各标签的顺序有要求)
 
@@ -268,47 +272,26 @@ password=123456
 <!-- @Alias注解也可以为类起别名 -->
 ```
 
-告诉mybatis到哪去寻找SQL映射语句的文件（mapper.xml）：
-
-```xml
-<!-- resource：相对于类路径 -->
-<!-- url：网络路径或磁盘路径，绝对定位 -->
-<!-- class：用来引用接口，接口和配置文件要在同一包并且名字相同，没有配置文件时可以使用注解写SQL语句 -->
-<mappers>
-	<mapper resource="BlogMapper.xml"/>
-</mappers>
-<!-- 映射到该包下所有的xml文件，使用该方式时该包下的mapper文件名要和接口名一致、文件的namespace是接口全限定名 -->
-<mappers>
-	<package resource="com.lsl.blog.dao"/>
-</mappers>
-```
-
-```xml
-<mapper namespace="com.lsl.dao.GetService"> <!-- 要指定接口，而且该文件名要和接口名完全一致，SQL语句id要和方法名对应 -->
-    <select id="getAll" resultType="com.lsl.pojo.Student">
-        select `name`,`age` from mysqltest.t_student
-    </select>
-</mapper>
-```
+引入映射器的三种方式（告诉mybatis到哪去寻找SQL映射语句的文件（mapper.xml））：
 
 
 
-## 三：配置Mapper.xml
+## 三：配置映射器
 
 ### 基本使用
 
-自定义SQL语句的配置文件。基本格式如下：
+xxxMapper.xml，放于类路径下或者是绑定接口所在路径下，基本格式如下：
 
 ```xml
-<!-- 定义SQL语句 -->
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lsl.dao.BlogMapper">
-    <!--mybatis会自动创建对象并把查询结果放到对象对应的属性上，需要告知resultType-->
-    <!--查询结果集的列名一定要和对象的属性名对应，不对应的时候使用as起别名-->
-    <!--select语句的id用于标识，通过id可以使用该SQL语句-->
+    <!-- mybatis会自动创建对象并把查询结果放到对象对应的属性上，需要告知resultType -->
+    <!-- 查询结果集的列名一定要和对象的属性名对应，不对应的时候使用as起别名 -->
+    <!-- select语句的id用于标识，通过id可以使用该SQL语句 -->
+    <!-- SQL语句末尾不需要分号 -->
     <select id="getAll" resultType="com.lsl.domain.Student">
         select id as sid,name as sname,birth as sbirth from t_student
     </select>
@@ -322,8 +305,6 @@ password=123456
 #### namespace
 
 将映射文件与接口绑定，要求接口中声明的方法和映射文件中定义的SQL方法的id一致，使用namespace就可以面向接口编程了。
-
-
 
 #### parameterType
 
@@ -431,7 +412,7 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 **传入Collection(List、Set)、数组时：**也会把这些数据封装进Map，此时的key为collection（Collection）、list或collection（List）、array（数组）；如果取值就是例如：`#{list[0]}`。
 
-**#{}的丰富用法：** （规定参数规则，jdbcType等）
+**`#{}`的丰富用法：** （规定参数规则，jdbcType等）
 
 ```java
 // 全局配置中：jdbcTypeForNull=OTHER，而Oracle不支持；两种解决方法：
@@ -444,10 +425,10 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 
 
-** `#{}和${}`的区别 **：（都可以取pojo和map的值）
+**`#{}和${}`的区别 ：**（都可以取pojo和map的值）
 
-- #{}：以预编译的显式将参数设置到SQL语句中；PreparedStatement。
-- ${}：取出值直接封装进SQL语句中；Statement。（原生jdbc不支持使用占位符的地方就可以使用这个，分表、排序等场景）
+- `#{}`：以预编译的显式将参数设置到SQL语句中；PreparedStatement。
+- `${}`：取出值直接封装进SQL语句中；Statement。（原生jdbc不支持使用占位符的地方就可以使用这个，分表、排序等场景）
 
 参数封装为Map的源码分析（了解）：
 
@@ -751,12 +732,11 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 
 #### else：分页和查询
 
-where和if：什么是分页查询？为什么要有分页查询？
+**where和if：什么是分页查询？为什么要有分页查询？**
 
-当数据量过大时，可能会导致各种各样的问题发生，例如：服务器资源被耗尽，因数据传输量过大而使处理超时，等等。最终都会导致查询无法完成。
-解决这个问题的一个策略就是“分页查询”，也就是说不要一次性查询所有的数据，每次只查询一“页“的数据。这样分批次地进行处理，可以呈现出很好的用户体验，对服务器资源的消耗也不大。数据库管理系统将数据分区成固定大小的区块，称为“页”。
+当数据量过大时，可能会导致各种各样的问题发生，例如：服务器资源被耗尽，因数据传输量过大而使处理超时，等等。最终都会导致查询无法完成。解决这个问题的一个策略就是“分页查询”，也就是说不要一次性查询所有的数据，每次只查询一“页“的数据。这样分批次地进行处理，可以呈现出很好的用户体验，对服务器资源的消耗也不大。数据库管理系统将数据分区成固定大小的区块，称为“页”。
 
-分页查询的SQL语句：
+**分页查询的SQL语句：**
 
 分页查询时浏览器会向服务器提交：pageNo（页码）、pageSize（每页显示的数据）、查询条件。
 
@@ -764,7 +744,7 @@ where和if：什么是分页查询？为什么要有分页查询？
 select s.* from table_name s where ... order by table.xx asc/desc  limit (pageNo-1)*pageSize,pageSize;
 ```
 
-分页查询Java代码：
+**分页查询Java代码：**
 
 浏览器提交的数据？查询条件（可能没有也可能有多个）、pageNo（页码）、pageSize（每页的记录条数）。
 
@@ -870,7 +850,7 @@ ObjectMapper om = new ObjectMapper();
 String json = om.writeValueAsStream(java对象); 
 ```
 
-## 四：mybatis-操作数据库的具体实现
+## 四：操作数据库的具体实现
 
 ### 基本操作
 
@@ -922,35 +902,34 @@ public class MainTest {
 
  关于sqlSession对象的一些方法说明：
 
-- ```java
+1. ```java
   // 增，返回造成影响的记录条数
   sqlSession.insert("save", stu);  // 传参
   sqlSession.insert("save"); // 不传入参数，直接执行指定SQL语句
   ```
 
-- ```java
+2. ```java
   // 修改，返回造成影响的记录条数
   sqlSession.update("update", stu2); 
   ```
 
-- ```java
+3. ```java
   // 查询
   sqlSession.selectOne("getById", "1"); // 查，返回某条数据，后面是传参
   sqlSession.selectList("getAll"); // 查，返回List集合
   ```
-  
-- ```java
+
+4. ```java
   // 删除
   sqlSession.delete("delete","2"); // 删除，返回造成影响的记录条数
   ```
-  
-- ```java
+
+5. ```java
   // 当Mapper.xml使用命名空间时（命名空间指定要绑定的接口），接口和Mapper.xml文件会绑定，接口的方法对应mapper文件中的sql语句
   // 此时就可以使用这个得到接口对象，从而调用接口的方法来实现对数据库的操作
   sqlSession.getMapper(TestMapper.class); 
   ```
 
-  
 
 
 
@@ -981,7 +960,7 @@ public class MainTest {
 
 # maven-配置导出问题
 
-由于maven的约定大于配置，maven项目的**java目录下的配置文件默认是不会导出并生效的**，解决方案就是在pom/xml文件中加入以下配置，maven项目中都可以加上以下配置防止资源导出失败的问题：
+由于maven的约定大于配置，maven项目的**java目录下的配置文件默认是不会导出并生效的**，解决方案就是在`pom.xml`文件中加入以下配置，maven项目中都可以加上以下配置防止资源导出失败的问题：
 
 ```xml
 <build>
@@ -1005,7 +984,7 @@ public class MainTest {
 </build>
 ```
 
-# 整合spring
+# **Mybatis整合Spring**
 
 mybatis框架的SqlSessionFactory也好，还是池化技术的数据库连接池也好，程序中的具体实现都体现为各个类的对象的行为，因此可以通过spring的IOC容器来进行统一的管理，需要使用到的时候就通过依赖注入获取相应的对象，进而执行相关操作。
 
@@ -1015,9 +994,9 @@ MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它
 
 **spring与mybatis的整合：**
 
-1. 添加依赖；
-2. spring容器配置：数据源、SqlSessionFactory、MapperScannerConfigurer、开启注解扫描、事务配置等；
-3. mybatis的全局配置文件，数据源已经交由spring管理故不需要再配置；
+1. 添加依赖。
+2. spring容器配置：数据源、SqlSessionFactory、MapperScannerConfigurer、开启注解扫描、事务配置等。
+3. mybatis的全局配置文件，数据源已经交由spring管理故不需要再配置。
 4. dao、mapper.xml、service的实现。之后**初始化spring容器后**就可以通过service实现类的对象的行为来实现功能了。
 
 **一：导入整合需要的依赖**
@@ -1078,7 +1057,7 @@ MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它
 
     </bean>
     <!-- 为了解决MapperFactoryBean繁琐而生的，有了MapperScannerConfigurer就不需要
-	我们去为每个映射接口去声明一个bean了。大大缩减了开发的效率 -->
+	我们去为每个映射接口都声明为一个bean了。大大提高了开发的效率 -->
     <!-- 自动扫描 将Mapper接口生成代理注入到Spring -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
@@ -1091,11 +1070,9 @@ MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它
 
 **三：映射文件、接口、service层**
 
-- 映射文件通过namespace与接口绑定，继而实现接口方法与SQL语句的绑定（接口方法和SQL语句id要一致，方法传入参数的类型、返回值类型要和SQL一致）；
-- service层，面向功能的实现，注入mapper映射的接口的实现类并调用实现类方法来完成需要的功能;
-- 注意：整合后需要根据配置来初始化IOC容器后，才能使用注册进去的组件。
-
-
+1. 映射文件通过namespace与接口绑定，继而实现接口方法与SQL语句的绑定（接口方法和SQL语句id要一致，方法传入参数的类型、返回值类型要和SQL一致）。
+2. service层，面向功能的实现，注入mapper映射的接口的实现类并调用实现类方法来完成需要的功能。
+3. 注意：整合后需要根据配置来初始化IOC容器后，才能使用注册进去的组件。
 
 # 缓存机制
 
@@ -1103,17 +1080,17 @@ MyBatis提供了两级缓存：
 
 一级缓存（本地缓存）：与数据库同一次会话期间查询到的数据会放在本地缓存中，后续再要获取相同的数据会直接走缓存，不需要去查询数据库；
 
-- SqlSession级别的缓存，一级缓存默认开启；
-- 如何验证同一次会话期间再次查询相同数据走的是缓存？再次执行完全一致的SQL语句，最后判断两个语句的值是否相等；
+- SqlSession级别的缓存，一级缓存默认开启。
+- 如何验证同一次会话期间再次查询相同数据走的是缓存？再次执行完全一致的SQL语句，最后判断两个语句的值是否相等。
 - 一级缓存失效的四种情况：
-  1. SqlSession不同；
-  2. SqlSession相同，但查询的条件不同；
-  3. SqlSession相同，但当前会话中存在增、删、改的操作；（增删改操作可能会改变所要查询的值）
+  1. SqlSession不同。
+  2. SqlSession相同，但查询的条件不同。
+  3. SqlSession相同，但当前会话中存在增、删、改的操作。（增删改操作可能会改变所要查询的值）
   4. SqlSession相同，但会话中执行了`sqlSession.clearCache()`来清除缓存。
 
 二级缓存（全局缓存）：基于namespace的缓存，一行namespace对应一个二级缓存
 
-- 工作机制：一个会话内的查询的数据会放到一级缓存，当此会话关闭后查询到的数据就会放到二级缓存，新的会话的查询就可以参考二级缓存；
+- 工作机制：一个会话内的查询的数据会放到一级缓存，当此会话关闭后查询到的数据就会放到二级缓存，新的会话的查询就可以参考二级缓存。
 
 - 二级缓存的使用：
 
@@ -1140,11 +1117,11 @@ MyBatis提供了两级缓存：
 
 缓存有关的设置或属性：
 
-- `<setting name="cacheEnabled" value="true"/>`：设置为false只会关闭二级缓存；
-- select语句的useCache属性：属性值为false只会关闭二级缓存；
-- 增删改标签的flushCache属性：设置为true，增删改执行完后就会清楚一级和二级缓存；
-- sqlSession.clearCache()：只会清楚一级缓存；
-- localCacheScope：本地缓存作用域。
+1. `<setting name="cacheEnabled" value="true"/>`：设置为false只会关闭二级缓存；
+2. select语句的useCache属性：属性值为false只会关闭二级缓存；
+3. 增删改标签的flushCache属性：设置为true，增删改执行完后就会清楚一级和二级缓存；
+4. sqlSession.clearCache()：只会清楚一级缓存；
+5. localCacheScope：本地缓存作用域。
 
 整合第三方缓存，以ehcache为例：看文档
 
