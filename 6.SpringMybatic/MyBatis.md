@@ -116,7 +116,7 @@ xxxMapper.xml，放于类路径下或者是其绑定接口所在路径下，这�
 
 
 
-## 四：操作实现
+## 四：SQL操作执行
 
 **映射文件与接口绑定的情况下：**（映射文件使用namespace来绑定了接口，映射文件与接口不在同一目录下，则接口名与映射文件名可以不同）
 
@@ -139,7 +139,7 @@ public class TestMybatis {
 }
 ```
 
-**SqlSessionFactory：**每个基于 MyBatis 的应用都是以一个 SqlSessionFactory 的实例为核心的，构建 SqlSessionFactory时可以使用Java配置类来初始化或者使用xml配置来初始化。
+**SqlSessionFactory：**每个基于 MyBatis 的应用，操作数据库都是以一个 SqlSessionFactory 的实例为核心的，构建 SqlSessionFactory时可以使用Java配置类来初始化或者使用xml配置来初始化。
 
 **SqlSession：**事务开启与业务代码：通过SqlSessionFactory对象的openSession()方法开启会话、事务，该方法会返回一个SqlSession对象（SqlSession等同于Connection），一个专门用来执行SQL语句的一个会话对象。
 
@@ -205,7 +205,28 @@ public static void main(String[] args) throws IOException {
   sqlSession.getMapper(TestMapper.class); 
   ```
 
-# 全局配置说明
+# 全局配置文件说明
+
+**全局配置文件简单了解，在SSM整合时并不需要该配置，都交由Spring来进行管理。**
+
+**MyBatis的全局配置：**MyBatis可以单独使用，当单独使用的时候需要配置好`mybatis-config.xml`（常用这个来命名）全局配置，主要配置MyBatis的数据源（DataSource）、事务管理（TransactionManager）、以及打印SQL语句、开启二级缓存、设置实体类别名等功能。
+
+**XxxMapper.xml文件：**MyBatis是"半自动"的ORM框架，即SQL语句需要开发者自定义，MyBatis的关注点在POJO与SQL语句之间的映射关系。那么SQL语句在哪里配置并自定义呢？就是在Mapper.xml中配置。
+
+![](img/globalconfig.png)
+
+映射器是 MyBatis 中最重要的文件，文件中包含一组 SQL 语句（例如查询、添加、删除、修改），这些语句称为映射语句或映射 SQL 语句。**映射器由 Java 接口和 XML 文件（或注解）共同组成，也可以是纯xml的映射器。** **三种映射器：**
+
+1. 纯XML映射器，此时需要通过SqlSession的对象的方法来调用映射器中配置好的SQL语句。
+2. xml+接口的映射器，此时可通过`sqlSession.getMapper(XxxMapper.class)`来获取接口的实现类对象，然后再执行方法即可执行绑定的SQL语句。
+3. xml+注解的映射器，使用 Configuration 对象注册 Mapper 接口。
+
+**配置文件的标签与属性：**
+
+1. environments标签，依赖配置多个数据库环境，default属性用来选定使用哪个数据库配置；environment内配置数据库，id用来进行环境标识，default属性就是根据这个id来选用。
+2. transactionManager：用来设置事务管理方式，type属性值为JDBC或MANAGED，JDBC表示使用jdbc中原生的事务管理方式，即提交、回滚需要手动处理，MANAGED就是被管理，比如使用Spring来管理等。
+3. dataSource：数据源，type属性值有POOLED、UNPOOLED、JNDI，POOLED表示使用数据库连接池缓存数据库连接，UNPOOLED表示不使用，JNDI表示使用上下文中的数据源。（SSM整合时使用Spring提供的数据源，并不需要这个来提供数据库）
+4. 
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -258,78 +279,80 @@ jdbc.properties：
 
 ```properties
 jdbc.driver=com.mysql.cj.jdbc.Driver
-jdbc.url=jdbc:mysql://localhost:3306/jdbctest?characterEncoding=utf8
+jdbc.url=jdbc:mysql://localhost:3306/mysqltest?characterEncoding=utf8&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai
 jdbc.username=root
-jdbc.password=123456
+jdbc.passwd=123456
 ```
-
-**MyBatis的全局配置：**MyBatis可以单独使用，当单独使用的时候需要配置好`mybatis-config.xml`（常用这个来命名）全局配置，主要配置MyBatis的数据源（DataSource）、事务管理（TransactionManager）、以及打印SQL语句、开启二级缓存、设置实体类别名等功能。
-
-**XxxMapper.xml文件：**MyBatis是"半自动"的ORM框架，即SQL语句需要开发者自定义，MyBatis的关注点在POJO与SQL语句之间的映射关系。那么SQL语句在哪里配置并自定义呢？就是在Mapper.xml中配置。
-
-![](img/globalconfig.png)
-
-映射器是 MyBatis 中最重要的文件，文件中包含一组 SQL 语句（例如查询、添加、删除、修改），这些语句称为映射语句或映射 SQL 语句。**映射器由 Java 接口和 XML 文件（或注解）共同组成，也可以是纯xml的映射器。**
-
-**三种映射器：**
-
-1. 纯XML映射器，此时需要通过SqlSession的对象的方法来调用映射器中配置好的SQL语句。
-2. xml+接口的映射器，此时可通过`sqlSession.getMapper(XxxMapper.class)`来获取接口的实现类对象，然后再执行方法即可执行绑定的SQL语句。
-3. xml+注解的映射器，使用 Configuration 对象注册 Mapper 接口。
 
 **在Mybatis全局配置文件中可以为某个Java类起别名：**(注意配置文件内各标签的顺序有要求)
 
 ```xml
-<!-- 默认的别名为类名小写 -->
-<typeAliases>
-    <typeAlias type="com.lsl.domain.Student" alias="Student"/>
-    ......
-</typeAliases>
-<!--自动为某个包下所有的类起别名，别名默认为类名小写-->
-<typeAliases>
-    <package name="com.lsl.domain"/>
-</typeAliases>
+<configuration>
+    <!-- 不设置alias属性，默认的别名为类名小写（不区分大小写） -->
+    <typeAliases>
+        <typeAlias type="com.lsl.domain.Student" alias="Student"/>
+        ......
+    </typeAliases>
+    <!-- 自动为某个包下所有的类起别名，默认别名为类名小写（不区分大小写） -->
+    <typeAliases>
+        <package name="com.lsl.domain"/>
+    </typeAliases>
+</configuration>
 <!-- @Alias注解也可以为类起别名 -->
 ```
 
 **全局配置中映射文件引入的三种方式：**
 
 ```xml
-<!-- 使用相对于类路径的资源引用 -->
+<!-- 使用相对于类路径来引入映射文件 -->
 <mappers>
-  <mapper resource="org/mybatis/builder/AuthorMapper.xml"/>
-  <mapper resource="org/mybatis/builder/BlogMapper.xml"/>
-  <mapper resource="org/mybatis/builder/PostMapper.xml"/>
+    <mapper resource="org/mybatis/builder/AuthorMapper.xml"/>
+    <mapper resource="org/mybatis/builder/BlogMapper.xml"/>
+    <mapper resource="org/mybatis/builder/PostMapper.xml"/>
 </mappers>
-<!-- 使用完全限定资源定位符（URL），绝对路径 -->
+<!-- 使用完全限定资源定位符（URL）绝对路径来引入 -->
 <mappers>
-  <mapper url="file:///var/mappers/AuthorMapper.xml"/>
-  <mapper url="file:///var/mappers/BlogMapper.xml"/>
-  <mapper url="file:///var/mappers/PostMapper.xml"/>
+    <mapper url="file:///var/mappers/AuthorMapper.xml"/>
+    <mapper url="file:///var/mappers/BlogMapper.xml"/>
+    <mapper url="file:///var/mappers/PostMapper.xml"/>
 </mappers>
-<!-- 使用映射器接口实现类的完全限定类名 -->
+<!-- 使用映射器接口实现类的完全限定类名来引入 -->
 <mappers>
-  <mapper class="org.mybatis.builder.AuthorMapper"/>
-  <mapper class="org.mybatis.builder.BlogMapper"/>
-  <mapper class="org.mybatis.builder.PostMapper"/>
+    <mapper class="org.mybatis.builder.AuthorMapper"/>
+    <mapper class="org.mybatis.builder.BlogMapper"/>
+    <mapper class="org.mybatis.builder.PostMapper"/>
 </mappers>
-<!-- 将包内的映射器接口实现全部注册为映射器 -->
+<!-- 引入包内全部映射器文件，将包内的映射器接口实现全部注册为映射器 -->
+<!-- 要求mapper映射文件和接口所在包一致，并且接口名和映射器名一致 -->
+<!-- 如果在类路径下的映射文件，包也设置为和接口所在包一样的即可 -->
 <mappers>
-  <package name="org.mybatis.builder"/>
+    <package name="org.mybatis.builder"/>
 </mappers>
 ```
 
 这些配置会告诉 MyBatis 去哪里找映射文件，剩下的细节就应该是每个 SQL 映射文件了。
 
-# 映射器配置说明
+# 映射器文件说明
 
-## 元素与细节
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lsl.dao.TestMapper">
+    
+</mapper>
+```
 
-### namespace元素
+**namespace元素：**
 
 将映射器文件与接口绑定，要求接口中声明的方法和映射文件中定义的SQL方法的id一致，使用namespace就可以面向接口编程了。
 
-#### parameterType
+## 获取参数值
+
+
+
+## parameterType
 
 parameterType属性：专门用来给SQL语句的占位符传值，翻译为参数类型，占位符必须使用`#{属性名}`；只有当parameterType是简单类型时可以省略不写。简单类型有17个：
 byte short int long double float char boolean
@@ -368,7 +391,7 @@ sqlSession1.insert("putmap", map);
 
 
 
-#### SQL增删改查
+## SQL增删改查
 
 查询语句：
 
@@ -419,7 +442,7 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 
 
-#### 传入参数处理与取值
+## 传入参数处理与取值
 
 **当传入单个参数：**mybatis不会对其进行任何处理，此时使用`#{参数名}`来获取参数（对参数名没有什么强制要求）；
 
@@ -457,7 +480,7 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 
 
-#### Select语句返回值封装
+## Select语句返回值封装
 
 **resultType：**
 
@@ -596,7 +619,7 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 
 
 
-#### 动态SQL语句
+## 动态SQL语句
 
 传入多个参数用于SQL语句的查询，最后完整的SQL语句由传入参数和自己设定的表达式规则来确定，SQL语句不是一成不变的。
 
@@ -753,7 +776,7 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 
 
 
-#### else：分页和查询
+## else：分页和查询
 
 **where和if：什么是分页查询？为什么要有分页查询？**
 
