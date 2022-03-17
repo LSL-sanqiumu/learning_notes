@@ -332,7 +332,7 @@ jdbc.passwd=123456
 
 这些配置会告诉 MyBatis 去哪里找映射文件，剩下的细节就应该是每个 SQL 映射文件了。
 
-# 映射器文件说明
+# 映射器文件
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -348,26 +348,107 @@ jdbc.passwd=123456
 
 将映射器文件与接口绑定，要求接口中声明的方法和映射文件中定义的SQL方法的id一致，使用namespace就可以面向接口编程了。
 
-## 获取参数值
+## SQL语句参数值传入
+
+**MyBatis获取参数值的两种方式：**
+
+1. `${}`：本质就是字符串拼接，直接将${}所代表的值相连在一起。若为字符串类型或日期类型的字段进行赋值时，需要手动加单引号。
+2. `${}`：本质就是占位符赋值  。此时为字符串类型或日期类型的字段进行赋值时，会自动添加单引号，不需要我们手动提交。
+
+**传入参数处理与取值：**
+
+1. 传入单个参数：mybatis不会对其进行任何处理，此时可使用`#{参数名}`来获取参数（此时对参数名没有什么强制要求）。
+
+   ```xml
+   <mapper namespace="test">
+       <select id="getAll" resultType="com.lsl.pojo.School">
+           select * from school where pid=${id}
+       </select>
+   </mapper>
+   ```
+
+2. 传入多个参数：若mapper接口中的方法参数为多个时，此时MyBatis会自动将这些参数放在一个map集合中，然后取值时参数名就得是默认的key：`param1、param2、param3、...`或`arg0、arg1、arg2...`；可以在mapper接口方法参数类型前使用`@Param("id")`注解指定key，就不用通过默认的key来取值了。
+
+   ```xml
+   <select id="getOne" resultType="User">  
+   	select * from t_user where username = #{arg0} and password = #{arg1}  
+   </select>
+   ```
+
+   ```xml
+   <select id="getOne" resultType="User">
+   	select * from t_user where username = '${param1}' and password = '${param2}'
+   </select>
+   ```
+
+3. 传入pojo对象：如果需要传入的多个参数是业务逻辑的数据模型，可以传入pojo对象，然后通过`#{属性名}`就可以直接取到pojo对象的属性值。
+
+   ```xml
+   <!--int insertUser(User user);-->
+   <insert id="addSchool">
+   	insert into school values(null,#{schoolname},#{schoolid}})
+   </insert>
+   <!-- 注意：如果使用${}，取字符串类型、日期类型的属性的数据时需要手动加单引号 -->
+   ```
+
+4. 传入Map类型参数：如果多个参数不是业务模型中的数据，没有对应的pojo，并且不经常使用的情况下，那么可以使用Map类型数据传值。（若mapper接口中的方法需要的参数为多个时，此时可以手动创建Map集合，将这些数据放在Map中只需要通过`${}`和`#{}`访问Map集合的键就可以获取相对应的值）
+
+   ```xml
+   <select id="getOne" resultType="User">
+   	select * from t_user where username = #{username} and password = #{password}
+   </select>
+   <!-- 注意：如果使用${}，取字符串类型、日期类型的属性的数据时需要手动加单引号 -->
+   ```
+
+**什么情况下使用Map传值？**
+
+当javabean不够用的时候；什么时候javabean不够用？一般一张表对应一个javabean，当传值的时候，一些值时A表的，一些值时B表的，而使用select等语句只能传入对象或单个值，这时如果要传入A、B表的值就只能再建一个class，也就是原有的javabean不够用，得再建一个javabean。但单独为一条语句建一个javabean是不明智的，这时就可以使用Map集合传入多个值给语句了。（但如果这数据是经常要用于各种SQL语句之中、经常使用的，可以考虑建pojo）。
+
+**传入Collection(List、Set)、数组时：**也会把这些数据封装进Map，此时的key为collection（Collection）、list或collection（List）、array（数组）；如果取值就是这样取值，例如：`#{list[0]}`，取List集合的第一个值。
+
+**`#{}`的丰富用法：** （用于规定参数规则，jdbcType等）
+
+```java
+// 全局配置中：jdbcTypeForNull=OTHER，而Oracle不支持；两种解决方法：
+// 1：
+#{email,jdbcType=OTHER}
+// 2：
+<settings>
+	<setting name="jdbcTypeForNull" value="NULL"/>    
+</settings>
+```
 
 
 
-## parameterType
+**`#{}和${}`的区别 ：**（都可以取pojo和map的值）
 
-parameterType属性：专门用来给SQL语句的占位符传值，翻译为参数类型，占位符必须使用`#{属性名}`；只有当parameterType是简单类型时可以省略不写。简单类型有17个：
-byte short int long double float char boolean
-Byte Short Integer Long Double Float Character Boolean
-String
+1. `#{}`：以预编译的显式将参数设置到SQL语句中；PreparedStatement。
+2. `${}`：取出值直接拼接进SQL语句中；Statement。（原生jdbc不支持使用占位符的地方就可以使用这个，例如分表、排序等场景）
+
+参数封装为Map的源码分析（了解）：
+
+
+
+
+
+## parameterType属性
+
+parameterType属性：专门用来指定给SQL语句的占位符传值的数据类型，翻译为参数类型，占位符必须使用`#{属性名}`；只有当parameterType是简单类型时可以省略不写。简单类型有17个：
+
+1. 8个基本数据类型：byte、char 、short、int、long、float、double、boolean。
+2. 8个包装类型：Byte Short Integer Long Double Float Character Boolean。
+3. 一个不可变字符串：String。
 
 ```xml
-<select id="getById" parameterType="java.lang.String" resultType="com.lsl.domain.Student">
+<!-- parameterType="java.lang.String" -->
+<select id="getById" resultType="com.lsl.domain.Student">
     select id as sid,name as sname,birth as sbirth
     from t_student where id=#{fafasfa};
     <!--当一个SQL语句的占位符只有一个 这时{}内可以随意 -->
 </select>
 ```
 
-parameterType专门用来给SQL语句传值的，可以使用javabean（Java含有get、set方法的类）、简单类型、Map等。
+parameterType专门用来指定给SQL语句传值时传入参数的类型的，传入参数类型可以是javabean（Java含有get、set方法的类）、简单类型、Map等数据类型。例如传入Map类型的数据：
 
 ```xml
 <!--
@@ -391,19 +472,19 @@ sqlSession1.insert("putmap", map);
 
 
 
-## SQL增删改查
+## MyBatis增删改查
 
-查询语句：
+select标签——查询语句：
 
 ```xml
-<!--mybatis自动创建对象并把查询结果放到对象对应的属性上-->
-<!--查询结果集的列名要和对象的属性名对应，不对应的时候使用as起别名-->
+<!-- mybatis自动创建对象并把查询结果放到对象对应的属性上 -->
+<!-- 查询结果集的列名要和对象的属性名对应，不对应的时候可以在SQL语句中使用as起别名来使对应 -->
 <select id="getAll" resultType="com.lsl.domain.Student">
     select id as sid,name as sname,birth as sbirth from t_student
 </select>
 ```
 
-插入语句：
+insert标签——插入语句：
 
 ```xml
 <insert id="save" parameterType="com.lsl.domain.Student">
@@ -422,7 +503,7 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 ```
 
-修改语句：
+update标签——修改语句：
 
 ```xml
 <update id="update" parameterType="com.lsl.domain.Student">
@@ -432,7 +513,7 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 </update>
 ```
 
-删除语句：
+delete标签——删除语句：
 
 ```xml
 <delete id="delete">
@@ -442,69 +523,35 @@ keyProperty="id" ：将主键值封装给Javabean的某个属性
 
 
 
-## 传入参数处理与取值
+## Select语句结果集封装
 
-**当传入单个参数：**mybatis不会对其进行任何处理，此时使用`#{参数名}`来获取参数（对参数名没有什么强制要求）；
-
-**传入多个参数：**如果该SQL语句**对应方法**处传入的形参是多个，那么mybatis就会对参数进行处理，将多个参数封装进Map集合里，然后取值时参数名就得是默认的key：`param1、param2、param3、...`，但可以在方法参数类型前使用`@Param("id")`注解指定key，就不用通过默认的key来取值了。
-
-**传入pojo：**如果需要传入的多个参数是业务逻辑的数据模型，可以传入pojo，再通过`#{属性名}`直接取属值。
-
-**传入Map：**如果多个参数不是业务模型中的数据，没有对应的pojo，并且不经常使用的情况下，那么可以使用map传值。
-
-**什么情况下使用Map传值？**
-
-当javabean不够用的时候；什么时候javabean不够用？一般一张表对应一个javabean，当传值的时候，一些值时A表的，一些值时B表的，而使用select等语句只能传入对象或单个值，这时如果要传入A、B表的值就只能再建一个class，也就是原有的javabean不够用，得再建一个javabean。但单独为一条语句建一个javabean是不明智的，这时就可以使用Map集合传入多个值给语句了。（但如果这数据是经常要用于各种SQL语句之中、经常使用的，可以考虑建pojo）。
-
-**传入Collection(List、Set)、数组时：**也会把这些数据封装进Map，此时的key为collection（Collection）、list或collection（List）、array（数组）；如果取值就是例如：`#{list[0]}`。
-
-**`#{}`的丰富用法：** （规定参数规则，jdbcType等）
-
-```java
-// 全局配置中：jdbcTypeForNull=OTHER，而Oracle不支持；两种解决方法：
-#{email,jdbcType=OTHER}
-
-<settings>
-	<setting name="jdbcTypeForNull" value="NULL"/>    
-</settings>
-```
-
-
-
-**`#{}和${}`的区别 ：**（都可以取pojo和map的值）
-
-1. `#{}`：以预编译的显式将参数设置到SQL语句中；PreparedStatement。
-2. `${}`：取出值直接封装进SQL语句中；Statement。（原生jdbc不支持使用占位符的地方就可以使用这个，分表、排序等场景）
-
-参数封装为Map的源码分析（了解）：
-
-
-
-## Select语句返回值封装
-
-**resultType：**
+### resultType
 
 查询结果封装类型：resultType专门用来指定**查询结果集**封装的数据类型，可以使用javabean（Java含有get、set方法的class）、简单类型、Map等，不能省略，只有select语句有。javabean不够用的情况下使用Map集合封装（跨表的情况下）。
 
-返回值类型是`List<Xxx>`：resultType要写集合中元素的类型。
+1. mapper接口方法返回值类型是`List<Xxx>`：resultType则要写集合中元素的类型。
 
-返回一条记录的Map：数据字段名就是key，resultType就是map。
+2. mapper接口方法返回值类型是Map（只返回一条记录）：数据字段名就是key，resultType就是map。
 
-返回多条记录的Map<Integer, Employee>：key为主键，resultType为记录封装后的JavaBean（要在接口的SQL映射方法上加上`@MapKey("xx")`注解告诉mybatis封装这个Map时使用哪个属性当主键）。
+3. mapper接口方法返回值类型是`Map<Integer, Employee>`（返回多条数据）：主键就是key，resultType是数据封装进的JavaBean（此时是Employee）（要在mapper接口方法上加上`@MapKey("xx")`注解告诉mybatis封装这个Map时使用JavaBean的哪个属性当主键）。
 
-**resultMap：**（和resultType只能二选一）
 
-用来自定义结果集的封装规则，不指定字段和字段对应属性会自动根据type进行封装，设置时都基本会设置所有的属性与查询结果字段的对应规则；自定义结果集的类型一般都是自定义的JavaBean，基本都用于联表查询后的数据封装。
+### resultMap
+
+（和resultType只能二选一）
+
+用来自定义结果集的封装规则，不指定字段和字段对应属性会自动根据type进行封装，设置时都基本会设置所有的属性与查询结果字段的映射规则；自定义结果集的类型一般都是自定义的JavaBean，基本都用于联表查询后的数据封装。
 
 ```xml
- <resultMap id="MyStudent" type="com.lsl.pojo.Student">
-<!--        <id column="id" property="id"/>-->
-<!--        <result column="name" property="name"/>-->
-<!--        <result column="age" property="age"/>-->
-    </resultMap>
-    <select id="get" resultMap="MyStudent">
-        select * from info where id = #{xsxas}
-    </select>
+ <!-- 字段与属性的映射关系，字段数据封装进哪个属性 -->
+<resultMap id="MyStudent" type="com.lsl.pojo.Student">
+    <!--        <id column="id" property="id"/>-->
+    <!--        <result column="name" property="name"/>-->
+    <!--        <result column="age" property="age"/>-->
+</resultMap>
+<select id="get" resultMap="MyStudent">
+    select * from info where id = #{xsxas}
+</select>
 ```
 
 应用场景一：联表查询后定义JavaBean中的对象的数据封装
@@ -774,9 +821,27 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 </insert>
 ```
 
+## 模糊查询
+
+```java
+// mapper接口方法
+List<User> getUserByLike(@Param("username") String username);
+```
+
+```xml
+<!-- mapper接口方法映射的SQL -->
+<select id="getUserByLike" resultType="User">
+    <!--select * from t_user where username like '%${mohu}%'-->  
+    <!--select * from t_user where username like concat('%',#{mohu},'%')-->  
+    select * from t_user where username like "%"#{mohu}"%"
+</select>
+```
+
+- 其中`select * from t_user where username like "%"#{mohu}"%"`是最常用的。
 
 
-## else：分页和查询
+
+## 分页和查询
 
 **where和if：什么是分页查询？为什么要有分页查询？**
 

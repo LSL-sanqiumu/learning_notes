@@ -341,6 +341,7 @@ properties、settings、typeAliases、typeHandlers、objectFactory、objectWrapp
 </select>
 ```
 ## 多个字面量类型的参数
+
 - 若mapper接口中的方法参数为多个时，此时MyBatis会自动将这些参数放在一个map集合中
 	1. 以arg0,arg1...为键，以参数为值；
 	2. 以param1,param2...为键，以参数为值；
