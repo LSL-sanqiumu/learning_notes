@@ -279,9 +279,13 @@ properties、settings、typeAliases、typeHandlers、objectFactory、objectWrapp
 ```
 - ![](Resources/mapper接口和mapper映射文件在同一包下.png)
 # 默认的类型别名
+
 ![](Resources/默认的类型别名1.png)
+
 ![](Resources/默认的类型别名2.png)
+
 # MyBatis的增删改查
+
 1. 添加
 	```xml
 	<!--int insertUser();-->

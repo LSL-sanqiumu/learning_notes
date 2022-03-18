@@ -205,9 +205,11 @@ public static void main(String[] args) throws IOException {
   sqlSession.getMapper(TestMapper.class); 
   ```
 
-# 全局配置文件说明
+# 全局配置文件
 
-**全局配置文件简单了解，在SSM整合时并不需要该配置，都交由Spring来进行管理。**
+**全局配置文件简单了解，在SSM整合时并不需要该配置，配置的东西都交由Spring来进行管理。**
+
+## 了解
 
 **MyBatis的全局配置：**MyBatis可以单独使用，当单独使用的时候需要配置好`mybatis-config.xml`（常用这个来命名）全局配置，主要配置MyBatis的数据源（DataSource）、事务管理（TransactionManager）、以及打印SQL语句、开启二级缓存、设置实体类别名等功能。
 
@@ -221,12 +223,13 @@ public static void main(String[] args) throws IOException {
 2. xml+接口的映射器，此时可通过`sqlSession.getMapper(XxxMapper.class)`来获取接口的实现类对象，然后再执行方法即可执行绑定的SQL语句。
 3. xml+注解的映射器，使用 Configuration 对象注册 Mapper 接口。
 
+## 使用说明
+
 **配置文件的标签与属性：**
 
 1. environments标签，依赖配置多个数据库环境，default属性用来选定使用哪个数据库配置；environment内配置数据库，id用来进行环境标识，default属性就是根据这个id来选用。
 2. transactionManager：用来设置事务管理方式，type属性值为JDBC或MANAGED，JDBC表示使用jdbc中原生的事务管理方式，即提交、回滚需要手动处理，MANAGED就是被管理，比如使用Spring来管理等。
 3. dataSource：数据源，type属性值有POOLED、UNPOOLED、JNDI，POOLED表示使用数据库连接池缓存数据库连接，UNPOOLED表示不使用，JNDI表示使用上下文中的数据源。（SSM整合时使用Spring提供的数据源，并不需要这个来提供数据库）
-4. 
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -284,7 +287,9 @@ jdbc.username=root
 jdbc.passwd=123456
 ```
 
-**在Mybatis全局配置文件中可以为某个Java类起别名：**(注意配置文件内各标签的顺序有要求)
+## 配置别名
+
+**在Mybatis全局配置文件中可以为某个Java类起别名：**(注意配置文件内各标签的顺序有要求：properties、settings、typeAliases、typeHandlers、objectFactory、objectWrapperFactory、reflectorFactory、plugins、environments、databaseIdProvider、mappers)
 
 ```xml
 <configuration>
@@ -298,8 +303,15 @@ jdbc.passwd=123456
         <package name="com.lsl.domain"/>
     </typeAliases>
 </configuration>
-<!-- @Alias注解也可以为类起别名 -->
 ```
+
+@Alias注解也可以为类起别名。Mybatis有一些默认配置好的类型别名：
+
+![](img/typeAliases1.png)
+
+![](img/typeAliases2.png)
+
+## 映射引入
 
 **全局配置中映射文件引入的三种方式：**
 
@@ -352,8 +364,8 @@ jdbc.passwd=123456
 
 **MyBatis获取参数值的两种方式：**
 
-1. `${}`：本质就是字符串拼接，直接将${}所代表的值相连在一起。若为字符串类型或日期类型的字段进行赋值时，需要手动加单引号。
-2. `${}`：本质就是占位符赋值  。此时为字符串类型或日期类型的字段进行赋值时，会自动添加单引号，不需要我们手动提交。
+1. `${}`：本质就是字符串拼接，直接将${}所代表的值相连在一起。若为字符串类型或日期类型的字段进行赋值时，需要手动加单引号（`'${}'`），如果不加，则是字符值。
+2. `${}`：本质就是占位符赋值  。此时为字符串类型或日期类型的字段进行赋值时，会自动添加单引号，不需要我们手动添加。
 
 **传入参数处理与取值：**
 
@@ -367,7 +379,7 @@ jdbc.passwd=123456
    </mapper>
    ```
 
-2. 传入多个参数：若mapper接口中的方法参数为多个时，此时MyBatis会自动将这些参数放在一个map集合中，然后取值时参数名就得是默认的key：`param1、param2、param3、...`或`arg0、arg1、arg2...`；可以在mapper接口方法参数类型前使用`@Param("id")`注解指定key，就不用通过默认的key来取值了。
+2. 传入多个参数：若mapper接口中的方法参数为多个时，此时MyBatis会自动将这些参数放在一个map集合中，然后取值时参数名就得是默认的key：`param1、param2、param3、...`或`arg0、arg1、arg2...`；可以在mapper接口方法参数类型前**使用`@Param("id")`注解指定key**，就不用通过默认的key来取值了。
 
    ```xml
    <select id="getOne" resultType="User">  
@@ -474,7 +486,7 @@ sqlSession1.insert("putmap", map);
 
 ## MyBatis增删改查
 
-select标签——查询语句：
+**select标签——查询语句：**
 
 ```xml
 <!-- mybatis自动创建对象并把查询结果放到对象对应的属性上 -->
@@ -484,36 +496,32 @@ select标签——查询语句：
 </select>
 ```
 
-insert标签——插入语句：
+**insert标签——插入语句：**
 
 ```xml
 <insert id="save" parameterType="com.lsl.domain.Student">
-    insert into t_student
-        (id, name, birth) values (#{sid}, #{sname}, #{sbirth})
+    insert into t_student(id, name, birth) values (#{sid}, #{sname}, #{sbirth})
 </insert>
 <!-- 如果要获取自增主键的值： 
-useGeneratedKeys="true" ：使用自增主键获取主键值策略
-keyProperty="id" ：将主键值封装给Javabean的某个属性
+	useGeneratedKeys="true" ：开启使用自增主键获取主键值策略
+	keyProperty="id" ：将主键值封装给Javabean的id属性
 -->
 <insert id="save" parameterType="com.lsl.domain.Student" useGeneratedKeys="true" keyProperty="id" databaseID="mysql">
-    insert into t_student
-        (id, name, birth) values (#{sid}, #{sname}, #{sbirth})
+    insert into t_student(id, name, birth) values (#{sid}, #{sname}, #{sbirth})
 </insert>
-<!-- Oracle是使用序列生成主键值的 先略过-->
-
+<!-- Oracle是使用序列生成主键值的 先略过 -->
 ```
 
-update标签——修改语句：
+**update标签——修改语句：**
 
 ```xml
 <update id="update" parameterType="com.lsl.domain.Student">
-    update t_student set
-        name=#{sname}, birth=#{sbirth}
+    update t_student set name=#{sname}, birth=#{sbirth}
     where id=#{sid}
 </update>
 ```
 
-delete标签——删除语句：
+**delete标签——删除语句：**
 
 ```xml
 <delete id="delete">
@@ -523,24 +531,25 @@ delete标签——删除语句：
 
 
 
+
+
 ## Select语句结果集封装
 
 ### resultType
 
-查询结果封装类型：resultType专门用来指定**查询结果集**封装的数据类型，可以使用javabean（Java含有get、set方法的class）、简单类型、Map等，不能省略，只有select语句有。javabean不够用的情况下使用Map集合封装（跨表的情况下）。
+resultType专门用来指定将**查询结果集**封装到哪种数据类型中，可以使用javabean（Java含有get、set方法的class）、简单数据类型、Map等，不能省略，只有select语句有。javabean不够用的情况下使用Map集合封装（跨表的情况下）。封装到集合中需要注意以下细节：
 
 1. mapper接口方法返回值类型是`List<Xxx>`：resultType则要写集合中元素的类型。
 
 2. mapper接口方法返回值类型是Map（只返回一条记录）：数据字段名就是key，resultType就是map。
 
-3. mapper接口方法返回值类型是`Map<Integer, Employee>`（返回多条数据）：主键就是key，resultType是数据封装进的JavaBean（此时是Employee）（要在mapper接口方法上加上`@MapKey("xx")`注解告诉mybatis封装这个Map时使用JavaBean的哪个属性当主键）。
-
+3. mapper接口方法返回值类型是`Map<Integer, Employee>`（返回多条数据）：主键就是key，resultType是数据封装进的JavaBean（此时是Employee）（也可以在mapper接口方法上加上`@MapKey("xx")`注解告诉mybatis封装这个Map时使用JavaBean的哪个属性当主键-key）。
 
 ### resultMap
 
 （和resultType只能二选一）
 
-用来自定义结果集的封装规则，不指定字段和字段对应属性会自动根据type进行封装，设置时都基本会设置所有的属性与查询结果字段的映射规则；自定义结果集的类型一般都是自定义的JavaBean，基本都用于联表查询后的数据封装。
+用来自定义结果集的封装规则，不指定字段与对象属性的映射时会自动根据type（数据类型）进行映射封装；使用Map时都基本会设置所有的属性与查询结果字段的映射规则；自定义结果集的类型一般都是自定义的JavaBean，基本都是用于联表查询后的数据封装。基本示例如下：
 
 ```xml
  <!-- 字段与属性的映射关系，字段数据封装进哪个属性 -->
@@ -550,11 +559,11 @@ delete标签——删除语句：
     <!--        <result column="age" property="age"/>-->
 </resultMap>
 <select id="get" resultMap="MyStudent">
-    select * from info where id = #{xsxas}
+    select * from info where id = #{free}
 </select>
 ```
 
-应用场景一：联表查询后定义JavaBean中的对象的数据封装
+resultMap应用场景一：联表查询后定义JavaBean中的对象的数据封装
 
 ```xml
 <!-- 联表查询：通过级联属性或assocation来封装数据 -->
@@ -580,13 +589,12 @@ delete标签——删除语句：
 </select>
 ```
 
-分步查询（使用association实现）和懒加载：（懒加载：需要使用到查询的信息时才加载）
+分步查询（使用association实现）和懒加载：（懒加载：需要使用到查询的信息时才进行加载，用不到就不加载）
 
 ```xml
 <!-- 通过association实现分步查询 -->
 <resultMap id="StudentInfoStep" type="com.lsl.pojo.Student">
     <id column="pid" property="pid"/>
-    <!--  -->
     <association property="schools" select="step" column="pid">
     </association>
 </resultMap>
@@ -596,7 +604,7 @@ delete标签——删除语句：
 <select id="step" resultType="com.lsl.pojo.School">
     select * from school where pid=#{pid}
 </select>
-<!-- 配置懒加载，在schools对象的信息没被使用时分步查询step不会进行操作 -->
+<!-- 配置懒加载，在schools对象的信息没被使用时分步查询（step）不会进行操作 -->
 <setting name="lazyLoadingEnabled" value="true"/>
 <setting name="aggressiveLazyLoading" value="false"/>
 ```
@@ -625,11 +633,11 @@ delete标签——删除语句：
 分步加载与懒加载：
 
 ```xml
-    <!-- 根据pid查询学校 -->
+<!-- 根据pid查询学校 -->
 <select id="getSchool" resultMap="getByStep" >
     select pid, schoolname from school where pid=#{id}
 </select>
-    <!-- 根据pid查对应学生 -->
+<!-- 根据pid查对应学生 -->
 <select id="getStudent" resultType="com.lsl.pojo.Student">
     select name,age,nowadays from info where pid=#{pid}
 </select>
@@ -643,8 +651,8 @@ delete标签——删除语句：
 
 拓展：
 
-- 分步查询可以传递多个值，将多列的值通过Map传递：` column="{key1=column1,key2=column2,...}"`；
-- 开启了懒加载，但还可以在分步查询设置处进行是否需要懒加载的设置：`fethType="lazy"`（lazy：延迟，eager：立即）。
+1. 分步查询可以传递多个值，将多列的值通过Map传递：` column="{key1=column1,key2=column2,...}"`。
+2. 开启了懒加载，但还可以在分步查询设置处进行是否需要懒加载的设置：`fethType="lazy"`（lazy：延迟，eager：立即）。
 
 resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的封装行为
 
@@ -668,7 +676,7 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 
 ## 动态SQL语句
 
-传入多个参数用于SQL语句的查询，最后完整的SQL语句由传入参数和自己设定的表达式规则来确定，SQL语句不是一成不变的。
+动态SQL：传入多个参数用于SQL语句的查询，最后完整的SQL语句由传入参数和自己设定的表达式规则来确定，SQL语句不是一成不变的。
 
 **if判断与OGNL表达式：**
 
@@ -688,15 +696,13 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
         and nowadays like '2021%'
     </if>
 </select>
-
 ```
 
-**where标签：**（set标签和where标签类似，只不过set标签会去掉最后面的多余的字符）
+当上述if条件1不满足时而其他条件分支成立时，会导致where后面多出一个and 。此时可以使用**where标签：**（set标签和where标签类似，只不过set标签会去掉最后面的多余的字符）
 
 ```xml
-<!-- 当上述条件1不满足时而其他条件分支成立时，会导致where后面多出一个and -->
 <!-- 解决办法一： -->
-在where后面加上 `1=1` 之类的条件，if分支里面都使用and
+在where后面加上 `1=1` 之类的条件，然后if分支里面开头都使用and
 <!-- 解决办法二 -->
 把where关键字替换成<where></where>，然后把if分支放进去（该标签只能解决前面多出的 and或or）
 <where>
@@ -754,15 +760,16 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 
 **foreach遍历值：**（传入的参数是数组或集合，也可以循环执行多条语句，只不过要在驱动的url后面设置：`allowMultiQueries=true`）
 
-- collection：参数名称，根据Mapper接口的参数名确定，也可以使用@Param注解指定参数名；（指定要遍历的集合或数组）
-- item：参数调用名称，通过此属性来表示获取到的集合单项的值；（取值）
-- open：相当于prefix，即在循环前添加前缀；（最终拼接好的字符的前缀）
-- close：相当于suffix，即在循环后添加后缀；（最终拼接好的字符的后缀）
-- separator：遍历中每一次的分隔符；
-- index：索引（List）、下标（数组）、key（Map）。（取索引（下标、key）值）
+1. collection：参数名称，根据Mapper接口的参数名确定，也可以使用@Param注解指定参数名；（指定要遍历的集合或数组）
+2. item：参数调用名称，通过此属性来表示获取到的集合单项的值；（取值）
+3. open：相当于prefix，即在循环前添加前缀；（最终拼接好的字符的前缀）
+4. close：相当于suffix，即在循环后添加后缀；（最终拼接好的字符的后缀）
+5. separator：遍历中每一次的分隔符；
+6. index：索引（List）、下标（数组）、key（Map）。（取索引（下标、key）值）
 
 
 ```xml
+<!-- 根据id批量删除 1-->
 <delete id="deleteByIds">
 	delete from t-student where id in 
     	<!-- 在in后实现（值1，值2，值3，...） 值由传入的参数决定-->
@@ -770,28 +777,28 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
     		#{stuId}
     	</foreach>
 </delete>
-
+<!-- 根据id批量删除 2-->
 <delete id="deleteByIds">
-	delete from t-student where id in（ 
-    	<!--stuId：循环array中的值-->
-    	<foreach collection="array" separator="," item="stuId">
-    		#{stuId}
-    	</foreach>
-    ）
+    delete from t-student where id in(
+    <!-- stuId：循环array中的值 -->
+    <foreach collection="array" separator="," item="stuId">
+        #{stuId}
+    </foreach>
+    )
 </delete>
 ```
 
 **内置参数`_parameter`和`_database ` ：**
 
-- `_parameter`：代表当前语句中传入的参数，传入的是一个值时就是代表传入的值，如果是多个值传入则代表封装参数的map；
-- `_databaseId `：数据库厂商的名字，如果配置了databaseIdProvider，则代表数据库厂商的别名。
+1. `_parameter`：代表当前语句中传入的参数，传入的是一个值时就是代表传入的值，如果是多个值传入则代表封装参数的map。
+2. `_databaseId `：数据库厂商的名字，如果配置了databaseIdProvider，则代表数据库厂商的别名。
 
 **bind标签：**
 
 ```xml
 <select id="dynamicIf" resultType="com.lsl.pojo.Student" parameterType="com.lsl.pojo.Student">
     select * from info where
-    <!-- 创建一个变量名为_nowadays的变量来绑定一个值，该变量值可以使用传入的参数变量 -->
+    <!-- 创建一个变量名为_nowadays的变量来绑定一个值，该变量值（value）也可以使用传入的参数变量 -->
     <bind name="_nowadays" value="'%'+nowadays+'%'" />
     <if test="nowadays != null">
          nowadays like #{_nowadays}
@@ -837,7 +844,26 @@ List<User> getUserByLike(@Param("username") String username);
 </select>
 ```
 
-- 其中`select * from t_user where username like "%"#{mohu}"%"`是最常用的。
+其中`select * from t_user where username like "%"#{mohu}"%"`是最常用的。
+
+## 批量删除
+
+```java
+/**
+ * 根据id批量删除
+ * @param ids 
+ * @return int
+ * @date 2022/2/26 22:06
+ */
+int deleteMore(@Param("ids") String ids);
+```
+
+```xml
+<!-- 传入ids为“1,2,3,5,6”，因为${}只是代表字符值，此时就是 in (1,2,3,5,6) -->
+<delete id="deleteMore">
+	delete from t_user where id in (${ids})
+</delete>
+```
 
 
 
