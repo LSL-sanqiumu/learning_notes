@@ -882,29 +882,19 @@ ps指令，用来参考系统中进程的执行状况、是否在执行等，可
 
 ## 服务管理指令
 
-service-服务是运行在后台的进程，通常都会监听端口来等待其它程序的请求，例如mysqld、sshd、防火墙等，因此又称为守护进程。
-
-~~**查看服务状况：**~~
-
-1. `setup`可以查看所有的服务（使用tab键切换），带`*`的是会开启重启的。（Centos7下可以使用`ls -l /etc/init.d`：查看service指令管理的服务）
-2. `service 服务名 [start | stop | restart | reload | status]`：对服务进行管理，开启、停止、重启、查看状态。
-
-~~**查看服务在运行级别的自启动情况：**~~（chkconfig指令：与服务在哪个运行级别的自启动/关闭有关）
-
-1. `chkconfig --list`：查看服务在几个运行级别之中的自启动情况；
-2. `chkconfig 服务名 --list`：查看单个服务在几个运行级别的自启动情况；
-3. `chkconfig --level 运行级别(数字) 服务名 on(或者off)`：设置服务在某运行级别下的自启动；（重启后生效）
+service——服务是运行在后台的进程，通常都会监听端口来等待其它程序的请求，例如mysqld、sshd、防火墙等，因此又称为守护进程。
 
 **systemctl指令：**CentOS7后很多指令都使用这个管理
 
-1. 状态管理：`systemctl [start | stop | restart | status] 服务名`，对服务进行管理(立即生效但只是暂时的)，开启、停止、重启、查看状态。
+1. 状态管理：`systemctl [start | stop | restart | status] 服务名`，对服务进行管理(立即生效但只是暂时的)，用于开启服务、停止服务、重启服务、查看服务状态等。
 2. 服务查看：其管理的服务在`/usr/lib/systemd/system`目录中查看。
 3. 自启动服务的查看与设置：
      - `systemctl list-unit-files [| grep 服务名]`，查看服务开机自启动状态，可使用grep进行过滤。
      - `systemctl enable 服务名`：设置服务开机自启动（永久生效）。
      - `systemctl disable 服务名`：停止服务开机自启动（永久生效）。
-     - `systemctl is-enable 服务名`：查看服务是否是自启动的。（执行不了，）
-
+     - `systemctl list-unit-files | grep enabled`：查看所有开机自启动的服务。
+     - `systemctl list-unit-files | grep 服务名`：查看服务是不是开机自启动（enabled）。
+     
 4. **关闭防火墙服务**：（firewalld.service）
      - `systemctl disable firewalld.service`：从开启自启动中移除。（服务名可不加.service）
 
@@ -920,6 +910,19 @@ service-服务是运行在后台的进程，通常都会监听端口来等待其
 ![](img/firewalld.png)
 
 Windows的telnet需要在Windows功能里开启 Telnet Client。
+
+~~**查看服务状况：**~~
+
+1. `setup`可以查看所有的服务（使用tab键切换），带`*`的是会开启重启的。（Centos7下可以使用`ls -l /etc/init.d`：查看service指令管理的服务）
+2. `service 服务名 [start | stop | restart | reload | status]`：对服务进行管理，开启、停止、重启、查看状态。
+
+~~**查看服务在运行级别的自启动情况：**~~（chkconfig指令：与服务在哪个运行级别的自启动/关闭有关）
+
+1. `chkconfig --list`：查看服务在几个运行级别之中的自启动情况；
+2. `chkconfig 服务名 --list`：查看单个服务在几个运行级别的自启动情况；
+3. `chkconfig --level 运行级别(数字) 服务名 on(或者off)`：设置服务在某运行级别下的自启动；（重启后生效）
+
+
 
 ## 动态监控进程
 
@@ -972,7 +975,7 @@ rpm包卸载：
 
 yum：一个shell前端软件包管理器，基于rpm包管理，能够从指定的服务器自动下载rpm包并安装，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。
 
-1. 查询指令：`yum list | grep xxx软件(或软件列表)`，用于查询yum服务器是否有需要安装的软件的软件包，如果已经安装了会在显示信息后面标有“installed”。
+1. 查询指令：`yum list | grep xxx软件(或软件列表)`，用于查询yum服务器是否有需要安装的软件的软件包，如果已经安装了会在显示信息后面标有“installed”（已安装）。
 
 2. 安装指令：`yum install xxx`，用于下载安装指定的软件。
 
