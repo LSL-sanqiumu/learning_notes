@@ -1395,13 +1395,203 @@ insert into salgrade values
 
 ## 练习题
 
+写SQL的技巧：顺着SQL语句的执行顺序来一步步写下去。
+
+```mysql
+select ... from ... where ... group by ... having ... order by ... limit page,pageSize;
+-- 执行顺序：from --> where --> group by --> select --> having --> order by --> limit
+-- 从哪张表拿数据 -> 拿出哪些数据 -> 将拿出的数据分组 -> 选中数据 -> 对数据进行过滤 -> 对数据进行排序 -> 数据分页
+```
+
+
+
 ### 1.每个部门最高薪水的人员名称
 
-先分组取得每个部门的人员名单：
+①先分组取得每个部门的最高薪水的人员的部门编号和最高薪水：
 
 ```mysql
 select deptno,max(sal) from emp group by deptno;
 ```
+
+②然后将取得的结果联合员工表，找出每个部门薪水最高的：
+
+```mysql
+select e.ename,e.sal 
+from (select deptno,max(sal) maxsal from emp group by deptno) as t join emp as e 
+on t.deptno = e.deptno and t.maxsal=e.sal;
+```
+
+### 2.在部门平均薪水之上的人员名单
+
+①求出每个部门的平均薪水
+
+```mysql
+select deptno,avg(sal) from emp group by deptno;
+```
+
+②筛选
+
+```mysql
+select e.ename,e.sal from (select deptno,avg(sal) avgsal from emp group by deptno) as t join emp as e
+on t.deptno=e.deptno and e.sal>t.avgsal;
+```
+
+### 3.取得各个部门中员工的平均薪水等级
+
+①全部员工的薪水等级
+
+```mysql
+select e.*,s.grade from emp e join salgrade s on e.sal between losal and hisal;
+```
+
+②根据部门编号且平均
+
+```mysql
+select a.deptno,avg(a.grade) from 
+(select e.*,s.grade from emp e join salgrade s on e.sal between losal and hisal) a 
+group by a.deptno;
+```
+
+### 4.全部员工中的最高薪水
+
+方法①：排序后分页
+
+```mysql
+select ename,sal from emp order by sal desc limit 0,1;
+```
+
+方法②：自连接查询
+
+```mysql
+-- 找出有比自身大的数据，并去重
+select distinct e1.sal from emp e1 inner join emp e2 on e1.sal<e2.sal;
+-- 找到最大值
+select emp.sal from emp where emp.sal not in(select distinct e1.sal from emp e1 inner join emp e2 on e1.sal<e2.sal);
+```
+
+### 5.平均薪水最高的部门的编号
+
+方法①：
+
+```mysql
+select deptno from emp group by deptno order by avg(sal) desc limit 0,1;
+```
+
+### 6.平均薪水最高的部门的名称
+
+①平均薪水最高的部门的编号
+
+```mysql
+select deptno from emp group by deptno order by avg(sal) desc limit 0,1;
+```
+
+②联表
+
+```mysql
+select dept.dname from 
+(select deptno from emp group by deptno order by avg(sal) desc limit 0,1) a 
+join dept on a.deptno=dept.deptno;
+```
+
+### 7.平均薪水等级最低的部门的名称
+
+①员工的薪水等级
+
+```mysql
+select e.empno,s.grade from emp e join salgrade s on e.sal between s.losal and s.hisal; 
+```
+
+②平均薪水等级
+
+```mysql
+select avg(a.grade) from
+(select e.deptno,s.grade from emp e join salgrade s on e.sal between s.losal and s.hisal) a 
+group by a.deptno;
+```
+
+③过滤出最低的平均薪水等级的部门编号
+
+```mysql
+select a.deptno,avg(a.grade) ming from
+(select e.deptno,s.grade from emp e join salgrade s on e.sal between s.losal and s.hisal) a 
+group by a.deptno order by ming asc limit 0,1;
+```
+
+④联表找部门名称
+
+```mysql
+select a.deptno,dept.dname,a.ming from 
+(select a.deptno,avg(a.grade) ming from
+(select e.deptno,s.grade from emp e join salgrade s on e.sal between s.losal and s.hisal) a 
+group by a.deptno order by ming asc limit 0,1) a join dept
+on a.deptno=dept.deptno;
+```
+
+### 8.找出比普通员工中最高薪水还要高的经理人
+
+（员工代码在mgr字段上出现的就是经理人，其他的都是普通员工）
+
+①找出全部经理人的编号
+
+```mysql
+select distinct mgr from emp where mgr is not null;
+```
+
+②找出普通员工的最高薪
+
+```mysql
+select max(sal) from emp where empno not in(select distinct mgr from emp where mgr is not null);
+```
+
+③找出比普通员工的工资高的mgr
+
+```mysql
+select e.ename from emp e join 
+(select max(sal) maxsal from emp where empno not in(select distinct mgr from emp where mgr is not null)) a
+on e.sal > a.maxsal;
+```
+
+### 9.薪水最高的前5名员工
+
+```mysql
+select ename from emp order by sal desc limit 0,5;
+```
+
+### 10.薪水最高的6-10名
+
+```mysql
+select ename from emp order by sal desc limit 5,5;
+```
+
+### 11.入职最迟的五位员工
+
+```mysql
+select ename from emp order by hiredate desc limit 0,5;
+```
+
+### 12.每个薪水等级的员工人数
+
+①查出员工的薪水等级
+
+```mysql
+select s.grade from emp e join salgrade s on e.sal between s.losal and hisal;
+```
+
+②根据薪水等级分组求和
+
+```mysql
+select t.grade,count(1) from 
+(select s.grade from emp e join salgrade s on e.sal between s.losal and hisal) t 
+group by t.grade;
+```
+
+
+
+
+
+
+
+
 
 
 
