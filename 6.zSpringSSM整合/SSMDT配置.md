@@ -291,27 +291,25 @@ jdbc.password=123456
 
 ```xml
 <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
-        </dependency>
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+</dependency>
 ```
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app  xmlns = "http://xmlns.jcp.org/xml/ns/javaee"
-          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jsp.org/xml/ns/javaee/web-app_4_0.xsd"
-          version="4.0"
-          metadata-complete="true"
-          >
-    
-    
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jsp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0"
+         metadata-complete="true"
+         >
+
+
 </web-app>
 ```
-
-
 
 # JDBC配置
 
@@ -334,7 +332,7 @@ jdbc.password=123456
 
 # Thymeleaf配置
 
-## 依赖导入
+依赖导入：
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf -->
@@ -351,7 +349,7 @@ jdbc.password=123456
 </dependency>
 ```
 
-配置thymeleaf视图解析器：
+配置thymeleaf视图解析器：（SpringMVC中配置视图）
 
 ```xml
 <!-- thymeleaf的视图解析器 会与冲突ContentNegotiatingViewResolver-->

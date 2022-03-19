@@ -359,9 +359,9 @@ jdbc.passwd=123456
 </mapper>
 ```
 
-**namespace元素：**
+**namespace元素：**将映射器文件与接口绑定，要求接口中声明的方法和映射文件中定义的SQL方法的id一致，使用namespace就可以面向接口编程了。
 
-将映射器文件与接口绑定，要求接口中声明的方法和映射文件中定义的SQL方法的id一致，使用namespace就可以面向接口编程了。
+当在全局配置中使用`<mapper package=""`来引入映射文件时，映射文件名称才要求与接口名一致。
 
 ## 为SQL语句传值
 
@@ -513,6 +513,7 @@ sqlSession1.insert("putmap", map);
 ```xml
 <!-- mybatis自动创建对象并把查询结果放到对象对应的属性上 -->
 <!-- 查询结果集的列名要和对象的属性名对应，不对应的时候可以在SQL语句中使用as起别名来使对应 -->
+<!-- 查询结果集封装见目录 -->
 <select id="getAll" resultType="com.lsl.domain.Student">
     select id as sid,name as sname,birth as sbirth from t_student
 </select>
@@ -571,9 +572,9 @@ System.out.println(u.getId()); // 取得主键值
 
 ### resultType
 
-resultType专门用来指定将**查询结果集**封装到哪种数据类型中，可以使用javabean（Java含有get、set方法的class）、简单数据类型、Map等，不能省略，只有select语句有。javabean不够用的情况下使用Map集合封装（跨表的情况下）。封装到集合中需要注意以下细节：
+resultType专门用来指定将**查询结果集**封装到哪种数据类型中，可以使用javabean（Java含有get、set方法的class）、简单数据类型、Map等，resultType不能省略，只有select语句有。javabean不够用的情况下使用Map集合封装（跨表的情况下）。结果集封装到集合中需要注意以下细节：
 
-1. mapper接口方法返回值类型是`List<Xxx>`：resultType则要写集合中元素的类型。
+1. mapper接口方法返回值类型是`List<Xxx>`：resultType则要写集合中元素的类型Xxx。
 
 2. mapper接口方法返回值类型是Map（只返回一条记录）：数据字段名就是key，resultType就是map。
 
@@ -1023,7 +1024,7 @@ String json = om.writeValueAsStream(java对象);
 
 # maven-配置导出问题
 
-由于maven的约定大于配置，maven项目的**java目录下的配置文件默认是不会导出并生效的**，解决方案就是在`pom.xml`文件中加入以下配置，maven项目中都可以加上以下配置防止资源导出失败的问题：
+由于maven的约定大于配置，maven项目的**java目录下的mapper映射文件或其他配置文件默认是不会导出并生效的**，解决方案就是在`pom.xml`文件中加入以下配置，maven项目中都可以加上以下配置来防止资源导出失败的问题：
 
 ```xml
 <build>
@@ -1051,9 +1052,7 @@ String json = om.writeValueAsStream(java对象);
 
 mybatis框架的SqlSessionFactory也好，还是池化技术的数据库连接池也好，程序中的具体实现都体现为各个类的对象的行为，因此可以通过spring的IOC容器来进行统一的管理，需要使用到的时候就通过依赖注入获取相应的对象，进而执行相关操作。
 
-中文文档：[mybatis-spring](http://mybatis.org/spring/zh/getting-started.html)
-
-MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它将允许 MyBatis 参与到 Spring 的事务管理之中，允许创建映射器 mapper 和 `SqlSession` 并注入到 bean 中，以及将 Mybatis 的异常转换为 Spring 的 `DataAccessException`。
+中文文档：[mybatis-spring](http://mybatis.org/spring/zh/getting-started.html)；MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它将允许 MyBatis 参与到 Spring 的事务管理之中，允许创建映射器 mapper 和 `SqlSession` 并注入到 bean 中，以及将 Mybatis 的异常转换为 Spring 的 `DataAccessException`。
 
 **spring与mybatis的整合：**
 
@@ -1062,11 +1061,16 @@ MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它
 3. mybatis的全局配置文件，数据源已经交由spring管理故不需要再配置。
 4. dao、mapper.xml、service的实现。之后**初始化spring容器后**就可以通过service实现类的对象的行为来实现功能了。
 
-**一：导入整合需要的依赖**
+## 一：依赖导入
 
 使用spring来整合mybatis需要引入mybatis-spring、spring、springjdbc的依赖：
 
 ```xml
+<dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis</artifactId>
+    <version>3.5.6</version>
+</dependency>
 <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
 <dependency>
   <groupId>org.mybatis</groupId>
@@ -1101,50 +1105,124 @@ MyBatis-Spring 会帮助你将 MyBatis 代码无缝地整合到 Spring 中。它
 </dependency>
 ```
 
-**二：spring容器配置**
+
+
+## 二：spring容器、mapper文件
+
+```properties
+# jdbc.properties
+jdbc.driver=com.mysql.cj.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost:3306/review?characterEncoding=utf8&useUnicode=true&useSSL=false&serverTimezone=Asia/Shanghai
+jdbc.username=root
+jdbc.passwd=123456
+```
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context
-        https://www.springframework.org/schema/context/spring-context.xsd">
-
+        https://www.springframework.org/schema/context/spring-context.xsd http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+	<!-- 引入.properties文件 -->
     <context:property-placeholder location="classpath:jdbc.properties"/>
-
+    <!-- 数据源 -->
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
         <property name="driverClassName" value="${jdbc.driver}"/>
         <property name="url" value="${jdbc.url}"/>
-        <property name="username" value="${jdbc.name}"/>
-        <property name="password" value="${jdbc.password}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.passwd}"/>
     </bean>
-
+    <!-- 会话工厂 -->
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
-        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!-- 可结合全局配置 -->
+        <!--<property name="configLocation" value="classpath:mybatis-config.xml"/>-->
+        <!-- 指定mapper映射文件，名字可与mapper接口名不同 -->
         <property name="mapperLocations" value="classpath:mapper.xml"/>
-
     </bean>
     <!-- 为了解决MapperFactoryBean繁琐而生的，有了MapperScannerConfigurer就不需要
-	我们去为每个映射接口都声明为一个bean了。大大提高了开发的效率 -->
-    <!-- 自动扫描 将Mapper接口生成代理注入到Spring -->
+	我们去为每个映射接口都声明为一个bean了，大大提高了开发的效率。以前老版本使用-->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!-- 自动扫描 将Mapper接口生成代理注入到Spring -->
         <property name="basePackage" value="com.lsl.dao"/>
     </bean>
     <context:component-scan base-package="com.lsl.service"/>
-
+    <!-- 新版本可以使用mybatis-spring:scan来替代MapperScannerConfigurer，使Mapper生效 -->
+	<!-- <mybatis-spring:scan base-package="com.lsl.dao"/> -->
 </beans>
 ```
 
-**三：映射文件、接口、service层**
+sqlSessionFactory的bean中指定的内容如下——mapper.xml：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lsl.dao.UserMapper">
+    <select id="getOne" resultType="com.lsl.pojo.User">
+        select * from review.user where id=#{id}
+    </select>
+</mapper>
+```
+
+## 三：dao层、service层
 
 1. 映射文件通过namespace与接口绑定，继而实现接口方法与SQL语句的绑定（接口方法和SQL语句id要一致，方法传入参数的类型、返回值类型要和SQL一致）。
 2. service层，面向功能的实现，注入mapper映射的接口的实现类并调用实现类方法来完成需要的功能。
 3. 注意：整合后需要根据配置来初始化IOC容器后，才能使用注册进去的组件。
+
+```java
+// com.lsl.dao层
+@Mapper
+public interface UserMapper {
+    User getOne(Integer id);
+}
+```
+
+```java
+// com.lsl.pojo
+public class User {
+    private Integer id;
+    private String name;
+    private int age;
+    private String acct;
+    private String passwd;
+    // 构造器、getset方法
+}
+```
+
+```java
+// com.lsl.service 层
+@Service
+public class UserService {
+    @Autowired
+    private UserMapper userMapper;
+    public User getOne(int id){
+        return userMapper.getOne(id);
+    }
+}
+```
+
+
+
+## 四：测试
+
+```java
+public class TestMain {
+    public static void main(String[] args) {
+        ApplicationContext app = new ClassPathXmlApplicationContext("beans.xml");
+        UserService us = app.getBean("userService", UserService.class);
+        User one = us.getOne(2);
+        System.out.println(one);
+    }
+}
+```
 
 # 缓存机制
 
