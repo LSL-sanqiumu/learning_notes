@@ -1869,11 +1869,9 @@ public class Context {
 
 # bean的生命周期
 
-
-
-
-
 [面试官：请你说一下 Bean 的生命周期 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/344140024)
+
+
 
 # spring5新特性
 

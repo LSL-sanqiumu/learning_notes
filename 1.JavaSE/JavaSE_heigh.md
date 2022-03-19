@@ -1034,7 +1034,7 @@ long l = System.currentTimeMillis();
 
 ### java.util.Date
 
-类表示特定的瞬间，精确到毫秒。
+java.util.Date类表示特定的瞬间，精确到毫秒。
 
 两个构造器：
 
@@ -1046,7 +1046,7 @@ Date date = new Date();
 Date dates = new Date(1000); 
 ```
 
-记住这两个方法的使用：
+记住该类中这两个方法的使用：
 1. getTime()：获取时间戳，返回自 1970 年 1 月 1 日 00:00:00 GMT 以来到此 Date 对象创建的时间——毫秒数。 
 2. toString()：把此 Date 对象转换为以下形式的 String： dow mon dd hh:mm:ss zzz yyyy ，其中： dow 是周几 (Sun, Mon, Tue,  Wed, Thu, Fri, Sat)，zzz是时间标准，yyyy是年份；例如 Fri Oct 01 09:54:27 CST 2021。
 3. 其它很多方法都过时了，可不理会。
@@ -1345,17 +1345,23 @@ java.time.format.DateTimeFormatter 类，用于格式化或解析时间日期，
 3. 自定义格式：（常用）
 
    ```java
+   /* 格式化日期为特定格式的字符串 */
    public static void main(String[] args) {
-       // 获取当前时间
-       LocalDateTime localDateTime = LocalDateTime.now();
-       // 设置格式化时间样式
-       DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy年MM月dd日 HH小时mm分ss秒");
-       // 对获取的时间进行格式化
-       String format = dtf.format(localDateTime);
-       System.out.println(format); // 2022年02月11日 11小时07分35秒
-       // 字符串 ===> 日期 注意字符串格式要和DateTimeFormatter设置的一致
-       TemporalAccessor parse = dtf.parse("2022年10月10日 12小时12分12秒");
-       System.out.println(parse); // {},ISO resolved to 2022-10-10T12:12:12
+       LocalDateTime ldt = LocalDateTime.now();
+       DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy年MM月dd日 hh时mm分ss秒");
+       String format = dtf.format(ldt);
+       System.out.println(format);
+   }
+   ```
+   
+   ```java
+   /* parse() */
+   public static void main(String[] args) {
+       DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy年MM月dd日 hh时mm分ss秒");
+       TemporalAccessor parse = dtf.parse("2022年03月19日 03时32分54秒");
+       System.out.println(parse);
+       // {MinuteOfHour=32, HourOfAmPm=3, MilliOfSecond=0, MicroOfSecond=0, NanoOfSecond=0, SecondOfMinute=54},ISO resolved to 2022-03-19
+   
    }
    ```
 
@@ -1365,36 +1371,36 @@ java.time.format.DateTimeFormatter 类，用于格式化或解析时间日期，
 
 # 枚举类
 
-枚举类：一个类只有有限的、确定的对象，我们称此类为枚举类；当需要定义一组常量时，强烈建议使用枚举类。如果枚举类中只有一个对象，则可以作为单例模式的实现方式。
+枚举类：**一个类只有有限的、确定的对象，我们称此类为枚举类**。（有限对象的类，构造器不允许外部调用）
 
- 如何自定义枚举类：
+当需要定义一组常量时，强烈建议使用枚举类。如果枚举类中只有一个对象，则可以作为单例模式的实现方式。
 
--  JDK5.0之前，自定义枚举类
+JDK5.0之前，自定义枚举类：
 
 ```java
-class Season{
+public class Season{
     private final String seasonName;
     private final String seasonDesc;
-    
+
     private Season(String seasonName, String seasonDesc) {
         this.seasonName = seasonName;
         this.seasonDesc = seasonDesc;
     }
-    
+
     public static final Season SPRING = new Season("春天", "春意盎然");
     public static final Season SUMMER = new Season("夏天", "夏日炎炎");
     public static final Season AUTUMN = new Season("秋天", "秋高气爽");
     public static final Season WINTER = new Season("冬天", "冬温夏清");
-    
+
 }
 ```
 
-- JDK5.0，可以使用enum关键字，使用该关键字修饰的类默认继承了java.lang.Enum，所以不能再继承其它的类
+JDK5.0，可以使用enum关键字，使用该关键字修饰的类默认继承了java.lang.Enum，所以不能再继承其它的类：
 
 ```java
-enum Season{
-
-    SPRING("春天", "春意盎然"), // 常量名(实参列表)，使用无参构造器创建枚举对象时可以省略`(实参列表)`；对象必须在行首
+public enum Season{
+    // 常量名(实参列表)，使用无参构造器创建枚举对象时可以省略`(实参列表)`；对象必须在行首
+    SPRING("春天", "春意盎然"),
     SUMMER("夏天", "夏日炎炎"),
     AUTUMN("秋天", "秋高气爽"),
     WINTER("冬天", "冬温夏清");
@@ -1408,7 +1414,7 @@ enum Season{
 }
 ```
 
-Enum类的主要成员方法： 
+java.lang.Enum的主要成员方法： （枚举类继承Enum类）
 
 1. values()方法：返回枚举类型的对象数组。该方法可以很方便地遍历所有的枚举值。
 
@@ -1424,17 +1430,10 @@ Enum类的主要成员方法：
        ```
 
 
-3. toString()：返回当前枚举类对象常量的名称；
+3. toString()、name()：返回当前枚举类对象常量的名称。
+4. compareTo()：比较两个枚举常量的位置号（位置号从1开始），返回位置号相减得到的值。
 
-4. name()：返回常量名。
-
-5. compareTo()：比较两个枚举常量的位置号。
-
-6. 枚举类在编译阶段会被编译器插入一些静态方法
-
-7. 枚举类本身有个只有编译器能够调用的构造方法，编译器会使用该方法将枚举值实例化为枚举类型的对象
-
-8. 枚举类被实例化后，继承了众多java.lang.Enum中的方法
+枚举类在编译阶段会被编译器插入一些静态方法；枚举类本身有个只有编译器能够调用的构造方法，编译器会使用该方法将枚举值实例化为枚举类型的对象；枚举类被实例化后，继承了众多java.lang.Enum中的方法。
 
 实现了接口的枚举类：
 
@@ -1470,81 +1469,29 @@ enum Season implements Info{
 
 # 注解(Annotation)
 
-## 了解注解
+## 了解——注解
 
 1. **注解的出现：**从JDK 5.0 开始，Java 增加了对元数据(MetaData) 的支持, 也就是 Annotation(注解) 。
 2. **注解的作用：**Annotation 其实就是代码里的特殊标记, 这些标记可以在编译、类加载、运行时被读取, 并执行相应的处理。通过使Annotation，程序员可以在不改变原有逻辑的情况下，在源文件中嵌入一些补充信息。代码分析工具、开发工具和部署工具可以通过这些补充信息进行验证或者进行部署。
-3. **注解使用范围：**Annotation 可以像修饰符一样被使用，可用于修饰包、类、构造器、方法、成员变量、参数、局部变量的声明，这些信息被保存在 Annotation 的 “name=value” 对中。
+3. **注解使用范围：**Annotation 可以像修饰符一样被使用，可用于修饰包、类、构造器、方法、成员变量、参数、局部变量等，注解的信息被保存在注解的 “name=value”键值 对中。
 4. **注解的重要性：**
    - 在JavaSE中，注解的使用目的比较简单，例如标记过时的功能，忽略警告等。在JavaEE/Android中注解占据了更重要的角色，例如用来配置应用程序的任何切面，代替JavaEE旧版中所遗留的繁冗代码和XML配置等。
    - 未来的开发模式都是基于注解的，JPA是基于注解的，Spring2.5以上都是基于注解的，Hibernate3.x以后也是基于注解的，现在的 Struts2有一部分也是基于注解的了，注解是一种趋势，一定程度上可以说：**框架 = 注解 + 反射 + 设计模式。**
 
 ![](images/annotation.png)
 
-## 了解常见注解示例
 
-使用 Annotation 时要在其前面增加 `@ `符号，可以把 Annotation 当成一个修饰符使用，用于修饰它支持的程序元素 。
-
-**示例一：与使用文档注释来生成说明文档的相关的注解** （在文档注释类使用的注解）
-
-1. @author：标明开发该类模块的作者，多个作者之间使用`,`（道号）分割。
-2. @version：标明该类模块的版本 。
-3. @see：参考转向，也就是相关主题。
-4. @since：从哪个版本开始增加的。
-5. @param：对方法中某参数的说明，如果没有参数就不能写。
-6. @return：对方法返回值的说明，如果方法的返回值类型是void就不能写。
-7. @exception：对方法可能抛出的异常进行说明 ，如果方法没有用throws显式抛出的异常就不能写其中。
-8. 【注意】@param、@return 和 @exception： 这三个标记都是只用于方法上的文档注释的。
-  - @param的格式要求：`@param 形参名 形参类型 形参说明` ；
-  - @return 的格式要求：`@return 返回值类型 返回值说明 `；
-  - @exception的格式要求：`@exception 异常类型 异常说明 `；
-  - @param和@exception可以并列多个。
-
-**示例二：在编译时进行格式检查(以下是JDK内置的三个基本注解)**
-
-- @Override：限定重写方法，该注解只能用于方法，修饰后会对方法进行校验，要求方法是重写方法。
-- @Deprecated： 用于表示所修饰的元素（类， 方法等），已过时。通常是因为所修饰的结构危险或存在更好的选择 。
-- @SuppressWarnings：用于抑制编译器的警告。
-
-**示例三：跟踪代码依赖性，实现替代配置文件功能**
-
-- Servlet3.0提供了注解(annotation)，使得不再需要在web.xml文件中进行Servlet的部署；
-
-- ```java
-  @WebServlet("/login")
-  public class LoginServlet extends HttpServlet {
-  private static final long serialVersionUID = 1L;
-  protected void doGet(HttpServletRequest request, HttpServletResponse response) throws
-  ServletException, IOException { }
-  protected void doPost(HttpServletRequest request, HttpServletResponse response) throws
-  ServletException, IOException {
-  doGet(r
-  ```
-
-- spring框架中关于“事务”的管理。
-
-
-**示例四：**
-
-```java
-public Cl {
-    @Override          // 如果加上这个，会进行重写的一些语法校验，如果不是重写方法则编译错误
-    public void test() {
-        
-    }
-}
-```
 
 ## 自定义注解
 
 **自定义Annotation ：**（参考`@SuppressWarnings`注解）
 
-- 声明方式：`public @interface 注解名称 {}  `   (自动继承了Annotation接口)。
-- 注解成员变量：（也称为配置参数）
+1. 声明方式：`public @interface 注解名称 {}  `   (会自动继承Annotation接口)。
+2. 注解成员变量：（也称为配置参数）
   - 以无参数方法的形式来声明，例如：`int value();`（只有一个参数成员时，建议使用参数名为value）。
   - 成员类型：八种基本数据类型、String类型、Class类型、enum类型、Annotation类型、 以上所有类型的数组。
   - 指定成员变量的初始值可使用 default 关键字，例如：`int value() default 3`。
-  
+
 
 ```java
 public @interface MyAnnotation {
@@ -1555,9 +1502,9 @@ public @interface MyAnnotation {
 
 **自定义的注解的使用：**
 
-- 如果定义的注解含有配置参数，那么使用时必须指定参数值，除非它有默认值。格式是“参数名 = 参数值” ，如果只有一个参数成员，且名称为value， 则可以省略“value=” ；
-- 没有定义成员的注解称为标记；包含成员变量的Annotation称为元数据注解。
-- 注意：自定义注解必须配上**注解的信息处理流程(即使用反射)**才有意义。
+1. 如果定义的注解含有配置参数，那么使用时必须指定参数值，除非它有默认值。格式是“参数名 = 参数值” ，如果只有一个参数成员，且名称为value， 则可以省略“value=” 。
+2. 没有定义成员的注解称为标记；包含成员变量的Annotation称为元数据注解。
+3. 注意：自定义注解必须配上**注解的信息处理流程(即使用反射)**才有意义。
 
 ```java
 @MyAnnotation("hello") 
@@ -1570,14 +1517,14 @@ public void test(){
 
 **JDK中的元注解 ：**
 
-- 元注解：对现有的注解进行解释说明的注解，修饰注解的注解。
-- JDK5.0提供了4个标准的meta-annotation类型，分别是： 
-  - `@Retention `、`@Target `。
-  - `@Documented` 、`@Inherited`用得较少。
+1. 元注解：对现有的注解进行解释说明的注解，修饰注解的注解。
+2. JDK5.0提供了4个标准的meta-annotation类型，分别是：
+  -  `@Retention `、`@Target `；`@Documented` 、`@Inherited`。（后两个不常用）
+
 
 ### **@Retention：**
 
-`@Rentention `用于指定注解的生命周期（作用范围，默认是class），Retention 保留了  Policy策略。其包含一个名为 `RetentionPolicy`的枚举类型的成员变量，使用 `@Rentention` 时必须为其` value `成员变量指定值：
+`@Rentention `用于指定注解的生命周期（作用范围，默认是class），Retention 保留了Policy策略。其包含一个名为 `RetentionPolicy`的枚举类型的成员变量，使用 `@Rentention` 时必须为其` value `成员变量指定值：
 
 - `RetentionPolicy.SOURCE`：在源文件中有效（即源文件保留），编译器使用后会直接丢弃这种策略的注解 。
 - `RetentionPolicy.CLASS`：在class文件中有效（即class保留） ， 当运行 Java 程序时，JVM  不会保留注解（这是默认值） 。
@@ -1605,7 +1552,11 @@ public @interface MyAnnotation {
 
 ### **@Target ：**
 
-`@Target`用于指定注解类可以在哪些地方使用（类（ElementType.TYPE）、接口、枚举类、属性、方法、局部变量、包等）。
+`@Target`用于指定注解类可以在哪些地方使用
+
+1. `ElementType.TYPE`：、类、接口、枚举类。
+2. 属性(`ElementType.FIELD`)、方法(`ElementType.METHOD`)、局部变量(`LOCAL_VARIABLE`)。
+3. 包(`ElementType.PACKAGE`)等。
 
 源码：
 
@@ -1682,7 +1633,7 @@ public class ExtendsAnnotation extends AnnotationTest{
 
 1. 声明两个注解 MyAnnotation 和 MyAnnotations。
 2. 在MyAnnotation上声明 `@Repeatable(MyAnnotations.class)`。
-3. MyAnnotation的@Target、@Retention、@Inherited等元注解与MyAnnotations要相同。
+3. 可重复注解MyAnnotation的@Target、@Retention、@Inherited等元注解与MyAnnotations要相同。
 
 ```java
 @Retention(RetentionPolicy.RUNTIME)
@@ -1770,23 +1721,22 @@ public class TestTypeDefine<@TypeDefine() U> {
 
 反射相关的类：
 
-- java.lang.Class：代表字节码文件（代表整个类）；
-- java.lang.reflect.Method：代表字节码中的方法字节码（代表类中的方法）；
-- java.lang.reflect.Field：代表字节码的属性字节码（代表类中的成员变量（静态、实例变量））；
+- java.lang.Class：代表字节码文件（代表整个类）。
+- java.lang.reflect.Method：代表字节码中的方法字节码（代表类中的方法）。
+- java.lang.reflect.Field：代表字节码的属性字节码（代表类中的成员变量（静态、实例变量））。
 - java.lang.reflect.Constructor：代表类的构造器。
 
 ## 动态语言与静态语言
 
-1、动态语言
-是一类在运行时可以改变其结构的语言：例如新的函数、对象、甚至代码可以被引进，已有的函数可以被删除或是其他结构上的变化。通俗点说就是在运行时代码可以根据某些条件改变自身结构。主要动态语言：Object-C、C#、JavaScript、PHP、Python、Erlang。
-2、静态语言
-与动态语言相对应的，运行时结构不可变的语言就是静态语言。如Java、C、C++。
-补充：动态语言 vs 静态语言
-Java不是动态语言，但Java可以称之为“准动态语言”。即Java有一定的动态性，我们可以利用反射机制、字节码操作获得类似动态语言的特性。Java的动态性让编程的时候更加灵活！
+1. 动态语言：
+   - 是一类在运行时可以改变其结构的语言：例如新的函数、对象、甚至代码可以被引进，已有的函数可以被删除或是其他结构上的变化。通俗点说就是在运行时代码可以根据某些条件改变自身结构。主要动态语言：Object-C、C#、JavaScript、PHP、Python、Erlang。
+2. 静态语言：
+   - 与动态语言相对应的，运行时结构不可变的语言就是静态语言。如Java、C、C++。
+3. Java不是动态语言，但可以称Java为“准动态语言”。即Java有一定的动态性，我们可以利用反射机制、字节码操作获得类似动态语言的特性。Java的动态性使编程可以更加灵活！
 
 ## 反射的动态性
 
-动态地获取运行时类来动态地产生对象，在没有运行时是不知道会产生哪个对象的。
+动态地获取运行时类来动态地产生对象，在程序没有运行时是不知道会产生哪个对象的。
 
 ## Class-运行时类
 
