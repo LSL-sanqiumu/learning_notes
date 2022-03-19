@@ -107,7 +107,7 @@ xxxMapper.xml，放于类路径下或者是其绑定接口所在路径下，这�
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.lsl.dao.TestMapper">
     <!-- resultType：指定结果封装 -->
-    <!-- SQL语句末尾不需要分号 -->
+    <!-- SQL语句末尾可以不需要分号 -->
     <select id="getAll" resultType="com.lsl.pojo.School">
         select * from school where pid=1
     </select>
@@ -123,23 +123,25 @@ xxxMapper.xml，放于类路径下或者是其绑定接口所在路径下，这�
 ```java
 public class TestMybatis {
     public static void main(String[] args) throws IOException {
-        // 获取核心配置文件
+        // 获取核心配置文件，用来初始化MyBatis
         InputStream is = Resources.getResourceAsStream("mybatis-config.xml");
         // 通过SqlSessionFactoryBuilder获取SqlSessionFactory
         SqlSessionFactoryBuilder ssfb = new SqlSessionFactoryBuilder();
         SqlSessionFactory sqlSessionFactory = ssfb.build(is);
         // 获取SqlSession，其代表Java程序和数据库之间的会话
+        // openSession()后自动提交会关闭，插入、修改、删除数据时得手动提交
         SqlSession sqlSession = sqlSessionFactory.openSession();
         // 获取mapper接口对象（使用动态代理返回接口实现类）
         TestMapper mapper = sqlSession.getMapper(TestMapper.class);
         // 根据mapper接口找到
         School all = mapper.getAll();
+        sqlSession.commit();
         System.out.println(all.toString());
     }
 }
 ```
 
-**SqlSessionFactory：**每个基于 MyBatis 的应用，操作数据库都是以一个 SqlSessionFactory 的实例为核心的，构建 SqlSessionFactory时可以使用Java配置类来初始化或者使用xml配置来初始化。
+**SqlSessionFactory：**每个基于 MyBatis 的应用，操作数据库都是以一个 SqlSessionFactory 的实例为核心的，构建 SqlSessionFactory时可以使用Java类来初始化（?）或者使用xml配置来初始化。
 
 **SqlSession：**事务开启与业务代码：通过SqlSessionFactory对象的openSession()方法开启会话、事务，该方法会返回一个SqlSession对象（SqlSession等同于Connection），一个专门用来执行SQL语句的一个会话对象。
 
@@ -167,6 +169,7 @@ public static void main(String[] args) throws IOException {
     SqlSessionFactoryBuilder ssfb = new SqlSessionFactoryBuilder();
     SqlSessionFactory sqlSessionFactory = ssfb.build(is);
     // 获取SqlSession，其代表Java程序和数据库之间的会话
+    // openSession()后自动提交会关闭，插入、修改、删除数据时得手动提交
     SqlSession sqlSession = sqlSessionFactory.openSession();
     // 通过SqlSession对象的方法来从映射文件获取到SQL语句并执行
     Object getAll = sqlSession.selectOne("getAll", 1);
@@ -336,7 +339,7 @@ jdbc.passwd=123456
 </mappers>
 <!-- 引入包内全部映射器文件，将包内的映射器接口实现全部注册为映射器 -->
 <!-- 要求mapper映射文件和接口所在包一致，并且接口名和映射器名一致 -->
-<!-- 如果在类路径下的映射文件，包也设置为和接口所在包一样的即可 -->
+<!-- 如果在类路径下的映射文件，映射文件所在目录也设置为和接口所在包一样的目录即可 -->
 <mappers>
     <package name="org.mybatis.builder"/>
 </mappers>
@@ -360,7 +363,7 @@ jdbc.passwd=123456
 
 将映射器文件与接口绑定，要求接口中声明的方法和映射文件中定义的SQL方法的id一致，使用namespace就可以面向接口编程了。
 
-## SQL语句参数值传入
+## 为SQL语句传值
 
 **MyBatis获取参数值的两种方式：**
 
@@ -396,8 +399,8 @@ jdbc.passwd=123456
 3. 传入pojo对象：如果需要传入的多个参数是业务逻辑的数据模型，可以传入pojo对象，然后通过`#{属性名}`就可以直接取到pojo对象的属性值。
 
    ```xml
-   <!--int insertUser(User user);-->
-   <insert id="addSchool">
+   <!--int addSchool(School school);-->
+   <insert id="addSchool" parameterType="com.lsl.pojo.School">
    	insert into school values(null,#{schoolname},#{schoolid}})
    </insert>
    <!-- 注意：如果使用${}，取字符串类型、日期类型的属性的数据时需要手动加单引号 -->
@@ -406,17 +409,37 @@ jdbc.passwd=123456
 4. 传入Map类型参数：如果多个参数不是业务模型中的数据，没有对应的pojo，并且不经常使用的情况下，那么可以使用Map类型数据传值。（若mapper接口中的方法需要的参数为多个时，此时可以手动创建Map集合，将这些数据放在Map中只需要通过`${}`和`#{}`访问Map集合的键就可以获取相对应的值）
 
    ```xml
+   <!-- User getOne(Map<String,Object> map); -->
    <select id="getOne" resultType="User">
    	select * from t_user where username = #{username} and password = #{password}
    </select>
    <!-- 注意：如果使用${}，取字符串类型、日期类型的属性的数据时需要手动加单引号 -->
    ```
+   
+   ```java
+   Map<String,Object> map = new HashMap<>();
+   map.put("usermane","admin");
+   map.put("password","123456");
+   mapper.getOne(map);
+   ```
+   
+5. 传入Collection(List、Set)、数组时，框架会把这些数据封装进Map，此时的key为collection（Collection）、list或collection（List）、array（数组）；如果取值就是这样取值：`#{list[0]}`，取List集合的第一个值；`#{array[0]}`，取数组的第一个值。
 
-**什么情况下使用Map传值？**
+   ```xml
+   <!-- int addMore(User[] users); -->
+   <!-- 其他取值方式见动态SQL -->
+   <insert id="addMore">
+       insert into review.user values
+       (#{array[0].id},#{array[0].name},#{array[0].age},#{array[0].acct},#{array[0].passwd}),
+       (#{array[1].id},#{array[1].name},#{array[1].age},#{array[1].acct},#{array[1].passwd})
+   </insert>
+   ```
 
-当javabean不够用的时候；什么时候javabean不够用？一般一张表对应一个javabean，当传值的时候，一些值时A表的，一些值时B表的，而使用select等语句只能传入对象或单个值，这时如果要传入A、B表的值就只能再建一个class，也就是原有的javabean不够用，得再建一个javabean。但单独为一条语句建一个javabean是不明智的，这时就可以使用Map集合传入多个值给语句了。（但如果这数据是经常要用于各种SQL语句之中、经常使用的，可以考虑建pojo）。
+   
 
-**传入Collection(List、Set)、数组时：**也会把这些数据封装进Map，此时的key为collection（Collection）、list或collection（List）、array（数组）；如果取值就是这样取值，例如：`#{list[0]}`，取List集合的第一个值。
+**什么情况下传Map类型的值？**
+
+当javabean不够用的时候；什么时候javabean不够用？一般一张表对应一个javabean，当传值的时候，一些值是A表的，一些值是B表的，而使用select等语句只能传入对象或单个值，这时如果要传入A、B表的值就只能再建一个class，也就是原有的javabean不够用，得再建一个javabean。但单独为一条语句建一个javabean是不明智的，这时就可以使用Map集合传入多个值给语句了。（但如果这数据是经常要用于各种SQL语句之中、经常使用的，可以考虑建pojo）。
 
 **`#{}`的丰富用法：** （用于规定参数规则，jdbcType等）
 
@@ -429,8 +452,6 @@ jdbc.passwd=123456
 	<setting name="jdbcTypeForNull" value="NULL"/>    
 </settings>
 ```
-
-
 
 **`#{}和${}`的区别 ：**（都可以取pojo和map的值）
 
@@ -445,7 +466,7 @@ jdbc.passwd=123456
 
 ## parameterType属性
 
-parameterType属性：专门用来指定给SQL语句的占位符传值的数据类型，翻译为参数类型，占位符必须使用`#{属性名}`；只有当parameterType是简单类型时可以省略不写。简单类型有17个：
+parameterType属性：专门用来指定给SQL语句的占位符传的值的数据类型，翻译为参数类型，占位符必须使用`#{属性名}`；只有当parameterType是简单类型时可以省略不写（如果传入参数是一个数组、Collection或Map类型的数据时，那么可以不用指定parameterType，框架会将这些数据封装进一个Map）。简单类型有17个：
 
 1. 8个基本数据类型：byte、char 、short、int、long、float、double、boolean。
 2. 8个包装类型：Byte Short Integer Long Double Float Character Boolean。
@@ -469,6 +490,7 @@ parameterType专门用来指定给SQL语句传值时传入参数的类型的，�
     parameterType="Map"
     parameterType="map"
 -->
+<!-- parameterType可以省略 -->
 <insert id="putmap" parameterType="map">
     insert into t_student(id,name,birth) values(#{xh},#{mz},#{sr})
 </insert>
@@ -499,17 +521,31 @@ sqlSession1.insert("putmap", map);
 **insert标签——插入语句：**
 
 ```xml
-<insert id="save" parameterType="com.lsl.domain.Student">
-    insert into t_student(id, name, birth) values (#{sid}, #{sname}, #{sbirth})
+<!-- int addOne(User user); -->
+<insert id="addOne" parameterType="user">
+    insert into review.user value (#{id},#{name},#{age},#{acct},#{passwd})
 </insert>
-<!-- 如果要获取自增主键的值： 
-	useGeneratedKeys="true" ：开启使用自增主键获取主键值策略
-	keyProperty="id" ：将主键值封装给Javabean的id属性
--->
+```
+
+如果需要在SQL执行后获取到主键的值，需要设置以下两个属性：
+
+1. useGeneratedKeys="true" ：开启使用自增主键获取主键值策略，Mybatis会调用JDBC的getGeneratedKeys方法，并将获取的主键值赋值给keyProperty 指定的属性。
+2. keyProperty="id" ：将获取的主键值封装到其指定的id的属性。
+3. 如果想要访问主键，parameterType 是`javabean`或者`Map`。这样数据在插入之后可以通过javavbean或者Map 来获取主键值。
+
+```xml
+<!-- int addOne(User user); -->
+<!-- 插入数据后将其主键的值封装到传入的Javabean的id属性中 -->
 <insert id="save" parameterType="com.lsl.domain.Student" useGeneratedKeys="true" keyProperty="id" databaseID="mysql">
     insert into t_student(id, name, birth) values (#{sid}, #{sname}, #{sbirth})
 </insert>
 <!-- Oracle是使用序列生成主键值的 先略过 -->
+```
+
+```java
+User u= new User(null,"林晓",22,"111","222");
+mapper.addOne(u);
+System.out.println(u.getId()); // 取得主键值
 ```
 
 **update标签——修改语句：**
@@ -531,9 +567,7 @@ sqlSession1.insert("putmap", map);
 
 
 
-
-
-## Select语句结果集封装
+## select语句结果集封装
 
 ### resultType
 
@@ -681,7 +715,7 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 **if判断与OGNL表达式：**
 
 ```xml
-<!-- select * from info where pid=#{pid} and name like '__' and nowadays like '2021%'  -->
+<!-- select * from info where pid=#{pid} and name like '__' and nowadays like '2021%' -->
 <!-- 特殊字符（例如'、>、<、&等）使用转义字符的实体字符，例如"是&quot; -->
 <select id="dynamicIf" resultType="com.lsl.pojo.Student" parameterType="com.lsl.pojo.Student">
     select * from info where
@@ -701,7 +735,7 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
 当上述if条件1不满足时而其他条件分支成立时，会导致where后面多出一个and 。此时可以使用**where标签：**（set标签和where标签类似，只不过set标签会去掉最后面的多余的字符）
 
 ```xml
-<!-- 解决办法一： -->
+<!-- 解决办法一 -->
 在where后面加上 `1=1` 之类的条件，然后if分支里面开头都使用and
 <!-- 解决办法二 -->
 把where关键字替换成<where></where>，然后把if分支放进去（该标签只能解决前面多出的 and或or）
@@ -715,7 +749,7 @@ resultMap中的鉴别器：鉴别字段值来决定是否改变查询结果的�
     <if test="nowadays != null">
         and nowadays like '2021%'
     </if>
- </where>
+</where>
 ```
 
 **trim标签：**
