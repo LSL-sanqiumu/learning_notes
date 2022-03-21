@@ -1,25 +1,41 @@
 # JVM
 
-Java Virtual Machine：Java虚拟机，Java程序的运行环境（Java二进制字节码的运行环境）。
+Java Virtual Machine：Java虚拟机，Java程序的运行环境（Java二进制字节码的运行环境）。使用JVM的好处：
 
-- 一次编写，到处运行。
-- 自动内存管理、垃圾回收。
-- 数组下标越界检查。
-- 多态。
+1. 一次编写，到处运行。
+2. 自动内存管理、垃圾回收。
+3. 数组下标越界检查。
+4. 多态。
 
-为什么学习JVM：面试、理解底层的实现原理、（中高级必备知识）。（HotSpot）
+为什么学习JVM：面试、理解底层的实现原理、（是中高级必备知识）。（HotSpot）
 
 <img src="img/8.structure.png" style="zoom:50%;" />
 
 ![](img/9.load.png)
 
-# 内存结构
+
+
+
+
+
+
+
+
+
+
+# JVM内存结构
 
 ## 程序计时器
 
 Program Counter Register 程序计数器。
 
 
+
+## 虚拟机栈
+
+
+
+## 堆
 
 # 编译JDK
 
