@@ -335,7 +335,8 @@ spring提供的容器也称为ioc容器。
 
 ## 概述
 
-1. 依赖注入（DI）：是实现IoC的一种方式，依赖注入的本质就是装配，装配是依赖注入的具体行为；依赖注入有两种形式（构造器注入或setter注入）。
+1. 类的依赖关系：`use-a`，一个类的实现需要另一个类的协助。
+1. 依赖注入（DI）：是实现IoC的一种方式，依赖注入的本质就是装配，装配是依赖注入的具体行为；依赖注入有两种形式：构造器注入、setter注入。
 2. 装配：创建**应用对象之间协作关系的行为**称为装配，即向bean中注入依赖的过程，而自动注入依赖的过程就是自动装配。
 
 装配机制：（建议显示配置越少越好，尽可能地使用自动配置，当必须要显式配置时尽可能使用JavaConfig）
@@ -343,7 +344,7 @@ spring提供的容器也称为ioc容器。
 **装配的几种方式：**
 
 1. 基于XML配置文件。
-2. 基于注解（JavaConfig）。
+2. 基于注解。（其实JavaConfig也是使用的注解）
 3. bean发现机制与自动装配。
 
 ## 第一个spring程序
@@ -407,13 +408,13 @@ spring提供的容器也称为ioc容器。
 
 ## 应用上下文简单说明
 
-对象都存在于spring容器里，构成的应用的组件被spring容器使用DI管理，spring容器归为两种类型：bean工厂、应用上下文；较常使用的是应用上下文。对象是由spring容器创建的，我们可以使用xml配置文件、JavaConfig、注解来使spring容器创建特定的对象（bean）。
+对象都存在于spring容器（IoC容器）里，spring容器归为两种类型：bean工厂、应用上下文；较常使用的是应用上下文。对象是由spring容器创建的，我们可以使用xml配置文件、JavaConfig、注解来配置spring容器从而创建特定的对象（bean）。
 
-对象生存于spring容器中，创建好了bean之后就可以通过应用上下文获取bean，相当于获取创建好的对象，一般的获取方式如下：
+对象生存于spring容器中，可以通过应用上下文初始化并获取到bean，一般的获取方式如下：
 
 ```java
 public static void main(String[] args){
-    // 容器的获取：使用beans.xml配置文件初始化IoC容器context1
+    // 容器的获取：使用beans.xml配置文件初始化IoC容器——context1
     ApplicationContext context1 = new ClassPathXmlApplicationContext("beans.xml"); 
     
     // 获取对象的方式一：通过get方法和bean的id从容器中获取bean
@@ -443,7 +444,7 @@ public static void main(String[] args){
 
 **关于beans.xml文件：**
 
-beans.xml配置文件是应用上下文的一个配置文件，应用上下文可以根据这个配置文件来初始化IoC容器。
+beans.xml文件是应用上下文的一个配置文件（文件名自定义），应用上下文可以根据这个配置文件来初始化IoC容器。
 
 beans.xml文件，一般放于resources目录下，头文件在一定条件下需要追加其他的约束：
 
@@ -453,6 +454,7 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <!-- 整合其他的配置文件 -->
     <import resource="beans1.xml"/>
     <bean id = "" class = "" name = "" scope="">
     </bean>  
@@ -466,23 +468,24 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
 </beans>
 ```
 
-**关于import：**用来导入其他的xml文件并进行整合，多用于团队合作
+**关于import：**用来导入其他的xml文件并进行整合，多用于团队合作。
 
-- `applicationContext.xm`l，总的bean配置文件的常用名。
+- `applicationContext.xml`，总的bean配置文件的常用名。
 
 - ```xml
+  <!-- 用于导入其他的bean.xml文件，整合进一个xml文件中 -->
   <import resource = "xxx1.xml"/>
   <import resource = "xxx2.xml"/>
-  ......<!-- 用于导入其他的bean.xml文件，整合进一个xml文件中 -->
+  ......
   ```
 
 
 
-## 三种装配方式
+## 三种装配实现方式
 
 ### 基于XML的显式装配
 
-基于XML的装配，Spring提供了两种装配方式：设值注入（Setter Injection）和构造注入（Constructor Injection）
+基于XML的装配，Spring提供了两种装配方式：setter注入（Setter Injection）和构造器注入（Constructor Injection）
 
 #### 通过有参构造器注入
 
@@ -787,7 +790,7 @@ Spring中将某个类注册进IoC容器的注解：
 5. **这几个注解的功能是一样的——表明这个类被spring管理了。**
 
 ```java
-// 将该类对象注册进IoC容器，value可省略，省略时默认值是首字母小写的类名称-annoTest
+// 将该类对象注册进IoC容器，value可省略，省略时默认值是首字母小写的类名称——annoTest
 @Component(value = "obj")
 public class AnnoTest {
     public void add(){
@@ -869,18 +872,18 @@ public class Cat {
 
 2. @Nullable：
 
-   - 标记了这个注解的字段可以为null，任何类型的属性都可以加上；
+   - 标记了这个注解的字段可以为null，任何类型的属性都可以加上。
 
 3. @Autowired和@Qualifier配合
 
    - ```java
-     	@Autowired
-     	@Qualifier(value = "cat2")
-     	private Cat cat;
-     //使用@Qualifier(value = "cat2")从多个对象中指定一个对象配合@Autowired来注入
+     @Autowired
+     @Qualifier(value = "cat2")
+     private Cat cat;
+     // 使用@Qualifier(value = "cat2")从多个对象中指定一个对象配合@Autowired来注入
      ```
 
-4. @Resource：java的注解，如果有指定name值则先通过name匹配，然后再是默认通过byName方式查找，如果找不到则通过byType查找(这时查找对象必须唯一，如果有同一类的多个对象则也会报错)，即两种方式都找不到时，才会报错；@Resource(name = "")可通过指定beanID匹配相应对象。
+4. @Resource：java的注解，如果有指定name值则先通过该指定的name的值去匹配，然后才是通过byName方式查找匹配，如果找不到才会再通过byType查找匹配（这时查找对象必须唯一，如果有同一类的多个对象则也会报错），当两种方式都找不到时，才会报错。（`@Resource(name = "")`——通过指定beanID来匹配到相应对象）
 
 @Autowired和@Resource的区别：
 
@@ -912,7 +915,7 @@ public class Cat {
 
 ## xml与注解整合总结
 
-sppring4.0之后，必须导入spring的aop的包；加入如下约束：
+sppring4.0之后，必须导入spring的aop的包；配置的约束、开启组件扫描，如下：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -969,8 +972,8 @@ IoC基于xml解析、工厂模式、反射实现。IoC思想由IoC容器实现�
 
 IoC容器实现的两种方式：
 
-- BeanFactory：bean工厂，是IoC容器基本的实现方式，是spring内部的使用接口，不提供开发人员使用；**加载完配置文件时对象还没有被创建，在获取对象的时候才会去创建对象**。
-- ApplicationContext：是BeanFactory的子接口，比其父接口功能更加强大，一般由开发人员进行使用；**加载完配置文件后就会把配置好的bean（对象）都创建**。（ApplicationContext有多个实现类）
+1. BeanFactory：bean工厂，是IoC容器基本的实现方式，是spring内部的使用接口，不提供开发人员使用；**加载完配置文件时对象还没有被创建，在获取对象的时候才会去创建对象**。
+2. ApplicationContext：是BeanFactory的子接口，比其父接口功能更加强大，一般由开发人员进行使用；**加载完配置文件后就会把配置好的bean（对象）都创建**。（ApplicationContext有多个实现类）
 
 IOC实现演变流程：（场景模拟：User类需要依赖另一个Service类）
 
@@ -1277,25 +1280,25 @@ JDK动态代理，使用到java.lang.reflext包下的几个类：
 
 **什么是面向切面编程AOP？** - 柳树的回答 - 知乎 https://www.zhihu.com/question/24863332/answer/350410712
 
-AOP全称Aspect Oriented Programming，意为面向切面编程，也叫做面向方法编程，是通过预编译方式和运行期动态代理的方式实现在不修改源代码的情况下给程序动态统一地添加功能的技术。**这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程。**
+AOP全称Aspect Oriented Programming，意为面向切面编程，也叫做面向方法编程，是通过预编译方式和运行期动态代理的方式实现在不修改源代码的情况下动态地给程序统一地添加功能的技术。**这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程。**
 
 ```nginx
 	面向切面编程（AOP是Aspect Oriented Program的首字母缩写） ，我们知道，面向对象的特点是继承、多态和封装。而封装就要求将功能分散到不同的对象中去，这在软件设计中往往称为职责分配。实际上也就是说，让不同的类设计不同的方法。这样代码就分散到一个个的类中去了。这样做的好处是降低了代码的复杂程度，使类可重用。
 	但是人们也发现，在分散代码的同时，也增加了代码的重复性。什么意思呢？比如说，我们在两个类中，可能都需要在每个方法中做日志。按面向对象的设计方法，我们就必须在两个类的方法中都加入日志的内容。也许他们是完全相同的，但就是因为面向对象的设计让类与类之间无法联系，而不能将这些重复的代码统一起来。
 	也许有人会说，那好办啊，我们可以将这段代码写在一个独立的类独立的方法里，然后再在这两个类中调用。但是，这样一来，这两个类跟我们上面提到的独立的类就有耦合了，它的改变会影响这两个类。那么，有没有什么办法，能让我们在需要的时候，随意地加入代码呢？/**这种在运行时，动态地将代码切入到类的指定方法、指定位置上的编程思想就是面向切面的编程。**/
 	一般而言，我们管切入到指定类指定方法的代码片段称为切面，而切入到哪些类、哪些方法则叫切入点。有了AOP，我们就可以把几个类共有的代码，抽取到一个切片中，等到需要时再切入对象中去，从而改变其原有的行为。
-这样看来，AOP其实只是OOP的补充而已。OOP从横向上区分出一个个的类来，而AOP则从纵向上向对象中加入特定的代码。有了AOP，OOP变得立体了。如果加上时间维度，AOP使OOP由原来的二维变为三维了，由平面变成立体了。从技术上来说，AOP基本上是通过代理机制实现的。 
+	这样看来，AOP其实只是OOP的补充而已。OOP从横向上区分出一个个的类来，而AOP则从纵向上向对象中加入特定的代码。有了AOP，OOP变得立体了。如果加上时间维度，AOP使OOP由原来的二维变为三维了，由平面变成立体了。从技术上来说，AOP基本上是通过代理机制实现的。 
 	AOP在编程历史上可以说是里程碑式的，对OOP编程是一种十分有益的补充。
 ```
 
 切面可以理解为——“切入点 + 功能逻辑”。在什么地方切入什么功能，并且可以随意切入，这就是面向切面编程所要实现的。
 
-**AOP支持：**Spring提供了四种类型的AOP支持，而且在很多方面都借鉴了AspectJ项目：
+**AOP支持：**Spring提供了四种类型的AOP支持，而且在很多方面都借鉴了AspectJ项目，四种AOP实现如下：
 
-- 基于代理的经典SpringAOP。
-- 纯POJO切面（需要XML配置）。
-- @AspectJ注解驱动的切面（依然是基于代理的AOP，借鉴了AspectJ，提供注解驱动的AOP，编程模型和AspectJ几乎完全一致）。
-- 注入式AspectJ切面（适用于spring各版本，AspectJ不是Spring组成部分，是独立的AOP框架，经常和Spring结合使用）。
+1. 基于代理的经典SpringAOP。
+2. 纯POJO切面（需要XML配置）。
+3. @AspectJ注解驱动的切面（依然是基于代理的AOP，借鉴了AspectJ，提供注解驱动的AOP，编程模型和AspectJ几乎完全一致）。
+4. 注入式AspectJ切面（适用于spring各版本，AspectJ不是Spring组成部分，是独立的AOP框架，经常和Spring结合使用）。
 
 （前三种都是Spring AOP的变体，Spring AOP构建在动态代理基础上，spring对AOP的支持局限于方法拦截，如果是构造器或属性拦截，则需要使用独立的AOP框架——AspectJ来实现切面）。
 
@@ -1647,12 +1650,15 @@ JdbcTemplate，是spring对JDBC的封装，属于spring-jdbc，定义了一些�
 2. JdbcTemplate的常用方法：
 
    - execute()：可以用于执行任何SQL语句，一般用于执行DDL语句。
-- update()：用于执行新增、修改、删除等语句。
+   
+   - update()：用于执行新增、修改、删除等语句。
    - batchUpdate()：用于执行批处理相关语句，批量添加、修改、删除。
-- query()及queryForXxx()：用于执行查询相关语句。
+   - query()及queryForXxx()：用于执行查询相关语句。
+   
+
+示例——查询（查询返回对象或值）：
 
 ```java
-// 查询基本数据类型包装类对象：
 // 根据SQL语句返回某列的值，其中requiredType是sql返回结果的类型
 <T> T queryForObject(String sql, Class<T> requiredType) throws DataAccessException
     Integer integer = j.queryForObject("select count(*) from info", Integer.class);
@@ -1664,6 +1670,8 @@ queryForObject(String sql, RowMapper<T> rowMapper, @Nullable Object... args)
     // RowMapper：接口，使用其实现类完成对查询结果的封装
     // Object... args：SQL语句值
 ```
+
+示例——增删改：
 
 ```java
 JdbcTemplate j = app.getBean("jdbcTemplate", JdbcTemplate.class);
@@ -1789,9 +1797,9 @@ public class Service {
 
 按配置类的使用方式来创建对应的dataSource、事务管理器、JdbcTemplate，开启事务、数据扫描，最后在需要添加事务的方法上或其所在类上使用@Transactional注解。
 
-- `@EnableTransactionManagement`：开启事务。
-- @Transactional：为方法加上事务。
-- `ComponentScan(basePackages="")`：注解扫描。
+1. `@EnableTransactionManagement`：开启事务。
+2. @Transactional：为方法加上事务。
+3. `ComponentScan(basePackages="")`：注解扫描。
 
 ```java
 // 配置类
