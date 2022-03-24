@@ -18,7 +18,7 @@ JavaEE是为了企业级Java开发准备的，WEB分为：前端（页面渲染�
 
 关系型数据库：(SQL)
 
-- MySql，Oracle，Sql Sver，DB2，SQLlite；
+- MySql，Oracle，Sql Sver，DB2，SQLlite。
 - 通过表和表之间、行和列之间进行数据的存储。
 
 非关系型数据库：（No  SQL）not only
@@ -1611,9 +1611,9 @@ group by t.grade;
 select a.ename,b.ename leadername from emp a left join emp b on a.mgr = b.empno;
 ```
 
+![](img/emp_leftjoin.png)
 
-
-
+思：`select a.ename,b.ename leadername from emp a left join emp b on b.mgr = a.empno;`的结果如何，为什么？
 
 
 

@@ -1713,7 +1713,7 @@ spring中的事务管理操作有两种操作方式：编程式（代码中编�
 
 ## 基于注解
 
-1. spring配置中配置事务管理器、并开启注解。
+1. spring配置中配置事务管理器、并开启事务注解驱动。
 
    ```xml
    <!-- 配置事务管理器 -->
@@ -1863,9 +1863,46 @@ public class Context {
 
 ## 传统的JDBC事务处理
 
+```java
+public static void main(String[] args) {
+    String url = "jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false";
+    String username = "root";
+    String passwd = "123456";
+    Connection conn = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+    try {
+        Class.forName("com.mysql.jdbc.Driver");
+        conn = DriverManager.getConnection(url, username, passwd);
+        // 关闭事务自动提交
+        conn.setAutoCommit(false);
+        ps =  conn.prepareStatement("insert into info values (null,'test',22,'33',now(),null)");
+        int i = ps.executeUpdate();
+        System.out.println(i);
+        // 手动提交事务
+        conn.commit();
+    } catch (Exception e) {
+        try {
+            // 回滚
+            conn.rollback();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }finally {
+        try {
+            ps.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
 
-
-
+        try {
+            conn.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+}
+```
 
 # Bean Scopes作用域
 

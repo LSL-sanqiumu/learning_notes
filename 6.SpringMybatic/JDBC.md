@@ -465,18 +465,45 @@ public static void main(String[] args) {
 JDBC中的事务是自动提交的，只要执行任意一条DML语句，则自动提交一次，这是JDBC默认的事务行为；但在实际的业务中，通常都是n条DML语句共同联合才能完成的，必须保证这些DML语句在同一个事务中同时成功或同时失败。
 
 ```java
-conn.setAutoCommit(false); // 关闭事务自动提交
+public static void main(String[] args) {
+    String url = "jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false";
+    String username = "root";
+    String passwd = "123456";
+    Connection conn = null;
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+    try {
+        Class.forName("com.mysql.jdbc.Driver");
+        conn = DriverManager.getConnection(url, username, passwd);
+        // 关闭事务自动提交
+        conn.setAutoCommit(false);
+        ps =  conn.prepareStatement("insert into info values (null,'test',22,'33',now(),null)");
+        int i = ps.executeUpdate();
+        System.out.println(i);
+        // 手动提交事务
+        conn.commit();
+    } catch (Exception e) {
+        try {
+            // 回滚
+            conn.rollback();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }finally {
+        try {
+            ps.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
 
-conn.commit(); // 提交事务
-
-try {
-	conn.rollback(); // 回滚
-} catch (SQLException e1) {
-	e1.printStackTrace();
+        try {
+            conn.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
 }
 ```
-
-
 
 # 封装工具类
 
