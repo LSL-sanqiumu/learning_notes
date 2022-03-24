@@ -872,10 +872,10 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
 2. **分组函数必须是分组后才能使用，如果不用group by对数据进行分组则默认整张表为一组**。
 
    ```sql
-   select 分组函数 from `table-name`；-- 分组函数如下
+   select 分组函数 from `table-name`; -- 分组函数如下
    count(`字段`); -- 行数计数，会忽略所有的null
-   count(*); --  不会忽略null
-   count(1); -- 1 相当于将分组对应字段赋予1再进行计数
+   count(*); -- 不会忽略null
+   count(1); -- 1 相当于将分组对应字段赋予1再进行求和
    sum(`字段`); avg(`字段`); max(`字段`); min(`字段`); -- 求总和 求平均值 求最大值 求最小值
    ```
 
@@ -885,11 +885,11 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
 2. **分组函数不能直接使用在where条件子句中**，但可以使用在having的条件句中。（因为指令执行有顺序）
 3. 所有分组函数可以组合起来一起用。
 
-**分组查询的使用：**（判断一个或多个字段值是否相同，如果是相同的则为一组数据，不同的为另一组数据）
+**分组查询的使用：**（以一个或多个字段为一组，字段值如果是相同的则为一组数据，不同的为另一组数据）
 
 ```mysql
 -- 分组查询，一定要按照下面的格式；要使用where或having时优先使用having
--- 分组字段和 group by 后的分组字段应该对应
+-- 分组字段和 group by 后的分组字段应该对应，如果不对应那么多出来的数据就丢失了不是
 select `分组字段`,分组函数 from table_name group by `分组字段`;
 select `分组字段1`,`分组字段2`,...,分组函数 from table_name group by `分组字段1`，`分组字段2`, ...;
 select `分组字段`,分组函数 from table_name group by `分组字段` having 条件; -- 先分组再筛选
@@ -900,7 +900,7 @@ select `分组字段`,分组函数 from table_name group by `分组字段` havin
 select xxx from xxx where xxx group by xxx order by xxx;
 ```
 
-注意：由于默认的 MySQL 配置中 的`sql_mode` 配置为了 `only_full_group`，需要 `GROUP BY` 中包含所有在 `select` 中出现的字段。
+注意：由于默认的 MySQL 配置中 的`sql_mode` 配置为了 `only_full_group`，需要 `group by` 中包含所有在 `select` 中出现的字段。
 
 - only_full_group_by ：使用这个就是使用和oracle一样的 group 规则，select后的字段都要在group中，或者select后的字段本身是聚合列(SUM、AVG、MAX、MIN) 才行（因为聚合列会根据分组的字段来将数据聚合成一列）。
 - group by支持select时声明的别名，因为mysql对此做了拓展引起的，这个取决于mysql中的一个参数 ONLY_FULL_GROUP_BY 。
@@ -964,9 +964,24 @@ select user_id,the_year,count(price) as '订单数量' from t_order group by use
 2. 外连接：有主次关系（区分主表、从表）。
 3. 全连接（几乎不用）。
 
-SQL92、SQL99的区别可参考：[SQL92 与 SQL99 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/295071589)。
+SQL92、SQL99的区别可参考：[SQL92 与 SQL99 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/295071589)
 
-连接查询的SQL语句分类：SQLJoins，可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。inner join ... on一种，left join 、right join 、full outer join 和on 、 where分别搭配又分出六种：
+1. SQL92：条件与连接混合，例如：
+
+   ```mysql
+   SELECT * FROM student s, course c ,teacher t ,sc
+   WHERE
+   #表链接条件
+   s.sid = sc.`sid` 
+   AND c.cid = sc.`cid`
+   AND c.tid =t.tid
+   #筛选条件
+   AND t.tname = '张三';
+   ```
+
+2. SQL99：条件与连接分开，支持左、右连接等高级操作。
+
+连接查询的SQL语句分类：SQLJoins，可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。on（表连接条件）、where：
 
 <img src="img/sql-join.png" style="zoom: 67%;" />
 
@@ -1196,7 +1211,8 @@ select 字段1,字段2 from table_name order by 2; -- 对第2个字段进行排�
 联合，用于将查询结果联合在一起，结果集重复的数据（整条记录的字段名、字段类型、字段值一致）才会合并成一条：
 
 ```mysql
- select name,age from info where age = 20 union select school,nowadays from info where age = 20;
+-- 不会合并
+select name,age from info where age = 20 union select school,nowadays from info where age = 20;
 +--------------+------------+
 | name         | age        |
 +--------------+------------+
@@ -1206,6 +1222,7 @@ select 字段1,字段2 from table_name order by 2; -- 对第2个字段进行排�
 | 上海理工大学   | 2022-01-05 |
 | 电子科技大学   | 2022-01-05 |
 +--------------+------------+
+-- 合并
 select name,age from info where age = 20 union select name,age from info where age = 20;
 +--------+-----+
 | name   | age |
@@ -1216,8 +1233,8 @@ select name,age from info where age = 20 union select name,age from info where a
 +--------+-----+
 ```
 
-- 使用union在进行结果集合并的时候要求**两个结果集的列数一致**，列的类型可以不同（Oracle下则要求列数、列数据类型都一致）。
-- 一定场景下，使用union相比联表查询的效率会高出一些，因为联表查询匹配次数满足笛卡尔积。
+1. 使用union在进行结果集合并的时候要求**两个结果集的列数一致**，列的类型可以不同（Oracle下则要求列数、列数据类型都一致）。
+2. 一定场景下，使用union相比联表查询的效率会高出一些，因为联表查询匹配次数满足笛卡尔积。
 
 
 
@@ -1587,7 +1604,14 @@ select t.grade,count(1) from
 group by t.grade;
 ```
 
-13.
+### 13.所有员工及领导的名字
+
+```mysql
+-- 
+select a.ename,b.ename leadername from emp a left join emp b on a.mgr = b.empno;
+```
+
+
 
 
 
