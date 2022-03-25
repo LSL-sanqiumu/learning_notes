@@ -156,11 +156,11 @@ idea中搜索安装lombok插件，并在springboot项目中引入Lombok插件来
 dev-tools：ctrl + f9 重启
 
 ```xml
- <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-devtools</artifactId>
-        <optional>true</optional>
-    </dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+    <optional>true</optional>
+</dependency>
 ```
 
 为了使配置文件中有提示，添加spring-boot-configuration-processor：
@@ -319,7 +319,7 @@ public class RestController {
 }
 ```
 
-@RequestAttribute：获取统一请求中请求欲的值
+@RequestAttribute：获取统一请求中请求域的值
 
 ```java
 @Controller

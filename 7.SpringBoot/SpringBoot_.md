@@ -197,7 +197,239 @@ SpringBoot**将我们常用的功能场景抽取出来，做成一系列的场�
 
 ## 关于自动配置
 
-SpringBoot会根据引入的场景启动器，自动配置好引入场景下的所需要配置。
+SpringBoot会根据引入的场景启动器，自动配置好引入场景所需要的配置。例如：
+
+1. 引入starter-tomcat场景后，就会自动配置好Tomcat： 
+
+   ```xml
+   <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-tomcat</artifactId>
+         <version>2.3.4.RELEASE</version>
+         <scope>compile</scope>
+   </dependency>
+   ```
+
+2. 引入starter-web场景：
+
+   - 自动配置好SpringMVC：引入SpringMVC全套组件（视图解析器等）。
+   - 自动配置好Web常见功能，例如：字符编码问题，所有web开发的常见场景配置。
+
+3. SpringBoot会默认配置包结构：
+
+   - 默认情况下主配置类所在包及其所有子包里的组件都会被扫描，无需Spring的包扫描配置。
+
+   - 可以使用`@SpringBootApplication(scanBasePackages="com.lsl")`或者`@ComponentScan `改变包扫描路径。
+
+     ```java
+     @SpringBootApplication 该注解等同于下面三个注解的功能集合体
+     @SpringBootConfiguration // 标记为配置类
+     @EnableAutoConfiguration // 自动配置
+     @ComponentScan // 包扫描，默认扫描当前包和子包，使spring注解生效
+     ```
+
+4. 自动配置好的配置都有默认值：
+
+   - 例如配置好Tomcat，也就为Tomcat配置了一个默认端口。
+   - 默认配置最终都是映射到某个类上，如：MultipartProperties；配置文件的值最终会绑定在某个类上，这个类将由容器管理并创建对象。
+   - **对默认配置进行修改，就使用yaml文件或properties文件。**
+
+5. 自动配置的按需加载：
+
+   1. SpringBoot的所有的自动配置功能都在`spring-boot-autoconfigure.jar`包里面，里面包含了所有的自动配置项，只有引入了相关场景，相关场景的自动配置才生效。
+   2. 按需加载：通过starter来开启自动配置，引入了哪些starter场景，哪些场景的自动配置才会开启。
+
+查看SpringBoot的自动配置配置了哪些东西和配置的数量：
+
+```java
+@SpringBootApplication
+public class LslApplication {
+    public static void main(String[] args) {
+        // SpringApplication.run(LslApplication.class,args);
+        ConfigurableApplicationContext run = SpringApplication.run(LslApplication.class, args);
+        int count = run.getBeanDefinitionCount();
+        String[] names = run.getBeanDefinitionNames();
+        for (String name : names) {
+            System.out.println(name);
+        }
+        System.out.println("自动配置数量："+count);
+    }
+}
+```
+
+## 开发技巧
+
+### Lombok
+
+idea中安装lombok插件，并在springboot项目中引入Lombok插件来简化JavaBean，关于Lombok的注解使用：
+
+1. @Data：生成getset方法。
+2. @ToString：tostring方法。
+3. @NoArgsConstructor、@AllArgsConstructor：生成无参或有参构造器。
+4. @EqualsAndHashCode：重写equals和hashcode方法。
+5. @Slf4j：日志记录器。
+
+```xml
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+</dependency>
+```
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <excludes>
+                    <!-- 项目打包时排除lombok的jar包 -->
+                    <exclude>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok</artifactId>
+                    </exclude>
+                </excludes>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+### dev-tools
+
+`ctrl + f9`重启SpringBoot项目。
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+    <optional>true</optional>
+</dependency>
+```
+
+### processor
+
+```xml
+<!-- 配置处理器的依赖，这样在使用yml配置文件时就有提示了 -->       
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-configuration-processor</artifactId>
+	<optional>true</optional>
+</dependency>
+
+ <build>
+	<plugins>
+		<plugin>
+			<groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <excludes>
+                    <!-- 打包时不加入配置处理器的jar文件 -->   
+                    <exclude>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-configuration-processor</artifactId>
+                    </exclude>
+                </excludes>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+```
+
+# Web开发场景-SpringMVC
+
+Spring Boot 为 Spring MVC 提供了自动配置，并在 Spring MVC 默认功能的基础上添加了以下特性：
+
+1. 引入了 ContentNegotiatingViewResolver 和 BeanNameViewResolver（视图解析器）。
+2. 对包括 WebJars 在内的静态资源的支持。
+3. 自动注册 Converter、GenericConverter 和 Formatter （转换器和格式化器）。
+4. 对 HttpMessageConverters 的支持（Spring MVC 中用于转换 HTTP 请求和响应的消息转换器）。
+5. 自动注册 MessageCodesResolver（用于定义错误代码生成规则）。
+6. 支持对静态首页（index.html）的访问。
+7. 自动使用 ConfigurableWebBindingInitializer。
+
+
+只要我们在 Spring Boot 项目中的 pom.xml 中引入了 spring-boot-starter-web ，即使不进行任何配置，也可以直接使用 Spring MVC 进行 Web 开发。
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+```
+
+## web场景下的静态资源
+
+web开发场景下，SpringBoot项目默认情况下在classpath路径下有几个目录是**默认的静态资源存放目录**：
+
+1. ` /static `、`/public `、`/resources `、` /META-INF/resources`。
+2. 当访问某些资源时，映射路径不经controller处理时，默认是到静态资源目录下寻找并访问。
+
+**静态资源映射原理：**静态资源请求映射的路径是`/**`。当发起请求来访问资源，会先通过controller进行处理，所有不能经controller处理的请求就交给了静态资源处理器来处理，如果找不到资源就报404错误。 
+
+**在yml配置文件中自定义静态资源相关配置：**
+
+1. `static-path-pattern`：用来设置静态资源的**映射前缀**（默认是`static-path-pattern: /**`）。
+   - 例1：请求访问`localhost:8888/a.png`，会在静态资源目录下寻找，找到就能成功访问a.png资源。
+   - 例2：请求访问`localhost:8888/r/a.png`，会在静态资源目录下的`r`目录下寻找，找到就能成功访问a.png资源。
+   - 配置为`static-path-pattern: /res/**`，访问静态资源时就得加上res前缀，如`localhost:8888/res/r/a.png`，资源仍然是到默认的静态资源目录下寻找。
+2. `static-locations`：用于自定义默认静态资源存放路径，修改后原默认静态资源目录失效。
+   - 默认的值为：`[classpath:/static/,classpath:/public/,classpath:/resources/,classpath:/META-INF/resources/]`。
+
+```yaml
+spring:
+  mvc:
+    static-path-pattern: /res/**
+  web:
+    # 修改默认静态资源路径，修改后原默认静态资源目录失效
+    resources:
+      static-locations: [classpath:/newstatic/,classpath:/newtemplates/]
+      #static-locations: classpath:/newstatic/
+```
+
+**对webjar的支持：**
+
+还支持webjar，会自动映射 /webjars/**，见https://www.webjars.org/。
+
+```xml
+<dependency>
+    <groupId>org.webjars</groupId>
+    <artifactId>jquery</artifactId>
+    <version>3.5.1</version>
+</dependency>
+```
+
+访问地址：`http://localhost:8080/webjars/jquery/3.5.1/jquery.js`，后面地址要按照依赖里面的包路径。
+
+**欢迎页面：**
+
+静态资源路径（这里说路径即目录）下的index.html可以作为欢迎页面，访问`localhost:port/`会自动跳转至这个页面，但是是在没有配置静态资源前缀的前提下。
+
+**网页标签图标：**
+
+静态资源路径下的favicon.ico图标可以作为网页标签图标，只有当没有配置静态资源路径前缀的时候才有效。
+
+## 请求处理
+
+**关于请求映射路径：**
+
+web开发场景下，前端控制器的请求映射路径最前面的`/`不再是代表`localhost:port/webappName/`，而是代表`localhost:port/`。
+
+也可以设置一个前置路径，设置后所有的访问都要加上该前置路径，在application.yml中设置：
+
+```yaml
+server:
+	servlet:
+		content-path: /webapp
+# （配置好以后好，前端控制器请求映射路径中最前面的`/`也就代表了`localhost:port/webapp/`）
+```
+
+### 接收请求参数
+
+@PathVariable：获取路径变量，可以指定key来获取某一个，也可以直接获取全部变量值。
+
+
 
 
 
