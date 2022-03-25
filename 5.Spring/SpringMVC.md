@@ -85,29 +85,36 @@ springmvc的使用步骤：
 **配置中央调度器如下：**
 
 ```xml
-<!-- web.xml -->
-<servlet>
-    <servlet-name>myspringmvc</servlet-name>
-    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-    <!-- 上下文的配置（resource里的资源在导出后会加载进classpath），初始化SpringMVC容器 -->
-    <init-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:springmvc.xml</param-value> 
-    </init-param>
-    <!-- 服务器启动便创建好调度器，越小创建（执行）越早 -->
-    <load-on-startup>1</load-on-startup> 
-</servlet>
-<servlet-mapping>
-    <servlet-name>myspringmvc</servlet-name>
-    <url-pattern>*.do</url-pattern>
-</servlet-mapping>
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app  xmlns = "http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jsp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0"
+         metadata-complete="true"
+>
+    <servlet>
+        <servlet-name>myspringmvc</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!-- 上下文的配置（resource里的资源在导出后会加载进classpath），初始化SpringMVC容器 -->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:springmvc.xml</param-value> 
+        </init-param>
+        <!-- 服务器启动便创建好调度器，越小创建（执行）越早 -->
+        <load-on-startup>1</load-on-startup> 
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>myspringmvc</servlet-name>
+        <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
+</web-app>
 ```
 
 **关于中央调度器的url-pattern：**
 
 1. 在没有特殊要求的情况下，常使用后缀匹配的方式，如写`*do`。
 2. 如果写成`/*`，所有的`.jsp`资源将失效，报404。
-3. 如果写成`/`（RESTful风格下会这样做），那么HTML、css、js、图片等静态资源将会失效，必须要对静态资源处理才能访问（见目录：静态资源处理）。
+3. 如果写成`/`（RESTful风格下会这样做），那么HTML、css、js、图片等静态资源将会失效，此时必须要对静态资源进行处理才能访问（见目录：静态资源处理）。
 
 **关于init-param：**
 
@@ -124,7 +131,7 @@ init(){
 
 视图解析器负责将逻辑视图名解析为具体的视图对象。
 
-**springmvc.xml里配置视图解析器：**
+**spring-mvc.xml里配置视图解析器：**
 
 ```xml
 <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
@@ -137,7 +144,7 @@ init(){
 
 配置好上述的视图解析器后，`mv.setViewName("show")`  ===>  return mv后相当于转发到 `/WEB-INF/view/show.jsp`页面，返回的都将被加上视图解析器配置好的前后缀。
 
-也可以使用thymeleaf的解析器，使用thymeleaf来渲染页面，如下：
+也可以使用thymeleaf的视图解析器（需要导入themeleaf的依赖），使用thymeleaf来渲染页面，如下：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -146,10 +153,8 @@ init(){
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
-    <!-- 组件扫描器，使注解生效 -->
     <context:component-scan base-package="com.lsl.crowd.controller"/>
     <!-- 视图器的配置，为了简化控制器的视图路径 -->
-
     <!-- thymeleaf的视图解析器会与ContentNegotiatingViewResolver冲突 -->
     <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
         <property name="characterEncoding" value="UTF-8"/>
@@ -200,8 +205,6 @@ public class FirstController {
     }
 }
 ```
-
-
 
 ```java
 // 使用视图解析器时
@@ -522,18 +525,14 @@ public String test(@CookieValue("JSESSIONID") String cookie)  {
 
 ## 自动全局接收
 
-（HttpServletRequest request、HttpServletResponse response、HttpSession session）这三个由框架自动完成赋值，如下声明后就可以直接调用它们的方法来获取数据了。
+（HttpServletRequest request、HttpServletResponse response、HttpSession session，详细使用见Servlet）这三个由框架自动完成赋值，如下声明后就可以直接调用它们的方法来获取数据了（request可以获取请求域中的数据、cookie、session等请求数据，response是响应的数据，session是一个会话中的数据（比如当前页面转发到另一个页面，这是可实现跨页面传送数据））。
 
 ```java
 @RequestMapping(value = "/first.do", method = RequestMethod.POST)
 public ModelAndView doFirst(HttpServletRequest request, HttpServletResponse response, HttpSession session) {
     ModelAndView mv = new ModelAndView();
-
-    mv.addObject("msg","欢迎使用springMVC来开发");
-    mv.addObject("fun","执行的是doFirst方法");
-
+    ......
     mv.setViewName("first");
-
     return mv;
 }
 ```
@@ -546,12 +545,10 @@ public ModelAndView doFirst(HttpServletRequest request, HttpServletResponse resp
 @RequestMapping(value = "/second.do", method = RequestMethod.POST)
 public ModelAndView doSecond(String name, String age) {
     ModelAndView mv = new ModelAndView();
-
+    // 将接收到的放入请求域
     mv.addObject("msg",name);
     mv.addObject("fun",age);
-
     mv.setViewName("other");
-
     return mv;
 }
 ```
@@ -606,7 +603,7 @@ public ModelAndView doOb(Student student) {
 
 ## ModelAndView
 
-ModelAndView对象，包数据和视图，可对视图执行forward（转发）；处理器方法处理请求后，需要跳转到其他页面资源并在往跳转资源传递数据，此时可以使用该返回值类型。
+ModelAndView对象，包含数据和视图，可对视图执行forward（转发）；处理器方法处理请求后，需要跳转到其他页面资源并在往跳转资源传递数据，此时可以使用该返回值类型。
 
 1. `addObject()`：往请求域放数据，相当于`request的setAttribute("msg", "xxx");`。
 
@@ -643,8 +640,7 @@ public String returnStringView(HttpServletRequest request, String name, String a
 
     request.setAttribute("msg",name);
     request.setAttribute("fun",age);
-    // 由框架进行转发
-    // 配置了视图解析器时，就可以直接返回视图的逻辑名称
+    // 由框架进行转发，配置了视图解析器时，就可以直接返回视图的逻辑名称
     return "show";
     /* 如果返回完整的路径，这时不能使用视图解析器，因为视图解析器会在返回的值加前缀、后缀 */
 }
@@ -652,7 +648,7 @@ public String returnStringView(HttpServletRequest request, String name, String a
 
 ## void
 
-不能表示数据，也不能表示视图，在处理ajax时，可以使用其作为返回值，并通过HttpServletResponse输出数据，来响应ajax请求，ajax用于请求服务器返回数据，和视图无关。
+不能表示数据，也不能表示视图，在处理ajax请求时，可以使用其作为返回值，并通过HttpServletResponse输出数据，来响应ajax请求，ajax只是用于请求服务器返回数据，和视图无关。
 
 ```xml
 <!-- jackson依赖包 -->
@@ -670,11 +666,9 @@ public String returnStringView(HttpServletRequest request, String name, String a
 </dependency>
 ```
 
-先会基本的对象-json的转换处理，再去使用框架返回Object对象自动完成json转换，（至于底层原理，看心情吧）。
+
 
 ## Object
-
-**返回Object对象时关于自动转json的底层原理：**
 
 返回Object对象时，该对象可以是String、Integer、自定义对象、Map、List等，返回的结果仅表示数据，和视图无关。
 
@@ -1146,7 +1140,7 @@ public ModelAndView redirectTest(String name, String age){
 
 ### 基于XML
 
-SpringMVC提供了一个处理控制器方法执行过程中所出现的异常的接口：HandlerExceptionResolver。HandlerExceptionResolver接口的实现类有：DefaultHandlerExceptionResolver、SimpleMappingExceptionResolver。SpringMVC提供了一个自定义的异常处理器SimpleMappingExceptionResolver，配置好即可使用：
+SpringMVC提供了一个用来处理控制器方法执行过程中出现的异常的接口：HandlerExceptionResolver。HandlerExceptionResolver接口的实现类有：DefaultHandlerExceptionResolver、SimpleMappingExceptionResolver。SpringMVC提供了一个自定义的异常处理器SimpleMappingExceptionResolver，配置好即可使用：
 
 ```xml
 <!-- 基于XML的异常映射 -->
@@ -1175,7 +1169,7 @@ SpringMVC提供了一个处理控制器方法执行过程中所出现的异常�
         </props>
     </property>
     <!--
-        exceptionAttribute属性设置一个属性名，将出现的异常信息在请求域中进行共享
+        exceptionAttribute属性：将出现的异常信息在请求域中进行共享
     -->
     <property name="exceptionAttribute" value="ex"></property>
 </bean>

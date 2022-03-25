@@ -1403,7 +1403,7 @@ Log4j2：
 
 Log4j1的使用：
 
-- 导入依赖，在类的根路径加入xxx.properties配置文件；
+- 导入依赖，在类的根路径加入xxx.properties配置文件。
 
 ```properties
 log4j.rootLogger=DEBUG,Console

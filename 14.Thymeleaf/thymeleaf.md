@@ -1,8 +1,8 @@
 # thymeleaf
 
+# 依赖导入
 
-
-## 依赖导入
+因为themeleaf的模板解析器需要用到servletContext，因此需要导入servlet的依赖。
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf -->
@@ -33,21 +33,21 @@
 ```xml
 <!-- thymeleaf的视图解析器 会与冲突ContentNegotiatingViewResolver-->
 <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
-<property name="characterEncoding" value="UTF-8"/>
-<property name="templateEngine" ref="templateEngine"/>
+    <property name="characterEncoding" value="UTF-8"/>
+    <property name="templateEngine" ref="templateEngine"/>
 </bean>
 <!-- 模板引擎 -->
 <bean id="templateEngine" class="org.thymeleaf.spring5.SpringTemplateEngine">
-<property name="templateResolver" ref="templateResolver"/>
+    <property name="templateResolver" ref="templateResolver"/>
 </bean>
 <!-- 模板解析器 -->
 <bean id="templateResolver" class="org.thymeleaf.templateresolver.ServletContextTemplateResolver">
-<constructor-arg ref="servletContext"/>
-<property name="prefix" value="/WEB-INF/muke/"/>
-<property name="suffix" value=".html"/>
-<property name="templateMode" value="HTML5"/>
-<property name="cacheable" value="false"/>
-<property name="characterEncoding" value="UTF-8"/>
+    <constructor-arg ref="servletContext"/>
+    <property name="prefix" value="/WEB-INF/muke/"/>
+    <property name="suffix" value=".html"/>
+    <property name="templateMode" value="HTML5"/>
+    <property name="cacheable" value="false"/>
+    <property name="characterEncoding" value="UTF-8"/>
 </bean>
 ```
 
@@ -58,9 +58,9 @@ xmlns:th="http://www.thymeleaf.org"
 
 
 
-## 资源引入
+# 资源引入
 
-`th:href`、`th:src`：通过`@{...}`表达式，Thymeleaf可以帮助我们拼接上web应用的前置路径，同时我们可以通过`（）`进行参数的拼接，如下：
+`th:href`、`th:src`：通过`@{...}`表达式，Thymeleaf可以帮助我们拼接上web应用的前置路径，同时我们可以通过`()`进行参数的拼接，如下：
 
 ```html
 <base th:href="'http://localhost:8880' + ${#request.getContextPath()} + '/'">
@@ -77,6 +77,34 @@ xmlns:th="http://www.thymeleaf.org"
 <!-- 结果 -->
 <a href="/sbe/product/comments?prodId=2&amp;prodId2=2">查看</a>
 ```
+
+# 取域中的值
+
+放入域中的值以键值对形式存在，key-value。
+
+## request域
+
+HttpServletRequest、ModelAndView、Model、Map、ModelMap，都是存到request域。
+
+1. `${key}`。
+2. `${#request.getAttribute(key)}`。
+3. `${#httpServletRequest.getAttribute('text')}`。
+
+## session域
+
+HttpSession。
+
+1. `${#session.getAttribute('session')}`。
+2. 视图中接收到的session对象名为session，则可使用`${session.key}`或`${session.get(key)}`来取到到session域中值。
+3. `${#request.getSession().getAttribute(key)}`。
+4. `${#httpSession.getAttribute('session')}`。
+
+## application域
+
+ServletContext。
+
+1. `${#request.getServletContext().getAttribute(key)}`。
+2. `${#servletContext.getAttribute(key)}`。
 
 # 标签使用
 
