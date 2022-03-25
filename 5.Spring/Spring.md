@@ -155,7 +155,7 @@ resources文件夹需要beans.xml等文件，xml约束如下：
 
 # Spring概述
 
-IOC（Inversion of Control，即“控制反转”，不是什么技术，而是一种设计思想）、AOP(aspect-oriented programming，面向切面编程)、SpringMVC ===> 衍生项目。
+IoC（Inversion of Control，即“控制反转”，不是什么技术，而是一种设计思想）、AOP(aspect-oriented programming，面向切面编程)、SpringMVC ===> Spring衍生项目。
 
 为简化JavaEE应用程序的开发为目的而创建了Spring框架。
 
@@ -172,14 +172,14 @@ Spring是什么？
 
 2002年，Spring雏形interface21发布，在interface21的基础上经过重新设计，并不断丰富内涵，于2004年3月24号Spring发布1.0版本，其创始人是Rod  Johnson。Spring是一个为了全方位地简化Java开发而创建的开源框架，是一个轻量级的控制反转和面向切面编程的框架；其为了简化Java开发采取了以下四种策略：
 
-- 基于POJO的轻量级和最小侵入式编程；
-- 通过依赖注入和面向接口实现松耦合；
-- 基于切面和惯例进行声明式编程；
+- 基于POJO的轻量级和最小侵入式编程。
+- 通过依赖注入和面向接口实现松耦合。
+- 基于切面和惯例进行声明式编程。
 - 通过切面和模板减少样板代码。
 
 Spring优缺点？
 
-Spring优点：开源免费的框架(容器)、轻量级非入侵式的框架、控制反转IOC、面向切面编程aop，支持事务的处理和对框架的整合的支持;缺点：发展太久之后违背了原来的理念，其整合了许多框架，就像一个大杂烩一样；配置十分繁琐，人称“配置地狱”。
+Spring优点：开源免费的框架(容器)、轻量级非入侵式的框架、控制反转IOC、面向切面编程aop，支持事务的处理和对框架的整合的支持；缺点：发展太久之后违背了原来的理念，其整合了许多框架，就像一个大杂烩一样；配置繁琐。
 
 Spring相关
 
@@ -195,8 +195,8 @@ SSH框架：Struct2 + Spring + Hibernate(全自动)；SSM框架：SpringMVC + Sp
 
 关于Spring的拓展：
 
-- Spring Boot：一个快速开发的脚手架，基于Spring Boot可以快速的开发单个微服务，原则是约定大于配置。
-- Spring Cloud：基于Spring Boot实现的。
+1. Spring Boot：一个快速开发的脚手架，基于Spring Boot可以快速的开发单个微服务，原则是约定大于配置。
+2. Spring Cloud：基于Spring Boot实现的微服务框架。
 
 【大多数公司使用SpringBoot进行快速开发，学习SpringBoot前要完全掌握Spring及SpringMVC！】
 
@@ -515,7 +515,7 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
 </bean>
 ```
 
-通过参数类型注入属性，不建议使用！如果参数中有多个同一类型会出错：
+通过参数类型注入属性，不建议使用！如果参数中有多个同一类型会出错（?）：
 
 ```xml
 <bean id = "user3" class="com.lsl.pojo.User">
@@ -837,7 +837,7 @@ public class Cat {
    }
    ```
 
-2. @Qualifier：根据IoC中对象名称来匹配注入，需要和@Autowired搭配使用才能起作用。
+2. @Qualifier：根据IoC中存在的对象的名称来匹配注入，需要和@Autowired搭配使用才能起作用。
 
    ```java
    @Component
@@ -864,26 +864,24 @@ public class Cat {
    }
    ```
 
-1. @Autowired：
+1. 关于@Autowired：
 
    - 使用@Autowired(required = false)，则当在容器中找不到符合的对象时，仍然可以编译通过；如果为true，则要求容器中必须有符合的对象来供注入。
    - 在属性上或set方法上都能使用，前提是自动装配的属性在spring容器中存在，且符合xml中byName时的名字要求。
-   - **注意**：通过注解注入到IOC容器的id值默认是其类名（首字母小写）。
+   - **注意**：通过注解注入到IOC容器的对象的id值默认是其类名（首字母小写）。
 
-2. @Nullable：
+2. @Nullable：标记了这个注解的字段可以为null，任何类型的属性都可以加上。
 
-   - 标记了这个注解的字段可以为null，任何类型的属性都可以加上。
+6. @Autowired和@Qualifier配合：
 
-3. @Autowired和@Qualifier配合
+   ```java
+   @Autowired
+   @Qualifier(value = "cat2")
+   private Cat cat;
+   // 使用@Qualifier(value = "cat2")从多个对象中指定一个对象配合@Autowired来注入
+   ```
 
-   - ```java
-     @Autowired
-     @Qualifier(value = "cat2")
-     private Cat cat;
-     // 使用@Qualifier(value = "cat2")从多个对象中指定一个对象配合@Autowired来注入
-     ```
-
-4. @Resource：java的注解，如果有指定name值则先通过该指定的name的值去匹配，然后才是通过byName方式查找匹配，如果找不到才会再通过byType查找匹配（这时查找对象必须唯一，如果有同一类的多个对象则也会报错），当两种方式都找不到时，才会报错。（`@Resource(name = "")`——通过指定beanID来匹配到相应对象）
+7. @Resource：java的注解，如果有指定name值则先通过该指定的name的值去匹配，然后才是通过byName默认方式查找匹配，如果找不到才会再通过byType查找匹配（这时查找对象必须唯一，如果有同一类的多个对象则也会报错），当两种方式都找不到时，才会报错。（`@Resource(name = "")`——通过指定beanID来匹配到相应对象）
 
 @Autowired和@Resource的区别：
 
@@ -936,6 +934,8 @@ sppring4.0之后，必须导入spring的aop的包；配置的约束、开启组�
 </beans>
 ```
 
+**几个主要注解：**
+
 1. @Component：组件，放于类上，说明这个类被spring管理了；相当于 `<bean id = "类名小写。。。" class = "com.lsl.pojo.类">`。
 2. @Value("")：相当于`<property name = "" value = ""/>`，放在属性字段上或写在setter方法上。
 3. @Component有几个衍生注解，我们在Web开发中会按照mvc三层架构。
@@ -949,18 +949,18 @@ sppring4.0之后，必须导入spring的aop的包；配置的约束、开启组�
    - @Autowired和@Qualifier配合，使用@Qualifier(value="")来指定要注入的bean的名称。
 5. 作用域：@Scope("")，指定单例或其他。
 
-小结，xml与注解：
+**小结，xml与注解：**
 
-- xml：应用场景更加广泛，维护更加简单方便。
-- 注解：与源代码绑定，改动时要修改源代码。
+1. xml：应用场景更加广泛，维护更加简单方便。
+2. 注解：与源代码绑定，改动时要修改源代码。
 
-最佳实践：
+**最佳实践：**
 
-- xml用于管理bean：只负责对象的创建。
+1. xml用于管理bean：只负责对象的创建。
 
-- 注解用于注入：只负责属性的注入。
+2. 注解用于注入：只负责属性的注入。
 
-- 【注意】需要开启注解扫描（可通过xml或JavaConfig这两种方式开启）
+3. 【注意】需要开启注解扫描（可通过xml或JavaConfig这两种方式开启）
 
   ```xml
   <context:component-scan base-package="com.lsl.pojo"/><!--扫描当前包，使当下包的注解生效-->
@@ -1920,9 +1920,154 @@ public static void main(String[] args) {
 
 # spring5新特性
 
-函数式编程
+## 整合日志框架
+
+```XML
+<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-core</artifactId>
+    <version>2.17.1</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-api</artifactId>
+    <version>2.17.1</version>
+</dependency>
+```
+
+类路径下的日志配置文件`log4j2.xml`：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
+```
+
+## @Nullable
+
+方法、属性、参数，表示值可以为空。
+
+## 函数式编程
+
+通过lambda表达式创建bean。
+
+```java
+public static void main(String[] args) {
+    GenericApplicationContext context = new GenericApplicationContext();
+    context.refresh();
+    context.registerBean(User.class,() -> new User());
+    Object bean = context.getBean("com.lsl.test.Uesr");
+
+}
+```
+
+```java
+public static void main(String[] args) {
+    GenericApplicationContext context = new GenericApplicationContext();
+    context.refresh();
+    context.registerBean("o1",UserUser.class,() -> new User());
+    Object bean = context.getBean("o1");
+    System.out.println(bean);
+}
+```
+
+## 整合JUnit5
+
+### 整合单元测试框架
+
+Spring整合JUnit4：
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-test -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-test</artifactId>
+    <version>5.3.17</version>
+    <scope>test</scope>
+</dependency>
+<!-- https://mvnrepository.com/artifact/junit/junit -->
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+    <scope>test</scope>
+</dependency>
+```
+
+```java
+@RunWith(SpringJUnit4ClassRunner.class) // 单元测试框架
+@ContextConfiguration("classpath:beans.xml") // 加载spring配置
+public class Junit4Test {
+
+    @Test
+    public void test(){
+        ApplicationContext app =  new ClassPathXmlApplicationContext("beans.xml");
+        JdbcTemplate j = app.getBean("jdbcTemplate", JdbcTemplate.class);
+        List<Map<String, Object>> maps = j.queryForList("select * from info");
+        System.out.println(maps.get(0).get("name"));
+    }
+}
+```
+
+Spring整合JUnit5：
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-test -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-test</artifactId>
+    <version>5.3.17</version>
+    <scope>test</scope>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-api</artifactId>
+    <version>5.8.2</version>
+    <scope>test</scope>
+</dependency>
+```
+
+```java
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration("classpath:beans.xml")
+public class Junit5Test {
+
+    @Test
+    public void test(){
+        ApplicationContext app =  new ClassPathXmlApplicationContext("beans.xml");
+        JdbcTemplate j = app.getBean("jdbcTemplate", JdbcTemplate.class);
+        List<Map<String, Object>> maps = j.queryForList("select * from info");
+        System.out.println(maps.get(0).get("name"));
+    }
+}
+```
+
+```java
+@SpringJUnitConfig(locations = {"classpath:beans.xml"}) // 复合注解
+public class Junit5Test {
+}
+```
+
+### 单元测试-断言
 
 
+
+## WebFlux
+
+响应式Web框架，用于Web开发，功能和SpringMVC类似，不过其不需要Servlet API，是完全异步且非阻塞的，并且通过Reactor项目实现了Reactive Streams规范。
 
 
 
