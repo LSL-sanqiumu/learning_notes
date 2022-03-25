@@ -14,7 +14,7 @@ Spring Boot是由Pivotal团队提供的全新框架，其设计目的是用来�
 
 
 
-## 配置文件-yml
+## 关于yml配置文件
 
 YAML 是 "YAML Ain't Markup Language"（意为 YAML 不是一种标记语言）的递归缩写。在开发的这种语言时，YAML 的意思其实是："Yet Another Markup Language"（仍是一种标记语言）。 非常适合用来做以数据为中心的配置文件。
 
@@ -109,8 +109,8 @@ person:
 
 1. 根据所需引入starter场景和其他依赖；
    - 引入starter场景的artifactId见【https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-starter】。
-2. 【选做】可以查看自动配置（XxxAutoConfigure）做了哪些功能：
-   - 方法一：自己分析自动配置类（引入场景对应的自动配置一般都生效了）；
+2. 【选做】可以查看自动配置（XxxAutoConfigure）了哪些功能：
+   - 方法一：自己分析自动配置类（引入场景对应的自动配置一般都生效了）。
    - 方法二：配置文件中debug=true开启自动配置报告（Negative（不生效）\ Positive（生效））。
 3. 是否需要定制或修改一些功能：
    - 参照文档修改配置文件 [Common Application Properties (spring.io)](https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties)；
@@ -124,10 +124,10 @@ person:
 
 idea中搜索安装lombok插件，并在springboot项目中引入Lombok插件来简化JavaBean：
 
-- @Data：生成getset方法；
-- @ToString：tostring方法；
-- @NoArgsConstructor、@AllArgsConstructor：生成无参或有参构造器；
-- @EqualsAndHashCode：重写equals和hashcode方法；
+- @Data：生成getset方法。
+- @ToString：tostring方法。
+- @NoArgsConstructor、@AllArgsConstructor：生成无参或有参构造器。
+- @EqualsAndHashCode：重写equals和hashcode方法。
 - @Slf4j：日志记录器。
 
 ```xml
@@ -228,11 +228,11 @@ spring:
 还支持webjar，会自动映射 /webjars/**，见https://www.webjars.org/
 
 ```xml
-    <dependency>
-        <groupId>org.webjars</groupId>
-        <artifactId>jquery</artifactId>
-        <version>3.5.1</version>
-    </dependency>
+<dependency>
+    <groupId>org.webjars</groupId>
+    <artifactId>jquery</artifactId>
+    <version>3.5.1</version>
+</dependency>
 ```
 访问地址：http://localhost:8080/webjars/jquery/3.5.1/jquery.js   后面地址要按照依赖里面的包路径。
 
@@ -1807,7 +1807,7 @@ spring-boot-starter是所有场景启动器最底层的依赖、最基本的， 
 1、见到很多 spring-boot-starter-* ： *就是指某种场景。
 2、只要引入starter，这个场景的所有常规需要的依赖都会自动引入。
 3、SpringBoot所有支持的场景有：https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-starter。
-4、见到的  *-spring-boot-starter： 第三方为我们提供的简化开发的场景启动器。
+4、`*-spring-boot-starter`： 第三方为我们提供的用于简化开发的场景启动器。
 
 # 自动配置
 
