@@ -313,7 +313,7 @@ public class MyController{
 
 
 
-## 接收GetPost的参数
+## 用于接收URI参数
 
 ### @PathVariable
 
@@ -404,6 +404,62 @@ public String test(@RequestBody Map<String, Object> paramMap) {
 }
 ```
 
+
+
+## 用于接收请求头参数
+
+### @RequestHeader
+
+@RequestHeader 注解，可以把请求头部分的值绑定到方法的参数上。
+
+```nginx
+/** Request Header **/
+Host                    localhost:8080
+Accept                  text/html,application/xhtml+xml,application/xml;q=0.9
+Accept-Language         fr,en-gb;q=0.7,en;q=0.3
+Accept-Encoding         gzip,deflate
+Accept-Charset          ISO-8859-1,utf-8;q=0.7,*;q=0.7
+Keep-Alive              300
+```
+
+```java
+@GetMapping("/test")
+// 获取到请求头中Accept-Encoding的数据 `gzip,deflate`
+public String test(@RequestHeader("Accept-Encoding") String encoding)  {
+    return null;
+}
+```
+
+@RequestHeader注解一共有三个属性：value、required、defaultValue，用法同@RequestParam。
+
+1. value：指定为形参赋值的请求参数的参数名（name），指定后当前请求必须传key为value的数据，如果没有传这个数据并且没有设置defaultValue，则报错。
+2. required：是否必须传输此参数。
+3. defaultValue：不管required属性值为true或false，当value所指定的请求参数没有传输或传输的值为`""`空字符时，则使用默认值为形参赋值。
+
+### @CookieValue
+
+@CookieValue 可以把Request header中关于cookie的值绑定到方法的参数上。
+
+```nginx
+/** cookie **/
+JSESSIONID=415A4AC178C59DACE0B2C9CA727CDD84
+```
+
+```java
+@GetMapping("/test")
+public String test(@CookieValue("JSESSIONID") String cookie)  {
+    return null;
+}
+```
+
+属性：value、required、defaultValue，用法同@RequestParam。
+
+1. value：指定为形参赋值的请求参数的参数名（name），指定后当前请求必须传key为value的数据，如果没有传这个数据并且没有设置defaultValue，则报错。
+2. required：是否必须传输此参数。
+3. defaultValue：不管required属性值为true或false，当value所指定的请求参数没有传输或传输的值为""时，则使用默认值为形参赋值。
+
+
+
 ## @ResponseBody
 
 @ResponseBody用于标识一个控制器方法，可以**将该方法的返回值直接作为响应报文的响应体**响应到浏览器。（通常都是使用json工具解析成json格式的数据后再响应到浏览器，出于最小依赖的考虑，Json解析第一选择可能就是Jackson）
@@ -465,59 +521,9 @@ public class MyController {
 }
 ```
 
+## @ModelAttribute
 
-
-## 用于接收请求头参数
-
-### @RequestHeader
-
-@RequestHeader 注解，可以把请求头部分的值绑定到方法的参数上。
-
-```nginx
-/** Request Header **/
-Host                    localhost:8080
-Accept                  text/html,application/xhtml+xml,application/xml;q=0.9
-Accept-Language         fr,en-gb;q=0.7,en;q=0.3
-Accept-Encoding         gzip,deflate
-Accept-Charset          ISO-8859-1,utf-8;q=0.7,*;q=0.7
-Keep-Alive              300
-```
-
-```java
-@GetMapping("/test")
-// 获取到请求头中Accept-Encoding的数据 `gzip,deflate`
-public String test(@RequestHeader("Accept-Encoding") String encoding)  {
-    return null;
-}
-```
-
-@RequestHeader注解一共有三个属性：value、required、defaultValue，用法同@RequestParam。
-
-1. value：指定为形参赋值的请求参数的参数名（name），指定后当前请求必须传key为value的数据，如果没有传这个数据并且没有设置defaultValue，则报错。
-2. required：是否必须传输此参数。
-3. defaultValue：不管required属性值为true或false，当value所指定的请求参数没有传输或传输的值为`""`空字符时，则使用默认值为形参赋值。
-
-### @CookieValue
-
-@CookieValue 可以把Request header中关于cookie的值绑定到方法的参数上。
-
-```nginx
-/** cookie **/
-JSESSIONID=415A4AC178C59DACE0B2C9CA727CDD84
-```
-
-```java
-@GetMapping("/test")
-public String test(@CookieValue("JSESSIONID") String cookie)  {
-    return null;
-}
-```
-
-属性：value、required、defaultValue，用法同@RequestParam。
-
-1. value：指定为形参赋值的请求参数的参数名（name），指定后当前请求必须传key为value的数据，如果没有传这个数据并且没有设置defaultValue，则报错。
-2. required：是否必须传输此参数。
-3. defaultValue：不管required属性值为true或false，当value所指定的请求参数没有传输或传输的值为""时，则使用默认值为形参赋值。
+参考：[Spring MVC中@ModelAttribute注解的使用 (biancheng.net)](http://c.biancheng.net/view/4412.html)。
 
 # 处理器内-请求参数自动接收
 
