@@ -95,7 +95,7 @@ springmvc的使用步骤：
     <servlet>
         <servlet-name>myspringmvc</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-        <!-- 上下文的配置（resource里的资源在导出后会加载进classpath），初始化SpringMVC容器 -->
+        <!-- 上下文的配置（resource里的资源在导出后会加载进classpath），用于初始化SpringMVC容器 -->
         <init-param>
             <param-name>contextConfigLocation</param-name>
             <param-value>classpath:springmvc.xml</param-value> 
@@ -112,13 +112,13 @@ springmvc的使用步骤：
 
 **关于中央调度器的url-pattern：**
 
-1. 在没有特殊要求的情况下，常使用后缀匹配的方式，如写`*do`。
+1. 在没有特殊要求的情况下，常使用后缀匹配的方式，如设置为`*.do`用于匹配请求路径尾部带.do后缀的请求。
 2. 如果写成`/*`，所有的`.jsp`资源将失效，报404。
-3. 如果写成`/`（RESTful风格下会这样做），那么HTML、css、js、图片等静态资源将会失效，此时必须要对静态资源进行处理才能访问（见目录：静态资源处理）。
+3. 如果写成`/`（RESTful风格下会这样做），那么HTML、css、js、图片等静态资源将会失效，无法直接访问到并且也不能通过前端控制器访问到，此时必须要对静态资源进行处理才能访问（见目录：静态资源处理）。
 
 **关于init-param：**
 
-在tomcat服务器启动后创建DispatcherServlet对象实例，为什么要这样？创建该实例的过程中会同时创建springmvc容器对象，并读取springmvc的配置文件，把这个配置文件中对象都创建好，当用户发起请求就可直接使用controller对象。DispatcherServlet对象就是一个servlet，当其创建时执行init()方法，会进行初始化：
+在tomcat服务器启动后创建DispatcherServlet对象实例，为什么要这样？创建该实例的过程中会同时创建springmvc容器对象，并读取springmvc的配置文件，把这个配置文件中对象都创建好，当用户发起请求就可直接使用controller对象。DispatcherServlet对象就是一个servlet，当其创建时会执行init()方法，也就能进行初始化了：
 
 ```java
 init(){
@@ -131,7 +131,7 @@ init(){
 
 视图解析器负责将逻辑视图名解析为具体的视图对象。
 
-**spring-mvc.xml里配置视图解析器：**
+**spring-mvc.xml里配置视图解析器：**（为返回的视图路径添加前缀与后缀）
 
 ```xml
 <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
@@ -144,7 +144,7 @@ init(){
 
 配置好上述的视图解析器后，`mv.setViewName("show")`  ===>  return mv后相当于转发到 `/WEB-INF/view/show.jsp`页面，返回的都将被加上视图解析器配置好的前后缀。
 
-也可以使用thymeleaf的视图解析器（需要导入themeleaf的依赖），使用thymeleaf来渲染页面，如下：
+也可以使用thymeleaf的视图解析器（需要导入themeleaf的依赖），使用thymeleaf的模板引擎来渲染页面，配置如下：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -229,9 +229,9 @@ public class FirstController {
 
 请求-响应过程：
 
-1. 发送请求给tomcat服务器，tomcat服务器截取路径去到web.xml的匹配`/show.html`。
-2. 然后根据虚拟路径，请求转到中央调度器DispatcherServlet。
-3. DispatcherServlet根据springmvc.xml文件匹配请求路径对应的方法。
+1. 发送请求给tomcat服务器，tomcat服务器截取路径并去到web.xml的匹配`/show.html`。
+2. 没有对应servlet，然后会将请求转到中央调度器DispatcherServlet去匹配虚拟路径。
+3. DispatcherServlet根据springmvc.xml文件匹配请求路径所对应的方法。
 4. 框架执行匹配到的方法，把得到的ModelAndView进行处理，转发到show.html。
 
 中央调度器DispatcherServlet负责创建springmvc容器对象，读取xml配置文件后利用spring注解创建好对应目录里的Controller对象，还负责接收用户请求，匹配到相应的处理方法。
@@ -309,15 +309,15 @@ public class MyController{
    - `headers={"headse=value"}`：必须携带该请求头并且该请求头信息得是value。
    - `headers={"headse！=value"}`：必须携带该请求头并且该请求头信息不能是value。
 
-@RequestMapping的派生注解：@GetMapping、@PostMapping、@PostMapping、@DeleteMapping。
+@RequestMapping的派生注解：@GetMapping、@PostMapping、@PutMapping、@DeleteMapping。
 
 
 
-## 用于接收URL的参数
+## 接收GetPost的参数
 
 ### @PathVariable
 
-@PathVariable用于接收请求路径中的参数（接收路径变量），常是restful风格的请求地址；例如：
+@PathVariable用于接收路径变量，常是restful风格的请求地址，例如：
 
 ```java
 // 接收放于请求路径中的参数：http://ip:port/blog/message/1
@@ -327,11 +327,11 @@ public String test(@PathVariable("id") Long id) {
 }
 ```
 
-@PathVariable只支持一个属性value，类型是为String，代表绑定的路径变量。可不指定value，但接收形参的名称必须和接收的路径变量的名称一致。 
+@PathVariable只支持一个属性value，类型是为String，代表绑定的路径变量。可不指定value，但此时接收形参的名称必须和接收的路径变量的变量名一致。 
 
 ### @RequestParam
 
-`@RequestParam`：用于接收params方式的请求（接收get方法、post方法的请求携带的参数）。
+`@RequestParam`：用于接收get方法、post方法的请求携带的参数。
 
 ```java
 // http://ip:port/blog/message?id=1&page=2
@@ -358,9 +358,9 @@ public ModelAndView doRe(@RequestParam(value = "rname", required = false) String
 
 `@RequestParam`注解的属性：
 
-1. value：指定为形参赋值的请求参数的参数名（name），指定后当前请求必须传key为value的数据，如果没有传这个数据并且没有设置defaultValue，则报错。
-2. required：是否必须传输此参数。
-3. defaultValue：不管required属性值为true或false，当value所指定的请求参数没有传输或传输的值为""时，则使用默认值为形参赋值。
+1. value：指定为形参赋值的请求参数的参数名（name），指定后请求提交的参数的name与value指定的一致，并且值不能空，如果没有传这个数据并且没有设置defaultValue，则报错。
+2. required：是否必须取到值，设置为false时表示请求中可不携带此请求参数。
+3. defaultValue：不管required属性值为true或false，当没有value所指定的请求参数或传输的值为`""`时，使用其设置值为形参赋值。
 
 ### @Validated
 
@@ -389,7 +389,7 @@ public class User(){
 
 ### @RequestBody
 
-@RequestBody注解用来接收request的body中的参数，@RequestBody可以将多个参数放入到一个实体类或者Map中。（不能通过GET方法发送请求体）
+@RequestBody注解用来接收request的body中的参数，@RequestBody可以将多个参数放入到一个实体类或者Map中。（不能通过GET方法发送请求体，post请求提交的参数就放在请求体中）
 
 ```java
 // 将拿到的数据放入实体类

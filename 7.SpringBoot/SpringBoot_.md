@@ -26,6 +26,7 @@ Spring Boot是由Pivotal团队提供的全新框架，其设计目的是用来�
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
     </dependency>
+    <!-- 测试依赖 -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
@@ -54,11 +55,13 @@ resources目录下创建application.properties或application.yml配置文件。
 
 # SpringBoot-说明
 
-## yml配置文件
+## 配置文件
+
+### yml配置文件
 
 YAML 是 "YAML Ain't Markup Language"（意为 YAML 不是一种标记语言）的递归缩写。在开发的这种语言时，YAML 的意思其实是："Yet Another Markup Language"（仍是一种标记语言）。 非常适合用来做以数据为中心的配置文件。
 
-### 基本语法
+#### 基本语法
 
 1.  `key: value`：k-v之间有空格。
 2.  大小写敏感，使用`#`来注释。
@@ -66,7 +69,7 @@ YAML 是 "YAML Ain't Markup Language"（意为 YAML 不是一种标记语言）�
 4.  缩进不允许使用tab，只允许空格；缩进的空格数不重要，只要相同层级的元素左对齐即可。
 5.  字符串无需加引号，如果要加，`' '`与`" "`分别表示字符串中内容会被转义或不转义（例如`\n`原本就是表示换行的转义字符，当使用单引号时会被转义两次，使用双引号时只转义一次（即此时该字符就表示换行）。
 
-### 数据类型
+#### 数据类型
 
 ```yaml
 # 字面量写法：单个的、不可再分的值。date、boolean、string、number、null
@@ -117,7 +120,7 @@ person:
     health: [{name: mario,weight: 47}]
 ```
 
-### yaml_处理器
+#### yaml_处理器
 
 ```xml
 <!-- 配置处理器的依赖，这样在使用yml配置文件时就有提示了 -->       
@@ -145,6 +148,50 @@ person:
 </build>
 ```
 
+### 获取配置文件中的值
+
+使用@Value注解，可以获取到yaml或properties配置文件的值，以properties为例：
+
+```properties
+# application.properties
+school.name=shehuidaxue
+website=http://ilyd.top/
+```
+
+```java
+@Controller
+public class GetConfigValue {
+    @Value("${school.name}")
+    String schoolName;
+    @Value("${website}")
+    String website;
+    @RequestMapping("/web/value")
+    public void getValue(){
+        System.out.println(schoolName + website);
+    }
+}
+```
+
+### 自定义配置映射到对象
+
+```properties
+# application.properties
+school.name=xiaodaxue
+school.website=http://ilyd.top/
+```
+
+```java
+@Component
+@ConfigurationProperties(prefix = "school")
+public class School {
+    private String name;
+    private String website;
+	// get、set、构造器...
+}
+```
+
+
+
 ## 场景启动器与依赖管理
 
 **关于spring-boot-starter-parent：**
@@ -161,7 +208,7 @@ person:
 
 **关于spring-boot-starter：**
 
-spring-boot-starter是所有场景启动器最底层的依赖、最基本的， 包含了对自动配置、日志、yaml的支持等，是不可缺少的，其他的所有starter都会引入有该starter，例如spring-boot-starter-web里第一个导入的依赖就是spring-boot-starter。
+spring-boot-starter是所有场景启动器最底层的依赖、最基本的， 包含了自动化配置支持、日志、yaml文件解析的支持等，是不可缺少的，其他的所有starter都会引入有该starter，例如spring-boot-starter-web里第一个导入的依赖就是spring-boot-starter。
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
@@ -337,6 +384,33 @@ idea中安装lombok插件，并在springboot项目中引入Lombok插件来简化
 </build>
 ```
 
+# Profile功能
+
+为了方便多环境适配，springboot简化了profile功能，使得可以快速切换环境。
+
+**application-profile功能使用：**
+
+1. 默认配置文件：`application.yaml`，在任何时候都会加载的配置文件。
+
+2. 环境配置文件指定的规定：
+
+   - `application-{env}.yaml`，环境标识名`{env}`随便写，例如`application-pro.yaml`。
+
+3. 激活指定环境的两种方式：
+
+   - 在默认配置文件中激活，激活方式为`spring.profiles.active=环境标识名`，例如`spring.profiles.active=pro`。
+   - 命令行激活：java -jar xxx.jar --**spring.profiles.active=Xxx环境标识名 --xxxx=xxx**，（命令行启动SpringBoot项目jar包文件时可以指定配置文件中的配置项的值，运行时会覆盖原来的值）。
+
+4. 指定好环境配置，默认配置与环境配置会同时生效，当有同名配置项时，profile配置中的优先（环境配置中的相同配置优先）。
+
+5. 也可以在默认配置中配置多个环境：
+
+   ```properties
+   spring.profiles.group.myprod[0]=pdd
+   ```
+
+
+
 # Web开发场景-SpringMVC
 
 Spring Boot 为 Spring MVC 提供了自动配置，并在 Spring MVC 默认功能的基础上添加了以下特性：
@@ -425,19 +499,264 @@ server:
 # （配置好以后好，前端控制器请求映射路径中最前面的`/`也就代表了`localhost:port/webapp/`）
 ```
 
-### 接收请求参数
+**RestFul风格请求：**
 
-@PathVariable：获取路径变量，可以指定key来获取某一个，也可以直接获取全部变量值。
+默认不开启Rest风格，需要手动开启，兼容的PUT、DELETE、PATCH的请求方法必须是post请求，开启restful风格不影响表单原生get、post请求：
+
+```yaml
+spring:
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true # 选择性开启表单rest风格
+```
+
+## 数据接收
+
+请求中携带参数、cookie、请求头等信息的接收，参考SpringMVC的注解使用与参数接收。
+
+## 引入thymeleaf
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-thymeleaf</artifactId>
+</dependency>
+```
+
+引入场景启动器后，会自动配置好thymeleaf，其中两个配置如下：
+
+```java
+public static final String DEFAULT_PREFIX = "classpath:/templates/";
+public static final String DEFAULT_SUFFIX = ".html";
+```
+
+即使用thymeleaf时，默认页面资源放于类路径下的`templates`目录。
+
+如何使用thymeleaf，见Thymeleaf，HTML页面要引入thymeleaf的名称空间：
+
+```html
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+```
+
+如果需要自定义页面资源放置路径：
+
+```yaml
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+```
+
+## 使用自定义拦截器
+
+设置自定义拦截器来拦截访问路径，操作如下：
+
+1.自定义拦截器
+
+```java
+@Slf4j
+public class LoginInterceptor implements HandlerInterceptor {
+    // 目标执行前（controller前）
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 拦截逻辑：什么情况下拦截（拦截哪些在拦截器注册时的配置决定），什么情况下放行
+        String uri = request.getRequestURI();
+        log.info("拦截的请求" + uri);
+        HttpSession session = request.getSession();
+        Object loginUser = session.getAttribute("loginUser");
+        if (loginUser != null) {
+            return true; // 返回true，放行
+        }
+        session.setAttribute("msg","请登录~");
+        response.sendRedirect("/");
+        return false;
+    }
+    // 目标方法执行完成后（但页面没有渲染的时候）
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+        HandlerInterceptor.super.postHandle(request, response, handler, modelAndView);
+    }
+    // 页面渲染完之后
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+        HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
+    }
+}
+```
+
+自定义好拦截器后，注册并配置：
+
+```java
+@Configuration
+public class InterceptorConfig implements WebMvcConfigurer {
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // 添加拦截器并配置拦截路径 
+        // 拦截器可以拦截一部分放行一部分：addPathPatterns-拦截路径 excludePathPatterns-放行路径
+        // 如下：拦截/下所有资源的同时放行 "/","/login","/css/**","/js/**","/fonts/**","/images/**","/lib/**"
+        registry.addInterceptor(new LoginInterceptor()).addPathPatterns("/**").
+                excludePathPatterns("/","/login","/css/**","/js/**","/fonts/**","/images/**","/lib/**");
+    }
+}
+```
+
+## 文件上传处理
+
+**HTM页面中使用表单上传文件操作：**
+
+```html
+<!-- form表单 -->
+<form role="form" action="/download" method="post" enctype="multipart/form-data">
+   <!-- 单文件 -->
+  <label for="img">头像</label>
+  <input id="img" type="file" name="headImg" ><br>
+    <!-- 多文件 -->
+  <label for="mimg">生活照</label>
+  <input id="mimg" type="file" name="photos" multiple><br>
+  <input type="submit" value="提交">
+</form>
+```
+
+**处理表单上传的文件：**
+
+```java
+@Controller
+@Slf4j
+public class FileController {
+    @PostMapping(value = "/download")
+    // MultipartFile会自动封装上传的文件
+    public String download(@RequestPart("headImg") MultipartFile headerImg,
+                           @RequestPart("photos") MultipartFile[] photos){
+        log.info("上传信息:headerImg={},photos={}",headerImg.getSize(), photos.length);
+        if(!headerImg.isEmpty()) {
+            // 保存到文件服务器
+            String originalFilename = headerImg.getOriginalFilename();
+            try {
+                headerImg.transferTo(new File("D:\\cache\\" + originalFilename));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (photos.length > 0) {
+            for (MultipartFile file:
+                 photos) {
+                if (!file.isEmpty()) {
+                    String originalFilename = file.getOriginalFilename();
+                    try {
+                        file.transferTo(new File("D:\\cache\\" + originalFilename));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return "success";
+    }
+}
+```
+
+**文件上传配置：**
+
+```yaml
+spring:
+  servlet:
+    multipart:
+      # 默认限制上传单个文件不超过1MB，总请求不超过10MB
+      max-file-size: 10MB
+      max-request-size: 100MB
+```
+
+## 配置错误页面
+
+默认情况下，SpringBoot将`/error`路径来处理所有错误的映射，对于机器客户端，它将生成JSON响应，其中包含错误、HTTP状态和异常消息的详细信息。对于浏览器客户端，响应一个“ whitelabel”错误视图，以HTML格式呈现相同的数据。
+
+默认的静态资源目录下的`error`目录下的4xx.html、5xx.html会自动被解析，例如在类路径下的`public`静态资源目录下建立一个`error`目录，里面的404.html、505.html等页面资源会和404错误、505错误匹配。需要注意的是，有精确的**错误状态码页面**就匹配精确，没有就模糊匹配（匹配4xx.html）；如果都没有就触发白页。
+
+如果使用模板引擎（例如thymeleaf），那在模板引擎的页面资源目录（templates目录）下创建error目录和错误页面也是一样的。
+
+## 全局异常处理
+
+**自定义错误、异常的处理逻辑：**
+
+1. 使用`@ControllerAdvice`、`@ExceptionHandler`来处理全局异常（底层是 ExceptionHandlerExceptionResolver 支持的；常用的方式）。
+2. @ResponseStatus + 自定义异常 ：
+   - 底层是 ResponseStatusExceptionResolver ，把responsestatus注解的信息底层调用 response.sendError(statusCode, resolvedReason)；tomcat发送的/error。
 
 
 
+## servlet原生组件
 
+嵌入式servlet，使用Servlet、Filter、Listener等组件进行开发。
 
+# 数据操作场景
 
+## 使用JDBC场景
 
+### 默认场景操作
 
+**1、引入jdbc场景启动器、引入数据库驱动：**
 
+```xml
+<!-- 导入场景和驱动包 -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jdbc</artifactId>
+    <scope>test</scope>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.46</version> <!-- 利用maven的就近依赖修改版本 -->
+</dependency>
+<!-- 修改版本号的方法2：在properties指定 -->
+<properties>
+    <java.version>1.8</java.version>
+    <mysql.version>5.1.46</mysql.version>
+</properties>
+```
 
+jdbc场景导入内容有：HikariCP（数据库连接池）、spring-jdbc、spring-tx。但是没有导入数据库驱动（因此需要另外声明依赖导入），为什么呢？因为官方不知道你要使用哪些数据库，所以数据库驱动没有安装进去，但数据库驱动的版本仲裁还是存在的。
+
+jdbc场景下自动配置好的内容：
+
+1. DataSourceAutoConfiguration ： （数据源的自动配置）
+   - 如果要修改数据源相关的就在配置文件中配置**spring.datasource**下的相关内容。
+   - 当自己容器中没有数据源，会自动配置一个数据库连接池，**底层配置好的连接池是：HikariDataSource**。
+2. DataSourceTransactionManagerAutoConfiguration（事务管理器的自动配置）。
+3. JdbcTemplateAutoConfiguration： springboot自带的**JdbcTemplate**，其自动配置，可以来对数据库进行crud。
+   - 可以修改这个配置项@ConfigurationProperties(prefix = "spring.jdbc")来修改JdbcTemplate。
+   - @Bean @Primary    JdbcTemplate；容器中有JdbcTemplate这个组件。
+4. JndiDataSourceAutoConfiguration： jndi的自动配置。
+5. XADataSourceAutoConfiguration： 分布式事务相关的。
+
+**2.自定义数据源：**
+
+因为这里使用的是druid，需要导入其依赖。
+
+```yaml
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+# 开启日志功能
+logging:
+  level:
+    com.lsl.mappper: debug
+```
+
+```xml
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid</artifactId>
+    <version>1.1.8</version>
+</dependency>
+```
+
+**3.测试：**直接在项目的test目录里测试。
 
 
 

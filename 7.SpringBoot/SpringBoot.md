@@ -695,7 +695,6 @@ spring:
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
-    ca
 ```
 
 
@@ -939,7 +938,7 @@ class SpringbootFileApplicationTests {
 
 ### 使用其他连接池
 
-如果不使用默认的数据源，配置其他的数据库连接池，以druid（[alibaba/druid: 阿里云计算平台DataWorks(https://help.aliyun.com/document_detail/137663.html) 团队出品，为监控而生的数据库连接池 (github.com)](https://github.com/alibaba/druid)）为例，两种配置方式：
+如果不使用默认的数据源，配置其他的数据库连接池，以druid数据库连接池为例，两种配置方式：
 
 **自定义引入：**
 
@@ -1760,6 +1759,8 @@ static Stream<String> method() {
   ```properties
   spring.profiles.group.myprod[0]=pdd
   ```
+
+
 
 # 依赖管理
 
