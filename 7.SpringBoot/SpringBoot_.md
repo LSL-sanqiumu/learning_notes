@@ -310,7 +310,7 @@ public class LslApplication {
 
 idea中安装lombok插件，并在springboot项目中引入Lombok插件来简化JavaBean，关于Lombok的注解使用：
 
-1. @Data：生成getset方法。
+1. @Data：生成getter和setter方法。
 2. @ToString：tostring方法。
 3. @NoArgsConstructor、@AllArgsConstructor：生成无参或有参构造器。
 4. @EqualsAndHashCode：重写equals和hashcode方法。
@@ -691,9 +691,9 @@ spring:
 
 # 数据操作场景
 
-## 使用JDBC场景
+## 整合JDBC场景
 
-### 默认场景操作
+### 具体操作
 
 **1、引入jdbc场景启动器、引入数据库驱动：**
 
@@ -757,6 +757,383 @@ logging:
 ```
 
 **3.测试：**直接在项目的test目录里测试。
+
+```java
+@SpringBootTest
+public class JdbcTest {
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+    @Test
+    public void getInfo(){
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList("select * from info");
+        for (int i = 0; i < maps.size(); i++) {
+            System.out.println(maps.get(i));
+        }
+    }
+}
+```
+
+### 关于数据源
+
+如果不使用默认的数据源，而是自己配置其他的数据库连接池时，以druid数据库连接池为例，有两种配置方式：一种是自定义引入，另一种是直接引入相关的数据库连接池场景启动器。
+
+**方式一：自定义引入**
+
+1、先导入依赖。
+
+```xml
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid</artifactId>
+    <version>1.1.8</version>
+</dependency>
+```
+
+2、往容器注册组件，当容器中存在数据源时，就不会使用默认的数据源，有两种方式。
+
+```java
+// 方式一：
+@Component
+public class MyDataSources {
+    // 将数据源装配进容器 自动配置会默认先判断容器中有没有数据源，如果没有就使用默认的数据源
+    @ConfigurationProperties(prefix = "spring.datasource")
+    @Bean
+    public DataSource dataSource() {
+        DruidDataSource duridDataSource = new DruidDataSource();
+        return duridDataSource;
+    }
+}
+```
+
+```yaml
+# 方式二：直接在配置文件中指定spring.datasource.type
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+```
+
+**方式二：starter方式引入**
+
+通过druid的场景启动器引入druid。
+
+```xml
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid-spring-boot-starter</artifactId>
+    <version>1.1.17</version>
+</dependency>
+```
+
+引入数据源场景后，就可以直接在yaml配置文件中进行配置了；如果要使用 druid 数据库连接池的功能，都可以在yaml中对druid进行配置，如何配置见：[github.com](https://github.com/alibaba/druid/tree/master/druid-spring-boot-starter)。
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+```
+
+## 整合MyBatis
+
+官方文档：[GitHub - mybatis/spring-boot-starter: MyBatis integration with Spring Boot](https://github.com/mybatis/spring-boot-starter)
+
+### 具体操作
+
+1、引入mybatis的场景启动、引入数据库驱动、引入数据库连接池。
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
+<dependency>
+    <groupId>org.mybatis.spring.boot</groupId>
+    <artifactId>mybatis-spring-boot-starter</artifactId>
+    <version>2.2.0</version>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.46</version> <!-- 利用maven的就近依赖修改版本 -->
+</dependency>
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid-spring-boot-starter</artifactId>
+    <version>1.1.17</version>
+</dependency>
+```
+
+当引入了mybatis的场景后，SpringBoot自动配置好的配置如下：
+
+1. 导入了jdbc、mybatis-spring、spring-tx、HikariCP等。
+2. SqlSessionFactory、SqlSessionFactoryBean、DataSource。
+3. MybatisProperties：mybatis配置绑定类。
+4. SqlSessionTemplate：自动配置好了，组合了SqlSession。
+
+**2、yaml配置数据源**
+
+```yaml
+spring:
+  mvc:
+    static-path-pattern: /resource/**
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+# 开启日志功能
+logging:
+  level:
+    com.lsl.mappper: debug
+```
+
+### 使用配置文件实现数据操作
+
+**1、准备好SQL映射文件和mapper接口**
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lsl.dao.InfoMapper">
+    <select id="getOne" resultType="java.lang.String">
+        select name from info where id=1
+    </select>
+</mapper>
+```
+
+```java
+@Mapper
+public interface InfoMapper {
+    String getOne();
+}
+```
+
+**2、在yaml配置文件中的配置mybatis：**
+
+```yaml
+mybatis:
+  # 引入mybatis全局配置文件
+  # config-location: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mapper/*.xml # 指定mapper映射文件
+  configuration:
+    map-underscore-to-camel-case: true # 开启驼峰命名
+```
+
+MyBatis的全局配置文件mybatis-config.xml可用可不用：
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 开启驼峰命名 表中字段 t_user ===> tUser -->
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+</configuration>
+```
+
+【注意】：yaml配置文件中`config-location: classpath:mybatis/mybatis-config.xml`和`configuration`不能共存，要么使用mybatis-config.xml来配置，要么使用configuration（建议：使用configuration来进行mybatis全局配置）。
+
+**3、测试：**
+
+```java
+// service层
+@Component
+public class InfoService {
+    @Autowired
+    InfoMapper infoMapper;
+    public void showAll(){
+        String name = infoMapper.getOne();
+        System.out.println(name);
+    }
+}
+```
+
+```java
+@SpringBootTest
+public class JdbcTest {
+    @Autowired
+    InfoService infoService;
+    @Test
+    public void getAll(){
+        infoService.showAll();
+    }
+}
+```
+
+
+
+### 使用注解实现数据操作
+
+直接在mapper接口的方法上使用`@Insert`、`@Select`、 @Options等注解来实现数据操作，不需要映射文件。
+
+使用@Select将mapper接口的方法与SQL语句绑定，如下：
+
+```java
+@Mapper
+public interface InfoMapper {
+    @Select(value = "select name from info where id=1")
+    String getOne();
+}
+```
+
+映射文件中有以下的SQL：
+
+```xml
+<insert id="addStudent" parameterType="com.lsl.pojo.Student" useGeneratedKeys="true" keyProperty="id">
+    insert into info(name,age,school) values (#{name},#{age},#{school})
+</insert>
+<!-- useGeneratedKeys="true" keyProperty="id" 的作用在于插入完成后返回数据库中自增的id值，只对insert有效 -->
+<!-- 返回的值放入传参对象的id属性，keyProperty控制返回给哪个属性 -->
+```
+
+```java
+// 上面SQL语句的注解方式
+@Mapper
+public interface InfoMapper {
+    @Insert(value = "insert into info(name,age,school) values (#{name},#{age},#{school})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    boolean addInfo(Student student);
+}
+```
+
+```java
+@Component
+public class InfoService {
+    @Autowired
+    InfoMapper infoMapper;
+    public void addInfo(Student student){
+        infoMapper.addInfo(student);
+    }
+}
+```
+
+```java
+// 测试，
+// @Options(useGeneratedKeys = true, keyProperty = "id")，数据插入后返回主键的值并赋给Student的id属性
+@SpringBootTest
+public class JdbcTest {
+    @Autowired
+    InfoService infoService;
+    @Test
+    public void addOne(){
+        Student student = new Student(null,"李梁",33,"稷下学院");
+        infoService.addInfo(student);
+        System.out.println(student.getId());
+    }
+}
+```
+
+**关于混合模式的使用：注解与映射文件相结合（简单的方法就使用注解，复杂的SQL方法就使用映射文件）。**
+
+1. @SpringBootApplication注解会默认扫描其所在的包及子包。
+2. `@MapperScan("com.lsl.xxx")`：用于主配置类上，用来扫描Mapper接口所在包，那就就不用为每一个mapper接口都标注上@Mapper注解。
+3. `@Mapper`：用于mapper接口。
+
+### 步骤总结
+
+1. 引入mybatis的场景启动、引入数据库驱动、引入数据库连接池。
+2. 在application.yaml中配置，指定mapper-location位置、数据源配置即可。
+3. 编写Mapper接口并使用@Mapper注解标注。
+4. 简单的SQL直接使用注解方式来与mapper接口的方法绑定；复杂的SQL，就使用mapper.xml来进行绑定。
+5. 在主配置类使用`@MapperScan("com.atguigu.admin.mapper") `，mapper接口上就可以不用标注@Mapper注解。
+
+## 整合MybatisPlus
+
+MyBatis-Plus（简称 MP）是一个 MyBatis 的增强工具，在 MyBatis 的基础上只做增强不做改变，为简化开发、提高效率而生。
+[简介 | MyBatis-Plus (baomidou.com)](https://baomidou.com/guide/)，建议在idea中安装 MybatisX 插件 。
+
+### 具体操作
+
+1、引入mybatis-plus的场景启动、引入数据库驱动、引入数据库连接池。
+
+```xml
+<!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-boot-starter -->
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus-boot-starter</artifactId>
+    <version>3.4.3.4</version>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.46</version>
+</dependency>
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid-spring-boot-starter</artifactId>
+    <version>1.1.17</version>
+</dependency>
+```
+
+当引入了mybatis-plus-boot-starter后，SpringBoot自动配置好的配置如下：
+
+1. MybatisPlusProperties：配置项绑定，**在yaml配置文件中`mybatis-plus: xxx`就是对mybatis-plus的定制。**
+2. SqlSessionFactory、SqlSessionTemplate。
+3. mapperLocations自动配置好了，默认值是`classpath*:/mapper/**/*.xml`，表示：任意包的类路径下的mapper文件夹下的任意路径下的xml文件，都是SQL映射文件。
+4. `@Mapper`接口标注的接口会被自动扫描生效。（建议在主配置类使用`@MapperScan`注解）
+5. 数据源是从容器中获取，给容器放啥数据源就用啥数据源。
+6. 默认的数据源的配置：和jdbc、数据库连接池的配置一样
+
+**2、测试：**
+
+1. 创建对应表的实体类，实体类和表的名称映射默认开启驼峰命名方式。
+
+   ```java
+   @Data
+   @NoArgsConstructor
+   @AllArgsConstructor
+   @ToString
+   public class Info {
+       private Integer id;
+       private String name;
+       private int age;
+       private String school;
+       private Date nowadays;
+       private Integer pid;
+   }
+   ```
+
+2. 映射接口继承BaseMapper接口：
+
+   ```java
+   // 泛型指定的类型，也决定了SQL语句调用哪个表，如下的接口就是操作`info`表
+   // 继承后就可使用接口中的方法进行操作了，也可以再使用映射文件拓展其他的复杂的SQL语句
+   @Mapper
+   public interface TestMapper extends BaseMapper<Info> {
+   
+   }
+   ```
+
+3. 测试：
+
+   ```java
+   @SpringBootTest
+   class SpringbootFileApplicationTests {
+       @Autowired
+       TestMapper testMapper;
+       @Test
+       void plus(){
+           Info info = testMapper.selectById(1);
+           System.out.println(info);
+       }
+   }
+   ```
+
+4. **如果需要其他的SQL语句，可以在`resources`目录下新建`mapper`文件夹，该文件夹下的SQL映射文件会被自动扫描生效。**
+
+## 整合Redis
+
+
+
+
+
+
 
 
 

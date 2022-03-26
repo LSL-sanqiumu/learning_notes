@@ -918,17 +918,13 @@ logging:
 **测试：**直接在项目的test目录里测试。
 
 ```java
-@Slf4j
 @SpringBootTest
-class SpringbootFileApplicationTests {
-
+public class JdbcTest {
     @Autowired
-    // 使用JdbcTemplate来进行SQL操作
-    JdbcTemplate template;
-    
+    JdbcTemplate jdbcTemplate;
     @Test
-    void contextLoads() {
-        List<Map<String, Object>> maps = template.queryForList("select  * from info");
+    public void getInfo(){
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList("select * from info");
         for (int i = 0; i < maps.size(); i++) {
             System.out.println(maps.get(i));
         }
@@ -1189,15 +1185,15 @@ public interface AnnoInfoMapper {
 
 <!-- 上面SQL语句的注解方式 -->
 @Insert(value = "insert into info(name,age,school) values (#{name},#{age},#{school})")
-    @Options(useGeneratedKeys = true, keyProperty = "id")
-    public boolean addStudent(Student student);
+@Options(useGeneratedKeys = true, keyProperty = "id")
+public boolean addStudent(Student student);
 <!-- 最后返回的student的id属性值不再是null，如下可测试 -->
 @PostMapping(value = "/add")
-    @ResponseBody
-    public Student addStudent(Student student) {
-        studentService.addStudent(student);
-        return student;
-    }
+@ResponseBody
+public Student addStudent(Student student) {
+studentService.addStudent(student);
+return student;
+}
 ```
 
 关于混合模式的使用：注解与映射文件相结合（简单的方法就使用注解，复杂的SQL方法就使用映射文件）。
@@ -1242,7 +1238,7 @@ mybatis-plus-boot-starter的自动配置：
 - 自动配置好了SqlSessionFactory、SqlSessionTemplate。
 - mapperLocations自动配置好了，默认值是`classpath*:/mapper/**/*.xml`。表示：任意**包的类路径**下的mapper文件夹下的任意路径下的xml文件，都是SQL映射文件。
 - `@Mapper`接口标注的接口会被自动扫描生效。（建议使用`@MapperScan()`）
-- 数据源是从容器中获取，给容器放啥就是啥。
+- 数据源是从容器中获取，给容器放啥数据源就用啥数据源。
 
 2.数据源的配置：和jdbc、数据库连接池的配置一样
 
