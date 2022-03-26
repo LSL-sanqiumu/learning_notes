@@ -1226,25 +1226,30 @@ public class TestMain {
 
 # 缓存机制
 
-MyBatis提供了两级缓存：
+MyBatis提供了两级缓存。
+
+## 一级缓存
 
 一级缓存（本地缓存）：与数据库同一次会话期间**查询到的数据**会放在本地缓存中，后续再要获取相同的数据会直接走缓存，不需要去连接数据库查询。
 
-- 一级缓存是SqlSession级别的缓存，默认是开启了的。
-- 如何验证同一次会话期间再次查询相同数据走的是缓存？再次执行完全一致的SQL语句，最后判断两个语句的值是否相等。
-- 一级缓存失效的四种情况：
-  1. SqlSession不同。
-  2. SqlSession相同，但查询的条件不同。
-  3. SqlSession相同，但当前会话中存在增、删、改的操作。（增删改操作可能会改变所要查询的值）
-  4. SqlSession相同，但会话中执行了`sqlSession.clearCache()`来清除缓存。
+1. 一级缓存是SqlSession级别的，通过同一个SqlSession查询的数据会被缓存，下次查询相同的数据，就会从缓存中直接获取，不会从数据库重新访问  
+2. 使一级缓存失效的四种情况：  
+   1. 不同的SqlSession对应不同的一级缓存。
+   2. 同一个SqlSession，但是查询条件不同。
+   3. 同一个SqlSession，两次查询期间执行了任何一次增删改操作。
+   4. 同一个SqlSession，两次查询期间手动执行了`sqlSession.clearCache()`清空了缓存。
 
-二级缓存（全局缓存）：基于namespace的缓存，一行namespace对应一个二级缓存
 
-- 工作机制：一个会话内的查询的数据会放到一级缓存，当此会话关闭后查询到的数据就会放到二级缓存，新的会话的查询就可以参考二级缓存。
 
-- 二级缓存的使用：
+## 二级缓存
 
-  1. 开启二级缓存：`<setting name="cacheEnabled" value="true"/>`；
+二级缓存（全局缓存）：基于namespace的缓存，一行namespace对应一个二级缓存；二级缓存是SqlSessionFactory级别，通过同一个SqlSessionFactory创建的SqlSession查询的结果会被缓存；此后若再次执行相同的查询语句，结果就会从缓存中获取  。
+
+1. 工作机制：一个会话内的查询的数据会放到一级缓存，当此会话关闭后查询到的数据就会放到二级缓存，新的会话的查询就可以参考二级缓存。（二级缓存必须在SqlSession关闭或提交之后有效）
+
+2. 开启并使用二级缓存：
+
+  1. 核心配置文件中开启二级缓存：`<setting name="cacheEnabled" value="true"/>`。
 
   2. 在mapper.xml中配置二级缓存：
 
@@ -1263,17 +1268,26 @@ MyBatis提供了两级缓存：
      <!--    type：指定自定义缓存的全类名，Cache接口的实现-->
      ```
 
-  3. 使用到的pojo需要实现序列化接口。
+  3. 查询的数据所转换到的实体类类型必须实现序列化的接口。
+
+3. 二级缓存失效：两次查询之间执行了任意的增、删、改操作，会使一级和二级缓存同时失效。
 
 缓存有关的设置或属性：
 
-1. `<setting name="cacheEnabled" value="true"/>`：设置为false只会关闭二级缓存；
-2. select语句的useCache属性：属性值为false只会关闭二级缓存；
-3. 增删改标签的flushCache属性：设置为true，增删改执行完后就会清楚一级和二级缓存；
-4. sqlSession.clearCache()：只会清楚一级缓存；
+1. `<setting name="cacheEnabled" value="true"/>`：设置为false只会关闭二级缓存。
+2. select语句的useCache属性：属性值为false只会关闭二级缓存。
+3. 增删改标签的flushCache属性：设置为true，增删改执行完后就会清除一级和二级缓存。
+4. sqlSession.clearCache()：只会清除一级缓存。
 5. localCacheScope：本地缓存作用域。
 
-整合第三方缓存，以ehcache为例：看文档
+整合第三方缓存，以ehcache为例：看文档。（了解）
+
+## 缓存查询顺序
+
+1. 先查询二级缓存，因为二级缓存中可能会有其他程序已经查出来的数据，可以拿来直接使用。
+2. 如果二级缓存没有命中，再查询一级缓存。
+3. 如果一级缓存也没有命中，则查询数据库。
+4. SqlSession关闭之后，一级缓存中的数据会写入二级缓存。
 
 # MyBatis逆向工程
 
@@ -1344,27 +1358,7 @@ MyBatis Generator，简称MBG，专门为MyBatis使用者定制的**代码生成
 </generatorConfiguration>
 ```
 
-# mybatis原理
-
-**mybatis运行流程：**
-
-
-
-
-
-
-
-# 拓展
-
-
-
-
-
-
-
-
-
-
+# 分页插件
 
 
 
