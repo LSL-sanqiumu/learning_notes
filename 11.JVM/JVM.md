@@ -13,29 +13,96 @@ Java Virtual Machine：Java虚拟机，Java程序的运行环境（Java二进制
 
 ![](img/9.load.png)
 
-
-
-
-
-
-
-
-
-
-
 # JVM内存结构
 
 ## 程序计时器
 
-Program Counter Register 程序计数器。
+Program Counter Register 程序计数器（物理层面是通过寄存器实现）：用于记住下一条jvm指令的执行地址。（**是线程私有，唯一一个不会存在内存溢出的**）
+
+![](img/10.程序寄存器.png)
 
 
 
 ## 虚拟机栈
 
+**Java Virtual Machine Stacks，Java 虚拟机栈：**
 
+1. 每个线程在运行时需要的内存，称为虚拟机栈。
+2. 每个栈由多个栈帧（Frame）组成，对应着每次**方法调用时所占用的内存**。
+3. 每个线程只能有一个活动栈帧，对应着当前正在执行的那个方法。
+4. 虚拟机栈的内存：
+   - Linux、macOS、Oracle Solaris/x64 都是1024KB。
+   - Windows系统下，根据其虚拟内存来决定虚拟机栈的内存。
+
+**问题辨析：**
+
+1. 垃圾回收是否涉及栈内存？
+   - 不会涉及，因为栈帧内存涉及的是方法的调用，当方法执行完毕相应的栈帧就会释放。
+2. 栈内存分配越大越好吗？
+   - 并不是，栈内存越大，会导致线程数变少。
+3. 方法内的局部变量是否线程安全？
+   - 如果方法内的局部变量没有逃离方法的作用范围（不返回这个变量值），那么它是线程安全的。
+   - 如果是局部变量（形参）引用了对象，且该对象是逃离方法的作用范围的，那么需要考虑线程安全。
+   - （形参是局部变量）
+
+**栈内存溢出：**
+
+1. 栈帧过多导致栈内存溢出。
+2. 栈帧过大导致栈内存溢出。
+
+**线程运行诊断：**
+
+CPU占用过多：
+
+1. 用top定位哪个进程对cpu的占用过高。
+2. `ps H -eo pid,tid,%cpu | grep 进程id`：用ps命令进一步定位是哪个线程引起的cpu占用过高。
+3. `jstack 进程id`：可以根据线程id找到有问题的线程，然后通过jstack进一步定位到问题代码的源码行号。
+
+执行后迟迟得不到结果：
+
+## 本地方法栈
+
+Native Method Stacks，本地方法栈：JVM调用本地方法时，给本地方法提供的内存空间。
+
+本地方法：不是由Java代码编写的方法，用C或C++编写的与操作系统底层API打交道的方法。
 
 ## 堆
+
+堆和方法区都是线程共享的区。
+
+Heap，堆：通过 new 关键字，创建对象都会使用堆内存。
+
+1. 堆是线程共享的，堆中对象都需要考虑线程安全的问题。
+2. 堆有垃圾回收机制。
+
+**堆内存溢出：**`java.lang.OutOfMemoryError: Java heap space`——堆内存溢出
+
+```java
+public static void main(String[] args) {
+    List list = new ArrayList();
+    int count = 0;
+    String str = "hello";
+    try {
+        while (true){
+            list.add(str);
+            str = str + str;
+            count++;
+        }
+    }catch (Exception e){
+        e.getMessage();
+    }finally {
+        System.out.println(count);
+    }
+}
+```
+
+排查堆内存问题，可以将堆内存设置小一点，便于暴露。
+
+**堆内存诊断：**
+
+1. jps工具：查看当前系统中有哪些 java 进程。
+2. jmap工具：查看堆内存占用情况 jmap - heap 进程id。
+3. jconsole工具：图形界面的，多功能的监测工具，可以连续监测。
 
 # 编译JDK
 
