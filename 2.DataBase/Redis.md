@@ -36,47 +36,55 @@ http://redis.io/、http://www.redis.cn/。
 
 ## Linux
 
-1. 下载安装解压，`/opt`目录，使用Redis6.2.5版本；
+安装步骤如下：
 
-2. 需要升级GCC到5.3版本以上，查看gcc版本`gcc -v`：
+1. 下载安装解压redis-6.2.5.tar.gz，`/opt`目录。
+
+2. 需要升级GCC到5.3版本以上，查看gcc版本`gcc -v`，升级步骤如下，依次执行：
 
    - `yum -y install centos-release-scl`；
    - `yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils`；
-   - `scl enable devtoolset-9 bash`（临时安装），`echo source /opt/rh/devtoolset-9/enable /etc/profile`（长期，好像不需要echo命令）。
+   - `scl enable devtoolset-9 bash`（临时安装）或`source /opt/rh/devtoolset-9/enable /etc/profile`（长期）。
 
-3. `make`：进入解压后的目录（目录`redis-6.2.5`），执行该命令安装Redis；
+3. 进入解压后的`redis-6.2.5`目录，执行`make`命令编译Redis，编译完成后进入src目录，执行`make install`进行安装（Linux的默认安装路径在`/usr/local/bin`目录下，不指定安装路径的都是安装到该目录）。
 
-4. Linux的默认安装路径在`/usr/local/bin`目录下，不指定安装路径的都是安装到该目录；
+5. 复制`redis-6.2.5`目录中的`redis.conf`配置文件到默认安装路径下（新建一个redis-config目录，拷贝）。
 
-5. 复制解压后的redis配置文件到安装路径下；（我新建一个redis-config目录，拷贝到这里）；
-
-6. Redis不是默认后台启动，找到并修改为yes：
+6. Redis不是默认后台启动，`vim /usr/local/bin/redis-config/redis.conf `，修改daemonize为yes，如下：
 
    ![](img/redisconfig.png)
 
-7. 在安装目录下启动Redis服务并使用相关配置：`redis-server redis-config/redis.conf`，无信息则安装成功；
+7. 在安装目录（`/usr/local/bin`）下执行该命令：`redis-server redis-config/redis.conf`，使用相关配置开启redis服务，命令界面无信息显示则安装成功。
 
-8. `redis-cli -p 6379`，进入Redis测试，在里面执行`shutdown`命令是关闭Redis服务，`exit`是退出Redis命令行：
+8. `redis-cli -p 6379`：执行该命令进入Redis，在里面执行`shutdown`命令是关闭Redis服务，`exit`是退出Redis命令行：
 
    ![](img/redisin.png)
 
-9. 可启动多个redis服务，配置好配置文件再启动就好。
+9. 可启动多个redis服务，配置好多个配置文件再依次按配置文件启动就好。
 
 安装目录下的`redis-benchmark`是一个压力测试工具：`redis-benchmark -h 127.0.0.1 -p 6379 -c 100 -n 100000`。
 
-基本的目录：切换数据库、查看数据库大小、存入键值对、查看键、查看值等，
+卸载redis：
+
+1. 首先查看redis-server是否启动：`ps aux | grep redis`。
+2. 关闭这些进程：`kill -9 进程号`。
+3. 删除redis相应的文件夹就可以了。
+
+# 基本指令
+
+基本的指令：切换数据库、查看数据库大小、存入键值对、查看键、查看值等，如下：
 
 ![](img/base.png)
 
 
 
-- `flushdb`：清空当前数据库；
-- `flushall`：清空所有数据库内的数据；
-- `exists key`：判断当前key是否存在；
-- `move key db`：移动到指定的数据库；
-- `expire key 10`：设置指定过期时间，单位s，到期自动清除；
-- `ttl key`：查看当前key剩余时间；
-- `type key`：查看当前key的类型；
+- `flushdb`：清空当前数据库。
+- `flushall`：清空所有数据库内的数据。
+- `exists key`：判断当前key是否存在。
+- `move key db`：移动到指定的数据库。
+- `expire key 10`：设置指定过期时间，单位s，到期自动清除。
+- `ttl key`：查看当前key剩余时间。
+- `type key`：查看当前key的类型。
 - 官网查看命令。
 
 Redis是单线程的，Redis的性能瓶颈在于机器的内存和网络带宽而不是CPU，可以使用单线程实现，所以就使用单线程了。
@@ -286,7 +294,7 @@ Redis事务：
 
 # Jedis
 
-Java来操作Redis，Jedis是redis官方推荐的java连接开发工具，实现使用java来操作redis中间件。
+Jedis是redis官方推荐的java连接开发工具，实现使用java来操作redis中间件。
 
 依赖：
 
