@@ -5,19 +5,33 @@
 使用spring需要导包，导入spring-webmvc的包，由于maven的特性会帮忙把spring-webmvc的所有依赖到的包都导入，其中就包括了spring-core，也就是spring所需要的包：
 
 ```xml
-<!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
+<!-- Spring、SpringMVC start  -->
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-webmvc</artifactId>
-    <version>5.3.12</version>
+    <version>5.3.16</version>
 </dependency>
-
 <!-- 使用AOP时需要导入的包 -->
 <dependency>
     <groupId>org.aspectj</groupId>
-	<artifactId>aspectjweaver</artifactId>
-	<version>1.9.6</version>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.9.8</version>
+    <scope>runtime</scope>
 </dependency>
+
+<!-- spring事务处理 -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-tx</artifactId>
+    <version>5.3.16</version>
+</dependency>
+<!-- Spring整合JDBC -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-jdbc</artifactId>
+    <version>5.3.16</version>
+</dependency>
+<!-- Spring、SpringMVC end  -->
 ```
 
 maven仓库：[Maven Repository: spring (mvnrepository.com)](https://mvnrepository.com/tags/spring)。
@@ -140,26 +154,26 @@ resources文件夹需要beans.xml等文件，xml约束如下：
 
 ```
 
-
-
 # SpringMVC配置
 
 ## 依赖
 
+使用thyme leaf模板引擎，需要javax.servlet-api依赖。
+
 ```xml
- <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>4.0.1</version>
-            <scope>provided</scope>
-        </dependency>
+<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
+</dependency>
 <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-webmvc</artifactId>
-            <version>5.3.8</version>
-        </dependency>
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.3.8</version>
+</dependency>
 ```
 
 ## 中央调度器
@@ -220,22 +234,42 @@ resources目录里的springmvc.xml配置：
 
 ## 依赖
 
+Mybatis、数据库驱动、数据库连接池、jdbc的依赖：
+
 ```xml
-<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
+<!-- Mybatis、mybatis-spring、数据库驱动、jdbc start -->
 <dependency>
     <groupId>org.mybatis</groupId>
     <artifactId>mybatis</artifactId>
-    <version>3.5.6</version>
+    <version>3.5.7</version>
 </dependency>
-<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
 <dependency>
     <groupId>org.mybatis</groupId>
     <artifactId>mybatis-spring</artifactId>
     <version>2.0.6</version>
 </dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.27</version>
+</dependency>
+<dependency>
+	<groupId>com.alibaba</groupId>
+	<artifactId>druid</artifactId>
+	<version>1.2.8</version>
+</dependency>
+<!-- Spring整合JDBC -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-jdbc</artifactId>
+    <version>5.3.16</version>
+</dependency>
+<!-- Mybatis、mybatis-spring、数据库驱动、jdbc end -->
 ```
 
-## mybatis-config.xml
+## 全局配置
+
+mybatis-config.xml
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
@@ -269,7 +303,11 @@ jdbc.username=root
 jdbc.password=123456
 ```
 
-## Mapper.xml
+SSM整合时这个全局配置文件可以省略。
+
+## 映射文件
+
+xxxMapper.xml：
 
 ```xml
 <!-- BlogMapper.xml 定义SQL语句 -->
@@ -315,7 +353,7 @@ jdbc.password=123456
 
 ```xml
 <!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
-<!-- 使编写jdbc代码更容易的库 -->
+<!-- spring整合jdbc -->
 <dependency>
   <groupId>org.springframework</groupId>
   <artifactId>spring-jdbc</artifactId>
@@ -335,41 +373,56 @@ jdbc.password=123456
 依赖导入：
 
 ```xml
-<!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf -->
+<!-- thymeleaf start -->
 <dependency>
     <groupId>org.thymeleaf</groupId>
     <artifactId>thymeleaf</artifactId>
-    <version>3.0.11.RELEASE</version>
+    <version>3.0.15.RELEASE</version>
 </dependency>
 <!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf-spring5 -->
 <dependency>
     <groupId>org.thymeleaf</groupId>
     <artifactId>thymeleaf-spring5</artifactId>
-    <version>3.0.11.RELEASE</version>
+    <version>3.0.15.RELEASE</version>
 </dependency>
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
+</dependency>
+<!-- thymeleaf end -->
 ```
 
-配置thymeleaf视图解析器：（SpringMVC中配置视图）
+配置thymeleaf视图解析器：（在SpringMVC的全局配置文件中配置）
 
 ```xml
-<!-- thymeleaf的视图解析器 会与冲突ContentNegotiatingViewResolver-->
-<bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
-<property name="characterEncoding" value="UTF-8"/>
-<property name="templateEngine" ref="templateEngine"/>
-</bean>
-<!-- 模板引擎 -->
-<bean id="templateEngine" class="org.thymeleaf.spring5.SpringTemplateEngine">
-<property name="templateResolver" ref="templateResolver"/>
-</bean>
-<!-- 模板解析器 -->
-<bean id="templateResolver" class="org.thymeleaf.templateresolver.ServletContextTemplateResolver">
-<constructor-arg ref="servletContext"/>
-<property name="prefix" value="/WEB-INF/muke/"/>
-<property name="suffix" value=".html"/>
-<property name="templateMode" value="HTML5"/>
-<property name="cacheable" value="false"/>
-<property name="characterEncoding" value="UTF-8"/>
-</bean>
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+    <context:component-scan base-package="com.lsl"/>
+    <!-- thymeleaf的视图解析器 会与冲突ContentNegotiatingViewResolver-->
+    <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
+        <property name="characterEncoding" value="UTF-8"/>
+        <property name="templateEngine" ref="templateEngine"/>
+    </bean>
+    <!-- 模板引擎 -->
+    <bean id="templateEngine" class="org.thymeleaf.spring5.SpringTemplateEngine">
+        <property name="templateResolver" ref="templateResolver"/>
+    </bean>
+    <!-- 模板解析器 -->
+    <bean id="templateResolver" class="org.thymeleaf.templateresolver.ServletContextTemplateResolver">
+        <constructor-arg ref="servletContext"/>
+        <property name="prefix" value="/WEB-INF/view/"/>
+        <property name="suffix" value=".html"/>
+        <property name="templateMode" value="HTML5"/>
+        <property name="cacheable" value="false"/>
+        <property name="characterEncoding" value="UTF-8"/>
+    </bean>
+</beans>
 ```
 
 # 数据库连接池
@@ -392,7 +445,7 @@ jdbc.password=123456
 </dependency>
 ```
 
-直接在Java程序中配置和使用：
+**直接在Java程序中配置和使用：**（使用Spring也是创建对DruidDataSource的bean）
 
 ```java
 public class DruidPool {
@@ -422,7 +475,7 @@ public class DruidPool {
 }
 ```
 
-通过配置文件druid.properties：
+**通过配置文件druid.properties来初始化数据库连接池并使用：**
 
 ```properties
 url=jdbc:mysql://localhost:3306/mysqltest?useSSL=false
@@ -469,8 +522,6 @@ public class DruidPool {
 
 
 
-
-
 ## DBCP
 
 需要用到的jar包：
@@ -511,7 +562,7 @@ public class DruidPool {
 </dependency>
 ```
 
-直接在Java程序中配置和使用：
+**直接在Java程序中配置并使用：**（（使用Spring也是创建对DruidDataSource的bean））
 
 ```java
 // 1.创建数据源
@@ -529,10 +580,75 @@ Connection con = ds.getConnection();
 con.close();
 ```
 
-通过c3p0-config.xml文件：
+**通过c3p0-config.xml配置文件初始化并使用：**
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?><c3p0-config>    <!-- This is default config! --><!--    <default-config>--><!--        <property name="initialPoolSize">10</property>--><!--        <property name="maxIdleTime">30</property>--><!--        <property name="maxPoolSize">100</property>--><!--        <property name="minPoolSize">10</property>--><!--        <property name="maxStatements">200</property>--><!--    </default-config>-->    <!-- This is my config for mysql-->    <named-config name="mysql">        <property name="driverClass">com.mysql.jdbc.Driver</property>        <!-- 设置字符集和时区 -->        <property name="jdbcUrl">jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=GMT%2B8&amp;useSSL=false</property>        <property name="user">root</property>        <property name="password">123456</property>        <!-- 初始化连接池中的连接数，取值应在minPoolSize与maxPoolSize之间，默认为3-->        <property name="initialPoolSize">6</property>        <!--最大空闲时间，超过该秒数未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 -->        <property name="maxIdleTime">20</property>        <!--连接池中保留的最大连接数。默认值: 15 -->        <property name="maxPoolSize">20</property>        <!-- 连接池中保留的最小连接数，默认为：3-->        <property name="minPoolSize">5</property>        <!-- 当连接池连接耗尽时，客户端调用getConnection()后等待获取新连接的时间，         超时后将抛出SQLException，如设为0则无限期等待。单位毫秒。默认: 0 -->        <property name="checkoutTimeout">3000</property>        <!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。默认值: 3 -->        <property name="acquireIncrement">5</property>        <!--定义在从数据库获取新连接失败后重复尝试的次数。默认值: 30 ；小于等于0表示无限次-->        <property name="acquireRetryAttempts">5</property>        <!--重新尝试的时间间隔，默认为：1000毫秒-->        <property name="acquireRetryDelay">1000</property>        <!--关闭连接时，是否提交未提交的事务，默认为false，即关闭连接，回滚未提交的事务 -->        <property name="autoCommitOnClose">false</property>        <!--c3p0将建一张名为Test的空表，并使用其自带的查询语句进行测试。如果定义了这个                参数那么属性preferredTestQuery将被忽略。你不能在这张Test表上进行任何操作，                它将只供c3p0测试使用。默认值: null -->        <property name="automaticTestTable">Test</property>        <!--如果为false，则获取连接失败将会引起所有等待连接池来获取连接的线程抛出异常，                但是数据源仍有效保留，并在下次调用getConnection()的时候继续尝试获取连接。                如果设为true，那么在尝试获取连接失败后该数据源将申明已断开并永久关闭。默认: false-->        <property name="breakAfterAcquireFailure">false</property>        <!--每60秒检查所有连接池中的空闲连接。默认值: 0，不检查 -->        <property name="idleConnectionTestPeriod">60</property>        <!--maxStatementsPerConnection定义了连接池内单个连接所拥有的最大缓存statements数。                 默认值: 0 -->        <!--JDBC的标准参数，用以控制数据源内加载的PreparedStatements数量。                但由于预缓存的statements       属于单个connection而不是整个连接池。所以设置这个参数需要考虑到多方面的因素。        如果maxStatements与maxStatementsPerConnection均为0，则缓存被关闭。Default: 0-->        <property name="maxStatements">200</property>        <property name="maxStatementsPerConnection">100</property>    </named-config>    <!-- This is my config for oracle --><!--    <named-config name="oracle">--><!--        <property name="driverClass">oracle.jdbc.driver.OracleDriver</property>--><!--        <property name="jdbcUrl">jdbc:oracle:thin:@localhost:1521:</property>--><!--        <property name="user">scott</property>--><!--        <property name="password">abc123</property>--><!--        <property name="initialPoolSize">10</property>--><!--        <property name="maxIdleTime">30</property>--><!--        <property name="maxPoolSize">100</property>--><!--        <property name="minPoolSize">10</property>--><!--        <property name="maxStatements">200</property>--><!--    </named-config>--></c3p0-config>
+<?xml version="1.0" encoding="UTF-8"?>
+<c3p0-config>    
+    <!-- This is default config! -->
+    <!-- <default-config>
+    	    <property name="initialPoolSize">10</property>
+    	    <property name="maxIdleTime">30</property>
+    	    <property name="maxPoolSize">100</property>
+    	    <property name="minPoolSize">10</property>
+    	    <property name="maxStatements">200</property>
+    <!-- </default-config>-->
+    <!-- This is my config for mysql-->   
+    <named-config name="mysql">      
+        <property name="driverClass">com.mysql.jdbc.Driver</property>      
+        <!-- 设置字符集和时区 -->     
+        <property name="jdbcUrl">jdbc:mysql://localhost:3306/mysqltest?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=GMT%2B8&amp;useSSL=false</property>  
+        <property name="user">root</property>        
+        <property name="password">123456</property>     
+        <!-- 初始化连接池中的连接数，取值应在minPoolSize与maxPoolSize之间，默认为3--> 
+        <property name="initialPoolSize">6</property>    
+        <!--最大空闲时间，超过该秒数未使用则连接被丢弃。若为0则永不丢弃。默认值: 0 -->    
+        <property name="maxIdleTime">20</property>     
+        <!--连接池中保留的最大连接数。默认值: 15 -->   
+        <property name="maxPoolSize">20</property> 
+        <!-- 连接池中保留的最小连接数，默认为：3-->     
+        <property name="minPoolSize">5</property>    
+        <!-- 当连接池连接耗尽时，客户端调用getConnection()后等待获取新连接的时间，
+		超时后将抛出SQLException，如设为0则无限期等待，单位毫秒。默认: 0 -->    
+        <property name="checkoutTimeout">3000</property>     
+        <!--当连接池中的连接耗尽的时候c3p0一次同时获取的连接数。默认值: 3 -->  
+        <property name="acquireIncrement">5</property>     
+        <!--定义在从数据库获取新连接失败后重复尝试的次数。默认值: 30 ；小于等于0表示无限次-->  
+        <property name="acquireRetryAttempts">5</property> 
+        <!--重新尝试的时间间隔，默认为：1000毫秒-->    
+        <property name="acquireRetryDelay">1000</property>     
+        <!--关闭连接时，是否提交未提交的事务，默认为false，即关闭连接，回滚未提交的事务 -->    
+        <property name="autoCommitOnClose">false</property>     
+        <!--c3p0将建一张名为Test的空表，并使用其自带的查询语句进行测试。
+		如果定义了这个参数那么属性preferredTestQuery将被忽略。你不能在这张Test表上进行任何操作，
+		它将只供c3p0测试使用。默认值: null -->      
+        <property name="automaticTestTable">Test</property>       
+        <!--如果为false，则获取连接失败将会引起所有等待连接池来获取连接的线程抛出异常，
+		但是数据源仍有效保留，并在下次调用getConnection()的时候继续尝试获取连接。
+		如果设为true，那么在尝试获取连接失败后该数据源将申明已断开并永久关闭。默认: false-->       
+        <property name="breakAfterAcquireFailure">false</property>  
+        <!--每60秒检查所有连接池中的空闲连接。默认值: 0，不检查 -->  
+        <property name="idleConnectionTestPeriod">60</property>     
+        <!--maxStatementsPerConnection定义了连接池内单个连接所拥有的最大缓存statements数。默认值: 0 -->       
+        <!--JDBC的标准参数，用以控制数据源内加载的PreparedStatements数量。
+		但由于预缓存的statements属于单个connection而不是整个连接池。所以设置这个参数需要考虑到多方面的因素。
+		如果maxStatements与maxStatementsPerConnection均为0，则缓存被关闭。Default: 0-->       
+        <property name="maxStatements">200</property>      
+        <property name="maxStatementsPerConnection">100</property>  
+    </named-config>    
+    <!-- This is my config for oracle -->
+    <!-- <named-config name="oracle">
+    	    <property name="driverClass">oracle.jdbc.driver.OracleDriver</property>
+    	    <property name="jdbcUrl">jdbc:oracle:thin:@localhost:1521:</property>
+    	    <property name="user">scott</property>
+    	    <property name="password">abc123</property>
+    	    <property name="initialPoolSize">10</property>
+    	    <property name="maxIdleTime">30</property>
+    	    <property name="maxPoolSize">100</property>
+    	    <property name="minPoolSize">10</property>
+    	    <property name="maxStatements">200</property>
+    	 </named-config>-->
+</c3p0-config>
 ```
 
 ```java
@@ -547,3 +663,4 @@ long end = System.currentTimeMillis();
 System.out.println("需要时间(ms)：" + (end - start));
 ```
 
+我

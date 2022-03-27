@@ -52,8 +52,8 @@
 ```
 
 ```html
-<!-- 在html页面的html标签需加上的 -->
-xmlns:th="http://www.thymeleaf.org"
+<!-- 在html页面的html标签需加上：xmlns:th="http://www.thymeleaf.org" -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 ```
 
 

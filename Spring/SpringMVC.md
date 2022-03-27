@@ -1,4 +1,8 @@
-# SpringMVC配置
+# SpringMVC-quick start
+
+创建好web项目。
+
+## 1、依赖导入
 
 spring web mvc是spring框架的一部分，导入springmvc的依赖也就导入了spring的核心依赖：
 
@@ -10,6 +14,8 @@ spring web mvc是spring框架的一部分，导入springmvc的依赖也就导入
     <version>5.3.8</version>
 </dependency>
 ```
+
+## 2、配置中央调度器
 
 web.xml里配置中央调度器（也就是相当配置了一个servlet）：
 
@@ -26,6 +32,7 @@ web.xml里配置中央调度器（也就是相当配置了一个servlet）：
     <servlet>
         <servlet-name>myspringmvc</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!-- 初始化SpringMVC容器或Spring容器 -->
         <init-param>
             <param-name>contextConfigLocation</param-name>
             <param-value>classpath:springmvc.xml</param-value> 
@@ -39,6 +46,10 @@ web.xml里配置中央调度器（也就是相当配置了一个servlet）：
     
 </web-app> 
 ```
+
+
+
+## 3、配置视图解析器
 
 resources目录里的springmvc.xml配置，用来配置视图解析器和注解扫描：
 
@@ -826,7 +837,7 @@ http(s)://server.com/app-name/{version}/{domain}/{rest-convention}
 
 # 静态资源处理
 
-Tomcat有一个默认的servlet（conf的web.xml中）会在服务器启动时被创建，是用于处理HTML、css、js、图片等静态资源的，也可以处理未映射到其他servlet的请求。该默认的servlet的映射路径使用的是斜杠 `/`，如果在我们在配置servlet时也使用了这个斜杠，那么所有的请求将被中央调度器来处理，而此时中央调度器就没有了servlet对象来处理静态资源，这时会导致HTML、css、js、图片等静态资源无法加载，如果使用的是路径`/xxx`则静态资源可以访问到（当控制器对象只能处理请求，但是静态资源仍然无法访问，这时就需要配置静态资源处理。）
+Tomcat有一个默认的servlet（在conf目录的web.xml中）会在服务器启动时被创建，是用于处理HTML、css、js、图片等静态资源的，也可以处理未映射到其他servlet的请求。该默认的servlet的映射路径使用的是斜杠 `/`，如果在我们在配置servlet时也使用了这个斜杠，那么所有的请求将被中央调度器来处理，而此时中央调度器就没有了servlet对象来处理静态资源，这时会导致HTML、css、js、图片等静态资源无法加载，如果使用的是路径`/xxx`则静态资源可以访问到（当控制器对象只能处理请求，但是静态资源仍然无法访问，这时就需要配置静态资源处理。）
 
 **处理静态资源的方法一：**在springmvc.xml中加入`<mvc:default-servlet-handler/>`
 

@@ -1,19 +1,21 @@
 #  SSM整合开发
 
-- SpringMVC：界面层，处理接收请求，显示处理结果；
-- Spring：业务层，处理业务逻辑，spring创建Service、Dao、工具类等对象；
-- MyBatis：持久层，访问数据库的，对数据增删改查。（前身是IBatis，所以SSM也叫SSI）
+## 概述
 
-SSM中涉及到的两个容器：
+1. SpringMVC：界面层，处理接收请求，显示处理结果。
+2. Spring：业务层，处理业务逻辑，spring创建Service、Dao、工具类等对象。
+3. MyBatis：持久层，访问数据库的，对数据增删改查。（前身是IBatis，所以SSM也叫SSI）
 
-- 第一个容器：SpringMVC容器，管理Controller控制器对象的；
-- 第二个容器：Spring容器，管理Service、Dao、工具类对象的。
+**SSM中涉及到的两个容器：**
 
-SSM中我们要做的是：把使用到的对象交给合适的容器创建、管理。（把Controller、web开发的相关对象交给springmvc容器，也就是把这些对象写在springmvc的配置文件中，把Service、Dao、工具类对象定义在spring的配置文件中，让spring管理这些对象）。
+1. 第一个容器：SpringMVC容器，管理Controller控制器对象的。
+2. 第二个容器：Spring容器，管理Service、Dao、工具类对象的。
 
-springmvc容器如何访问spring容器？springmvc和spring有一种确定的关系，**springmvc是spring的子容器**，子容器可以访问父容器的内容。子容器的Controller可以访问父容器的Service。
+SSM中我们要做的是：把使用到的对象交给合适的容器创建、管理。（把Controller、web开发的相关对象交给springmvc容器，也就是把这些对象写在springmvc容器的配置文件中，把Service、Dao、工具类对象定义在spring容器的配置文件中，让spring管理这些对象）。
 
-## SSM整合步骤：
+**springmvc容器如何访问spring容器？**springmvc和spring有一种确定的关系，**springmvc是spring的子容器**，子容器可以访问父容器的内容。子容器的Controller可以访问父容器的Service。
+
+## 具体操作步骤
 
 1. 建立数据库；
 2. 建立web项目；
@@ -31,117 +33,106 @@ springmvc容器如何访问spring容器？springmvc和spring有一种确定的�
 7. 写业务代码：dao接口、mapper文件、service和实现类、controller、实体类；
 8. 页面。
 
-## 一：导入依赖
+### 一：导入依赖
+
+Spring、SpringMVC的依赖：
 
 ```xml
-<dependencies>
-    <!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>5.3.8</version>
-    </dependency>
+<!-- Spring、SpringMVC start  -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-webmvc</artifactId>
+    <version>5.3.16</version>
+</dependency>
+<!-- 使用AOP时需要导入的包 -->
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.9.8</version>
+    <scope>runtime</scope>
+</dependency>
 
-    <!-- https://mvnrepository.com/artifact/org.springframework/spring-webmvc -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <version>5.3.8</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>4.0.1</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
-    <dependency>
-      <groupId>org.mybatis</groupId>
-      <artifactId>mybatis-spring</artifactId>
-      <version>2.0.6</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.mybatis/mybatis -->
-    <dependency>
-      <groupId>org.mybatis</groupId>
-      <artifactId>mybatis</artifactId>
-      <version>3.5.6</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.12.4</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-      <version>2.12.4</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-jdbc</artifactId>
-      <version>5.3.8</version>
-    </dependency>
-    <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
-    <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.25</version>
-    </dependency>
-
-    <!--事务-->
-    <!-- https://mvnrepository.com/artifact/org.springframework/spring-tx -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-tx</artifactId>
-      <version>5.3.8</version>
-    </dependency>
-
-    <!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
-    <dependency>
-      <groupId>com.alibaba</groupId>
-      <artifactId>druid</artifactId>
-      <version>1.1.10</version>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <finalName>springmvc_05_ssm</finalName>
-    <resources>
-      <resource>
-        <directory>src/main/java</directory>
-        <includes>
-          <include>**/*.properties</include>
-          <include>**/*.xml</include>
-        </includes>
-        <filtering>false</filtering>
-      </resource>
-    </resources>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+<!-- spring事务处理 -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-tx</artifactId>
+    <version>5.3.16</version>
+</dependency>
+<!-- Spring整合JDBC -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-jdbc</artifactId>
+    <version>5.3.16</version>
+</dependency>
+<!-- Spring、SpringMVC end  -->
 ```
 
-## 二：MyBatis的全局配置
+Mybatis、数据库驱动、数据库连接池、jdbc的依赖：
 
-**mybatis-config.xml（resources/conf/mybatis-config.xml）：**
+```xml
+<!-- Mybatis、mybatis-spring、数据库驱动、jdbc start -->
+<dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis</artifactId>
+    <version>3.5.7</version>
+</dependency>
+<dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis-spring</artifactId>
+    <version>2.0.6</version>
+</dependency>
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.27</version>
+</dependency>
+<dependency>
+	<groupId>com.alibaba</groupId>
+	<artifactId>druid</artifactId>
+	<version>1.2.8</version>
+</dependency>
+<!-- Mybatis、mybatis-spring、数据库驱动、jdbc end -->
+```
+
+thymeleaf模板引擎的依赖：
+
+```xml
+<!-- thymeleaf start -->
+<dependency>
+    <groupId>org.thymeleaf</groupId>
+    <artifactId>thymeleaf</artifactId>
+    <version>3.0.15.RELEASE</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.thymeleaf/thymeleaf-spring5 -->
+<dependency>
+    <groupId>org.thymeleaf</groupId>
+    <artifactId>thymeleaf-spring5</artifactId>
+    <version>3.0.15.RELEASE</version>
+</dependency>
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>4.0.1</version>
+    <scope>provided</scope>
+</dependency>
+<!-- thymeleaf end -->
+```
+
+lombok插件：
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+<dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.18.22</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+### 二：整合Spring-MyBatis
+
+MyBatis的全局配置：**mybatis-config.xml（resources/conf/mybatis-config.xml）：**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -173,11 +164,7 @@ springmvc容器如何访问spring容器？springmvc和spring有一种确定的�
 </configuration>
 ```
 
-## 三：spring整合mybatis
-
-spring用来管理所有的业务逻辑组件。
-
-spring的配置文件：resources/conf/applicationContext.xml
+Spring用来管理所有的业务逻辑组件，Spring容器的配置文件：resources/conf/applicationContext.xml
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -223,7 +210,7 @@ jdbc.password=123456
 
 
 
-## 四：spring事务配置
+### 三：Spring-tx—配置事务
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -282,11 +269,9 @@ jdbc.password=123456
 </beans>
 ```
 
+### 四：整合Spring-SpringMVC
 
-
-## 五：web.xml
-
-**web.xml：注册springmvc的中央调度器、拦截器、监听器、过滤器、spring容器、springmvc容器**
+**web.xml：注册SpringMVC的中央调度器、拦截器、监听器、过滤器、springmvc容器，注册Spring容器**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -294,68 +279,65 @@ jdbc.password=123456
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
-  <display-name>Archetype Created Web Application</display-name>
+    <display-name>Archetype Created Web Application</display-name>
 
-  <!--注册中央调度器-->
-  <servlet>
-    <servlet-name>myweb</servlet-name>
-    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-      <!-- springMVC springmvc容器 -->
-    <init-param>
-      <param-name>contextConfigLocation</param-name>
-      <param-value>classpath:conf/dispatcherServlet.xml</param-value>
-    </init-param>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-  <!--所有请求都会被springmvc拦截 -->
-  <servlet-mapping>
-    <servlet-name>myweb</servlet-name>
-    <url-pattern>*.do</url-pattern>
-  </servlet-mapping>
-  <!-- spring IOC容器 -->
-  <context-param>
-    <param-name>contextConfigLocation</param-name>
-    <param-value>classpath:conf/applicationContext.xml</param-value>
-  </context-param>
-    <!--注册spring的监听器-->
-  <listener>
-    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-  </listener>
+    <!-- 启动spring root context （父容器） start -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:conf/applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <!-- 启动spring root context （父容器） end -->
+    
+    <!-- 启动中央调度器并初始化spring app context （子容器） start -->
+    <servlet>
+        <servlet-name>myweb</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!-- springMVC springmvc容器 -->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:conf/springmvc-config.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <!-- 启动中央调度器并初始化spring app context （子容器） start -->
+    <servlet-mapping>
+        <servlet-name>myweb</servlet-name>
+        <url-pattern>*.do</url-pattern>
+    </servlet-mapping>
 
-  <!--注册字符集过滤器-->
-  <filter>
-    <filter-name>characterEncodingFilter</filter-name>
-    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
-    <!--设置项目中使用的字符编码-->
-    <init-param>
-      <param-name>encoding</param-name>
-      <param-value>UTF-8</param-value>
-    </init-param>
+    <!--注册字符集过滤器-->
+    <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <!--设置项目中使用的字符编码-->
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
 
-    <!--强制请求对象（HttpServletRequest）使用-->
-    <init-param>
-      <param-name>forceRequestEncoding</param-name>
-      <param-value>true</param-value>
-    </init-param>
-    <!--强制应答对象(HttpServletResponse)使用-->
-    <init-param>
-      <param-name>forceResponseEncoding</param-name>
-      <param-value>true</param-value>
-    </init-param>
-  </filter>
-  <filter-mapping>
-    <filter-name>characterEncodingFilter</filter-name>
-    <!--强制所有请求先经过过滤器-->
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
+        <!--强制请求对象（HttpServletRequest）使用-->
+        <init-param>
+            <param-name>forceRequestEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <!--强制应答对象(HttpServletResponse)使用-->
+        <init-param>
+            <param-name>forceResponseEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <!--强制所有请求先经过过滤器-->
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 </web-app>
 ```
 
-## 六：SpringMVC配置
-
-springMVC控制网站的跳转逻辑。
-
- **dispatcherServlet.xml：配置视图解析器，开启注解扫描**
+SpringMVC容器的配置文件：**springmvc-config.xml，配置视图解析器，开启注解扫描**
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -384,6 +366,3 @@ springMVC控制网站的跳转逻辑。
     <mvc:default-servlet-handler/>
 </beans>
 ```
-
-
-
