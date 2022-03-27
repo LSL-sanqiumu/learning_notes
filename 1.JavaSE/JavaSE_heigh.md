@@ -1134,11 +1134,10 @@ public static void main(String[] args) {
 }
 /* 将时间转换为指定的字符串 */
 public static void main(String[] args) {
-    Date date = new Date();
     // 设置时间格式
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy:MM:dd hh:mm:ss");
     // 调用 SimpleDateFormat对象的 format()方法格式化时间
-    String showTime = sdf.format(date);
+    String showTime = sdf.format(new Date());
     System.out.println(showTime); // 2022:02:10 03:30:41
 }
 ```
@@ -1238,14 +1237,13 @@ public static void main(String[] args) throws ParseException {
 
 ### LocalDateTime
 
-1. LocalDate、LocalTime、LocalDateTime ：
+1. LocalDate：年月日，代表IOS格式（yyyy-MM-dd）的日期。 
+2. LocalTime：时分秒，表示一个时间（时、分、秒），而不是日期。
+3. LocalDateTime：年月日时分秒，是用来表示日期和时间的，这是一个最常用的类之一。 
+4. 关于LocalDate、LocalTime、LocalDateTime ：
    - 它们的实例都是不可变的对象，分别表示使用 ISO-8601日历系统的日期、时间、日期时间。
    - 它们提供了简单的本地日期或时间，并不包含当前的时间信息，也不包含与时区相关的信息。
    - （注：ISO-8601日历系统是国际标准化组织制定的现代公民的日期和时间的表示法，也就是公历。）
-
-2. LocalDate：年月日，代表IOS格式（yyyy-MM-dd）的日期，可以存储生日、纪念日等日期。 
-3. LocalTime：时分秒，表示一个时间（时、分、秒），而不是日期。
-4. LocalDateTime：年月日时分秒，是用来表示日期和时间的，这是一个最常用的类之一。 
 
 ```java
 public static void main(String[] args) {
@@ -1285,7 +1283,7 @@ LocalDateTime常用方法：
 2. 还有其他的实现类的方法，用于获取年、月、日、时、分、秒，或者添加年份、月份、天数等方法。
 3. 查看API手册，开发中尽量使用jdk8中新的时间日期API。
 
-###  Instant时间戳
+###  Instant
 
  Instant（瞬时），类似Date类，表示的是时间线上的一端瞬时点，时间线从1970年开始，以毫秒为单位。
 
@@ -2520,23 +2518,23 @@ Collections 类中提供了多个 synchronizedXxx() 方法，该方法可使将�
 
 ## 泛型语法
 
-泛型（参数化类型），泛型类就是具有一个或多个类型变量的类，JDK5中出现，为了解决数据类型安全问题。
+Java 泛型（generics）是 JDK 5 中引入的一个新特性，泛型提供了编译时类型安全检测机制（为了解决数据类型安全问题），该机制允许程序员在编译时检测到非法的类型。泛型的本质是参数化类型，也就是说所操作的数据类型被指定为一个参数。
 
 ```java
 ArrayList<String> list = new ArrayList<String>(); 
 ArrayList<String> list = new ArrayList<>(); // 泛型对象的创建，<>指定泛型类型
 ```
 
-1. 泛型指定时只能是引用类型，就是说`ArrayList<String>`的String不能是int等基本数据类型。
+1. 泛型参数值只能是引用类型，就是说`ArrayList<String>`的String不能是int等基本数据类型。
 2. 如果在构造器形参中使用了泛型，传入的值可以是创建对象时泛型指定的类型或该类型的子类。
-3. 泛型类型可以不指定，不指定时默认是指Object类型。
+3. 可不指定泛型参数值，不指定泛型参数值时默认是指Object。
 4. 类型参数能被用来声明返回值类型，并且能作为泛型方法得到的实际参数类型的占位符。
 
 ## 自定义泛型
 
 ### 自定义泛型类
 
-泛型是一个或多个类型变量的类，泛型类的定义如下：
+泛型类的定义如下：
 
 ```java
 public Pair<T, S, U> { // <>内指定泛型变量，可指定多个
@@ -2548,11 +2546,11 @@ public Pair<T, S, U> { // <>内指定泛型变量，可指定多个
 
 细节：
 
-1. 泛型变量使用于属性、方法、构造方法形参等；
-2. 使用泛型的数组，不能初始化（因为还没确定数据类型，无法确定要开辟的空间）；
-3. 静态方法中不能使用泛型变量（因为泛型变量是在创建对象的时候确定的）；
-4. 创建对象时没有指定则泛型变量仍然为Object；
-5. 异常类不能是泛型类；
+1. 泛型变量使用于属性、方法、构造方法形参等。
+2. 使用泛型的数组，不能初始化（因为还没确定数据类型，无法确定要开辟的空间）。
+3. 静态方法中不能使用泛型变量（因为泛型变量是在创建对象的时候确定的）。
+4. 创建对象时没有指定则泛型变量仍然为Object。
+5. 异常类不能是泛型类。
 6. 泛型类中不能使用`new E[]`，但是可以：`E[] elements = (E[])new Object[capacity]`；参考：ArrayList源码中声明：Object[] elementData，而非泛型参数类型数组。 
 
 ### 自定义泛型方法
@@ -2560,7 +2558,7 @@ public Pair<T, S, U> { // <>内指定泛型变量，可指定多个
 泛型方法的定义和方法所在类是否是泛型类无关，泛型方法可以是静态的。
 
 ```java
-修饰符 <T, R, ...> 返回类型 方法名(){} 
+// 修饰符 <T, R, ...> 返回类型 方法名(){} 
 public static <E> List<E> copyList(E[] arr){
     ArrayList<E> list = new ArrayList<>();
     for(E obj : arr){
@@ -2579,7 +2577,7 @@ public static <E> List<E> copyList(E[] arr){
 interface <T, ...> {} 
 ```
 
-- 继承接口或实现接口时确定。 
+- 继承接口或实现接口时确定泛型类型。
 
 ## 泛型继承和通配符
 
@@ -2596,12 +2594,12 @@ interface <T, ...> {}
 
 **java 中泛型标记符：**
 
-- **E** - Element (在集合中使用，因为集合中存放的是元素)
-- **T** - Type（Java 类）
-- **K** - Key（键）
-- **V** - Value（值）
-- **N** - Number（数值类型）
-- **？** - 表示不确定的 java 类型
+1. **E** - Element（在集合中使用，因为集合中存放的是元素）
+2. **T** - Type（Java 类）
+3. **K** - Key（键）
+4. **V** - Value（值）
+5. **N** - Number（数值类型）
+6. **？** - 表示不确定的 java 类型
 
 # IO流
 
