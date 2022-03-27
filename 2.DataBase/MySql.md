@@ -954,7 +954,9 @@ select user_id,the_year,count(price) as '订单数量' from t_order group by use
 
 ![](img/笛卡尔积.png)
 
-联表查询中，**加条件是为了避免笛卡尔积现象，查询出有效的组合记录（使查询结果条数不是m*n）**，但是匹配的次数是一次都没有少的，联表查询加条件和效率并没有什么关系（from先行），联表查询中尽量降低表的连接才是提高效率的方法。
+联表查询中，**加条件是为了避免笛卡尔积现象，查询出有效的组合记录（使查询结果条数不是m*n）**，无论是否加上条件，匹配的次数都是满足笛卡尔积的，联表查询加条件和效率并没有什么关系（from先行），所以说联表查询中尽量降低表的连接才是提高效率的方法。
+
+### 语法
 
 **连接查询：**
 
@@ -979,11 +981,25 @@ SQL92、SQL99的区别可参考：[SQL92 与 SQL99 - 知乎 (zhihu.com)](https:/
    AND t.tname = '张三';
    ```
 
-2. SQL99：条件与连接分开，支持左、右连接等高级操作。
+2. SQL99：条件与连接分开，支持左、右连接等高级操作。**SQL99连接查询语法：**（`xxx join` 确定连接查询方式，见下面的-SQL JOINS图）:
+
+   ```sql
+   -- on 为连接条件，可理解为交集区域
+   select ... from `表1` xxx join `表2` on ...; （四种）
+   select ... from `表1` xxx join `表2` on ... where ...;  （三种）
+   --  where是为了选数据，选取连接查询后得到的数据
+   ```
+
 
 连接查询的SQL语句分类：SQLJoins，可以理解为选择出来有某种集合关系的数据集；可以在查询出来的数据表的基础上再进行联表查询（类似于嵌套）。on（表连接条件）、where：
 
 <img src="img/sql-join.png" style="zoom: 67%;" />
+
+使用连接查询的要义：
+
+1. 明确要查询的数据来源的表。
+2. 确定连接查询方式。
+3. 确定交叉数据。
 
 ### 内连接
 
@@ -1036,31 +1052,20 @@ INSERT INTO `SCHool`.`category` (`categoryid`, `pid`, `categoryname`) VALUES (7,
 
 ### 外连接
 
-(left、right的就是外连接)
+左外连接：使用左外连接来查询数据时，主表的每一条数据会根据匹配条件依次与从表的每一条数据进行匹配，匹配成功时，主表的数据和从表的数据会组合成查询结果集的一条查询结果（如果主表中的一条数据与从表的n条数据匹配成功，那最终select结果集就有这n条数据）。左外连接的最终结果是匹配成功的加上主表的额外的数据。示例：
+
+![](img/70.leftjoin.png)
 
 ```mysql
- -- 左外连接，left join的左边为主表，两表特定字段存在交集的数据集 + 主表的其它数据 -> 集合而成的数据集
+-- 左外连接，left join的左边为主表，两表根据一定条件匹配成功的数据集 + 主表的其它数据 -> 集合而成的数据集
 left join 
--- 右外连接，right join的右边为主表，两表特定字段存在交集的数据集 + 主表的其它数据 -> 集合而成的数据集
+-- 右外连接，right join的右边为主表，两表根据一定条件匹配成功的数据集 + 主表的其它数据 -> 集合而成的数据集
 right join 
--- 全外连接，两表独立的数据及交集的数据的集合，类似并集 （MySQL不支持，可以使用union实现）
+-- 全外连接，两表根据一定条件匹配成功的数据集 + 两表独立的数据，类似并集 （MySQL不支持，可以使用union实现）
 full outer join 
 ```
 
-**连接查询语法：**（`xxx join` 确定连接查询方式，见下图-SQL JOINS）
 
-```sql
--- on 为连接条件，可理解为交集区域
-select ... from `表1` xxx join `表2` on ...; （四种）
-select ... from `表1` xxx join `表2` on ... where ...;  （三种）
---  where是为了选数据，选取连接查询后得到的数据
-```
-
-使用连接查询的要义：
-
-1. 明确要查询的数据来源的表；
-2. 确定连接查询方式；
-3. 确定交叉数据。
 
 ```sql
 -- 测试用表
@@ -1103,7 +1108,7 @@ INSERT INTO t_class(s_id,specialty,grade) VALUES
 (1007,'会计','计算机191'),
 (2221,'土木工程','土木201'),
 (2222,'软件工程','软件221');
--- 测试各种连接.
+-- 测试各种连接：
 ```
 
 ### 多表连接
@@ -1122,7 +1127,8 @@ join d on a和d连接的条件
 交叉连接 (笛卡尔积)：返回被连接的两个表所有数据行的笛卡尔积。（每条记录都是 1 对 n条映射，最终返回m*n条记录）
 
 ```mysql
- select * from sales as a cross join sales as b;
+select * from sales as a cross join sales as b;
+-- 与`select * from stu inner join user;`一样，cross join不支持on
 ```
 
 直接使用交叉联结的业务需求比较少见，往往需要结合具体条件。
@@ -1159,10 +1165,12 @@ select ... from (select ... from ... ...) 别名 ......
 在select后的子查询语句：(简单了解，会看)
 
 ```mysql
+-- 子查询结果作为字段
 select 字段1, 字段2, (select ... from ... ...) from ... ...
 ```
 
 ```sql
+-- 为每一条记录的id进行操作
 select (case when mod(id, 2) != 0  then id + 1 when mod(id, 2)  = 0  then id - 1 end)  
 as  `交换后座位号`,name,sid as `学号`
 from student order by `交换后座位号` asc;
@@ -1174,8 +1182,6 @@ from student order by `交换后座位号` asc;
 2. 列子查询：子查询结果为一列。
 3. 行子查询：子查询结果为一行。
 4. 表子查询：子查询结果为多行多列。
-
-
 
 
 
@@ -1208,7 +1214,11 @@ select 字段1,字段2 from table_name order by 2; -- 对第2个字段进行排�
 
 ### 联合union
 
-联合，用于将查询结果联合在一起，结果集重复的数据（整条记录的字段名、字段类型、字段值一致）才会合并成一条：
+1. 使用union在进行结果集合并的时候要求**两个结果集的列数一致**，列的类型可以不同（Oracle下则要求列数、列数据类型都一致）。
+2. 如果两结果集的列数一致，但每个列所对应的字段名、字段类型、字段值中有一个是不一致的，那么重复的记录是不会合并成功的。
+3. 一定场景下，使用union相对于联表查询的效率会高出一些，因为联表查询匹配次数满足笛卡尔积。
+
+联合，用于将查询结果联合在一起，两结果集重复的数据（需要整条记录的字段名、字段类型、字段值一致）才会合并成一条：
 
 ```mysql
 -- 不会合并
@@ -1223,7 +1233,7 @@ select name,age from info where age = 20 union select school,nowadays from info 
 | 电子科技大学   | 2022-01-05 |
 +--------------+------------+
 -- 合并
-select name,age from info where age = 20 union select name,age from info where age = 20;
+select name,age from info where age = 20 union select name,age from stu where age = 20;
 +--------+-----+
 | name   | age |
 +--------+-----+
@@ -1232,9 +1242,6 @@ select name,age from info where age = 20 union select name,age from info where a
 | 齐永华  |  20 |
 +--------+-----+
 ```
-
-1. 使用union在进行结果集合并的时候要求**两个结果集的列数一致**，列的类型可以不同（Oracle下则要求列数、列数据类型都一致）。
-2. 一定场景下，使用union相比联表查询的效率会高出一些，因为联表查询匹配次数满足笛卡尔积。
 
 
 
@@ -1301,7 +1308,7 @@ select user,host from user;
 创建用户：
 
 ```mysql
-create user `用户名`@`主机名` identified by 密码;
+create user `用户名`@`主机名` identified by '密码';
 ```
 
 删除用户：
