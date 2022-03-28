@@ -1075,18 +1075,7 @@ public static void main(String[] args) {
 1970-01-02 // 输出
 ```
 
-**2.使用java.util.Date获取当前时间戳来将当前时间转换为yyyy-MM-dd的时间格式：**（使用java.sql.Date的构造器，把毫秒数扔进构造器即可）
-
-```java
-public static void main(String[] args) {
-    java.util.Date d1 = new java.util.Date();
-    java.sql.Date d = new Date(d1.getTime());
-    System.out.println(d);
-}
-2022-02-10 // 输出
-```
-
-**3.如何将"yyyy-MM-dd"格式的字符串转换为java.sql.Date？**
+**2.如何将"yyyy-MM-dd"格式的字符串转换为java.sql.Date？**
 
 方法一：如果格式已经符合日期格式，那么可以直接通过java.sql.Date的静态方法`valueOf(String str)`将字符串转化为java.sql.Date对象
 
@@ -1106,7 +1095,7 @@ public static void main(String[] args) {
     SimpleDateFormat sdf =  new SimpleDateFormat("yyyy-MM-dd");
     String time = "2007-7-12";
     try {
-        // time字符串的格式必须要和SimpleDateFormat设置的一致
+        // 将字符转换为util.Date，字符串的格式必须要和SimpleDateFormat设置的一致
         java.util.Date date = sdf.parse(time);
         java.sql.Date sqlDate = new java.sql.Date(date.getTime());
         System.out.println(sqlDate);
@@ -1122,7 +1111,9 @@ public static void main(String[] args) {
 
 > java.text.SimpleDateFormat  可以将日期对象格式化为一定格式的字符，或将字符串格式化为java.util.Date对象
 
-**使用format()方法将日期转换为字符串：**（转换成的默认格式为`21-10-1 上午10:50`，java.util.Date及其子类java.sql.Date）
+**1、使用format()方法将日期转换为字符串：**
+
+可转换java.util.Date类型及其子类类型java.sql.Date的日期，转换成的默认格式为`21-10-1 上午10:50`。
 
 ```java
 /* 默认情况下 */
@@ -1142,7 +1133,7 @@ public static void main(String[] args) {
 }
 ```
 
-**使用 parse() 方法将字符串转换为java.util.Date：**
+**2、使用 parse() 方法将字符串转换为java.util.Date：**
 
 ```java
 // 默认的格式：22-2-10 下午3:20
@@ -1367,6 +1358,8 @@ java.time.format.DateTimeFormatter 类，用于格式化或解析时间日期，
 
 看API文档。ZoneId：时区。ZonedDateTime。Clock。等等......
 
+可参考教程：https://www.liaoxuefeng.com/wiki/1252599548343744/1303871087444002。
+
 # 枚举类
 
 枚举类：**一个类只有有限的、确定的对象，我们称此类为枚举类**。（有限对象的类，构造器不允许外部调用）
@@ -1429,7 +1422,7 @@ java.lang.Enum的主要成员方法： （枚举类继承Enum类）
 
 
 3. toString()、name()：返回当前枚举类对象常量的名称。
-4. compareTo()：比较两个枚举常量的位置号（位置号从1开始），返回位置号相减得到的值。
+4. compareTo()：比较两个枚举常量的位置号（位置号从1开始），返回位置号相减后得到的值。
 
 枚举类在编译阶段会被编译器插入一些静态方法；枚举类本身有个只有编译器能够调用的构造方法，编译器会使用该方法将枚举值实例化为枚举类型的对象；枚举类被实例化后，继承了众多java.lang.Enum中的方法。
 
@@ -1702,11 +1695,13 @@ public class TestTypeDefine<@TypeDefine() U> {
 
 ## 概述
 
-反射（reflect）就是能够分析类能力的程序。反射机制允许程序在执行期借助于Reflection API取得任何类的内部信息，并能直接操作任意对象的内部属性及方法。
+**反射（reflect）**：反射就是能够分析类能力的程序。反射机制允许程序在执行期借助于Reflection API取得任何类的内部信息，并能直接操作任意对象的内部属性及方法。
 
-反射的原理？
+**反射的原理？**
 
 加载完类之后，**在堆内存的方法区中就产生了一个Class类型的对象（一个类只有一个Class对象，该对象称为运行时类）**，这个对象就包含了完整的类的结构信息。我们可以通过这个对象看到类的结构。（按Java核心技术上来说就是：程序在运行期间，Java的运行时系统总是为所有的对象创建了一个被称为运行时的类型标识，此类型标识的信息跟踪着每个对象所属的类，而保存这些信息的类就是java.lang.Class类。因此可以根据该类的方法来对运行时的类的信息进行操作。）
+
+**关于运行时类：**Object.getClass()方法能返回对象的运行时类，这运行时类就是值“具有该对象所属类型的所有元数据的对象”，**在程序运行时加载了有关类的所有元数据的对象**就是运行时类。
 
 ```
 面试题：
@@ -1719,10 +1714,10 @@ public class TestTypeDefine<@TypeDefine() U> {
 
 反射相关的类：
 
-- java.lang.Class：代表字节码文件（代表整个类）。
-- java.lang.reflect.Method：代表字节码中的方法字节码（代表类中的方法）。
-- java.lang.reflect.Field：代表字节码的属性字节码（代表类中的成员变量（静态、实例变量））。
-- java.lang.reflect.Constructor：代表类的构造器。
+1. java.lang.Class：代表字节码文件（代表整个类）。
+2. java.lang.reflect.Method：代表字节码中的方法字节码（代表类中的方法）。
+3. java.lang.reflect.Field：代表字节码的属性字节码（代表类中的成员变量（静态、实例变量））。
+4. java.lang.reflect.Constructor：代表类的构造器。
 
 ## 动态语言与静态语言
 
@@ -1744,22 +1739,22 @@ public class TestTypeDefine<@TypeDefine() U> {
 
 以下类型都会有运行时类对象：
 
-- 类（外部类、成员（内部类、静态内部类）、局部内部类、匿名内部类）；
-- 接口：interfaces；
-- 数组；
-- 枚举类：enum；
-- 注解：annotation，@interface；
-- 基本数据类型：primitive type；
+- 类（外部类、成员（内部类、静态内部类）、局部内部类、匿名内部类）。
+- 接口：interfaces。
+- 数组。
+- 枚举类：enum。
+- 注解：annotation，@interface。
+- 基本数据类型：primitive type。
 - void。
 
 ## 反射的使用
 
 1. 在程序运行时对类信息进行操作，包括：
-   - 判断任意一个对象所属的类；
-   - 构造任意一个类的对象；
-   - 判断任意一个类所具有的成员变量和方法；
-   - 获取泛型信息；
-   - 调用任意一个对象的成员变量和方法；
+   - 判断任意一个对象所属的类。
+   - 构造任意一个类的对象。
+   - 判断任意一个类所具有的成员变量和方法。
+   - 获取泛型信息。
+   - 调用任意一个对象的成员变量和方法。
    - 处理注解。
 2. 生成动态代理。
 
