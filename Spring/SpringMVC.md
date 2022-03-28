@@ -72,6 +72,10 @@ resources目录里的springmvc.xml配置，用来配置视图解析器和注解�
 </beans>
 ```
 
+## 4、进行开发
+
+controller、过滤器、静态资源处理。
+
 # SpringMVC
 
 ## 概述
@@ -85,7 +89,7 @@ springMVC在servlet的基础上，改进了哪些操作？
 springmvc的使用步骤：
 
 1. 创建web项目，配置好所需要的依赖。
-2. 创建好中央调度器（其实就是一个servlet）。
+2. 创建好中央调度器（其实就是一个servlet）并初始化springmvc容器。
 3. 创建控制器（新建Java类使用注解完成控制器的注册，并写好相应的程序逻辑）。
 4. 如果需要的话，可以配置视图解析器，可以简化控制器里的资源路径，也可以引入thymeleaf，使用模板引擎。
 
@@ -125,7 +129,7 @@ springmvc的使用步骤：
 
 1. 在没有特殊要求的情况下，常使用后缀匹配的方式，如设置为`*.do`用于匹配请求路径尾部带.do后缀的请求。
 2. 如果写成`/*`，所有的`.jsp`资源将失效，报404。
-3. 如果写成`/`（RESTful风格下会这样做），那么HTML、css、js、图片等静态资源将会失效，无法直接访问到并且也不能通过前端控制器访问到，此时必须要对静态资源进行处理才能访问（见目录：静态资源处理）。
+3. 如果写成`/`（RESTful风格下会这样做），那么webapp根目录下的HTML、css、js、图片等静态资源将会失效，无法直接访问到并且也不能通过前端控制器访问到，此时必须要对静态资源进行处理才能访问（见目录：静态资源处理）。
 
 **关于init-param：**
 
@@ -137,6 +141,30 @@ init(){
 	getServletContext().setAttribute(key, ctx);
 }
 ```
+
+**与Spring整合：**在与Spring整合时，可通过context-param与ContextLoaderListener来根据配置文件初始化Spring容器。
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+         version="4.0">
+    <display-name>Archetype Created Web Application</display-name>
+
+    <!-- 启动spring root context （父容器） start -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:conf/applicationContext.xml</param-value>
+    </context-param>
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <!-- 启动spring root context （父容器） end -->
+</web-app>
+```
+
+
 
 ## 视图解析器
 
@@ -164,7 +192,7 @@ init(){
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
-    <context:component-scan base-package="com.lsl.crowd.controller"/>
+    <context:component-scan base-package="com.lsl.controller"/>
     <!-- 视图器的配置，为了简化控制器的视图路径 -->
     <!-- thymeleaf的视图解析器会与ContentNegotiatingViewResolver冲突 -->
     <bean id="viewResolver" class="org.thymeleaf.spring5.view.ThymeleafViewResolver">
@@ -247,7 +275,7 @@ public class FirstController {
 
 中央调度器DispatcherServlet负责创建springmvc容器对象，读取xml配置文件后利用spring注解创建好对应目录里的Controller对象，还负责接收用户请求，匹配到相应的处理方法。
 
-# 处理器内-注解使用
+# 处理器内—注解使用
 
 ## 用于组件注册
 
@@ -536,7 +564,7 @@ public class MyController {
 
 参考：[Spring MVC中@ModelAttribute注解的使用 (biancheng.net)](http://c.biancheng.net/view/4412.html)。
 
-# 处理器内-请求参数自动接收
+# 处理器内—请求参数自动接收
 
 处理器方法的参数用来对**用户表单请求提交的数据**进行接收，参数类型可以是`HttpServletRequest request`、`HttpServletResponse response`、`HttpSession session`这几个类型，也可以是string、int类型的，等等。
 
@@ -616,7 +644,7 @@ public ModelAndView doOb(Student student) {
 }
 ```
 
-# 处理器内-返回值类型
+# 处理器内—返回值类型
 
 ## ModelAndView
 
@@ -892,7 +920,7 @@ SpringMVC中处理编码的过滤器一定要配置到其他过滤器之前，�
 </filter-mapping>
 ```
 
-# 处理器内-域对象共享数据
+# 处理器内—域对象共享数据
 
 ## 向Request域共享数据
 

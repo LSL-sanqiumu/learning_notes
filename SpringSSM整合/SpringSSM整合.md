@@ -188,7 +188,9 @@ Spring用来管理所有的业务逻辑组件，Spring容器的配置文件：re
         <!-- 指定全局 -->
         <property name="configLocation" value="classpath:conf/mybatis.xml"/>
     </bean>
-    <!--声明mybatis的扫描器，创建dao对象-->
+    <!-- 声明mybatis的扫描器 -->
+    <!-- 配置扫描Dao接口包，动态实现Dao接口注入到spring容器中 -->
+    <!-- 解释 ：https://www.cnblogs.com/jpfss/p/7799806.html-->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
         <property name="basePackage" value="com.lsl.dao"/>
