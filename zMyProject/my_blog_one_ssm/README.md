@@ -29,7 +29,7 @@ Spring、SpringMVC的依赖：
     <artifactId>spring-tx</artifactId>
     <version>5.3.16</version>
 </dependency>
-<!-- Spring整合JDBC -->
+<!-- Spring整合JDBC mybatis运行需要jdbc包-->
 <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-jdbc</artifactId>
@@ -100,6 +100,32 @@ lombok插件：
     <scope>provided</scope>
 </dependency>
 ```
+
+slf4j日志包：
+
+```xml
+<!-- 日志 start -->
+<!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-classic</artifactId>
+    <version>1.2.11</version>
+    <scope>test</scope>
+</dependency>
+<!-- 日志 end -->
+```
+
+pagehelper——MyBatis分页插件：
+
+```xml
+<dependency>
+    <groupId>com.github.pagehelper</groupId>
+    <artifactId>pagehelper</artifactId>
+    <version>5.1.11</version>
+</dependency>
+```
+
+
 
 
 
@@ -215,31 +241,185 @@ lombok插件：
  "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
 <web-app>
-  <display-name>Archetype Created Web Application</display-name>
-  <!-- 启动spring root context （父容器 start -->
-  <context-param>
-    <param-name>contextConfigLocation</param-name>
-    <param-value>classpath:applicationContext.xml</param-value>
-  </context-param>
-  <listener>
-    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-  </listener>
-  <!-- 启动spring root context （父容器）start -->
-  <!-- 启动 spring app context （子容器） start-->
-  <servlet>
-    <servlet-name>myspringmvc</servlet-name>
-    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-    <init-param>
-      <param-name>contextConfigLocation</param-name>
-      <param-value>classpath:springmvc-config.xml</param-value>
-    </init-param>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>myspringmvc</servlet-name>
-    <url-pattern>/</url-pattern>
-  </servlet-mapping>
-  <!-- 启动 spring app context （子容器） end-->
+    <display-name>Archetype Created Web Application</display-name>
+
+    <!-- 启动spring root context （父容器）start -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:applicationContext.xml</param-value>
+    </context-param>
+    <!-- 启动spring root context （父容器）end -->
+    <!-- 过滤器 处理post接收到乱码 start -->
+    <filter>
+        <filter-name>characterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>utf-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceRequestEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceResponseEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>characterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    <!-- 过滤器 处理post接收到乱码 end -->
+    <!-- 启动spring root context （父容器 start 需要的监听器 -->
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <!-- 启动spring root context （父容器）end 需要的监听器 -->
+    <!-- 启动 spring app context （子容器） start-->
+    <servlet>
+        <servlet-name>myspringmvc</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>classpath:springmvc-config.xml</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>myspringmvc</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    <!-- 启动 spring app context （子容器） end-->
+
 </web-app>
 ```
+
+### 事务配置
+
+Spring——事务配置，测试完成后再加事务的配置。
+
+```xml
+<!-- 配置事务 -->
+<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+    <property name="dataSource" ref="dataSource"/>
+</bean>
+<aop:config>
+    <aop:pointcut id="txPointcut" expression="execution(* *..*ServiceImpl.*(..))"/>
+    <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
+</aop:config>
+<!-- 配置事务通知 -->
+<tx:advice id="txAdvice" transaction-manager="txManager">
+    <tx:attributes>
+        <!-- 查询方法：配置只读属性，让数据库知道这是一个查询操作，能够进行一定优化 -->
+        <tx:method name="get*" read-only="true"/>
+        <tx:method name="find*" read-only="true"/>
+        <tx:method name="query*" read-only="true"/>
+        <tx:method name="count*" read-only="true"/>
+        <!-- 增删改方法就配置事务传播行为和回滚异常 -->
+        <tx:method name="save*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+        <tx:method name="update*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+        <tx:method name="remove*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+        <tx:method name="batch*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+    </tx:attributes>
+</tx:advice>
+```
+
+## 3.测试
+
+测试的：com.lsl.dao.TestMapper、com.lsl.test、com/lsl/dao/TestMapper.xml。
+
+访问：http://localhost:8081/blog/get
+
+## 4.全局异常处理
+
+使用注解来配置全局异常处理。
+
+1、定义异常处理器
+
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+//    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @ExceptionHandler(Exception.class)
+    public ModelAndView exceptionHandler(HttpServletRequest request, Exception e) {
+//        logger.error("Request URL : {}, Exception : {}", request.getRequestURL(),e);
+
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("url", request.getRequestURL());
+        mv.addObject("exception",e);
+        mv.setViewName("error/error");
+        return mv;
+    }
+}
+```
+
+该error视图为`WEB-INF/view/error/error.html`。
+
+需要处理哪些异常，就加上。
+
+## 5.搭建日志
+
+**使用log4j：**
+
+1、导入依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/log4j/log4j -->
+<dependency>
+    <groupId>log4j</groupId>
+    <artifactId>log4j</artifactId>
+    <version>1.2.17</version>
+</dependency>
+```
+
+
+
+
+
+# 二、静态资源导入
+
+resources目录下新建static目录，将css、js、第三方库、图片等静态资源引入。
+
+# 三、功能实现
+
+## 首页index.xml
+
+### 首页
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

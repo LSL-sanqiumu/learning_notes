@@ -897,7 +897,7 @@ Tomcat有一个默认的servlet（在conf目录的web.xml中）会在服务器�
 SpringMVC中处理编码的过滤器一定要配置到其他过滤器之前，否则无效。（浏览器端与服务端编码不一致导致获取到的数据出现乱码）
 
 ```xml
-<!-- 过滤器 -->
+<!-- 过滤器 处理post接收到乱码 start -->
 <filter>
     <filter-name>characterEncodingFilter</filter-name>
     <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
@@ -918,6 +918,7 @@ SpringMVC中处理编码的过滤器一定要配置到其他过滤器之前，�
     <filter-name>characterEncodingFilter</filter-name>
     <url-pattern>/*</url-pattern>
 </filter-mapping>
+<!-- 过滤器 处理post接收到乱码 end -->
 ```
 
 # 处理器内—域对象共享数据
@@ -1181,14 +1182,16 @@ public ModelAndView redirectTest(String name, String age){
 
 
 
-## 异常处理
+## 全局异常处理
 
-### 基于XML
+处理什么异常，返回什么视图，是否记录下异常。
 
-SpringMVC提供了一个用来处理控制器方法执行过程中出现的异常的接口：HandlerExceptionResolver。HandlerExceptionResolver接口的实现类有：DefaultHandlerExceptionResolver、SimpleMappingExceptionResolver。SpringMVC提供了一个自定义的异常处理器SimpleMappingExceptionResolver，配置好即可使用：
+### 基于XML的
+
+SpringMVC提供了一个用来处理控制器方法执行过程中出现的异常的接口：HandlerExceptionResolver。HandlerExceptionResolver接口的实现类有：DefaultHandlerExceptionResolver、SimpleMappingExceptionResolver。SpringMVC提供了一个自定义的异常处理器SimpleMappingExceptionResolver，配置好即可使用。配置异常映射器如下：
 
 ```xml
-<!-- 基于XML的异常映射 -->
+<!-- 配置基于XML的异常映射 -->
 <bean id="simpleMappingExceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
     <!-- 配置异常类型和具体视图之间的关系 -->
     <property name="exceptionMappings">
@@ -1196,16 +1199,6 @@ SpringMVC提供了一个用来处理控制器方法执行过程中出现的异�
             <!-- key属性指定异常全类名 -->
             <!-- 标签体写对应的视图（该视图会经视图解析器） -->
             <prop key="java.lang.Exception">system-error</prop>
-        </props>
-    </property>
-</bean>
-```
-
-```xml
-<!-- id可以不用设置 -->
-<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
-    <property name="exceptionMappings">
-        <props>
             <!--
                 properties的键表示处理器方法执行过程中出现的异常
                 properties的值表示若出现指定异常时，设置一个新的视图名称，跳转到指定页面
@@ -1213,7 +1206,7 @@ SpringMVC提供了一个用来处理控制器方法执行过程中出现的异�
             <prop key="java.lang.ArithmeticException">error</prop>
         </props>
     </property>
-    <!--
+        <!--
         exceptionAttribute属性：将出现的异常信息在请求域中进行共享
     -->
     <property name="exceptionAttribute" value="ex"></property>
@@ -1222,11 +1215,11 @@ SpringMVC提供了一个用来处理控制器方法执行过程中出现的异�
 
 
 
-### 基于注解
+### 基于注解的
 
 springmvc采用全局统一的异常处理，通过面向切面编程思想把异常集中到一个地方，实现逻辑代码和业务代码的分离，完成解耦合。
 
-异常处理的两个注解：
+**关于异常处理的两个注解：**
 
 1. `@ControllerAdvice`：控制器增强，给控制器类加上了异常处理功能（异常处理功能由该注解下的类决定），使用该注解要声明注解扫描；
 
@@ -1234,6 +1227,9 @@ springmvc采用全局统一的异常处理，通过面向切面编程思想把�
 
   ```java
   @ExceptionHandler(value = NameException.class)
+  public String xxxMethod(){
+      return xxx;
+  }
   ```
 
 
@@ -1244,33 +1240,31 @@ public class ExceptionController {
 
     // @ExceptionHandler：用于设置该方法所要处理的异常
     @ExceptionHandler(ArithmeticException.class)
-    // ex：当前请求处理中出现的异常对象
+    // ex：接收当前请求处理中出现的异常对象
     public String handleArithmeticException(Exception ex, Model model){
         model.addAttribute("ex", ex);
+        // 返回视图
         return "error";
     }
 }
 ```
 
+**实现全局异常处理：**（基本步骤）
 
-
-如何实现统一的异常处理：
-
-1. 根据实际情况创建好自定义的异常类，在合适的地方抛出异常。
+1. 根据实际情况创建好自定义的异常类，在合适的地方抛出异常。（可选项）
 
 2. 创建全局异常处理类，用来处理全部的异常（需要在类上加上`@ControllerAdvice`注解）。
 
-3. 编写自定义抛出异常的异常处理方法：
+3. 在全局异常处理类编写自定义抛出的异常的异常处理方法：（处理已知异常）
 
-   - （返回值类型可以是处理器方法的任何返回值类型，参数可以是Exception）
-
-   - 使用`@ExceptionHandler(value = XxxException.class)`注解将该异常处理方法与异常绑定；
+   - 使用`@ExceptionHandler(value = XxxException.class)`注解将该异常处理方法与异常绑定。
    - 处理异常的逻辑-编写方法内容：
      1. 记录异常到数据库或日志文件（记录异常发生的时间、那个方法产生的、异常的内容是什么）。
      2. 发送通知，把异常的信息通过邮件、短信或微信发送给相关人员。
      3. 给用户友好的提示。
+   - 异常处理方法返回值类型可以是处理器方法的任何返回值类型，参数可以是Exception。
 
-4. 用来处理不知道什么类型的异常的方法：匹配不到方法的异常都由其处理：
+4. 编写用来处理不知道什么类型的异常的方法：（处理未知异常，匹配不到异常处理方法的异常都由其处理）
 
    ```java
    @ExceptionHandler
@@ -1283,16 +1277,32 @@ public class ExceptionController {
    }
    ```
 
-5. error视图创建。
+5. error视图创建（404.html、505.html等）。
 
-6. springmvc配置：
+**全局异常的实例：**
 
-   ```xml
-   <context:component-scan base-package="com.lsl.handler"/>
-   <mvc:annotation-driven />
-   ```
+创建全局异常处理器，并配置异常处理方法，设置好视图。
 
-实例：
+```java
+@ControllerAdvice
+public class GlobalExceptionHandler {
+	
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+	// 异常处理方法——处理Exception，当不能精确匹配时就会匹配该方法
+    @ExceptionHandler(Exception.class)
+    public ModelAndView exceptionHandler(HttpServletRequest request, Exception e) {
+        logger.error("Request URL : {}, Exception : {}", request.getRequestURL(),e);
+
+        ModelAndView mv = new ModelAndView();
+        mv.addObject("url", request.getRequestURL());
+        mv.addObject("exception",e);
+        mv.setViewName("error/error");
+        return mv;
+    }
+    // 其它异常处理方法，精确
+    ......
+}
+```
 
 
 
