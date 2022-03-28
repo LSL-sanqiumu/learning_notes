@@ -861,9 +861,7 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
 
 ### 分组查询
 
-实际的应用中，可能有这样的需求，需要先分组再对每一组的数据进行操作，这时需要使用分组查询。
-
-分组查询就是根据一个或多个字段分为一组组数据再进行查询操作（判断一个或多个字段值是否相同，如果是相同的则为一组数据并去重，不同的为另一组数据并去重），分组查询一般和分组函数结合来查询特定的数据。
+实际的应用中，可能有这样的需求，需要先分组再对每一组的数据进行操作，这时需要使用分组查询。分组查询就是根据一个或多个字段分为一组组数据再进行查询操作（判断一个或多个字段值是否相同，如果是相同的则为一组数据并去重，不同的为另一组数据并去重），分组查询一般和分组函数结合来查询特定的数据。
 
 **聚合函数（也叫分组函数、多行处理函数）：**
 
@@ -887,23 +885,21 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
 
 **分组查询的使用：**（以一个或多个字段为一组，字段值如果是相同的则为一组数据，不同的为另一组数据）
 
+1. SQL92里 select、having、order by 后的**非聚合字段**必须和group by后的字段保持完全一致。
+2. SQL 99定义了新的标准，如果group by后面的字段是主键字段，select、having、order by 后的**非聚合字段**可以不和group by后的字段保持完全一致。
+
 ```mysql
--- 分组查询，一定要按照下面的格式；要使用where或having时优先使用having
--- 分组字段和 group by 后的分组字段应该对应，如果不对应那么多出来的数据就丢失了不是
+-- 要使用where或having时优先使用having
 select `分组字段`,分组函数 from table_name group by `分组字段`;
 select `分组字段1`,`分组字段2`,...,分组函数 from table_name group by `分组字段1`，`分组字段2`, ...;
 select `分组字段`,分组函数 from table_name group by `分组字段` having 条件; -- 先分组再筛选
 ```
 
-```mysql
--- 关于执行顺序：1.from;2.where;3.group by;4.select;5.order by.
-select xxx from xxx where xxx group by xxx order by xxx;
-```
-
-注意：由于默认的 MySQL 配置中 的`sql_mode` 配置为了 `only_full_group`，需要 `group by` 中包含所有在 `select` 中出现的字段。
+默认的 MySQL 配置中 的`sql_mode `是`only_full_group_by`：
 
 - only_full_group_by ：使用这个就是使用和oracle一样的 group 规则，select后的字段都要在group中，或者select后的字段本身是聚合列(SUM、AVG、MAX、MIN) 才行（因为聚合列会根据分组的字段来将数据聚合成一列）。
 - group by支持select时声明的别名，因为mysql对此做了拓展引起的，这个取决于mysql中的一个参数 ONLY_FULL_GROUP_BY 。
+- SQL92与SQL99对`only_full_group_by`的标准不一致。
 
 分组查询实例：
 
@@ -938,6 +934,8 @@ insert into t_order(user_id,user_name,price,the_year) values
 select user_id,the_year,count(id) as '订单数量' from t_order group by user_id,the_year;
 -- 分组查询完成后再进行过滤，不用where是因为where在group by之前执行
 select user_id,the_year,count(price) as '订单数量' from t_order group by user_id,the_year having the_year=2018;
+-- SQL99标准，用主键字段进行分组，select、having、group by后可以不是分组字段
+select user_name from t_order group by id;
 ```
 
 
@@ -1006,11 +1004,14 @@ SQL92、SQL99的区别可参考：[SQL92 与 SQL99 - 知乎 (zhihu.com)](https:/
 **内连接：**（两表特定字段在特定条件的交集数据集（我的理解））
 
 ```mysql
-inner join -- inner join的就是内连接
+inner join
 -- inner、as是可以省略的
+select * from student s join grades g;
 select s.id,s.name,g.course,g.scores from student s join grades g on s.id=g.id;
 select s.id,s.name,g.course,g.scores from student as s inner join grades as g on s.id=g.id;
 ```
+
+![](img/71.innerjoin.png)
 
 **等值连接：**on后条件用`=`的就是等值连接，条件不是等值关系就是非等值连接
 
@@ -1139,7 +1140,7 @@ select * from sales as a cross join sales as b;
 
 ![](img/子查询.png)
 
-where子句中出现的子查询，在where子语句中嵌套一个查询语句：
+**where子句中出现的子查询：**
 
 ```SQL
 select `字段1`,`字段2`,... from `table-name` where `字段`=(
@@ -1156,13 +1157,13 @@ select `字段1`,`字段2`,... from `table-name` where `字段` in(
 )
 ```
 
-在from中的子查询：**（from后面的子查询，可以将子查询的查询结果当做一张临时表。）（技巧）**
+**在from中的子查询：** **（from后面的子查询，可以将子查询的查询结果当做一张临时表。）（技巧）**
 
 ```mysql
 select ... from (select ... from ... ...) 别名 ......
 ```
 
-在select后的子查询语句：(简单了解，会看)
+**在select后的子查询语句：(简单了解，会看)**
 
 ```mysql
 -- 子查询结果作为字段
@@ -1175,13 +1176,6 @@ select (case when mod(id, 2) != 0  then id + 1 when mod(id, 2)  = 0  then id - 1
 as  `交换后座位号`,name,sid as `学号`
 from student order by `交换后座位号` asc;
 ```
-
-根据子查询结果分类：
-
-1. 标量子查询：子查询结果为单个值。
-2. 列子查询：子查询结果为一列。
-3. 行子查询：子查询结果为一行。
-4. 表子查询：子查询结果为多行多列。
 
 
 
@@ -1614,7 +1608,6 @@ group by t.grade;
 ### 13.所有员工及领导的名字
 
 ```mysql
--- 
 select a.ename,b.ename leadername from emp a left join emp b on a.mgr = b.empno;
 ```
 
@@ -1622,11 +1615,11 @@ select a.ename,b.ename leadername from emp a left join emp b on a.mgr = b.empno;
 
 思：`select a.ename,b.ename leadername from emp a left join emp b on b.mgr = a.empno;`的结果如何，为什么？
 
+答：表`emp a`的每一条数据与表`emp b`的每一条数据进行匹配，在条件`b.mgr = a.empno`成立时即匹配成功，因为是左外连接，所以匹配不成功的主表的数据也会显示出来（null值和任何数据都匹配得上）。
 
+![](img/72.leftjoin_emp.png)
 
-
-
-
+### 14.列出受雇日期早于其直接上级的所有员工编号、姓名、部门名称
 
 
 
