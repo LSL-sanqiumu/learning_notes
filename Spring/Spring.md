@@ -1317,9 +1317,9 @@ AOP全称Aspect Oriented Programming，意为面向切面编程，也叫做面�
 ### 相关术语
 
 1. 连接点（joinPoint）：已经存在的业务方法（类里面哪些方法可以被增强，这些可以被增强的方法就是连接点）。
-2. 切入点（pointCut）：为要添加`advice`的方法划定范围（指定哪些方法需要被切入通知，这些方法就是切入点）。
+2. 切入点（pointCut，切点）：为要添加`advice`的方法划定范围（指定哪些方法需要被切入通知，这些方法就是切入点）。
 3. 通知（advice）：在已存在的业务方法的前、后、异常、最终处加入的方法。
-4. 切面（aspect）：通知方法所在的类，一个 `aspect` 类中可以有多个通知方法。（是动作，是将通知应用到切入点的过程）。
+4. 切面（aspect）：通知方法所在的类，一个 `aspect` 类中可以有多个通知方法。（是动作，是将通知应用到切入点的过程，是通知和切入点的集合）。
 4. 目标对象（target）：切入点所在的对象，（使用JDK动态代理的AOP，目标对象是接口的实现类的对象）。
 4. 织入（weave）：将通知方法放入到切入点的前、后、异常、最终处。
 
@@ -1772,30 +1772,36 @@ public class Service {
 4. （需要依赖：spring-tx、以及aop的）
 
 ```xml
-<!-- 1.配置事务管理器 -->
-<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-    <!-- 注入数据源 -->
+<!-- 配置事务 -->
+<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
     <property name="dataSource" ref="dataSource"/>
 </bean>
-<!-- 2.配置通知 -->
-<tx:advice id="txadvice">
-    <!-- 配置事务参数 -->
+<!-- 配置事务通知 -->
+<tx:advice id="txAdvice" transaction-manager="txManager">
+    <!-- 配置参数，指定在使用哪种规则命名的方法上添加事务 -->
     <tx:attributes>
-        <!-- 指定在使用哪种规则命名的方法上添加事务 -->
-        <tx:method name="account*" propagation="REQUIRED"/>
+        <!-- 查询方法：配置只读属性，让数据库知道这是一个查询操作，能够进行一定优化 -->
+        <tx:method name="get*" read-only="true"/>
+        <tx:method name="find*" read-only="true"/>
+        <tx:method name="query*" read-only="true"/>
+        <tx:method name="count*" read-only="true"/>
+        <!-- 增删改方法就配置事务传播行为和回滚异常 -->
+        <tx:method name="save*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+        <tx:method name="update*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+        <tx:method name="remove*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
+        <tx:method name="batch*" propagation="REQUIRES_NEW" rollback-for="java.lang.Exception"/>
     </tx:attributes>
 </tx:advice>
-<!--3 配置切入点和切面 -->
+<!-- 为事务通知配置切点 -->
 <aop:config>
-    <aop:pointcut id="pt" expression="execution(* com.lsl.service.ClientService.*(..))"/>
-    <!-- 将事务的通知添加到切点方法上 -->
-    <aop:advisor advice-ref="txadvice" pointcut-ref="pt"/>
+    <aop:pointcut id="txPointcut" expression="execution(* *..*ServiceImpl.*(..))"/>
+    <aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/>
 </aop:config>
 ```
 
 ## 基于配置类（完全注解）
 
-按配置类的使用方式来创建对应的dataSource、事务管理器、JdbcTemplate，开启事务、数据扫描，最后在需要添加事务的方法上或其所在类上使用@Transactional注解。
+按配置类的使用方式来创建对应的dataSource、事务管理器、JdbcTemplate，开启事务、注解扫描，最后在需要添加事务的方法上或其所在类上使用@Transactional注解。
 
 1. `@EnableTransactionManagement`：开启事务。
 2. @Transactional：为方法加上事务。
