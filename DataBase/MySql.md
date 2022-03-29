@@ -1728,13 +1728,115 @@ where sal > (select avg(sal) from emp)
 ) b ljoin emp a on b.mgr = a.empno; 
 ```
 
+###  22.列出与“SCOTT”从事相同工作的所有员工及部门名称
+
+①找出其工作
+
+```mysql
+select job from emp where ename='SCOTT';
+```
+
+②找出他们的名字和所在部门的编号
+
+```mysql
+select ename,deptno from emp where job=(select job from emp where ename='SCOTT');
+```
+
+③连接部门表，查询出部门
+
+```mysql
+select a.ename,d.dname from 
+(select ename,deptno from emp where job=(select job from emp where ename='SCOTT')) a
+join dept d on a.deptno=d.deptno;
+```
+
+### 23.查出和30部门的员工的薪水相等的其他员工的姓名和薪水
+
+```mysql
+select ename,sal from emp where sal in(select sal from emp where deptno=30) and deptno != 30;
+```
+
+### 24.查出比30部门中最高薪水都高的其他员工的姓名、薪水和所在部门名称
+
+①30部门最高薪水
+
+```mysql
+select max(sal) msal from emp where deptno=30;
+```
+
+②比最高薪水高的其他部门的员工
+
+```mysql
+select ename,sal,deptno from emp 
+where sal > (select max(sal) msal from emp where deptno=30) and deptno != 30;
+```
+
+③连接部门表，找出他们所在部门
+
+```mysql
+select a.ename,a.sal,d.dname from 
+(select ename,sal,deptno from emp 
+where sal > (select max(sal) msal from emp where deptno=30) and deptno != 30) a 
+join dept d on a.deptno=d.deptno;
+```
+
+25.列出在每个部门工作的员工数量、平均工资和平均服务期限
+
+平均服务期限？？
 
 
-①
 
-②
+### 26.列出所有员工的姓名、部门名称和工资
 
-③
+```mysql
+select e.ename,e.sal,d.dname from emp e join dept d on e.deptno=d.deptno;
+```
+
+### 27.列出所有部门的详细信息和人数
+
+```mysql
+select d.*,count(d.deptno) num from dept d join emp e on d.deptno=e.deptno group by d.deptno;
+```
+
+### 28.查出各种工作的最低工资及这些最低工资对应的员工、岗位
+
+```mysql
+select ename,job,sal from emp where sal in (select min(sal) minsal from emp group by job);
+```
+
+### 29.列出各个部门MANAGER的最低薪金
+
+```mysql
+select deptno,min(sal) minSal from emp where job = 'MANAGER' group by deptno;
+```
+
+### 30.列出所有员工的年工资，按年薪从低到高排序
+
+```mysql
+select ename,sal * 12 yearsal from emp order by yearsal asc;
+```
+
+### 31.求出员工领导的薪水超过3000的员工名称和领导名称
+
+```mysql
+select e1.ename 员工,e2.ename 领导  from emp e1 join emp e2 on e1.mgr=e2.empno where e2.sal>3000;
+```
+
+### 32.查出带“S”字符的部门的员工工资合计情况以及部门人数
+
+```mysql
+select d.dname,ifnull(sum(e.sal),0) sumSal,count(e.ename) peoNumber 
+from emp e right join dept d
+on e.deptno = d.deptno where d.dname like '%S%' group by d.deptno;
+```
+
+### 33.给任职日期超过30年的员工加薪10%
+
+```mysql
+update emp set sal = sal * 1.1 where datediff(now(),hiredate)/365 > 30;
+```
+
+
 
 
 
