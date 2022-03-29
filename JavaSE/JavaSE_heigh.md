@@ -2511,32 +2511,71 @@ Collections 类中提供了多个 synchronizedXxx() 方法，该方法可使将�
 
 # 泛型
 
-## 泛型语法
+Java 泛型（generics）是 JDK 5 中引入的一个新特性，泛型提供了编译时类型安全检测机制（为了解决数据类型安全问题），该机制允许程序员在编译时检测到非法的类型数据结构。**泛型的本质是参数化类型**，也就是说所操作的数据类型被指定为一个参数。
 
-Java 泛型（generics）是 JDK 5 中引入的一个新特性，泛型提供了编译时类型安全检测机制（为了解决数据类型安全问题），该机制允许程序员在编译时检测到非法的类型。泛型的本质是参数化类型，也就是说所操作的数据类型被指定为一个参数。
+好处：类型安全、消除类型转换。
+
+## 泛型类
+
+**泛型类语法：**
 
 ```java
-ArrayList<String> list = new ArrayList<String>(); 
-ArrayList<String> list = new ArrayList<>(); // 泛型对象的创建，<>指定泛型类型
+public class 类名称 <泛型标识1，泛型标识2> {
+    private 泛型标识n 变量名;
+    ....
+}
+// 常用泛型标识：T、E、K、V
+// 集合中：E（collection）、K（key）、V（value）来定义泛型变量
+// 自定义泛型类的泛型标识：T或邻近的，如R、U、S等
 ```
 
-1. 泛型参数值只能是引用类型，就是说`ArrayList<String>`的String不能是int等基本数据类型。
-2. 如果在构造器形参中使用了泛型，传入的值可以是创建对象时泛型指定的类型或该类型的子类。
-3. 可不指定泛型参数值，不指定泛型参数值时默认是指Object。
-4. 类型参数能被用来声明返回值类型，并且能作为泛型方法得到的实际参数类型的占位符。
+```java
+// 自定义泛型类
+public class Generic<T> {
+    private T data;
+    public Generic(T data){
+        this.data = data;
+    }
+    public T getData() {
+        return data;
+    }
+    public void setData(T data) {
+        this.data = data;
+    }
+}
+```
 
-## 自定义泛型
+可将泛型标识看作一个类型形参，这个类型形参是在对象创建的时候确定形参值的。泛型类中的泛型标识可用于成员变量、构造器形参、方法形参、方法返回值。
 
-### 自定义泛型类
-
-泛型类的定义如下：
+**泛型类的使用：**
 
 ```java
-public Pair<T, S, U> { // <>内指定泛型变量，可指定多个
-	
-}
-// 集合中：E（collection）、K（key）、V（value）来定义泛型变量
-// 自定义泛型变量使用：T或邻近的，如R、U、S等
+// 语法：类名<具体的数据类型> 对象名 = new 类名<具体的数据类型>();
+ArrayList<String> list = new ArrayList<String>(); 
+// 1.7版本后，new时的<>里面的数据类型可以省略——类型推断
+ArrayList<String> list = new ArrayList<>();
+```
+
+1. 泛型参数值只能是引用类型，就是说`ArrayList<String>`的String**不能是int等基本数据类型**。
+2. 如果在构造器形参中使用了泛型参数，传入的形参值可以是创建对象时泛型指定的类型的对象或该类型的子类类型的对象。
+3. 使用泛型类，但不指定泛型参数值时**泛型参数默认是指Object类型**。
+4. 同一泛型类的对象，即使泛型参数值不一样，本质上这些对象的类型仍然是泛型类本身。
+
+**泛型类和泛型类子类：**
+
+1、子类也是泛型类，则子类的某一个泛型和父类泛型必须一致
+
+```java
+// Generic<T>是T，childGeneric<T>的也必须有T
+public class childGeneric<T,U,...> extends Generic<T> {}
+```
+
+2、子类不是泛型类，则父类必须明确泛型的数据类型
+
+```java
+public class childGeneric extends Generic<String> {}
+// 不写<String>时，则是Object，此时也是明确的
+public class childGeneric extends Generic {}
 ```
 
 细节：
@@ -2548,7 +2587,23 @@ public Pair<T, S, U> { // <>内指定泛型变量，可指定多个
 5. 异常类不能是泛型类。
 6. 泛型类中不能使用`new E[]`，但是可以：`E[] elements = (E[])new Object[capacity]`；参考：ArrayList源码中声明：Object[] elementData，而非泛型参数类型数组。 
 
-### 自定义泛型方法
+## 泛型接口
+
+1、实现类也是泛型类，那么实现类和接口的泛型类型要一致。
+
+```java
+public class GenericImpl<T,...> implements Generic<T>	{}
+```
+
+2、实现类不是泛型类，接口要明确数据类型。
+
+```java
+public class GenericImpl implements Generic<String>	{}
+```
+
+继承接口或实现接口时确定泛型类型。
+
+## 泛型方法
 
 泛型方法的定义和方法所在类是否是泛型类无关，泛型方法可以是静态的。
 
@@ -2564,15 +2619,6 @@ public static <E> List<E> copyList(E[] arr){
 ```
 
 - 泛型变量在被调用时被确定，在同一泛型类时泛型方法可使用泛型类的泛型变量。
-
-
-### 自定义泛型接口
-
-```java
-interface <T, ...> {} 
-```
-
-- 继承接口或实现接口时确定泛型类型。
 
 ## 泛型继承和通配符
 
