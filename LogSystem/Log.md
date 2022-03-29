@@ -305,11 +305,339 @@ public class Log4jTest {
 1. OFF，可用来关闭日志记录。
 2. ALL，启用所有消息的日志记录。
 
-## 组件
+## Log4J 组件
+
+Log4J 主要由 Loggers (日志记录器)、Appenders（输出端）和 Layout（日志格式化器）组成。其中 Loggers 控制日志的输出级别与日志是否输出；Appenders 指定日志的输出方式（输出到控制台、文件、数据库等）；Layout 控制日志信息的输出格式。
+
+**Loggers ：**
+
+日志记录器：负责收集处理日志记录，实例的命名就是类“XX”的full quailied name（类的全限定名）， Logger的名字大小写敏感，其命名有继承机制，例如：name为org.apache.commons的logger会继承 name为org.apache的logger。
+
+RootLogger：Log4J中有一个特殊的logger叫做“root”，他是所有logger的根，也就意味着其他所有的logger都会直接 或者间接地继承自root。root logger可以用Logger.getRootLogger()方法获取。
+
+ **Appenders：**
+
+Appender 用来指定日志输出到哪个地方，可以同时指定日志的输出目的地。Log4j 常用的输出目的地有以下几种：
+
+1. ConsoleAppender：将日志输出到控制台。
+2. FileAppender：将日志输出到文件中。
+3. DailyRollingFileAppender：将日志输出到一个日志文件，并且每天输出到一个新的文件。
+4. RollingFileAppender：将日志信息输出到一个日志文件，并且指定文件的尺寸，当文件大 小达到指定尺寸时，会自动把文件改名，同时产生一个新的文件。
+5. JDBCAppender：把日志信息保存到数据库中。
+
+**Layouts：**
+
+布局器 Layouts用于控制日志输出内容的格式，让我们可以使用各种需要的格式输出日志。Log4j常用 的Layouts：
+
+1. org.apache.log4j.HTMLLayout：格式化日志输出为HTML表格形式 。
+2. org.apache.log4j.SimpleLayout：简单的日志输出格式化，打印的日志格式为（info - message）。
+3.  org.apache.log4j.PatternLayout：最强大的格式化器，可以根据自定义格式输出日志，如果没有指定转换格式那 就是用默认的转换格式。
+
+在 log4j.properties 配置文件中，我们定义了日志输出级别与输出端，在输出端中分别配置日志的输出格式。
+
+```markdown
+** log4j 采用类似 C 语言的 printf 函数的打印格式格式化日志信息，具体的占位符及其含义如下：**
+    %m 输出代码中指定的日志信息
+    %p 输出优先级，及 DEBUG、INFO 等
+    %n 换行符（Windows平台的换行符为 "\n"，Unix 平台为 "\n"）
+    %r 输出自应用启动到输出该 log 信息耗费的毫秒数
+    %c 输出打印语句所属的类的全名
+    %t 输出产生该日志的线程全名
+    %d 输出服务器当前时间，默认为 ISO8601，也可以指定格式，如：%d{yyyy年MM月dd日 HH:mm:ss}
+    %l 输出日志时间发生的位置，包括类名、线程、及在代码中的行数。如：Test.main(Test.java:10)
+    %F 输出日志消息产生时所在的文件名称
+    %L 输出代码中的行号
+    %% 输出一个 "%" 字符
+** 可以在 % 与字符之间加上修饰符来控制最小宽度、最大宽度和文本的对其方式。如：**
+    %5c 输出category名称，最小宽度是5，category<5，默认的情况下右对齐
+    %-5c 输出category名称，最小宽度是5，category<5，"-"号指定左对齐,会有空格
+    %.5c 输出category名称，最大宽度是5，category>5，就会将左边多出的字符截掉，<5不会有空格
+    %20.30c category名称<20补空格，并且右对齐，>30字符，就从左边交远销出的字符截掉
+```
+
+```properties
+log4j.appender.Console.layout.ConversionPattern=%d [%t] %-5p [%c] - %m%n
+```
+
+**开启lof4j的内部日志：**
+
+```java
+LogLog.setInternalDebugging(true);
+```
 
 
 
-## 配置
+## 配置Log4J
+
+log4j.properties：（文件名确定的，放于类路径下即可）
+
+```properties
+# 指定顶级父元素默认配置信息，指定日志级别与Appender
+# console、file、logDB的配置见：输出到控制台、输出到文件、输出到数据库这三部分
+log4j.rootLogger=info,console,file,logDB
+```
+
+### 输出到控制台
+
+```properties
+# 配置：输出到控制台
+#指定控制台日志输出的Appender
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+#指定输出消息格式 org.apache.log4j.PatternLayout的默认规则是：%m%n
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+#指定输出消息格式的内容
+log4j.appender.console.layout.ConversionPattern=%d [%t] %-5p [%c] - %m%n
+```
+
+### 输出到文件
+
+将输出的日志保存到一个日志文件：（目录和文件会自动创建，相对于磁盘根目录）
+
+```properties
+#配置：输出到文件
+#指定日志输出的Appender
+log4j.appender.file=org.apache.log4j.FileAppender
+#指定输出消息格式 layout
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+#指定输出消息格式的内容
+log4j.appender.file.layout.ConversionPattern=%-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n
+#指定日志保存路径 默认以追加方式存进文件
+log4j.appender.file.file=D:\\logs\\log4j.log
+#log4j.appender.FILE.append=true
+#设置字符集
+log4j.appender.file.encoding=UTF-8
+```
+
+保存日志到文件并将日志文件按照一定规则拆分：（文件会自动创建）
+
+```properties
+#按照文件大小拆分的 Appender对象
+#指定日志输出的Appender
+log4j.appender.rollingFile=org.apache.log4j.RollingFileAppender
+#指定输出消息格式 layout
+log4j.appender.rollingFile.layout=org.apache.log4j.PatternLayout
+#指定输出消息格式的内容
+log4j.appender.rollingFile.layout.ConversionPattern=%-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n
+#指定日志保存路径 默认以追加方式存进文件
+log4j.appender.rollingFile.file=/log/log4j.log
+#log4j.appender.FILE.append=true
+#设置字符集
+log4j.appender.rollingFile.encoding=UTF-8
+#指定日志文件内容的大小，如果日志文件超过1MB就会拆分，拆分数量最大为10个
+#超过10个会按照时间进行覆盖
+log4j.appender.rollingFile.maxFileSize=1MB
+#指定日志文件的数量 默认1个
+log4j.appender.rollingFile.maxBackupIndex=10
+```
+
+保存日志到文件并将日志文件按照时间规则来创建：
+
+```properties
+#按照时间规则拆分的 Appender对象
+#指定日志输出的Appender
+log4j.appender.dailyFile=org.apache.log4j.DailyRollingFileAppender
+#指定输出消息格式 layout
+log4j.appender.dailyFile.layout=org.apache.log4j.PatternLayout
+#指定输出消息格式的内容
+log4j.appender.dailyFile.layout.ConversionPattern=%-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n
+#指定日志保存路径 默认以追加方式存进文件
+log4j.appender.dailyFile.file=/log/log4j.log
+#log4j.appender.FILE.append=true
+#设置字符集
+log4j.appender.dailyFile.encoding=UTF-8
+#按照日期拆分的规则
+log4j.appender.dailyFile.datePattern='.'yyyy-MM-dd-HH-mm
+# 例如：log4j.log.2022-03-29-17-49；经常的做法是以天为拆分单位
+```
+
+有三种方式：file、rollingFile、dailyFile，选用哪种就在rootLogger指定日志级别与Appender：
+
+```properties
+log4j.rootLogger=info,console,dailyFile
+```
+
+### 输出到数据库
+
+创建好数据库和数据库表：
+
+```mysql
+create database log4j character set utf8 collate utf8_general_ci;
+create table log4j.`log` (
+    `log_id` int(11) NOT NULL AUTO_INCREMENT,
+    `project_name` varchar(255) DEFAULT NULL COMMENT '目项名',
+    `create_date` varchar(255) DEFAULT NULL COMMENT '创建时间',
+    `level` varchar(255) DEFAULT NULL COMMENT '优先级',
+    `category` varchar(255) DEFAULT NULL COMMENT '所在类的全名',
+    `file_name` varchar(255) DEFAULT NULL COMMENT '输出日志消息产生时所在的文件名称 ',
+    `thread_name` varchar(255) DEFAULT NULL COMMENT '日志事件的线程名',
+    `line` varchar(255) DEFAULT NULL COMMENT '号行',
+    `all_category` varchar(255) DEFAULT NULL COMMENT '日志事件的发生位置',
+    `message` varchar(4000) DEFAULT NULL COMMENT '输出代码中指定的消息',
+    PRIMARY KEY (`log_id`)
+)engine=innodb default charset=utf8;
+```
+
+将日志输出到MySQL中数据库的配置如下：
+
+```properties
+#输出到mysql
+log4j.appender.logDB=org.apache.log4j.jdbc.JDBCAppender
+log4j.appender.logDB.layout=org.apache.log4j.PatternLayout
+log4j.appender.logDB.Driver=com.mysql.jdbc.Driver
+log4j.appender.logDB.URL=jdbc:mysql://localhost:3306/log4j?characterEncoding=utf8&useUnicode=true&useSSL=false
+log4j.appender.logDB.User=root
+log4j.appender.logDB.Password=123456
+log4j.appender.logDB.Sql=INSERT INTO log(project_name,create_date,level,category,file_name,thread_name,line,all_category,message) values('logSystem','%d{yyyy-MM-ddHH:mm:ss}','%p','%c','%F','%t','%L','%l','%m')
+```
+
+需要在rootLogger指定指定logDB。
+
+需要导入MySQL的驱动的依赖：
+
+```xml
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>5.1.47</version>
+</dependency>
+```
+
+### 总结—总配置文件
+
+log4j.properties：（文件名得是这个，放于类路径下）
+
+```properties
+# 指定顶级父元素默认配置信息，指定日志级别与Appender；日志的输出级别与输出端 console file mysql，
+log4j.rootLogger=info,console,dailyFile,logDB
+
+# 配置：输出到控制台
+#指定控制台日志输出的Appender
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+#指定输出消息格式 org.apache.log4j.PatternLayout的默认规则是：%m%n
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+#指定输出消息格式的内容
+log4j.appender.console.layout.ConversionPattern=%d [%t] %-5p [%c] - %m%n
+
+#配置：输出到文件
+#指定日志输出的Appender
+log4j.appender.file=org.apache.log4j.FileAppender
+#指定输出消息格式 layout
+log4j.appender.file.layout=org.apache.log4j.PatternLayout
+#指定输出消息格式的内容
+log4j.appender.file.layout.ConversionPattern=%-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n
+#指定日志保存路径 默认以追加方式存进文件
+log4j.appender.file.file=D:\\logs\\log4j.log
+#log4j.appender.FILE.append=true
+#设置字符集
+log4j.appender.file.encoding=UTF-8
+
+#按照文件大小拆分的 Appender对象
+#指定日志输出的Appender
+log4j.appender.rollingFile=org.apache.log4j.RollingFileAppender
+#指定输出消息格式 layout
+log4j.appender.rollingFile.layout=org.apache.log4j.PatternLayout
+#指定输出消息格式的内容
+log4j.appender.rollingFile.layout.ConversionPattern=%-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n
+#指定日志保存路径 默认以追加方式存进文件
+log4j.appender.rollingFile.file=/log/log4j.log
+#log4j.appender.FILE.append=true
+#设置字符集
+log4j.appender.rollingFile.encoding=UTF-8
+#指定日志文件内容的大小，如果日志文件超过1MB就会拆分，拆分数量最大为10个
+#超过10个会按照时间进行覆盖
+log4j.appender.rollingFile.maxFileSize=1MB
+#指定日志文件的数量 默认1个
+log4j.appender.rollingFile.maxBackupIndex=10
+
+#按照时间规则拆分的 Appender对象
+#指定日志输出的Appender
+log4j.appender.dailyFile=org.apache.log4j.DailyRollingFileAppender
+#指定输出消息格式 layout
+log4j.appender.dailyFile.layout=org.apache.log4j.PatternLayout
+#指定输出消息格式的内容
+log4j.appender.dailyFile.layout.ConversionPattern=%-d{yyyy-MM-dd HH:mm:ss}  [ %t:%r ] - [ %p ]  %m%n
+#指定日志保存路径 默认以追加方式存进文件
+log4j.appender.dailyFile.file=/log/log4j.log
+#log4j.appender.FILE.append=true
+#设置字符集
+log4j.appender.dailyFile.encoding=UTF-8
+#按照日期拆分的规则
+log4j.appender.dailyFile.datePattern='.'yyyy-MM-dd-HH-mm
+
+#输出到mysql
+log4j.appender.logDB=org.apache.log4j.jdbc.JDBCAppender
+log4j.appender.logDB.layout=org.apache.log4j.PatternLayout
+log4j.appender.logDB.Driver=com.mysql.jdbc.Driver
+log4j.appender.logDB.URL=jdbc:mysql://localhost:3306/log4j?characterEncoding=utf8&useUnicode=true&useSSL=false
+log4j.appender.logDB.User=root
+log4j.appender.logDB.Password=123456
+log4j.appender.logDB.Sql=INSERT INTO log(project_name,create_date,level,category,file_name,thread_name,line,all_category,message) values('logSystem','%d{yyyy-MM-ddHH:mm:ss}','%p','%c','%F','%t','%L','%l','%m')
+```
+
+## 自定义的Logger
+
+自定义的Logger，为了变量不同业务场景的日志的分类记录。在log4j.properties里配置：
+
+```properties
+# RootLogger配置
+log4j.rootLogger = trace,console
+# 自定义Logger的配置的格式：log4j.logger.logger所在包=日志输出级别和输出位置
+# 比如我在com.lsl下某个类使用了一个Logger，将其打印的日志保存到文件，那么设置如下：
+log4j.logger.com.lsl = info,file
+log4j.logger.org.apache = error
+```
+
+```java
+public class Log4jTest {
+    @Test
+    public void testCustomLogger() throws Exception {
+        // 自定义 com.lsl
+        Logger logger1 = Logger.getLogger(Log4jTest.class);
+        logger1.fatal("fatal"); // 严重错误，一般会造成系统崩溃和终止运行
+        logger1.error("error"); // 错误信息，但不会影响系统运行
+        logger1.warn("warn"); // 警告信息，可能会发生问题
+        logger1.info("info"); // 程序运行信息，数据库的连接、网络、IO操作等
+        logger1.debug("debug"); // 调试信息，一般在开发阶段使用，记录程序的变量、参数等
+        logger1.trace("trace"); // 追踪信息，记录程序的所有流程信息
+        // 自定义 org.apache
+        Logger logger2 = Logger.getLogger(Logger.class);
+        logger2.fatal("fatal logger2"); // 严重错误，一般会造成系统崩溃和终止运行
+        logger2.error("error logger2"); // 错误信息，但不会影响系统运行
+        logger2.warn("warn logger2"); // 警告信息，可能会发生问题
+        logger2.info("info logger2"); // 程序运行信息，数据库的连接、网络、IO操作等
+        logger2.debug("debug logger2"); // 调试信息，一般在开发阶段使用，记录程序的变量、参数等
+        logger2.trace("trace logger2"); // 追踪信息，记录程序的所有流程信息
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
