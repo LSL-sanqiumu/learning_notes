@@ -1351,7 +1351,7 @@ grant all on databasetest.* to `lsl`@`localhost`; -- 为该用户授予该数据
 revoke 权限列表 on 数据库名.表名 from `用户名`@`主机名`;
 ```
 
-# 34练习题
+# 练习题
 
 ## 练习用表
 
@@ -1620,6 +1620,121 @@ select a.ename,b.ename leadername from emp a left join emp b on a.mgr = b.empno;
 ![](img/72.leftjoin_emp.png)
 
 ### 14.列出受雇日期早于其直接上级的所有员工编号、姓名、部门名称
+
+①找出员工与其对应的领导
+
+```mysql
+select * from emp a left join emp b on a.mgr = b.empno;
+```
+
+②根据受雇日期进行筛选
+
+```mysql
+select a.empno,a.ename,a.deptno 
+from  emp a left join emp b on a.mgr = b.empno where a.hiredate>b.hiredate;
+```
+
+③联表取出部门名称
+
+```mysql
+select t.empno,t.ename,d.dname from 
+(select a.empno,a.ename,a.deptno 
+ from  emp a left join emp b on a.mgr = b.empno where a.hiredate>b.hiredate) as t left join dept d
+ on t.deptno=d.deptno; 
+```
+
+### 15.列出员工信息及员工的部门名称，同时列出那些没有员工的部门
+
+```mysql
+select d.deptno,d.dname,e.* from emp e right join dept d on e.deptno=d.deptno order by d.deptno asc;
+```
+
+### 16.找出至少有5个员工的所有部门
+
+①找出每个部门都有多少个员工
+
+```mysql
+select deptno,count(1) from emp group by deptno;
+```
+
+②连接部门
+
+```mysql
+select d.dname from (select deptno,count(1) as num from emp group by deptno) t join dept d 
+on t.deptno=d.deptno where t.num >= 5;
+```
+
+### 17.列出薪水比“SMITH”多的所有员工信息
+
+①找出Smith
+
+```mysql
+select * from emp where ename='SMITH';
+```
+
+②比较
+
+```mysql
+select e.* from emp e join (select sal from emp where ename='SMITH') t on e.sal>t.sal;
+```
+
+### 19.列出最低薪水大于1500的各种工作及从事此工作的雇员人数
+
+```mysql
+select job,count(1) as 雇员人数 from emp where sal > 1500 group by job;
+```
+
+### 20.列出在部门“SALES”<销售部>工作的员工的姓名，假定不知道销售部门的部门编号
+
+①找出编号
+
+```mysql
+select deptno from dept where dname = 'SALES';
+```
+
+②根据编号找出员工名字
+
+```mysql
+select ename from emp where deptno = (select deptno from dept where dname = 'SALES');
+```
+
+### 21.列出薪水高于公司平均薪金的所有员工的名称及所在部门、上级领导、工资等级
+
+①找出员工薪水等级，并把结果集当作员工信息表
+
+```mysql
+select e0.*,s.grade from emp e0 join salgrade s on e0.sal between s.losal and hisal;
+```
+
+②求出公司平均薪水
+
+```mysql
+select avg(sal) from emp;
+```
+
+③找出高于平均公司的所有员工及其所在部门
+
+```mysql
+select e.ename,d.dname,e.mgr,e.grade from (select e0.*,s.grade from emp e0 join salgrade s on e0.sal between s.losal and hisal) e join dept d on e.deptno=d.deptno 
+where sal > (select avg(sal) from emp);
+```
+
+④找出员工的上级领导
+
+```mysql
+select b.ename,b.dname,a.ename leader,b.grade from  
+(select e.ename,d.dname,e.mgr,e.grade from (select e0.*,s.grade from emp e0 join salgrade s on e0.sal between s.losal and hisal) e join dept d on e.deptno=d.deptno 
+where sal > (select avg(sal) from emp)
+) b ljoin emp a on b.mgr = a.empno; 
+```
+
+
+
+①
+
+②
+
+③
 
 
 
