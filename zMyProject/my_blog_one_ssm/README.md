@@ -341,12 +341,11 @@ Spring——事务配置，测试完成后再加事务的配置。
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-//    private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
+	private final Logger logger = Logger.getLogger(this.getClass());
     @ExceptionHandler(Exception.class)
     public ModelAndView exceptionHandler(HttpServletRequest request, Exception e) {
-//        logger.error("Request URL : {}, Exception : {}", request.getRequestURL(),e);
-
+		String str = "Request URL : {" + request.getRequestURL() +"}" + "Exception : {" + e + "}";
+        logger.log(Level.INFO,str);
         ModelAndView mv = new ModelAndView();
         mv.addObject("url", request.getRequestURL());
         mv.addObject("exception",e);
@@ -375,19 +374,37 @@ public class GlobalExceptionHandler {
 </dependency>
 ```
 
+2、log4j配置：log4j.properties
 
+```properties
+#将等级为DEBUG的日志信息输出到console和file这两个目的地，console和file的定义在下面的代码 console,file
+#设置
+log4j.rootLogger=DEBUG,console
 
-
+# 配置：输出到控制台
+#指定控制台日志输出的Appender
+log4j.appender.console=org.apache.log4j.ConsoleAppender
+#指定输出消息格式 org.apache.log4j.PatternLayout的默认规则是：%m%n
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+#指定输出消息格式的内容
+log4j.appender.console.layout.ConversionPattern=%d [%t] %-5p [%c] - %m%n
+```
 
 # 二、静态资源导入
 
 resources目录下新建static目录，将css、js、第三方库、图片等静态资源引入。
 
-# 三、功能实现
+# 三、功能分析与实现
 
 ## 首页index.xml
 
-### 首页
+### 功能分析
+
+1、博客展示：博客数量、博客标题、博客发布时间、博客简介、博客封面图地址，一页最多展示最新的6篇
+
+2、分类展示：分类名称和相关分类的博客数量
+
+3、标签显示：标签名称和相关标签所对应到博客数量
 
 
 
