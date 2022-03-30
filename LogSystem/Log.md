@@ -611,35 +611,910 @@ public class Log4jTest {
 }
 ```
 
+# JCL
+
+全称为Jakarta Commons Logging，是Apache提供的一个通用日志API。
+
+1. 它是为 "所有的Java日志实现"提供一个统一的接口，它自身也提供一个日志的实现，但是功能非常常弱 （SimpleLog）。所以一般不会单独使用它。
+2. 它允许开发人员使用不同的具体日志实现工具: Log4j、Jdk 自带的日志（JUL)；JCL 有两个基本的抽象类：Log(基本记录器)和LogFactory(负责创建Log实例)。
+
+![](img/3.JCL.png)
+
+## 入门案例
+
+1、添加依赖
+
+```xml
+<dependency>
+    <groupId>commons-logging</groupId>
+    <artifactId>commons-logging</artifactId>
+    <version>1.2</version>
+</dependency>
+```
+
+2、输出日志
+
+```java
+public class JCLTest {
+    @Test
+    public void testQuick() throws Exception {
+        Log log = LogFactory.getLog(JCLTest.class);
+        log.info("hello");
+        log.fatal("fatal");
+        log.error("error");
+        log.warn("warn");
+        log.info("info");
+        log.debug("debug");
+    }
+}
+```
+
+没有导入log4j的依赖时，使用的是JDK本身的日志框架；导入log4j的依赖后，使用的是log4j的。
+
+使用日志门面：
+
+1. 面向接口开发，不再依赖具体的实现类。减少代码的耦合。
+2. 项目通过导入不同的日志实现类来实现灵活地切换日志框架。
+3. 统一API，方便开发者学习和使用。
+4. 统一配置便于项目日志的管理  。
+
+## JCL原理
+
+1、通过LogFactory动态地加载Log实现类：
+
+![](img/4.JCLyuan.png)
+
+2、
+
+# 日志门面
+
+当我们的系统变的更加复杂的时候，我们的日志就容易发生混乱。随着系统开发的进行，可能会更新不同的日志框架，造成当前系统中存在不同的日志依赖，让我们难以统一的管理和控制。就算我们强制要求所有的模块使用相同的日志框架，系统中也难以避免使用其他类似spring、mybatis等其他的第三方框架，它们依赖于与我们规定所不同的其它日志框架，而且他们自身的日志系统就有着不一致性，依然会出现日志体系的混乱。
+
+因此我们借鉴JDBC的思想，为日志系统也提供一套门面，那么我们就可以面向这些接口规范来开发，避免了直接依赖具体的日志框架。这样我们的系统在日志中，就存在了日志的门面和日志的实现。
+
+1. 常见的日志门面 ：JCL、slf4j。
+2. 常见的日志实现：JUL、log4j、logback、log4j2。
+
+日志门面与日志接口的关系：
+
+![](img/5.日志门面与日志实现.png)
+
+日志框架出现的历史顺序：log4j ===>JUL===>JCL===> slf4j ===> logback ===> log4j2。
+
+现在比较经典的就是：1.slf4j+logback；2.slf4j+log4j2。
+
+# [SLF4J](https://www.slf4j.org/)
+
+## 入门案例
+
+1、依赖
+
+```xml
+<!-- 日志门面 -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>2.0.0-alpha5</version>
+</dependency>
+<!-- slf4j内置的简单实现 -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-simple</artifactId>
+    <version>2.0.0-alpha5</version>
+    <scope>test</scope>
+</dependency>
+```
+
+2、测试代码
+
+```java
+public class Slf4jTest {
+    public static final Logger LOGGER = LoggerFactory.getLogger(Slf4jTest.class);
+    @Test
+    public void test(){
+        LOGGER.error("Error");
+        LOGGER.warn("Warn");
+        LOGGER.info("Info");
+        // 使用占位符输出
+        String str = "URL:";
+        Integer num = 33;
+        LOGGER.info("用户：{},{}",str,num);
+        // 异常
+        try {
+            int i = 1 / 0;
+        }catch (Exception e){
+            LOGGER.error("异常：",e);
+        }
+    }
+}
+```
+
+## 绑定日志实现Binging
+
+SLF4J支持各种日志框架。SLF4J发行版附带了几个称为“SLF4J绑定”的jar文件，每个绑定对应一个受支持的框架。  
+
+![](img/6.slf4j.png)
+
+如果添加了slf4j-nop.jar，slf4j将不会使用任何的日志框架，功能关闭。
+
+**绑定logback日志实现：**
+
+```xml
+<!-- 日志门面 -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>2.0.0-alpha5</version>
+</dependency>
+<!-- slf4j内置的简单实现 -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+<!--<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-simple</artifactId>
+    <version>2.0.0-alpha5</version>
+    <scope>test</scope>
+</dependency>-->
+<!-- 日志实现 logback -->
+<!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-classic</artifactId>
+    <version>1.3.0-alpha12</version>
+    <scope>test</scope>
+</dependency>
+```
+
+如果加入了多个日志实现的依赖，那么默认会使用第一个，如上依赖配置，不注释掉slf4j-simple时，使用的就是slf4j-simple（以第一个日志实现依赖为标准）。
+
+```java
+public class Slf4jTest {
+    public static final Logger LOGGER = LoggerFactory.getLogger(Slf4jTest.class);
+    @Test
+    public void test(){
+        LOGGER.error("Error");
+        LOGGER.warn("Warn");
+        LOGGER.info("Info");
+    }
+}
+```
+
+**绑定log4j日志实现：**（导入slf4j的再导入以下即可）
+
+```xml
+<!-- 日志门面 -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>2.0.0-alpha5</version>
+</dependency>
+<!-- 适配器 -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-log4j12</artifactId>
+    <version>2.0.0-alpha5</version>
+    <scope>test</scope>
+</dependency>
+<!-- https://mvnrepository.com/artifact/log4j/log4j -->
+<dependency>
+    <groupId>log4j</groupId>
+    <artifactId>log4j</artifactId>
+    <version>1.2.17</version>
+</dependency>
+```
+
+引入log4j.properties，测试：
+
+```java
+public class Slf4jTest {
+    public static final Logger LOGGER = LoggerFactory.getLogger(Slf4jTest.class);
+    @Test
+    public void test(){
+        LOGGER.error("Error");
+        LOGGER.warn("Warn");
+        LOGGER.info("Info");
+    }
+}
+```
+
+**绑定JUL日志实现：**
+
+```xml
+<!-- 日志门面 -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>2.0.0-alpha5</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14 -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-jdk14</artifactId>
+    <version>2.0.0-alpha5</version>
+    <scope>test</scope>
+</dependency>
+```
+
+```java
+public class Slf4jTest {
+    public static final Logger LOGGER = LoggerFactory.getLogger(Slf4jTest.class);
+    @Test
+    public void test(){
+        LOGGER.error("Error");
+        LOGGER.warn("Warn");
+        LOGGER.info("Info");
+    }
+}
+```
+
+**总结：**使用slf4j的日志实现绑定流程:
+
+1. 添加slf4j-api的依赖。
+2. 使用slf4j的API在项目中进行统一的日志记录。
+3. 绑定具体的日志实现框架：
+   1. 绑定已经实现了slf4j的日志框架，直接添加对应依赖。
+   2. 绑定没有实现slf4j的日志框架，先添加日志的适配器，再添加实现类的依赖（如log4j）。
+4. slf4j只会绑定一个日志实现框架（如果出现多个默认使用第一个依赖日志实现）。
+
+## 桥接旧的日志框架Bridging
+
+通常，您依赖的某些组件依赖于SLF4J以外的日志记录API。您也可以假设这些组件在不久的将来不会切换到SLF4J。为了解决这种情况，SLF4J附带了几个桥接模块，这些模块将对log4j，JCL和java.util.logging API的调用重定向，就好像它们是对SLF4J API一样。
+
+**桥接解决的是项目中日志的遗留问题，当系统中存在之前的日志API，可以通过桥接转换到slf4j的实现：**
+
+1. 先去除之前老的日志框架的依赖 。
+2. 添加SLF4J提供的桥接组件——桥接器引入。
+3. 为项目添加SLF4J的具体实现。
+
+主要的几个桥接器如下：
+
+```xml
+<!-- log4j -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/log4j-over-slf4j -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>log4j-over-slf4j</artifactId>
+    <version>2.0.0-alpha5</version>
+</dependency>
+<!-- jcl -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>jcl-over-slf4j</artifactId>
+    <version>2.0.0-alpha5</version>
+</dependency>
+<!-- jul -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/jul-to-slf4j -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>jul-to-slf4j</artifactId>
+    <version>2.0.0-alpha5</version>
+</dependency>
+```
+
+注意事项：
+
+1. jcl-over-slf4j.jar 和 slf4j-jcl.jar 不能同时部署。前一个jar文件将导致JCL将日志系统的选择委托给SLF4J，后一个jar文件将导致SLF4J将日志系统的选择委托给JCL，从而导致无限循环。
+2. log4j-over-slf4j.jar 和 slf4j-log4j12.jar 也不能同时出现。
+3. jul-to-slf4j.jar和slf4j-jdk14.jar 也不能同时出现。
+4. 所有的桥接都只对Logger日志记录器对象有效，如果程序中调用了内部的配置类或者是Appender、Filter等对象，将无法产生效果。  
+
+# LogBack
+
+Logback是由log4j创始人设计的另一个开源日志组件，性能比log4j要好。
+
+官方网站：https://logback.qos.ch/index.html 。
+
+Logback主要分为三个模块：
+
+1. logback-core：其它两个模块的基础模块。
+2. logback-classic：它是log4j的一个改良版本，同时它完整实现了slf4j API。
+3. logback-access：访问模块与Servlet容器集成提供通过Http来访问日志的功能。
+
+后续的日志代码都是通过SLF4J日志门面搭建日志系统，所以在代码是没有区别，主要是通过修改配置文件和pom.xml依赖。  
+
+## logback入门案例
+
+1、依赖导入
+
+```xml
+<!-- 日志门面 -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>2.0.0-alpha5</version>
+</dependency>
+<!-- 日志实现 logback -->
+<!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
+<dependency>
+    <groupId>ch.qos.logback</groupId>
+    <artifactId>logback-classic</artifactId>
+    <version>1.3.0-alpha12</version>
+    <scope>test</scope>
+</dependency>
+```
+
+2、logger：
+
+```java
+public class LogBackTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogBackTest.class);
+    @Test
+    public void test(){
+        LOGGER.info("Hello LogBack");
+    }
+}
+```
+
+## logback的配置文件
+
+**logback会依次读取以下类型配置文件：**（如果这些配置文件均不存在会采用默认配置）
+
+1. logback.groovy。
+2. logback-test.xml。
+3. logback.xml 。
+
+**logback组件之间的关系：**
+
+1. Logger：日志的记录器，把它关联到应用的对应的context上后，主要用于存放日志对象，也可以定义日志类型、级别。
+2.  Appender：用于指定日志输出的目的地，输出目的地可以是控制台、文件、数据库等等。
+3.  Layout：负责把事件转换成字符串，格式化的日志信息的输出。在logback中Layout对象被封装在encoder中。
+
+
+
+### 输出到控制台
+
+**logback.xml 配置：**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 配置集中管理属性 引用这些属性值的格式：${name} -->
+    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %c [%thread] %-5level %msg%n"/>
+    <!-- 控制台输出的 appender -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 控制输出流对象 默认是System.out  该为System.err-->
+        <target>System.err</target>
+        <!-- 日志消息格式配置 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+    <!-- 配置输出信息级别和appender 用于选用哪个appender -->
+    <root level="ALL">
+        <appender-ref ref="console"/>
+    </root>
+</configuration>
+```
+
+**测试：**
+
+```java
+public class LogBackTest {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LogBackTest.class);
+    @Test
+    public void test(){
+        LOGGER.info("Hello LogBack");
+        LOGGER.error("error");
+        LOGGER.warn("warn");
+        LOGGER.debug("debug");
+        LOGGER.trace("trace");
+    }
+}
+```
+
+**关于输出格式的设置的字符代表：**
+
+```properties
+<!-- 日志输出格式：
+    %-5level 级别从左显示5个字符宽度
+    %d{yyyy-MM-dd HH:mm:ss.SSS}	日期
+    %c	类的完整名称
+    %M	为method，方法
+    %L	为行号
+    %thread	线程名称
+    %m或者%msg	信息
+    %n	换行
+-->
+<!-- 格式化输出：
+	%d	表示日期，
+	%thread	表示线程名，
+	%-5level	级别从左显示5个字符宽度
+	%msg：日志消息，
+	%n	是换行符
+-->
+```
+
+### 输出到文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 集中管理属性值 引用这些属性值的格式为：${name} -->
+    <!-- 输出到控制台的格式 -->
+    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %c [%thread] %-5level %msg%n"/>
+    <!-- 输出的日志文件的位置 /logs相对于磁盘根路径，如果是./logs则是相对于当前项目模块根路径 -->
+    <property name="log_dir" value="./logs"/>
+
+    <!-- 控制台输出的 appender对象 -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 控制输出流对象 默认是System.out  该为System.err-->
+        <target>System.err</target>
+        <!-- 日志消息格式配置 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+    <!-- 输出到文件 appender对象 -->
+    <appender name="file" class="ch.qos.logback.core.FileAppender">
+        <file>${log_dir}/logback.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+    <!-- html格式的日志文件 appender对象 -->
+    <!-- 日志会以html表格的形式展示 -->
+    <appender name="htmlFile" class="ch.qos.logback.core.FileAppender">
+        <file>${log_dir}/logback.html</file>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.classic.html.HTMLLayout">
+                <pattern>%level%d{yyyy-MM-ddHH:mm:ss}%c%M%L%thread%m</pattern>
+            </layout>
+        </encoder>
+    </appender>
+	<!-- 选用file、htmlFile这两个appender，输出日志级别为全部日志级别 -->
+    <root level="ALL">
+        <!--<appender-ref ref="console"/>-->
+        <appender-ref ref="file"/>
+        <appender-ref ref="htmlFile"/>
+    </root>
+</configuration>
+```
+
+### 日志拆分
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 集中管理属性值 引用这些属性值的格式为：${name} -->
+    <!-- 输出到控制台的格式 -->
+    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %c [%thread] %-5level %msg%n"/>
+    <!-- 输出的日志文件的位置 /logs相对于磁盘根路径，如果是./logs则是相对于当前项目模块根路径 -->
+    <property name="log_dir" value="./logs"/>
+
+    <!-- 将日志拆分和规定压缩的 appender对象 -->
+    <appender name="rollFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_dir}/roll_logback.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+        <!-- 指定拆分规则 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 按照时间和压缩格式声明拆分的文件名 -->
+            <!-- %d{yyyy-MM-dd-HH-mm-ss}用于指定按年、月、日、时、分或秒来进行拆分 -->
+            <!--<FileNamePattern>${log_dir}/rolling.%d{yyyy-MM-dd-HH-mm-ss}.log%i.gz</FileNamePattern>-->
+            <FileNamePattern>${log_dir}/rolling.%d{yyyy-MM-dd-HH-mm-ss}.log%i</FileNamePattern>
+            <!-- 按照文件大小拆分 -->
+            <maxFileSize>1MB</maxFileSize>
+        </rollingPolicy>
+    </appender>
+
+    <root level="ALL">
+        <appender-ref ref="rollFile"/>
+    </root>
+</configuration>
+```
+
+### 过滤器与异步日志
+
+过滤器，细粒度筛选。以name为rollFile的appender为例：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 集中管理属性值 引用这些属性值的格式为：${name} -->
+    <!-- 输出到控制台的格式 -->
+    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %c [%thread] %-5level %msg%n"/>
+    <!-- 输出的日志文件的位置 /logs相对于磁盘根路径，如果是./logs则是相对于当前项目模块根路径 -->
+    <property name="log_dir" value="./logs"/>
+
+    <!-- 控制台输出的 appender -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 控制输出流对象 默认是System.out  该为System.err-->
+        <target>System.err</target>
+        <!-- 日志消息格式配置 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 将日志拆分和规定压缩的 appender对象 -->
+    <appender name="rollFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_dir}/roll_logback.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+        <!-- 指定拆分规则 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 按照时间和压缩格式声明拆分的文件名 -->
+            <!-- %d{yyyy-MM-dd-HH-mm-ss}用于指定按年、月、日、时、分或秒来进行拆分 -->
+            <!--<FileNamePattern>${log_dir}/rolling.%d{yyyy-MM-dd-HH-mm-ss}.log%i.gz</FileNamePattern>-->
+            <FileNamePattern>${log_dir}/rolling.%d{yyyy-MM-dd-HH-mm-ss}.log%i</FileNamePattern>
+            <!-- 按照文件大小拆分 -->
+            <maxFileSize>1MB</maxFileSize>
+        </rollingPolicy>
+        <!-- 日志级别过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 日志过滤规则-->
+            <level>ERROR</level> <!-- 超过error级别的日志就记录 -->
+            <!-- ACCEPT 接收  NEUTRAL 往后走   DENY拒绝 -->
+            <onMatch>ACCEPT</onMatch> <!-- 接收当前error级别以上的 -->
+            <onMismatch>DENY</onMismatch> <!-- 拒绝当前error级别以下的 -->
+        </filter>
+    </appender>
+
+    <root level="ALL">
+        <appender-ref ref="console"/>
+        <appender-ref ref="rollFile"/>
+    </root>
+</configuration>
+```
+
+异步日志（可提升性能）：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 集中管理属性值 引用这些属性值的格式为：${name} -->
+    <!-- 输出到控制台的格式 -->
+    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %c [%thread] %-5level %msg%n"/>
+    <!-- 输出的日志文件的位置 /logs相对于磁盘根路径，如果是./logs则是相对于当前项目模块根路径 -->
+    <property name="log_dir" value="./logs"/>
+
+    <!-- 控制台输出的 appender -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 控制输出流对象 默认是System.out  该为System.err-->
+        <target>System.err</target>
+        <!-- 日志消息格式配置 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 将日志拆分和规定压缩的 appender对象 -->
+    <appender name="rollFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_dir}/roll_logback.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+        <!-- 指定拆分规则 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 按照时间和压缩格式声明拆分的文件名 -->
+            <!-- %d{yyyy-MM-dd-HH-mm-ss}用于指定按年、月、日、时、分或秒来进行拆分 -->
+            <!--<FileNamePattern>${log_dir}/rolling.%d{yyyy-MM-dd-HH-mm-ss}.log%i.gz</FileNamePattern>-->
+            <FileNamePattern>${log_dir}/rolling.%d{yyyy-MM-dd-HH-mm-ss}.log%i</FileNamePattern>
+            <!-- 按照文件大小拆分 -->
+            <maxFileSize>1MB</maxFileSize>
+        </rollingPolicy>
+        <!-- 日志级别过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 日志过滤规则-->
+            <level>ERROR</level> <!-- 超过error级别的日志就记录 -->
+            <!-- ACCEPT 接收  NEUTRAL 往后走   DENY拒绝 -->
+            <onMatch>ACCEPT</onMatch> <!-- 接收当前error级别以上的 -->
+            <onMismatch>DENY</onMismatch> <!-- 拒绝当前error级别以下的 -->
+        </filter>
+    </appender>
+
+    <!-- 异步日志 -->
+    <appender name="async" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 指定某个具体的appender -->
+        <appender-ref ref="rollFile"/>
+    </appender>
+
+    <root level="ALL">
+        <appender-ref ref="console"/>
+        <appender-ref ref="async"/>
+    </root>
+</configuration>
+```
+
+### 自定义logger对象
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 集中管理属性值 引用这些属性值的格式为：${name} -->
+    <!-- 输出到控制台的格式 -->
+    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %c [%thread] %-5level %msg%n"/>
+    <!-- 输出的日志文件的位置 /logs相对于磁盘根路径，如果是./logs则是相对于当前项目模块根路径 -->
+    <property name="log_dir" value="./logs"/>
+
+    <!-- 控制台输出的 appender -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- 控制输出流对象 默认是System.out  该为System.err-->
+        <target>System.err</target>
+        <!-- 日志消息格式配置 -->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 将日志拆分和规定压缩的 appender对象 -->
+    <appender name="rollFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${log_dir}/roll_logback.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+        <!-- 指定拆分规则 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 按照时间和压缩格式声明拆分的文件名 -->
+            <!-- %d{yyyy-MM-dd-HH-mm-ss}用于指定按年、月、日、时、分或秒来进行拆分 -->
+            <!--<FileNamePattern>${log_dir}/rolling.%d{yyyy-MM-dd-HH-mm-ss}.log%i.gz</FileNamePattern>-->
+            <FileNamePattern>${log_dir}/rolling.%d{yyyy-MM-dd-HH-mm-ss}.log%i</FileNamePattern>
+            <!-- 按照文件大小拆分 -->
+            <maxFileSize>1MB</maxFileSize>
+        </rollingPolicy>
+        <!-- 日志级别过滤器 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <!-- 日志过滤规则-->
+            <level>ERROR</level> <!-- 超过error级别的日志就记录 -->
+            <!-- ACCEPT 接收  NEUTRAL 往后走   DENY拒绝 -->
+            <onMatch>ACCEPT</onMatch> <!-- 接收当前error级别以上的 -->
+            <onMismatch>DENY</onMismatch> <!-- 拒绝当前error级别以下的 -->
+        </filter>
+    </appender>
+
+    <!-- 异步日志 -->
+    <appender name="async" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 指定某个具体的appender -->
+        <appender-ref ref="rollFile"/>
+    </appender>
+
+    <root level="ALL">
+        <appender-ref ref="console"/>
+        <appender-ref ref="async"/>
+    </root>
+    <!-- 自定义logger对象 com.lsl子包下所有类信息都属于自定义logger对象的子实现 -->
+    <!-- additivity：该自定义logger对象是否要继承rootLogger -->
+    <logger name="com.lsl" level="info" additivity="false">
+        <appender-ref ref="console"/>
+    </logger>
+</configuration>
+```
+
+## 配置文件转换器
+
+logback官方有一个转换器，用于将log4j.properties文件转换为logback.xml。
+
+## logback-access的使用
+
+logback-access模块与Servlet容器（如Tomcat和Jetty）集成，以提供HTTP访问日志功能。我们可以使用logback-access模块来替换tomcat的访问日志。  步骤如下：
+
+1. 将logback-access.jar与logback-core.jar复制到`$TOMCAT_HOME/lib/`目录下。
+
+2. 修改`$TOMCAT_HOME/conf/server.xml`文件，Host元素中添加以下（注释掉原来的）：  
+
+   ```xml
+   <Valve className="ch.qos.logback.access.tomcat.LogbackValve" />
+   ```
+
+3. logback默认会在`$TOMCAT_HOME/conf`下查找文件 logback-access.xml，该文件内容如下：
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <configuration>
+     <!-- always a good activate OnConsoleStatusListener -->
+     <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/> 
+     
+     <property name="LOG_DIR" value="${catalina.base}/logs"/>
+    
+     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+       <file>${LOG_DIR}/access.log</file>
+       <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+         <fileNamePattern>access.%d{yyyy-MM-dd}.log.zip</fileNamePattern>
+       </rollingPolicy>
+    
+       <encoder>
+   		<!-- 日志消息表达式 -->
+   		<pattern>%h %l %u %user %date "%r" %s %b</pattern>
+   		<!--<pattern>combined</pattern>-->
+       </encoder>
+     </appender>
+     
+     <appender-ref ref="FILE"/>
+   </configuration>
+   ```
+
+4. 官方配置： https://logback.qos.ch/access.html#configuration  
+
+# Log4j2
+
+Apache Log4j 2是对Log4j的升级版，参考了logback的一些优秀的设计，并且修复了一些问题，因此带来了一些重大的提升，主要有：
+
+1. 异常处理，在logback中，Appender中的异常不会被应用感知到，但是在log4j2中，提供了一些异常处理机制。
+2. 性能提升， log4j2相较于log4j 和logback都具有很明显的性能提升，后面会有官方测试的数据。
+3. 自动重载配置，参考了logback的设计，当然会提供自动刷新参数配置，最实用的就是我们在生产上可以动态的修改日志的级别而不需要重启应用。
+4. 无垃圾机制，log4j2在大部分情况下，都可以使用其设计的一套无垃圾机制，避免频繁的日志收集
+   导致的jvm gc。
+
+官网： https://logging.apache.org/log4j/2.x/  
+
+## 入门案例
+
+目前市面上最主流的日志门面就是SLF4J，虽然Log4j2也是日志门面，因为它的日志实现功能非常强大，性能优越。所以大家一般还是将Log4j2看作是日志的实现，Slf4j + Log4j2应该是未来的大势所趋。
+
+1、日志门面与log4j2依赖
+
+```xml
+<!-- log4j2 日志门面api -->
+<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-api -->
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-api</artifactId>
+    <version>2.17.1</version>
+</dependency>
+<!-- log4j2 日志实现 -->
+<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-core</artifactId>
+    <version>2.17.1</version>
+</dependency>
+```
+
+2、测试
+
+```java
+public class Log4j2Test {
+    public static final Logger LOGGER = LogManager.getLogger(Log4j2Test.class);
+
+    @Test
+    public void test(){
+        LOGGER.fatal("fatal");
+        LOGGER.error("error");
+        LOGGER.warn("warn");
+        LOGGER.info("info");
+        LOGGER.debug("debug");
+        LOGGER.trace("trace");
+    }
+}
+```
+
+实际发中，大多使用slf4j作为日志门面。
+
+```xml
+<!-- 日志门面 -->
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-api</artifactId>
+    <version>2.0.0-alpha5</version>
+</dependency>
+<!-- 适配器 -->
+<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-slf4j-impl</artifactId>
+    <version>2.17.1</version>
+    <scope>test</scope>
+</dependency>
+<!-- log4j2 日志实现 -->
+<!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
+<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-core</artifactId>
+    <version>2.17.1</version>
+</dependency>
+```
+
+
+
+## 配置文件
+
+log4j2默认加载classpath下的` log4j2.xml` 文件中的配置。  
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- status="warn"：日志框架本身的输出日志的级别
+	monitorInterval="5"：自动加载配置文件的时间不低于5秒 
+-->
+<Configuration status="warn" monitorInterval="5">
+    <!-- 集中配置属性值来管理 使用时：${name} 即可引用value -->
+    <properties>
+        <property name="LOG_HOME">D:/logs</property>
+    </properties>
+    <!-- 日志处理器 -->
+    <Appenders>
+        <!-- 控制台输出的 appender -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] [%-5level] %c{36}:%L --- %m%n" />
+        </Console>
+        <!-- 日志文件输出的 appender -->
+        <File name="file" fileName="${LOG_HOME}/myfile.log">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %l %c{36} - %m%n" />
+        </File>
+        <!-- 随机读写流的日志文件输出的的 appender 性能提高 -->
+        <RandomAccessFile name="accessFile" fileName="${LOG_HOME}/myAcclog.log">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %l %c{36} - %m%n" />
+        </RandomAccessFile>
+        <!-- 按照一定规则拆分的日志文件的 appender -->
+        <!-- filePattern：以天为单位拆分 -->
+        <RollingFile name="rollingFile" fileName="${LOG_HOME}/myrollog.log"
+                     filePattern="D:/logs/$${date:yyyy-MM-dd}/myrollog-%d{yyyyMM-dd-HH-mm}-%i.log">
+            <!-- 日志级别过滤器 高于则放行 低于则拦截 -->
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY" />
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%-5level] %l %c{36} - %msg%n" />
+            <Policies>
+                <!-- 系统启动就出发拆分规则，生成一个新日志文件 -->
+                <OnStartupTriggeringPolicy />
+                <!-- 按照文件大小进行拆分 -->
+                <SizeBasedTriggeringPolicy size="10 MB" />
+                <!-- 按照时间节点进行拆分 规则由filePattern定义 -->
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <!-- 同一目录下，输出日志文件个数限定为30个，超过则进行覆盖 -->
+            <DefaultRolloverStrategy max="30" />
+        </RollingFile>
+    </Appenders>
+    <!-- logger定义 -->
+    <Loggers>
+        <!-- 使用rootLogger配置 日志级别是trace -->
+        <Root level="trace">
+            <!-- 指定日志使用的处理器 -->
+            <AppenderRef ref="Console" />
+        </Root>
+    </Loggers>
+</Configuration>
+```
+
+## 异步日志
+
+同步日志：
+
+异步日志：
+
+使用log4j2的异步日志还需要以下依赖：
+
+```xml
+<!-- https://mvnrepository.com/artifact/com.lmax/disruptor -->
+<dependency>
+    <groupId>com.lmax</groupId>
+    <artifactId>disruptor</artifactId>
+    <version>3.4.4</version>
+</dependency>
+```
 
 
 
 
 
+## 无垃圾记录
 
 
 
+# SpringBoot日志
 
+```xml
+<dependency>
+    <artifactId>spring-boot-starter-logging</artifactId>
+    <groupId>org.springframework.boot</groupId>
+</dependency>
+```
 
+总结：
 
+1. springboot 底层默认使用logback作为日志实现。
+2. 使用了SLF4J作为日志门面。
+3. 将JUL也转换成slf4j。
+4. 也可以使用log4j2作为日志门面，但是最终也是通过slf4j调用logback。
 
+配置：
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+日志实现切换：
