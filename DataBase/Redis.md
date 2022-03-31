@@ -1,7 +1,5 @@
 # Redis
 
-# 概述
-
 Redis：REmote DIctionary Server（远程字典服务）
 
 它是完全开源免费的，用C语言编写的，遵守BSD协议，是一个高性能的（key/value）**分布式内存数据库**，基于内存运行并支持持久化的NoSQL数据库，被称为数据结构数据库。
@@ -20,8 +18,9 @@ Redis与其他key-value缓存产品有以下三个特点：
 4. 发布、订阅消息系统；
 5. 定时器、计数器等。
 
-- redis五大基本数据类型：String、List、Set、Hash、Zset；
-- 三种特殊数据类型：geo、hyperloglog、bitmap；
+redis五大基本数据类型：String、List、Set、Hash、Sorted set（也称为Zset，其底层有两种实现方式：一种是ziplist压缩表，一种是zset(dict、skiplist)）。
+
+三种特殊数据类型：geo、hyperloglog、bitmap。
 
 # 下载安装
 
@@ -36,7 +35,7 @@ http://redis.io/、http://www.redis.cn/。
 
 ## Linux
 
-**安装步骤如下：**
+### 安装步骤如下
 
 1. 下载安装解压redis-6.2.5.tar.gz，`/opt`目录。
 
@@ -64,9 +63,9 @@ http://redis.io/、http://www.redis.cn/。
 
 安装目录下的`redis-benchmark`是一个压力测试工具：`redis-benchmark -h 127.0.0.1 -p 6379 -c 100 -n 100000`。
 
-**关于命令行客户端：**
+### 关于命令行客户端
 
-1. 进入命令行客户端的指令：`redis-cli [options] [commonds]`。（`redis -p 6379`）
+1. 进入命令行客户端的指令：`redis-cli [options] [commonds]`。（`redis-cli -p 6379`）
    1. 常见options：
       1. `-h 127.0.0.1`：指定要连接的redis节点的IP地址，默认是127.0.0.1。
       2. `-p 6379`：指定要连接的redis节点的端口，默认是6379。
@@ -74,7 +73,7 @@ http://redis.io/、http://www.redis.cn/。
    2. commonds就是Redis的操作命令，例如`ping`：与redis服务端做心跳测试，服务端正常会返回`pong`。
 2. 进入客户端，使用`auth 密码`指令来指定密码。
 
-**关于启动的三种方式：**
+### 关于启动的三种方式
 
 1. 任意目录下执行`redis-server`，这种启动属于前台启动，会阻塞整个会话窗口，窗口关闭或者按下`CTRL + C`则Redis停止。不推荐使用。
 
@@ -101,14 +100,29 @@ http://redis.io/、http://www.redis.cn/。
    2. 重新载入系统服务：`systemctl daemon-reload`。
 
    3. 然后就可以使用systemctl指令来控制redis服务了。
+   
+      ```sh
+      # 启动
+      systemctl start redis
+      # 停止
+      systemctl stop redis
+      # 重启
+      systemctl restart redis
+      # 查看状态
+      systemctl status redis
+      # 开机自启
+      systemctl enable redis
+      ```
 
-**关于卸载redis：**
+### 关于卸载redis
 
 1. 首先查看redis-server是否启动：`ps aux | grep redis`。
 2. 关闭这些进程：`kill -9 进程号`。
 3. 删除redis相应的文件夹就可以了。
 
-**关于Redis的图形化界面：**（安装包：https://github.com/lework/RedisDesktopManager-Windows/releases）
+### 关于Redis的图形化界面：
+
+（安装包：https://github.com/lework/RedisDesktopManager-Windows/releases）
 
 解压缩再运行安装程序即可。
 
@@ -298,6 +312,12 @@ Map集合，key-map，value是map集合。
 - `setbit key 1 1`、`setbit key 2 1`、`setbit key 3 1`：设置；
 - `getbit key 3 `：获取；
 - `bitcount key [start, end]`：统计为真（1）的数据。
+
+# Redis客户端
+
+
+
+
 
 # 事务
 
@@ -494,7 +514,7 @@ bind 127.0.0.1
 bind 192.168.1.100
 ```
 
-绑定redis服务器网卡IP，默认为127.0.0.1,即本地回环地址。这样的话，访问redis服务只能通过本机的客户端连接，而无法通过远程连接。如果bind选项为空的话，那会接受所有来自于可用网络接口的连接。如上配置，绑定一个127.0.0.1的本机地址和192.168.1.100的外网地址。
+绑定redis服务器网卡IP，默认为127.0.0.1，即本地回环地址。这样的话，访问redis服务只能通过本机的客户端连接，而无法通过远程连接。如果bind选项为空的话，那会接受所有来自于可用网络接口的连接。如上配置，绑定一个127.0.0.1的本机地址和192.168.1.100的外网地址。
 
 ###  保护模式
 
