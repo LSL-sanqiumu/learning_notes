@@ -36,7 +36,7 @@ http://redis.io/、http://www.redis.cn/。
 
 ## Linux
 
-安装步骤如下：
+**安装步骤如下：**
 
 1. 下载安装解压redis-6.2.5.tar.gz，`/opt`目录。
 
@@ -56,7 +56,7 @@ http://redis.io/、http://www.redis.cn/。
 
 7. 在安装目录（`/usr/local/bin`）下执行该命令：`redis-server redis-config/redis.conf`，使用相关配置开启redis服务，命令界面无信息显示则安装成功。
 
-8. `redis-cli -p 6379`：执行该命令进入Redis，在里面执行`shutdown`命令是关闭Redis服务，`exit`是退出Redis命令行：
+8. `redis-cli -p 6379`：执行该命令进入Redis命令行客户端，在里面执行`shutdown`命令是关闭Redis服务，`exit`是退出Redis命令行：
 
    ![](img/redisin.png)
 
@@ -64,36 +64,80 @@ http://redis.io/、http://www.redis.cn/。
 
 安装目录下的`redis-benchmark`是一个压力测试工具：`redis-benchmark -h 127.0.0.1 -p 6379 -c 100 -n 100000`。
 
-卸载redis：
+**关于命令行客户端：**
+
+1. 进入命令行客户端的指令：`redis-cli [options] [commonds]`。（`redis -p 6379`）
+   1. 常见options：
+      1. `-h 127.0.0.1`：指定要连接的redis节点的IP地址，默认是127.0.0.1。
+      2. `-p 6379`：指定要连接的redis节点的端口，默认是6379。
+      3. `-a 123321`：指定redis的访问密码 。
+   2. commonds就是Redis的操作命令，例如`ping`：与redis服务端做心跳测试，服务端正常会返回`pong`。
+2. 进入客户端，使用`auth 密码`指令来指定密码。
+
+**关于启动的三种方式：**
+
+1. 任意目录下执行`redis-server`，这种启动属于前台启动，会阻塞整个会话窗口，窗口关闭或者按下`CTRL + C`则Redis停止。不推荐使用。
+
+2. 通过配置文件启动`redis-server 配置文件`；停止服务：`redis-cli shutdown`（如果设置了密码：`redis-cli -u 密码 shutdown`）。
+
+3. 设置开机自启动：
+
+   1. 新建一个系统服务文件：`vi /etc/systemd/system/redis.service`。
+
+      ```conf
+      [Unit]
+      Description=redis-server
+      After=network.target
+      
+      [Service]
+      Type=forking
+      ExecStart=/usr/local/bin/redis-server /usr/local/src/redis-6.2.6/redis.conf
+      PrivateTmp=true
+      
+      [Install]
+      WantedBy=multi-user.target
+      ```
+
+   2. 重新载入系统服务：`systemctl daemon-reload`。
+
+   3. 然后就可以使用systemctl指令来控制redis服务了。
+
+**关于卸载redis：**
 
 1. 首先查看redis-server是否启动：`ps aux | grep redis`。
 2. 关闭这些进程：`kill -9 进程号`。
 3. 删除redis相应的文件夹就可以了。
 
-# 基本指令
+**关于Redis的图形化界面：**（安装包：https://github.com/lework/RedisDesktopManager-Windows/releases）
 
-基本的指令：切换数据库、查看数据库大小、存入键值对、查看键、查看值等，如下：
+解压缩再运行安装程序即可。
+
+# 通用指令
+
+切换数据库、查看数据库大小、存入键值对、查看键、查看值等，如下：
 
 ![](img/base.png)
 
 
 
-- `flushdb`：清空当前数据库。
-- `flushall`：清空所有数据库内的数据。
-- `exists key`：判断当前key是否存在。
-- `move key db`：移动到指定的数据库。
-- `expire key 10`：设置指定过期时间，单位s，到期自动清除。
-- `ttl key`：查看当前key剩余时间。
-- `type key`：查看当前key的类型。
-- 官网查看命令。
+1. `flushdb`：清空当前数据库。
+2. `flushall`：清空所有数据库内的数据。
+3. `exists key`：判断当前key是否存在。
+4. `move key db`：移动到指定的数据库。
+5. `expire key 10`：设置指定过期时间，单位s，到期自动清除。
+6. `ttl key`：查看当前key剩余时间。
+7. `type key`：查看当前key的类型。
+8. 可去官网查看命令。
 
 Redis是单线程的，Redis的性能瓶颈在于机器的内存和网络带宽而不是CPU，可以使用单线程实现，所以就使用单线程了。
 
 为什么Redis那么快？读写操作的速度是CPU>内存>硬盘，多线程时会切换上下文，这个比较耗时，当单个CPU实现读写操作时就节省了切换的时间。
 
-# 五大数据类型
+# 数据类型和操作
 
-## String
+## 五大数据类型
+
+### String
 
 值的创建：
 
@@ -131,7 +175,7 @@ Redis是单线程的，Redis的性能瓶颈在于机器的内存和网络带宽�
 
 String型应用：计数、对象缓存等。
 
-## List
+### List
 
 列表，可以实现栈、队列、阻塞队列，基本所有的list命令都以l开头。
 
@@ -160,7 +204,7 @@ String型应用：计数、对象缓存等。
 
 - `lset list 0 value`：更改list的指定下标的value，列表或value不存在会报错；
 
-## Set
+### Set
 
 set中值不能重复，无序。
 
@@ -189,7 +233,7 @@ set中值不能重复，无序。
 
 共同关注、共同爱好、二度好友、推荐好友，（六度分割理论）。
 
-## Hash
+### Hash
 
 Map集合，key-map，value是map集合。
 
@@ -208,7 +252,7 @@ Map集合，key-map，value是map集合。
 
 可以存储用户信息等经常变动的数据的存储，更适合对象的存储，string更适合的是字符串的存储。
 
-## Zset
+### Zset
 
 在set的基础上增加一个值用于排序，相对于有序的set。
 
@@ -222,9 +266,9 @@ Map集合，key-map，value是map集合。
 
 应用：set排序、班级成绩表、工资表、排行榜、重要消息提权等。
 
-# 三种特殊数据类型
+## 三种特殊数据类型
 
-## geospatial地理位置
+### geospatial地理位置
 
 定位、距离计算、附件的人。
 
@@ -236,7 +280,7 @@ Map集合，key-map，value是map集合。
 - `geohash china:city beijing xian ...`：使用Geohash位置52点整数编码，使用Geohash位置52点整数编码，将二维经纬度转换为一维的字符串；
 - 底层基于zset实现，可以使用`zrem`来进行删除操作，`zrem china:city beijing`。
 
-## hyperloglog
+### hyperloglog
 
 基数：不重复的元素，可以接受误差。Redis Hyperloglog 基数统计的算法。
 
@@ -247,7 +291,7 @@ Map集合，key-map，value是map集合。
 - `pfmerge key key1 key2`：合并技术到key，会去重；
 - 允许容错就可以使用，如果不允许就使用set或自己的数据类型。
 
-## bitmaps
+### bitmaps
 
 位存储，应用场景例如统计用户活跃不活跃、是否在线、是否打卡，两个状态的都可以使用bitmaps。
 

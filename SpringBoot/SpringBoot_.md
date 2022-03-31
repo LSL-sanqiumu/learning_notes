@@ -409,8 +409,6 @@ idea中安装lombok插件，并在springboot项目中引入Lombok插件来简化
    spring.profiles.group.myprod[0]=pdd
    ```
 
-
-
 # Web开发场景-SpringMVC
 
 Spring Boot 为 Spring MVC 提供了自动配置，并在 Spring MVC 默认功能的基础上添加了以下特性：
