@@ -71,7 +71,7 @@ http://redis.io/、http://www.redis.cn/。
       2. `-p 6379`：指定要连接的redis节点的端口，默认是6379。
       3. `-a 123321`：指定redis的访问密码 。
    2. commonds就是Redis的操作命令，例如`ping`：与redis服务端做心跳测试，服务端正常会返回`pong`。
-2. 进入客户端，使用`auth 密码`指令来指定密码。
+2. 进入命令行客户端，可以使用`auth 密码`指令来指定密码。
 
 ### 关于启动的三种方式
 
@@ -124,7 +124,7 @@ http://redis.io/、http://www.redis.cn/。
 
 （安装包：https://github.com/lework/RedisDesktopManager-Windows/releases）
 
-解压缩再运行安装程序即可。
+解压缩再运行安装程序即可。（需要修改Redis的配置，把`bind 127.0.0.1`修改为`bind 0.0.0.0`，或者直接注释掉）
 
 # 通用指令
 
@@ -313,11 +313,219 @@ Map集合，key-map，value是map集合。
 - `getbit key 3 `：获取；
 - `bitcount key [start, end]`：统计为真（1）的数据。
 
-# Redis客户端
+# Redis开发工具
 
+## Jedis
 
+Jedis是redis官方推荐的Java连接开发工具，实现使用Java来操作redis中间件。
 
+**Jedis的使用：**
 
+1、导入依赖：
+
+```xml
+<!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>3.7.0</version>
+</dependency>
+<!-- 获取json字符的工具 -->
+<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>fastjson</artifactId>
+    <version>1.2.78</version>
+</dependency>
+```
+
+2、连接并测试：（方法名与各个数据类型的操作指令名一样）
+
+```java
+public class JedisTest {
+    public static void main(String[] args) {
+        // 建立连接
+        Jedis jedis = new Jedis("192.168.137.130",6379);
+        // 验证密码
+        jedis.auth("123456");
+        System.out.println(jedis.ping("连接成功"));
+        // 使用fastjson来获取json字符串
+        JSONObject jb = new JSONObject();
+        jb.put("hello", "word");
+        jb.put("name", "lsl");
+        String json = jb.toJSONString();
+        // 开启事务
+        Transaction multi = jedis.multi();
+        try {
+            multi.set("jstr", json);
+            multi.set("name","测试");
+            multi.exec();
+        }catch (Exception e) {
+            multi.discard();
+            e.printStackTrace();
+        }finally {
+            String name = jedis.get("jstr");
+            System.out.println(name);
+            jedis.close();
+        }
+    }
+}
+```
+
+**使用Jedis连接池：**
+
+Jedis本身是线程不安全的，并且频繁的创建和销毁连接会有性能损耗，因此我们推荐大家使用Jedis连接池代替Jedis的直连方式。
+
+```java
+public class JedisPoolTest {
+    private static final JedisPool JEDIS_POOL;
+    static {
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        // 最大连接
+        jedisPoolConfig.setMaxTotal(8);
+        // 最大空闲连接
+        jedisPoolConfig.setMaxIdle(8);
+        // 最小空闲连接
+        jedisPoolConfig.setMinIdle(0);
+        // 最长等待时间
+        jedisPoolConfig.setMaxWaitMillis(200);
+        // 创建线程池
+        JEDIS_POOL = new JedisPool(jedisPoolConfig,"192.168.137.130",6379);
+    }
+    public static Jedis getJedis(){
+        return JEDIS_POOL.getResource();
+    }
+    // 测试
+    public static void main(String[] args) {
+        Jedis jedis = JedisPoolTest.getJedis();
+        // 验证密码
+        jedis.auth("123456");
+        System.out.println(jedis.ping("连接成功"));
+    }
+}
+```
+
+## Spring—RedisTemplate
+
+### 概述
+
+SpringData是Spring中数据操作的模块，包含对各种数据库的集成，其中对Redis的集成模块就叫做SpringDataRedis，官网地址：https://spring.io/projects/spring-data-redis。SpringDataRedis的内容如下：
+
+1. 提供了对不同Redis开发工具的整合（Lettuce和Jedis）。
+2. 提供了RedisTemplate统一API来操作Redis。
+3. 支持Redis的发布订阅模型。
+4. 支持Redis哨兵和Redis集群。
+5. 支持基于Lettuce的响应式编程。
+6. 支持基于JDK、JSON、字符串、Spring对象的数据序列化及反序列化。
+7. 支持基于Redis的JDKCollection实现。
+
+SpringDataRedis中提供了RedisTemplate工具类，其中封装了各种对Redis的操作。并且将不同数据类型的操作API封装到了不同的类型中：
+
+![](img/redis1.redisTemplate.png)
+
+### 在springboot中使用
+
+**使用操作：**
+
+springboot中提供了对SpringDataRedis的支持，使用操作如下：（springboot2版本之后，Jedis改为Lettuce；二者有何区别？）
+
+1、场景启用：
+
+```xml
+<!-- Redis-->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
+<!-- 连接池依赖-->
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-pool2</artifactId>
+</dependency>
+```
+
+2、配置redis所在地址、端口：
+
+```yaml
+spring:
+  redis:
+    host: 192.168.137.129
+    port: 6379
+    password: 123456
+    letture:
+    	pool:
+    		max-active:
+    		max-active: 8  # 最大连接
+    		max-idle: 8    # 最大空闲连接    
+    		min-idle: 0    # 最小空闲连接    
+    		max-wait: 100  # 连接最长等待时间 ms
+```
+
+3、注入redisTemplate。测试如下：
+
+```java
+@SpringBootTest
+class RedisSpringbootApplicationTests {
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Test
+    void contextLoads() {
+        // opsForValue();
+        // opsForList();
+        // opsForSet();
+        // opsForZSet();
+        // opsForGeo();
+        // opsForHash();
+        // opsForHyperLogLog();
+
+        // 操作字符串 redisTemplate.opsForXxx 操作某一种数据类型
+        ValueOperations ops = redisTemplate.opsForValue();
+
+        // 默认的序列化方式是JDK序列化 key在Linux-redis里会转变为带转义字符的 "\xac\xed\x00\x05t\x00\x05mykey"
+        redisTemplate.opsForValue().set("mykey","lsl");
+        System.out.println(redisTemplate.opsForValue().get("mykey"));
+        System.out.println(redisTemplate.opsForValue().get("hello"));
+
+        RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
+        connection.flushDb();
+    }
+}
+```
+
+数据不经序列化不能直接添加到Redis，序列化可以通过json依赖中的ObjectMapper或实现Serializable接口，不过添加进去的数据仍然是带转义字符的`"\xac\xed\x00\x05t\x00\x04user"`类型的，因为写入Redis前会把Object序列化为字节形式，默认是采用JDK序列化（可读性差、占内存）。
+
+**序列化的两种方式：**
+
+1、自定义redisTemplate序列化方式：固定的模板如下，几乎包括所有场景（记得在springboot主配置类开启注解扫描）
+
+```java
+@Configuration
+public class RedisConfig {
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String,Object> template = new RedisTemplate<>();
+        template.setConnectionFactory(factory);
+        // 序列化配置
+        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+        ObjectMapper om = new ObjectMapper();
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+        jackson2JsonRedisSerializer.setObjectMapper(om);
+        // string的序列化
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        // key hashKey采用String的序列化方式
+        template.setKeySerializer(stringRedisSerializer);
+        template.setHashKeySerializer(stringRedisSerializer);
+        // value、HashValue的序列化方式使用Jackson来序列化
+        template.setValueSerializer(jackson2JsonRedisSerializer);
+        template.setHashValueSerializer(jackson2JsonRedisSerializer);
+        template.afterPropertiesSet();
+        return template;
+    }
+}
+```
+
+redis工具类：RedisUtil，见RedisUtil.md。
 
 # 事务
 
@@ -354,142 +562,6 @@ Redis事务：
   <!-- 线程2 -->
   decr money 60
   ```
-  
-
-# Jedis
-
-Jedis是redis官方推荐的java连接开发工具，实现使用java来操作redis中间件。
-
-依赖：
-
-```xml
-<!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
-<dependency>
-    <groupId>redis.clients</groupId>
-    <artifactId>jedis</artifactId>
-    <version>3.7.0</version>
-</dependency>
-<!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
-<dependency>
-    <groupId>com.alibaba</groupId>
-    <artifactId>fastjson</artifactId>
-    <version>1.2.78</version>
-</dependency>
-```
-
-1. 连接数据库：`Jedis j = new Jedis("127.0.0.1", 6379);`；
-2. 使用该对象调用方法即可，redis的全部指令都对应Jedis的一个个方法。
-
-```java
-Jedis j = new Jedis("127.0.0.1", 6379);
-System.out.println(j.ping("连接成功"));
-// json字符串
-JSONObject jb = new JSONObject();
-jb.put("hello", "word");
-jb.put("name", "lsl");
-String json = jb.toJSONString();
-// 开启事务
-Transaction multi = j.multi();
-try {
-    multi.set("jstr", s1);
-    multi.set("name","来定");
-    multi.exec();
-}catch (Exception e) {
-    multi.discard();
-    e.printStackTrace();
-}finally {
-    String name = j.get("jstr");
-    System.out.println(name);
-    j.close();
-}
-```
-
-# springboot整合
-
-springboot2版本之后，Jedis改为Lettuce；二者有何区别？
-
-场景启用：
-
-```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-redis</artifactId>
-</dependency>
-```
-
-配置redis所在地址、端口：
-
-```yaml
-spring:
-  redis:
-    host: 192.168.137.129
-    port: 6379
-```
-
-测试：
-
-```java
-@SpringBootTest
-class RedisSpringbootApplicationTests {
-    @Autowired
-    private RedisTemplate redisTemplate;
-    @Test
-    void contextLoads() {
-        // opsForValue();
-        // opsForList();
-        // opsForSet();
-        // opsForZSet();
-        // opsForGeo();
-        // opsForHash();
-        // opsForHyperLogLog();
-        
-        // 操作字符串 redisTemplate.opsForXxx 操作某一种数据类型
-        ValueOperations ops = redisTemplate.opsForValue();
-
-        // 默认的序列化方式是JDK序列化 key在Linux-redis里会转变为带转义字符的 "\xac\xed\x00\x05t\x00\x05mykey"
-        redisTemplate.opsForValue().set("mykey","lsl");
-        System.out.println(redisTemplate.opsForValue().get("mykey"));
-        System.out.println(redisTemplate.opsForValue().get("hello"));
-        
-        RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
-        connection.flushDb();
-    }
-}
-```
-
-对象不经序列化不能直接添加其数据到redis，序列化可以通过json的ObjectMapper或实现Serializable接口，不过添加进去的数据仍然是带转义字符的`"\xac\xed\x00\x05t\x00\x04user"`类型的。
-
-自定义配置序列化方式：固定的模板如下，几乎包括所有场景（记得在springboot主配置类开启注解扫描）
-
-```java
-@Configuration
-public class RedisConfig {
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
-        RedisTemplate<String,Object> template = new RedisTemplate<>();
-        template.setConnectionFactory(factory);
-        // 序列化配置
-        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
-        ObjectMapper om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-        jackson2JsonRedisSerializer.setObjectMapper(om);
-        // string的序列化
-        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        // key hash采用String的序列化方式
-        template.setKeySerializer(stringRedisSerializer);
-        template.setHashKeySerializer(stringRedisSerializer);
-        // value、Hash的Value序列化方式使用Jackson
-        template.setValueSerializer(jackson2JsonRedisSerializer);
-        template.setHashValueSerializer(jackson2JsonRedisSerializer);
-        template.afterPropertiesSet();
-        return template;
-    }
-}
-```
-
-redis工具类：RedisUtil，见RedisUtil.md。
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
