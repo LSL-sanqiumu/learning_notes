@@ -406,21 +406,9 @@ resources目录下新建static目录，将css、js、第三方库、图片等静
 
 3、标签显示：标签名称和相关标签所对应到博客数量
 
+### 1、博客展示实现
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+使用PageHelper分页插件（[Mybatis-PageHelper/HowToUse.md at master · pagehelper/Mybatis-PageHelper (github.com)](https://github.com/pagehelper/Mybatis-PageHelper/blob/master/wikis/zh/HowToUse.md)）。
 
 
 
