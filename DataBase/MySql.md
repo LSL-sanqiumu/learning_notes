@@ -1925,9 +1925,9 @@ select str_to_date('2022-09-01 15:47:06','%Y-%m-%d %H:%i:%s'); -- 2022-09-01 15:
    - 这个函数结果得到的都是日期2减去日期1得到的值。
    - “时间类型”用于指定year、month、day、hour、minute、second等，来规定进行哪种计算（年差、月差、日差等）。
    - 例如：`select timestampdiff(day,'2023-01-29','2022-01-29') as compare; ===> -365`，其他同理。
-3. `date_add(date,interval expr 时间类型)`：
-   - 返回一个时间或日期的值加上时间间隔expr后得到的值。
-   - 时间类型可以是year、month、day、hour、minute、second这几个。
+3. `date_add(date,interval 数值expr 时间类型)`：
+   - 返回一个时间或日期的值加上expr后得到的值。
+   - 时间类型可以是year、month、day、hour、minute、second这几个，指定在哪个位置上加。
    - 例如：` select date_add('2012-03-03',interval 20 year);` ===> 2032-03-03。
    - 例如：`select date_add('2012-03-03',interval 20 second);` ===>  2012-03-03 00:00:20。
 
@@ -2001,28 +2001,58 @@ sum(xx); avg(xx); max(xx); min(xx);
 | case when val1 then res1 .. else default end      | 当val1为true时返回res1 ....，否则返回default      |
 | case expr when val1 then res1 .. else default end | 当expr等于val1时返回val1，否则返回default         |
 
-case..when..then..when..then..else..end的三种使用方式：
+1、case expr when ：
 
-1. `case 要判断的字段 when 该字段符合啥条件 then 输出唯一字段的具体值 else 输出唯一字段的具体值 end`：
+```mysql
+CASE hero_name 
+WHEN '盖伦' THEN '上单'
+WHEN '拉克丝' THEN '中单'
+WHEN '金克斯' THEN 'ADC'
+WHEN '琴女' THEN '辅助'
+WHEN '盲僧' THEN '打野'
+ELSE '混子' END
+```
 
-   ```mysql
-   -- 当自动name的值是LL时就为在其名字后追加1，否则追加0
-   select (case name when 'LL' then name+1 else 'LS+0' end) as 名字加颜值 from person;
-   ```
+```mysql
+-- 示例：当自动name的值是张三时就在其名字后拼接一个1，否则追加0
+select name,(case `name` when '张三' then concat(`name`,1) else concat(`name`,0) end) from info;
 
-2. 可以对字段值进行范围的判断
+select name,(case `name` when '张三' then concat(`name`,1) when '李四' then concat(name,2) else concat(`name`,0) end) from info;
+```
 
-   ```mysql
-   -- 当年龄满足18-22时就是青年，否则就是老青年
-   select (case when age between 18 and 22 then '青年' else '老青年' end) as 正值 from  person;
-   ```
+2、case when：
 
-3. 可以对多个字段进行判断，并输出唯一结果字段
+```mysql
+(CASE 
+WHEN age >= 18 THEN '成年'
+WHEN age < 18 THEN '未成年'
+ELSE '保密' END) AS '是否成年'
+```
 
-   ```mysql
-   -- 当满足年龄在18-22时，字段`状态`的值为'真年轻'；当name='LL'时，字段`状态`的值为'活力充沛'
-   select (case when age between 18 and 22 then '真年轻' when name='LL' then '活力充沛' end) as '状态'
-   ```
+```mysql
+-- 示例：当age满足18-22就是青年，age不满足其它就是小孩
+select name,(case when age between 18 and 22 then '青年' else '小孩' end) s from info;
+```
+
+```mysql
+-- 示例：先用age匹配，age匹配不上再用name来辅助匹配，都不满足则为null
+select name,(case when age between 18 and 22 then '活力充沛' when name='李四' then '张三' end) h from info;
++------+----------+
+| name | h        |
++------+----------+
+| 张三  | NULL     |
+| 李四  | 活力充沛  |
+| 王五  | 活力充沛  |
++------+----------+
+select name,(case when age between 18 and 22 then '活力充沛' when name='张三' then 'zs' end) h from info;
++------+----------+
+| name | h        |
++------+----------+
+| 张三  | zs       |
+| 李四  | 活力充沛  |
+| 王五  | 活力充沛  |
++------+----------+
+```
 
 
 
@@ -2034,26 +2064,26 @@ case..when..then..when..then..else..end的三种使用方式：
 | version()     | 返回版本号                       |
 | user()        | 系统（会返回 `root@localhost` ） |
 
-# MD5加密
+## MD5加密函数
 
 **MD5信息摘要算法**（MD5 Message-Digest Algorithm），一种被广泛使用的**密码散列函数**，主要增强算法复杂度和不可逆性。
 
 ```sql
 CREATE TABLE `md5test`(
-`id` INT(10) NOT NULL,
-`name` VARCHAR(20) NOT NULL,
- `pwd` VARCHAR(50) NOT NULL,
- PRIMARY KEY (`id`)
+    `id` INT(10) NOT NULL,
+    `name` VARCHAR(20) NOT NULL,
+    `pwd` VARCHAR(50) NOT NULL,
+    PRIMARY KEY (`id`)
 )ENGINE=INNODB DEFAULT CHARSET=utf8;
 
-INSERT INTO `md5test` VALUES (1,'王将','1233456')
-INSERT INTO `md5test` VALUES (2,'李四','1233456'),(3,'王五','1233456'),(4,'朝六','1233456')
+INSERT INTO `md5test` VALUES (1,'王将','1233456');
+INSERT INTO `md5test` VALUES (2,'李四','1233456'),(3,'王五','1233456'),(4,'朝六','1233456');
 
-UPDATE md5test SET pwd=MD5(pwd) WHERE id=1
-INSERT INTO `md5test` VALUES (5,'小明',MD5('1233456'))  -- 使用md5函数进行加密
+UPDATE md5test SET pwd=MD5(pwd) WHERE id=1;
+INSERT INTO `md5test` VALUES (5,'小明',md5('1233456'));  -- 使用md5函数进行加密
 
 -- 校验
-SELECT * FROM md5test WHERE `name`='小明' AND pwd=MD5('1233456')
+SELECT * FROM md5test WHERE `name`='小明' AND pwd=md5('1233456');
 ```
 
 # 事务（要求精通）
@@ -2819,6 +2849,8 @@ order by的SQL语句中使用explain可能会在Extra显示如下两个值：（
 更新数据时一定要根据索引字段进行更新，否则会将整张表锁住。（Innodb的行锁是针对索引加的锁，不针对记录加的锁，并且该索引不能失效，否则会从行锁升级为表锁）
 
 # MySQL的存储对象
+
+存储对象，可以存储起来以便下次继续使用的数据库对象。MySQL中存储对象有这几大类：视图、存储过程、存储函数、触发器
 
 ## 视图
 
