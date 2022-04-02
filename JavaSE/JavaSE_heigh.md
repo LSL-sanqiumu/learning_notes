@@ -597,7 +597,7 @@ class Customer extends Thread {
 3. 构造器赋值：
 
   ```java
-  String str2 = new String("123");	
+  String str2 = new String("123");
   // 堆空间中开辟存储内存实例化String，指向字符串常量池（堆中实例引用常量池中的字符串）
   // 如果String Pool中不存在"123"，则创建了两个对象
   // 一个是堆中的new结构，另一个是char[]对应的字符串常量池中的数据
@@ -630,8 +630,9 @@ class Customer extends Thread {
 3. 如果拼接的结果调用intern()方法，该方法返回值就在常量池中。
 
    ```java
+   // 使用intern()方法可以将值放入常量池
    String s1 = "12";
-   String s2 = new String("12").intern();
+   String s2 = new String("12").intern(); // 相当于 String s1 = "12";
    System.out.println(s1 == s2); // true
    ```
 
@@ -652,9 +653,9 @@ class Customer extends Thread {
 13. **boolean endsWith(String suffix)**：测试此字符串是否以指定的后缀结束 
 14. **boolean startsWith(String prefix)**：测试此字符串是否以指定的前缀开始 
 15. **boolean startsWith(String prefix, int toffset)**：测试此字符串从指定索引开始的子字符串是否以指定前缀开始
-16. **boolean contains(CharSequence s)**：当且仅当此字符串包含指定的 char 值序列 时，返回 true （判断某字符是否含某个子串）
+16. **boolean contains(CharSequence s)**：当且仅当此字符串包含指定的 char 值序列时，返回 true （判断某字符是否含某个子串）
 17. **int indexOf(String str)**：返回指定子字符串在此字符串中第一次出现处的索引 
-18. **int indexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中第一次出 现处的索引，从指定的索引开始 
+18. **int indexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中第一次出现处的索引，从指定的索引开始 
 19. **int lastIndexOf(String str)**：返回指定子字符串在此字符串中最右边出现处的索引 
 20. **int lastIndexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中最后 一次出现处的索引，从指定的索引开始反向搜索
 21. 【注】：indexOf()和lastIndexOf()方法如果未找到都是返回-1
@@ -672,7 +673,7 @@ class Customer extends Thread {
 
 **String与char[]的互转：**
 
-- String ===> char[ ]：调用String的toCharArray()；
+- String ===> char[ ]：调用String的toCharArray()。
 - char[ ] ===> String：调用String的构造器。
 
 ```java
@@ -683,15 +684,15 @@ System.out.println(c[0]);
 
 String与byte[]的互转：（IO流时字节流会使用）
 
-- 编码：String ===> byte[ ]：调用String的getBytes()方法；
-- 解码：byte[ ] ===> String：调用String的构造器；
+- 编码：String ===> byte[ ]：调用String的getBytes()方法。
+- 解码：byte[ ] ===> String：调用String的构造器。
 - 编码、解码时所用字符集要一致。
 
 ```java
 String str = "byte";
 byte[] b = str.getBytes(StandardCharsets.UTF_8);
 String byteToStr = new String(b);
-System.out.println(b[0]); // b -> 98
+System.out.println(b[0]); // b => 98
 System.out.println(byteToStr);
 ```
 
@@ -737,19 +738,19 @@ StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".len
 
 ### StringBuffer常用方法
 
-1. **`append(xxx)`**：提供了很多的append()方法，用于进行字符串拼接 ；
+1. **`append(xxx)`**：提供了很多的append()方法，用于进行字符串拼接 。
 
-2. **`delete(int start,int end)`**：删除指定位置的内容 ；
+2. **`delete(int start,int end)`**：删除指定位置的内容 。
 
-3. **`replace(int start, int end, String str)`**：把[start,end)位置替换为str ；
+3. **`replace(int start, int end, String str)`**：把[start,end)位置替换为str 。
 
-4. **`insert(int offset, xxx)`**：在指定位置插入xxx字符串，插入位置的字符串不会被替换掉 ；
+4. **`insert(int offset, xxx)`**：在指定位置插入xxx字符串，插入位置的字符串不会被替换掉，相当于在指定位置前放入字符串 。
 
-5. **`reverse()`**：把当前字符序列逆转；
+5. **`reverse()`**：把当前字符序列逆转。
 
 6. 当append和insert时，如果原来value数组长度不够，会扩容。 
 
-7. 如上这些方法支持方法链操作。 方法链的原理：（返回当前对象，然后就可以再调用自身方法了）
+7. 如上这些方法支持方法链操作。 方法链的原理：（返回当前对象，然后就可以继续调用自身方法了）
 
   ```java
   @Override
@@ -1990,7 +1991,7 @@ public class PropertiesTest {
      - 数组存储的数据是有序的、可以重复的。对于无序的、不重复的需求不能满足。
 
 
-集合：（存放对象引用的容器，用于存储和操作对象组）
+集合：（存放对象引用的容器，用于存储和操作一个个对象）
 
 - 可以动态保存任意多个对象；有较为方便的方法来操作对象元素。
 
@@ -1998,7 +1999,7 @@ public class PropertiesTest {
 
 集合体系：
 
-```
+```markdown
 |---Collection接口：单列集合，用来存储一个一个的对象（父接口是Iterable）
 	|List接口：存储有序的、可重复的数据
 		|---ArrayList、LinkedList、Vector
@@ -2012,9 +2013,7 @@ public class PropertiesTest {
 
 集合使用了泛型，不指定泛型时添加元素进集合时是默认的Object，可以添加Object及其子类，因为Object是所有类的直接或间接父类，所以任何类型的数据都可以添加进集合，此时也构成多态行为。
 
-**Collection接口声明的方法中常用的：**
-
-Collection接口是List、Set接口的父接口，其方法的具体实现在子接口中，其定义的抽象方法中常用的有如下：
+**关于Collection接口声明的方法：**Collection接口是List、Set接口的父接口，其方法的具体实现在子接口中，其定义的抽象方法中常用的有如下：
 
 | 抽象方法                           | 作用                                                         |
 | ---------------------------------- | ------------------------------------------------------------ |
@@ -2023,7 +2022,7 @@ Collection接口是List、Set接口的父接口，其方法的具体实现在子
 | int size()                         | 集合中元素个数                                               |
 | void clear()                       | 清空集合中的元素                                             |
 | boolean isEmpty()                  | 判断是否是空集合                                             |
-| boolean contains(Object obj)       | 判断集合中是否含有obj对象<br>（由equals方法决定比较的是内容还是地址） |
+| boolean contains(Object obj)       | 判断集合中是否含有某个obj对象<br>（由元素的equals方法决定用什么（内容或地址）来比较） |
 | boolean containsAll(Collection c)  | 也是调用元素的equals方法来比较的；<br>拿两个集合的元素挨个比较，利用元素的equals方法。 |
 | boolean remove(Object obj)         | 通过元素的equals方法判断是否是要删除的那个元素。<br>只会删除找到的第一个元素 |
 | boolean removeAll(Collection coll) | 删除多个元素（相当于取集合的差集）                           |
@@ -2057,8 +2056,8 @@ public static void main(String[] args) {
 
 **集合数组互转：**
 
-- 数组 ===> 集合：toArray()，使用数组的toArray()方法。
-- 集合 ===> 数组：Arrays.asList()，使用Arrarys的方法。
+1. 数组 ===> 集合：toArray()，使用数组的toArray()方法。
+2. 集合 ===> 数组：Arrays.asList()，使用Arrarys的方法。
 
 JDK5.0新增foreash循环（增强for循环），用来遍历集合或数组：
 
@@ -2212,8 +2211,8 @@ Set接口主要实现类：
 
 Set的无序性和不可重复性：（以HashSet为例）
 
-- 无序性：数据的添加不是按照数组索引的顺序添加，而是根据数据的哈希值来添加（不等于随机性）；
-- 不可重复性：保证添加的元素按照equals()判断返回false；
+- 无序性：数据的添加不是按照数组索引的顺序添加，而是根据数据的哈希值来添加（不等于随机性）。
+- 不可重复性：保证添加的元素按照equals()判断返回false。
 - Set的底层是Map的实现类。
 
 ### Set接口方法
@@ -2221,7 +2220,7 @@ Set的无序性和不可重复性：（以HashSet为例）
 1. Set接口没有定义新的方法，都是重写Collection接口里的方法。
 2. 虽然无序，但取出的顺序是固定的（也就是hash值经计算完毕再得出的索引值不会每运行一次就改变一次）。
 3. 使用要求：
-   1. 向Set中添加数据，其所在类一定要重写hashCode()方法和equals()方法。
+   1. 向Set中添加数据，数据对应类一定要重写hashCode()方法和equals()方法。
    2. 重写的hashCode()方法和equals()方法尽可能保持一致性：相等的对象必须具有相等的散列码（哈希值）。
    3. 重写是为了根据自己的需求定制相等对象的标准。
    4. 重写方法技巧：对象中用于在 equals() 方法中进行比较的 Field(属性)，都应该用来计算 hashCode 值（equals里用到的属性在hashCode里也用一下）。
@@ -2464,7 +2463,7 @@ Hashtable的子类，更多用于读取配置文件.properties。
 
 
 
-## Collections工具类
+## Collections—工具类
 
 Collections工具类——操作Collection、Map的工具类。
 
