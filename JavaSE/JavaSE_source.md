@@ -87,15 +87,15 @@ ArrayList arrList = new ArrayList(5);
 
 ```java
 public ArrayList(int initialCapacity) {
-        if (initialCapacity > 0) {
-            this.elementData = new Object[initialCapacity];
-        } else if (initialCapacity == 0) {
-            this.elementData = EMPTY_ELEMENTDATA;
-        } else {
-            throw new IllegalArgumentException("Illegal Capacity: "+
-                                               initialCapacity);
-        }
+    if (initialCapacity > 0) {
+        this.elementData = new Object[initialCapacity];
+    } else if (initialCapacity == 0) {
+        this.elementData = EMPTY_ELEMENTDATA;
+    } else {
+        throw new IllegalArgumentException("Illegal Capacity: "+
+                                           initialCapacity);
     }
+}
 ```
 
 ArrayList的有参构造器：
@@ -185,15 +185,146 @@ public LinkedList(Collection<? extends E> c) {
 
 
 
+# else
+
+## ArrayList源码分析
+
+![](images/javadebug.png)
+
+- debug时建议把enable那个勾去掉，不然idea在debug时显示的数据是简化的。
+
+源码分析结论：
+
+1. 底层维护了一个`Object[] elementData`数组，用于存放数据。
+2. 当使用无参构造器创建ArrayList对象时，elementData初始化容量为0，第一次添加后为10；超出容量会自动扩容为原来的1.5倍。
+3. 使用能指定大小的构造器，则初始容量为构造器形参值，扩容时也是扩容为初始容量的1.5倍。
+4. 
+
+```java
+//JDK7
+List list = new ArrayList();//底层会创建一个10容量的数组,Object[] elementData
+list.add(123);//elementData[0] = new Integer(123);
+...
+list.add(11);//超出容量，扩容为原来的1.5倍，原数组复制到新数组
+//结论：建议开发中使用带参的构造器：ArrayList list = new ArrayList(int capacity);
+```
+
+```java
+//JDK8
+List list = new ArrayList();//底层并没有创建长度为10数组 Object[] elementData = {}
+list.add(123);//elementData[0] = new Integer(123)，在第一次调用add后才创建了数组
+...
+list.add(11);//超出容量，扩容为原来的1.5倍，原数组复制到新数组，（与JDK7无异）
+//小结：JDK7中类似于单例的饿汉式，JDK8中延迟了数组的创建，节省了内存
+```
+
+## LinkedList源码分析
+
+- 实现了双向列表和双端队列等特点。
+- 可以添加任意元素(可重复)，包括null。
+- 线程不安全，没有实现同步。
+
+![](images/linklist.png)
+
+```java
+List list = new LinkedList(); //内部声明了Node的first、last属性，默认值为null
+list.add(123); //将123封装到Node中，创建了Node对象
+
+//Node的定义：（体现双向链表）
+private static class Node<E> {
+    E item;
+    Node<E> next;
+    Node<E> prev;
+
+    Node(Node<E> prev, E element, Node<E> next) {
+        this.item = element;
+        this.next = next;
+        this.prev = prev;
+    }
+}
+```
+
+## Vector源码分析
+
+1. 底层也是`Object[] elementData`数组。
+2. 无参的默认容量10，扩容则扩容为原来的2倍；有参数的直接按两倍扩容机制。
+3. Vector的操作方法带有锁，是线程安全的（效率不高）。
+4. 考虑线程同步安全的，优先考虑Vector。
+
+```java
+//new Vector();   创建了长度为10的数组，扩容为2倍	
+```
+
+关于源码分析：分析所调用的行为结构的内部逻辑。
 
 
 
 
 
+## HashSet源码分析
+
+底层实际是HaspMap（数组+链表+红黑树），只能存放一个null键。
+
+![](images/hashset_add.png)
+
+## LinkedHashSet源码分析
+
+- HashSet的子类，底层是LiskedMap，底层维护了一个数组加双向列表；
+- 根据hashcode决定元素存储位置，同时使用链表维护元素次序，使得看起来是按添加顺序存储的；
+- 不允许添加重复的元素；
+
+![](images/linkedhashset.png)
+
+## TreeSet源码分析
+
+往TreeSet中添加数据要求是相同类的对象。
+
+自然排序中，比较两个对象是否相同的标准为：compareTo返回0，不再是equals()
+
+定制排序中，比较两个对象是否相同的标准为：compare()返回0，不再是equals()
+
+P540
 
 
 
+## HashMap源码:
+
+```java
+//JDK7中
+HashMap map = new HashMap()； //实例化，底层创建长度为16的一维数组Entry[] table
+	......     
+    map.put(key1,value);//调用key1所在类的hashCode()计算哈希值，此哈希值经某种算法得到在数组table里的存放位置
+//首先：如果此位置上为空，则key1-value添加成功
+//如果不为空，也就是此位置存在一个或多个数据(以链表存在)，就会比较key1和此位置上所有数据的哈希值，分以下两种情况：
+//***情况一：key1的哈希值与已经存在的此位置上的所有数据的哈希值都不一样，则添加成功
+//***情况二：与此位置上某个数据的哈希值相同，调用key1所在类的equals(key2)再进行比较：
+//*********如果equals()返回false，则添加成功
+//*********如果equals()返回true，使用value替换value2
+/*
+	补充：如果某一位置上存在多个的key-value，则是以链表形式存储(后添加的和原来的组成链表形式)
+	     关于扩容：不断添加中，当超出临界值(且要存放的位置非空)，就会扩容；默认扩容为原来容量的两倍，并将所有数据复制过来
+*/
+
+//JDK8与JDK7的不同：JDK8中
+/*	一：new HashMap()时底层并没有创建长度为16的一维数组
+    二：JDK8底层的数组是Node[]，而不是Entry
+    三：首次调用put()方法时，创建长度为16的数组
+    四：JDK7底层：数组+链表；JDK8底层：数组+链表+红黑树
+    什么时候使用红黑树存储数据：满足一下三个条件的数据
+    ①当数组某一位置上的数据以链表形式
+    ②此链表形式存在的数据 > 8
+    ③此数组长度 > 64               ------满足此三个条件，此时此索引上的所有数据改用红黑树存储
+*/
+```
+
+（表达出来，看底层代码验证，先会用再关注底层）
+
+## LinkedHashMap源码
+
+子类LinkedHashMap底层实现：（了解）
 
 
 
+## TreeMap源码
 
+自然排序、定制排序。TreeSet底层是TreeMap。
