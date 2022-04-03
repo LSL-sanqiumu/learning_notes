@@ -295,25 +295,237 @@ Mmeory Analyzer（MAT）工具：是 **eclipse 的一个插件** (MAT 也可以�
    - minor gc 会引发 stop the world，暂停其它用户的线程，等垃圾回收结束，用户线程才恢复运行 。
 3. 接下来如果Eden Space内存不足存放新创建对象时，再次触发Minor GC，此时将Eden Space和幸存区From的不能被回收的对象复制存入幸存区To（对象年龄都+1），然后清空Eden Space、幸存区From，幸存区To和幸存区From位置互换。
    - 当对象寿命超过阈值时，会晋升至老年代，最大年龄（寿命）是15（4bit—1111）。
+   - 大对象直接晋升至老年代（新生代存不下大对象，如果老年代存放得下，会直接存放到老年代，不会触发GC；如果新生代和老年代都存放不下，先触发GC（Full GC间接触发）、再触发Full GC，如果自救不成功则堆内存溢出）。
 4. 当老年代内存不足时会先触发Minor GC，如果之后空间仍然不足才会触发Full GC，对新生、老年都做一次GC。
 
 ![](img/16.GC.png)
 
 ### GC_相关VM参数
 
+![](img/17.vm_args.png)
 
+GC分析：P64-P67
 
+## 几种垃圾回收器
 
+1. 串行垃圾回收器：单线程，堆内存较少，适合个人电脑。
+2. 吞吐量优先的垃圾回收器：多线程，堆内存较大，多核 cpu；让单位时间内STW （stop the world）的时间最短，垃圾回收时间占比最低，这样就称吞吐量高。
+3. 响应时间优先的垃圾回收器：多线程，堆内存较大，多核 cpu；尽可能让单次 STW 的时间最短。
 
+开启串行垃圾回收器：`-XX:+UseSerialGC = Serial + SerialOld  `，Serial 是新生代的（采用复制算法），SerialOld是老年代的（采用标记+整理算法）。
 
+![](img/18.串行.png)
 
+开启吞吐量优先的垃圾回收器：（jdk1.8默认开启的就是这个）
 
+```xml
+<!-- 开启其中一个另一个会自动开启，新生代是复制算法，老年代是标记整理算法 -->
+-XX:+UseParallelGC ~ -XX:+UseParallelOldGC
+<!-- 采用自适应的策略调整新生代的大小 开启后会动态地调整Eden Space 和幸存区的大小 -->
+-XX:+UseAdaptiveSizePolicy
+<!-- 根据设定的目标来调整堆的大小来达到原设定的目标 -->
+<!-- GCTimeRatio用于调整垃圾回收时间占总运行时间的占比 1/1+ratio 
+	 例如ratio=99 1/1+99=0.01 如果运行了100分钟，那么垃圾回收的时间得满足100 * 1%=1分钟
+ 	 如果不满足则调整堆大小
+-->
+-XX:GCTimeRatio=ratio
+<!-- 垃圾回收最大暂停时间，和GCTimeRatio是冲突的 -->
+-XX:MaxGCPauseMillis=ms
+<!-- 并行GC线程数 -->
+-XX:ParallelGCThreads=n
+```
 
+![](img/19.并行.png)
 
+开启响应时间优先的垃圾回收器：
 
+```xml
+<!-- 并发的，基于标记清除算法——老年代，新生代——复制算法 -->
+<!-- 如果老年代并发失败，那么会退化到单线程的SerialOld（标记整理的老年代垃圾回收器） -->
+-XX:+UseConcMarkSweepGC ~ -XX:+UseParNewGC ~ SerialOld
+<!-- ParallelGCThreads：并行垃圾回收线程数，和CPU核数一样  
+	 ConcGCThreads：并发GC线程数，一般设置为并行线程数的1/4 -->
+-XX:ParallelGCThreads=n ~ -XX:ConcGCThreads=threads
+<!-- 控制何时进行ConcMarkSweepGC -->
+-XX:CMSInitiatingOccupancyFraction=percent
+<!--  -->
+-XX:+CMSScavengeBeforeRemark
+```
 
+![](img/20.并行响应优先.png)
 
+## G1-Garbage First垃圾回收器
 
+Garbage First时间线：2004 论文发布、2009 JDK 6u14 体验、2012 JDK 7u4 官方支持、2017 成为JDK 9 默认的。
+
+适用场景：同时注重吞吐量（Throughput）和低延迟（Low latency），默认的暂停目标是 200 ms；超大堆内存，会将堆划分为多个大小相等的 Region；整体上是 标记+整理 算法，两个区域之间是 复制 算法。
+
+相关 JVM 参数：
+
+```xml
+-XX:+UseG1GC
+-XX:G1HeapRegionSize=size
+<!-- 垃圾回收最大暂停时间 -->
+-XX:MaxGCPauseMillis=time  
+```
+
+### G1垃圾回收阶段
+
+![](img/21.G1.png)
+
+G1会将对堆内存划分为一个个大小相等的区域，每一个区域都可以独立作为Eden Space 、幸存区、老年代：
+
+![](img/22.区域划分.png)
+
+第一阶段——Young Collection（新生代垃圾收集）：Eden Space 总区域会设置为一定大小的，当Eden Space的区域被占满时就会触发新生代垃圾回收，新生代触发时都会触发一个stop the world，会以拷贝算法将幸存对象放进幸存区，当幸存区的对象较多或对象的年龄超过一定的时间，这时又会触发新生代的垃圾回收，将幸存区中符合的一部分晋升到老年代，不符合的幸存对象就会拷贝进另一个幸存区， 
+
+第二阶段——Young Collection + CM  ：
+
+在 Young GC 时会进行 GC Root 的初始标记；当老年代占用堆空间比例达到阈值时，就会进行并发标记（不会 STW），阈值由这个 JVM 参数决定：`-XX:InitiatingHeapOccupancyPercent=percent` （默认45%）。
+
+第三阶段——Mixed Collection（混合收集）：会对Eden Space(E)、幸存区(S)、老年区(O)这三个区进行全面垃圾回收。
+
+- 最终标记（Remark）会 STW。
+- 拷贝存活（Evacuation）会 STW  。
+
+![](img/23.mixedCollection.png)
+
+ E区幸存对象复制到S区，符合晋升条件的就会晋升到老年区
+
+### ELSE
+
+1、FullGC
+
+2、Young Collection 跨代引用
+
+3、Remark
+
+4、
+
+# 类加载与字节码
+
+## 类文件结构
+
+```java
+package cn.itcast.jvm.t5;
+// HelloWorld 示例
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("hello world");
+    }
+}
+```
+
+执行 javac -parameters -d . HellowWorld.java编译为 HelloWorld.class 后是这个样子的：
+
+```sh
+root@localhost ~]# od -t xC HelloWorld.class
+0000000 ca fe ba be 00 00 00 34 00 23 0a 00 06 00 15 09
+0000020 00 16 00 17 08 00 18 0a 00 19 00 1a 07 00 1b 07
+0000040 00 1c 01 00 06 3c 69 6e 69 74 3e 01 00 03 28 29
+0000060 56 01 00 04 43 6f 64 65 01 00 0f 4c 69 6e 65 4e
+0000100 75 6d 62 65 72 54 61 62 6c 65 01 00 12 4c 6f 63
+0000120 61 6c 56 61 72 69 61 62 6c 65 54 61 62 6c 65 01
+0000140 00 04 74 68 69 73 01 00 1d 4c 63 6e 2f 69 74 63
+0000160 61 73 74 2f 6a 76 6d 2f 74 35 2f 48 65 6c 6c 6f
+0000200 57 6f 72 6c 64 3b 01 00 04 6d 61 69 6e 01 00 16
+0000220 28 5b 4c 6a 61 76 61 2f 6c 61 6e 67 2f 53 74 72
+0000240 69 6e 67 3b 29 56 01 00 04 61 72 67 73 01 00 13
+0000260 5b 4c 6a 61 76 61 2f 6c 61 6e 67 2f 53 74 72 69
+0000300 6e 67 3b 01 00 10 4d 65 74 68 6f 64 50 61 72 61
+0000320 6d 65 74 65 72 73 01 00 0a 53 6f 75 72 63 65 46
+0000340 69 6c 65 01 00 0f 48 65 6c 6c 6f 57 6f 72 6c 64
+0000360 2e 6a 61 76 61 0c 00 07 00 08 07 00 1d 0c 00 1e
+0000400 00 1f 01 00 0b 68 65 6c 6c 6f 20 77 6f 72 6c 64
+0000420 07 00 20 0c 00 21 00 22 01 00 1b 63 6e 2f 69 74
+0000440 63 61 73 74 2f 6a 76 6d 2f 74 35 2f 48 65 6c 6c
+0000460 6f 57 6f 72 6c 64 01 00 10 6a 61 76 61 2f 6c 61
+0000500 6e 67 2f 4f 62 6a 65 63 74 01 00 10 6a 61 76 61
+0000520 2f 6c 61 6e 67 2f 53 79 73 74 65 6d 01 00 03 6f
+0000540 75 74 01 00 15 4c 6a 61 76 61 2f 69 6f 2f 50 72
+0000560 69 6e 74 53 74 72 65 61 6d 3b 01 00 13 6a 61 76
+0000600 61 2f 69 6f 2f 50 72 69 6e 74 53 74 72 65 61 6d
+0000620 01 00 07 70 72 69 6e 74 6c 6e 01 00 15 28 4c 6a
+0000640 61 76 61 2f 6c 61 6e 67 2f 53 74 72 69 6e 67 3b
+0000660 29 56 00 21 00 05 00 06 00 00 00 00 00 02 00 01
+0000700 00 07 00 08 00 01 00 09 00 00 00 2f 00 01 00 01
+0000720 00 00 00 05 2a b7 00 01 b1 00 00 00 02 00 0a 00
+0000740 00 00 06 00 01 00 00 00 04 00 0b 00 00 00 0c 00
+0000760 01 00 00 00 05 00 0c 00 0d 00 00 00 09 00 0e 00
+0001000 0f 00 02 00 09 00 00 00 37 00 02 00 01 00 00 00
+0001020 09 b2 00 02 12 03 b6 00 04 b1 00 00 00 02 00 0a
+0001040 00 00 00 0a 00 02 00 00 00 06 00 08 00 07 00 0b
+0001060 00 00 00 0c 00 01 00 00 00 09 00 10 00 11 00 00
+0001100 00 12 00 00 00 05 01 00 10 00 00 00 01 00 13 00
+0001120 00 00 02 00 14
+```
+
+JVM规范下的类文件结构：
+
+```java
+// u4 表示前四个字节 u2表示前两个字节
+ClassFile {
+    u4	 			magic; // 模数
+    u2	 			minor_version; // 小版本号
+    u2	 			major_version; // 主版本号
+    u2	 			constant_pool_count; // 常量池信息
+    cp_info	 		constant_pool[constant_pool_count-1]; // 常量池信息
+    u2	 			access_flags; // 访问修饰符
+    u2 				this_class; // 类自己的包名
+    u2 				super_class; // 父类信息
+    u2 				interfaces_count; // 接口信息
+    u2 				interfaces[interfaces_count];
+    u2 				fields_count; // 类成员、静态变量的信息
+    field_info 		fields[fields_count];
+    u2 				methods_count; // 类成员方法、静态方法信息
+    method_info 	methods[methods_count];
+    u2 				attributes_count; // 附加属性信息
+    attribute_info 	attributes[attributes_count];
+}
+```
+
+### 1、魔数
+
+魔数：0~3字节，表示是否是class类型的文件（每一个Java Class文件都是以0x CAFEBABE开头的。Java这么做的原因就是为了快速判断一个文件是不是有可能为class文件，以及这个class文件有没有受损（文件受损，文件开头受损的可能性最大））
+
+```sh
+# cafabebe
+0000000 ca fe ba be 00 00 00 34 00 23 0a 00 06 00 15 09
+```
+
+### 2、版本
+
+4~7字节表示类的版本 （00 34（52） 表示是 JDK8，53就是JDK9）。
+
+```sh
+# 00 00 00 34 = 3*16+4=52
+0000000 ca fe ba be 00 00 00 34 00 23 0a 00 06 00 15 09
+```
+
+### 3、常量池
+
+![](img/24.常量池.png)
+
+如下，8~9 字节表示常量池长度，00 23 （35） 表示常量池有 #1~#34项，注意 #0 项不计入，也没有值
+
+```sh
+# 00 23 = 2*16+3=35，表示常量池有#1~#34项，#0不计入也没有值
+0000000 ca fe ba be 00 00 00 34 00 23 0a 00 06 00 15 09
+```
+
+如下第 #1项是：0a（十进制为10），表示一个 Method 信息，接下来的四个字节就表示方法的具体信息（00 06 和 00 15（21） 表示它引用了常量池中 #6 和 #21 项来获得这个方法的【所属类】和【方法名】）。
+
+```sh
+0000000 ca fe ba be 00 00 00 34 00 23 0a 00 06 00 15 09
+```
+
+如下，第 #2项 09 表示一个 Field 信息，00 16（22）和 00 17（23） 表示它引用了常量池中 #22 和 # 23 项来获得这个成员变量的【所属类】和【成员变量名】
+
+```sh
+# 第 #2 项：09 
+0000000 ca fe ba be 00 00 00 34 00 23 0a 00 06 00 15 09
+0000020 00 16 00 17 08 00 18 0a 00 19 00 1a 07 00 1b 07
+```
 
 
 
