@@ -344,7 +344,9 @@ Hash类型，也叫散列，其value是一个无序字典，类似于Java中的H
 - `getbit key 3 `：获取；
 - `bitcount key [start, end]`：统计为真（1）的数据。
 
-# Redis开发工具
+# Redis客户端
+
+![](img/7.redis客户端.png)
 
 ## Jedis
 
@@ -436,7 +438,7 @@ public class JedisPoolTest {
 }
 ```
 
-## Spring—RedisTemplate
+## RedisTemplate
 
 ### 概述
 
@@ -450,15 +452,13 @@ SpringData是Spring中数据操作的模块，包含对各种数据库的集成�
 6. 支持基于JDK、JSON、字符串、Spring对象的数据序列化及反序列化。
 7. 支持基于Redis的JDKCollection实现。
 
-SpringDataRedis中提供了RedisTemplate工具类，其中封装了各种对Redis的操作。并且将不同数据类型的操作API封装到了不同的类型中：
+SpringDataRedis中提供了RedisTemplate工具类，其中封装了各种对Redis的操作。并且将不同数据类型的操作API封装到了不同的类型中，如下：
 
 ![](img/5.redisTemplate.png)
 
-### 在springboot中使用
+### 使用
 
-**使用操作：**
-
-springboot中提供了对SpringDataRedis的支持，使用操作如下：（springboot2版本之后，Jedis改为Lettuce；二者有何区别？）
+**在springboot中使用的操作：**springboot中提供了对SpringDataRedis的支持，使用操作如下：（springboot2版本之后，Jedis改为Lettuce；二者有何区别？）
 
 1、场景启用：
 
@@ -485,7 +485,6 @@ spring:
     password: 123456
     letture:
     	pool:
-    		max-active:
     		max-active: 8  # 最大连接
     		max-idle: 8    # 最大空闲连接    
     		min-idle: 0    # 最小空闲连接    
@@ -501,22 +500,24 @@ class RedisSpringbootApplicationTests {
     private RedisTemplate redisTemplate;
     @Test
     void contextLoads() {
-        // opsForValue();
-        // opsForList();
-        // opsForSet();
-        // opsForZSet();
-        // opsForGeo();
-        // opsForHash();
-        // opsForHyperLogLog();
+        // 七种操作：redisTemplate.opsForXxx 操作Xxx数据类型
+        // opsForValue(); String
+        // opsForList(); List
+        // opsForSet(); Set
+        // opsForZSet(); ZSet
+        // opsForGeo(); Geo
+        // opsForHash(); Hash
+        // opsForHyperLogLog(); HyperLogLog
 
-        // 操作字符串 redisTemplate.opsForXxx 操作某一种数据类型
+        // 示例：操作字符串 
         ValueOperations ops = redisTemplate.opsForValue();
 
         // 默认的序列化方式是JDK序列化 key在Linux-redis里会转变为带转义字符的 "\xac\xed\x00\x05t\x00\x05mykey"
-        redisTemplate.opsForValue().set("mykey","lsl");
-        System.out.println(redisTemplate.opsForValue().get("mykey"));
-        System.out.println(redisTemplate.opsForValue().get("hello"));
-
+        ops.set("mykey","lsl");
+        ops.set("user:33",new User("lsl",33));
+        System.out.println(ops.get("mykey"));
+        System.out.println(ops.get("hello"));
+		
         RedisConnection connection = redisTemplate.getConnectionFactory().getConnection();
         connection.flushDb();
     }
@@ -525,33 +526,96 @@ class RedisSpringbootApplicationTests {
 
 数据不经序列化不能直接添加到Redis，序列化可以通过json依赖中的ObjectMapper或实现Serializable接口，不过添加进去的数据仍然是带转义字符的`"\xac\xed\x00\x05t\x00\x04user"`类型的，因为写入Redis前会把Object序列化为字节形式，默认是采用JDK序列化（可读性差、占内存）。
 
+### 序列化
+
 **序列化的两种方式：**
 
-1、自定义redisTemplate序列化方式：固定的模板如下，几乎包括所有场景（记得在springboot主配置类开启注解扫描）
+**1、自定义redisTemplate序列化方式：**固定的模板如下，几乎包括所有场景（记得在springboot主配置类开启注解扫描）
 
 ```java
 @Configuration
 public class RedisConfig {
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        // 创建template
         RedisTemplate<String,Object> template = new RedisTemplate<>();
+        // 设置连接工厂
         template.setConnectionFactory(factory);
-        // 序列化配置
+        // 设置序列化工具
         Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
         ObjectMapper om = new ObjectMapper();
         om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
         jackson2JsonRedisSerializer.setObjectMapper(om);
-        // string的序列化
+        // 设置 string的序列化
         StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        // key hashKey采用String的序列化方式
+        // 设置 Key采用String的序列化方式
         template.setKeySerializer(stringRedisSerializer);
+        // 设置 hashKey采用String的序列化方式
         template.setHashKeySerializer(stringRedisSerializer);
-        // value、HashValue的序列化方式使用Jackson来序列化
+        // 设置 value的序列化方式使用Jackson来序列化
         template.setValueSerializer(jackson2JsonRedisSerializer);
+        // 设置 HashValue的序列化方式使用Jackson来序列化
         template.setHashValueSerializer(jackson2JsonRedisSerializer);
         template.afterPropertiesSet();
         return template;
+    }
+}
+```
+
+```java
+// 模板样例
+@Configuration
+public class RedisTemplateConifg {
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory){
+        // 创建Template
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        // 设置连接工厂
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        // 设置序列化工具
+        GenericJackson2JsonRedisSerializer jsonRedisSerializer =
+        new GenericJackson2JsonRedisSerializer();
+        // key和 hashKey采用 string序列化
+        redisTemplate.setKeySerializer(RedisSerializer.string());
+        redisTemplate.setHashKeySerializer(RedisSerializer.string());
+        // value和 hashValue采用 JSON序列化
+        redisTemplate.setValueSerializer(jsonRedisSerializer);
+        redisTemplate.setHashValueSerializer(jsonRedisSerializer);
+        return redisTemplate;
+    }
+}
+```
+
+为了在反序列化时知道对象的类型，JSON序列化器会将类的class类型写入json结果中，存入Redis，会带来额外的内存开销。
+
+为了节省内存空间，我们并不会使用JSON序列化器来处理value，而是统一使用String序列化器，要求只能存储String类型的key和value。当需要存储Java对象时，手动完成对象的序列化和反序列化。
+
+**2、使用StringRedisTemplate来进行手动序列化：**Spring默认提供了一个StringRedisTemplate类，它的key和value的序列化方式默认就是String方式。省去了我们自定义RedisTemplate的过程：
+
+```java
+@SpringBootTest
+class Redis03RedistempApplicationTests {
+
+    @Autowired
+    RedisTemplate redisTemplate;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
+    // 序列化工具
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    @Test
+    public void test() throws IOException {
+        User user = new User("陆拾陆",22);
+        // 手动序列化
+        String json = MAPPER.writeValueAsString(user);
+        ValueOperations ops = stringRedisTemplate.opsForValue();
+        ops.set("user:22",json);
+        String o = (String) ops.get("user:22");
+        System.out.println(o);
+        // 读取时需要反序列化
+        MAPPER.readValue(o,User.class);
+        System.out.println("user:"+o);
     }
 }
 ```
