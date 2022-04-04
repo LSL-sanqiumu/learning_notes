@@ -1063,7 +1063,7 @@ Date dates = new Date(1000);
 
 ### java.sql.Date
 
-java.sql.Date继承了java.util.Date类，该Date是专门用来匹配数据库的date类型的（ java.sql.Date的输出时间格式和数据库中的date类型的格式一致）。
+java.sql.Date继承了java.util.Date类，该Date是专门用来匹配数据库的date类型的（ java.sql.Date的输出时间格式和数据库中的date类型的格式一致）。（记住其有参构造器和其静态方法`java.sql.Date.valueOf("yyyy-MM-dd")`）
 
 **1.java.sql.Date的实例化：**`java.sql.Date date = new java.sql.Date(毫秒数)`，输出的时间格式为yyyy-MM-dd，与数据库date的默认格式一致。
 
@@ -1111,6 +1111,8 @@ public static void main(String[] args) {
 ### SimpleDateFormat
 
 > java.text.SimpleDateFormat  可以将日期对象格式化为一定格式的字符，或将字符串格式化为java.util.Date对象
+
+主要是format()方法和parse()方法。
 
 **1、使用format()方法将日期转换为字符串：**
 
@@ -1284,7 +1286,7 @@ public static void main(String[] args) {
     // now()：获取本初子午线的标准时间，与我们东八区相差了8个小时
     Instant instant = Instant.now();
     System.out.println(instant); // 2022-02-11T02:36:32.132Z
-    // 添加偏移量，得到我们东八区的时间
+    // 添加偏移量，得到东八区的时间
     OffsetDateTime offsetDateTime = instant.atOffset(ZoneOffset.ofHours(8));
     System.out.println(offsetDateTime); // 2022-02-11T10:36:32.132+08:00
     // 获取自1970-1-1 0:0:0 UTC开始的毫秒数
@@ -1297,9 +1299,7 @@ public static void main(String[] args) {
 
 ### DateTimeFormatter
 
-java.time.format.DateTimeFormatter 类，用于格式化或解析时间日期，类似于SimpleDateFormat。
-
-时间格式：
+java.time.format.DateTimeFormatter 类，用于格式化或解析时间日期，类似于SimpleDateFormat。不过其有一些预定义好的时间格式和本地化相关的时间格式，如下：
 
 1. 预定义好的标准格式：如`ISO_LOCAL_DATE_TIME`、`ISO_LOCAL_DATE`、`ISO_LOCAL_TIME`等。
 
@@ -1332,20 +1332,20 @@ java.time.format.DateTimeFormatter 类，用于格式化或解析时间日期，
      }
      ```
 
-3. 自定义格式：（常用）
+3. **自定义格式：（常用）**
 
    ```java
-   /* 格式化日期为特定格式的字符串 */
+   /* format()：格式化日期为特定格式的字符串 */
    public static void main(String[] args) {
-       LocalDateTime ldt = LocalDateTime.now();
        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy年MM月dd日 hh时mm分ss秒");
+       LocalDateTime ldt = LocalDateTime.now();
        String format = dtf.format(ldt);
        System.out.println(format);
    }
    ```
    
    ```java
-   /* parse() */
+   /* parse()：字符转日期类 */
    public static void main(String[] args) {
        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy年MM月dd日 hh时mm分ss秒");
        TemporalAccessor parse = dtf.parse("2022年03月19日 03时32分54秒");
@@ -1431,12 +1431,11 @@ java.lang.Enum的主要成员方法： （枚举类继承Enum类）
 
 ```java
 interface Info{
-    show();
+    void show();
 }
 // 情况一： 和平常一样实现并重写方法
 // 情况二： 用对象来重写方法，实现不同对象的诉求
 enum Season implements Info{
-
     SPRING("春天", "春意盎然"){
         //重写接口的方法
     },
@@ -1461,13 +1460,13 @@ enum Season implements Info{
 
 # 注解(Annotation)
 
-## 了解——注解
+## 了解—注解
 
 1. **注解的出现：**从JDK 5.0 开始，Java 增加了对元数据(MetaData) 的支持, 也就是 Annotation(注解) 。
-2. **注解的作用：**Annotation 其实就是代码里的特殊标记, 这些标记可以在编译、类加载、运行时被读取, 并执行相应的处理。通过使Annotation，程序员可以在不改变原有逻辑的情况下，在源文件中嵌入一些补充信息。代码分析工具、开发工具和部署工具可以通过这些补充信息进行验证或者进行部署。
-3. **注解使用范围：**Annotation 可以像修饰符一样被使用，可用于修饰包、类、构造器、方法、成员变量、参数、局部变量等，注解的信息被保存在注解的 “name=value”键值 对中。
+2. **注解的作用：**Annotation 其实就是代码里的特殊标记，这些标记可以在编译、类加载、运行时被读取，并结合反射来进行相应的处理。通过使用Annotation，程序员可以在不改变原有逻辑的情况下，在源文件中嵌入一些补充信息。代码分析工具、开发工具和部署工具可以通过这些补充信息进行验证或者进行部署。
+3. **注解使用范围：**Annotation 可以像修饰符一样被使用，可用于修饰包、类、构造器、方法、成员变量、参数、局部变量等，注解的信息被保存在注解的 “name=value”键值对中。
 4. **注解的重要性：**
-   - 在JavaSE中，注解的使用目的比较简单，例如标记过时的功能，忽略警告等。在JavaEE/Android中注解占据了更重要的角色，例如用来配置应用程序的任何切面，代替JavaEE旧版中所遗留的繁冗代码和XML配置等。
+   - 在JavaSE中，注解的使用目的比较简单，例如标记过时的功能，忽略警告等。在JavaEE、Android中注解占据了更重要的角色，例如用来配置应用程序的任何切面，代替JavaEE旧版中所遗留的繁冗代码和XML配置等。
    - 未来的开发模式都是基于注解的，JPA是基于注解的，Spring2.5以上都是基于注解的，Hibernate3.x以后也是基于注解的，现在的 Struts2有一部分也是基于注解的了，注解是一种趋势，一定程度上可以说：**框架 = 注解 + 反射 + 设计模式。**
 
 ![](images/annotation.png)
@@ -1501,7 +1500,7 @@ public @interface MyAnnotation {
 ```java
 @MyAnnotation("hello") 
 public void test(){
-
+	
 }
 ```
 
@@ -1700,7 +1699,7 @@ public class TestTypeDefine<@TypeDefine() U> {
 
 **反射的原理？**
 
-加载完类之后，**在堆内存的方法区中就产生了一个Class类型的对象（一个类只有一个Class对象，该对象称为运行时类）**，这个对象就包含了完整的类的结构信息。我们可以通过这个对象看到类的结构。（按Java核心技术上来说就是：程序在运行期间，Java的运行时系统总是为所有的对象创建了一个被称为运行时的类型标识，此类型标识的信息跟踪着每个对象所属的类，而保存这些信息的类就是java.lang.Class类。因此可以根据该类的方法来对运行时的类的信息进行操作。）
+加载完类之后，**在堆内存的方法区中就产生了一个Class类型的对象（一个类只有一个Class对象，该对象称为运行时类）**，这个对象包含了完整的类的结构信息。我们可以通过这个对象看到类的结构。（按Java核心技术上来说就是：程序在运行期间，Java的运行时系统总是为所有的对象创建了一个被称为运行时的类型标识，此类型标识的信息跟踪着每个对象所属的类，而保存这些信息的类就是java.lang.Class类。因此可以根据该类的方法来对运行时的类的信息进行操作。）
 
 **关于运行时类：**Object.getClass()方法能返回对象的运行时类，这运行时类就是值“具有该对象所属类型的所有元数据的对象”，**在程序运行时加载了有关类的所有元数据的对象**就是运行时类。
 
@@ -1726,11 +1725,7 @@ public class TestTypeDefine<@TypeDefine() U> {
    - 是一类在运行时可以改变其结构的语言：例如新的函数、对象、甚至代码可以被引进，已有的函数可以被删除或是其他结构上的变化。通俗点说就是在运行时代码可以根据某些条件改变自身结构。主要动态语言：Object-C、C#、JavaScript、PHP、Python、Erlang。
 2. 静态语言：
    - 与动态语言相对应的，运行时结构不可变的语言就是静态语言。如Java、C、C++。
-3. Java不是动态语言，但可以称Java为“准动态语言”。即Java有一定的动态性，我们可以利用反射机制、字节码操作获得类似动态语言的特性。Java的动态性使编程可以更加灵活！
-
-## 反射的动态性
-
-动态地获取运行时类来动态地产生对象，在程序没有运行时是不知道会产生哪个对象的。
+3. Java：Java不是动态语言，但可以称Java为“准动态语言”。即Java有一定的动态性，我们可以利用反射机制、字节码操作获得类似动态语言的特性。Java的动态性使编程可以更加灵活！反射的动态性：动态地获取运行时类来动态地产生对象，在程序没有运行时是不知道会产生哪个对象的。
 
 ## Class-运行时类
 
@@ -1740,13 +1735,13 @@ public class TestTypeDefine<@TypeDefine() U> {
 
 以下类型都会有运行时类对象：
 
-- 类（外部类、成员（内部类、静态内部类）、局部内部类、匿名内部类）。
-- 接口：interfaces。
-- 数组。
-- 枚举类：enum。
-- 注解：annotation，@interface。
-- 基本数据类型：primitive type。
-- void。
+1. 类（外部类、成员内部类、静态内部类、局部内部类、匿名内部类）。
+2. 接口：interfaces。
+3. 数组。
+4. 枚举类：enum。
+5. 注解：annotation，@interface。
+6. 基本数据类型：primitive type。
+7. void。
 
 ## 反射的使用
 
@@ -1768,33 +1763,43 @@ public class TestTypeDefine<@TypeDefine() U> {
 1. 通过创建好的对象调用Object类的getClass()方法：`xx.getClass()`：
 
    ```java
-   Person p = new Person();
-   Class clazz1 = p.getClass();
+   public static void main(String[] args) throws ClassNotFoundException {
+       Student s = new Student("陆拾陆",22);
+       Class<? extends Student> clazz = s.getClass();
+   }
    ```
 
-2. 通过调用静态方法Class.forName("classname")获取；（classname是类名或接口名）；
+2. 通过调用静态方法根据全限定类名获取：`Class.forName("classname")获取`；（classname是类名或接口名）。
 
-3. 通过T.class；（如果T表示任意的Java类型（或void关键字），T.class将代表匹配的运行时类对象）；
+   ```java
+   public static void main(String[] args) throws ClassNotFoundException {
+       Class<?> clazz = Class.forName("com.lsl.pojo.Student");
+   }
+   ```
 
-4. 通过类的加载器ClassLoader:
+3. 通过T.class；（如果T表示任意的Java类型（或void关键字），T.class将代表匹配的运行时类对象）。
 
-   - 先获取加载器`ClassLoader cl = 当前类.class.getClassLoader();`；
-   - 再获取运行时类对象`Class cla = cl.loadClass("com.lsl.reflect.Person");`，注意类的路径。
+   ```java
+   public static void main(String[] args) throws ClassNotFoundException {
+       Class clazz = Student.class;
+       String name = Student.class.getName();
+       System.out.println(name);
+       System.out.println(clazz.getName());
+   }
+   ```
 
-   
+4. 通过类的加载器ClassLoader：
+
+   - 先获取加载器：`ClassLoader cl = 当前类.class.getClassLoader();`。
+   - 再获取运行时类对象：`Class cla = cl.loadClass("com.lsl.reflect.Person");`，注意类的路径。
 
    ```Java
-   public class ReflectTest {
-   	public static void main(String[] args) throws Exception {
-           //Class.forName("classname")；
-           Class clazz2 = Class.forName("com.lsl.reflect.Person");
-           //T.class
-   		Class clazz = Person.class;
-   		//ClassLoader
-   		ClassLoader cl = ReflectTest.class.getClassLoader();
-   		Class cla = cl.loadClass("com.lsl.reflect.Person");
-   		System.out.println(cla);
-   	}
+   public class GetClassTest {
+       public static void main(String[] args) throws ClassNotFoundException {
+           ClassLoader cl = GetClassTest.class.getClassLoader();
+           Class<?> clazz = cl.loadClass("com.lsl.pojo.Student");
+           System.out.println(clazz.getName());
+       }
    }
    ```
 
@@ -1804,21 +1809,46 @@ public class TestTypeDefine<@TypeDefine() U> {
 
 获取运行时类后就可以通过调用运行时类的方法去获取目标类的属性、方法、构造器（包括私有的构造器、方法、属性），实现调用与构造。
 
-1. 通过调用运行时类的newInstance()方法创建对象（很少会通过获取有参构造器方法getConstructor()来创建对象）
+1、通过调用运行时类的newInstance()方法创建对象：(必须要有有参构造器)
 
-   - ```java
-     newInstance() 
-     //调用的是空参的构造器，构造器的权限得足够，通常为public
-     //所以建议都有空参构造器，方便通过反射创建对象和当子类使用super()时能调用父类的空参构造器
-     ```
+```java
+public static void main(String[] args) throws Exception {
+        Class<?> clazz = Class.forName("com.lsl.pojo.Student");
+        Student student = (Student) clazz.newInstance();
+        student.setName("l");
+        student.setAge(33);
+        System.out.println(student);
+    }
+```
 
-   - 如果没有空参构造器，可通过构造器的newInstance()创建对象：
+2、通过`构造器的newInstance()方法`来创建对象：（很少会通过获取有参构造器方法getConstructor()来创建对象）
 
-     ```java
-     Constructor constructor = clazz.getDeclaredConstructor(String.class, int.class);
-     constructor.setAccessible(true);
-     Person lsl = (Person) constructor.newInstance("LSL", "22");
-     ```
+```java
+// 无参构造器的 newInstance()
+public static void main(String[] args) throws Exception {
+    Class<?> clazz = Class.forName("com.lsl.pojo.Student");
+    Constructor<?> cons = clazz.getConstructor();
+    // 调用的是空参的构造器，构造器的权限得足够，通常为public
+	// 所以建议都有空参构造器，方便通过反射创建对象和当子类使用super()时能调用父类的空参构造器
+    Student s = (Student)cons.newInstance();
+    s.setName("陆拾陆");
+    s.setAge(33);
+    System.out.println(s);
+}
+```
+
+```java
+// 如果没有空参构造器，可通过构造器的 newInstance() 创建对象
+public static void main(String[] args) throws Exception {
+    Class<?> clazz = Class.forName("com.lsl.pojo.Student");
+    Constructor<?> cons = clazz.getDeclaredConstructor(String.class, Integer.class);
+    // 设置私有构造方法访问权限
+    cons.setAccessible(true);
+    Object lsl = cons.newInstance("陆拾陆", 33);
+    System.out.println(lsl.getClass());
+    System.out.println(lsl);
+}
+```
 
 
 
@@ -1829,13 +1859,13 @@ public class TestTypeDefine<@TypeDefine() U> {
    ```java
    Class class1 = Person.class;
    // 获取所有的public权限的属性，包括父类的
-   //获取到的每个值举例：public int com.LSL_sanqiumu.reflectdemo.pojo.Person.id
+   // 获取到的每个值举例：public int com.LSL_sanqiumu.reflectdemo.pojo.Person.id
    Field[] field1 = class1.getFields(); 
    // 获取所有的属性但不包含父类的，获取的值和上面类似
    Field[] field3 = class1.getDeclaredFields(); 
    for (Field f : field3) {
    	// 获取属性权限
-       //权限都有对应的一个int类型的值
+       // 权限都有对应的一个int类型的值
    	int modifier = f.getModifiers();
    	System.out.print(Modifier.toString(modifier) + "\t");
    	// 获取属性的数据类型
@@ -1843,6 +1873,10 @@ public class TestTypeDefine<@TypeDefine() U> {
    	// 获取属性的变量名
    	String fieldName = f.getName();
    }
+   // 获取私有属性
+   Field[] field2 = class1.getDeclaredField("属性名"); 
+   // 设置私有属性的访问权限
+   field2.setAccessible(true);
    ```
 
 2. 方法：获取方法的结构
