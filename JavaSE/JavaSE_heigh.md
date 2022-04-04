@@ -1756,7 +1756,7 @@ public class TestTypeDefine<@TypeDefine() U> {
 
 ### 一：获取运行时类
 
-（程序生命周期内获取的对象都是相同的，就是说运行时类会缓存一段时间，获取方式不同但运行时类是相同的）。
+（程序生命周期内获取的对象都是相同的，就是说运行时类会缓存一段时间，**获取方式不同但获取到的运行时类是相同的**）。
 
 获取运行时类的四种方法 ：
 
@@ -1857,12 +1857,12 @@ public static void main(String[] args) throws Exception {
 1. 属性：获取属性的结构
 
    ```java
-   Class class1 = Person.class;
+   Class clazz = Person.class;
    // 获取所有的public权限的属性，包括父类的
    // 获取到的每个值举例：public int com.LSL_sanqiumu.reflectdemo.pojo.Person.id
-   Field[] field1 = class1.getFields(); 
+   Field[] field1 = clazz.getFields(); 
    // 获取所有的属性但不包含父类的，获取的值和上面类似
-   Field[] field3 = class1.getDeclaredFields(); 
+   Field[] field3 = clazz.getDeclaredFields(); 
    for (Field f : field3) {
    	// 获取属性权限
        // 权限都有对应的一个int类型的值
@@ -1874,7 +1874,7 @@ public static void main(String[] args) throws Exception {
    	String fieldName = f.getName();
    }
    // 获取私有属性
-   Field[] field2 = class1.getDeclaredField("属性名"); 
+   Field[] field2 = clazz.getDeclaredField("属性名"); 
    // 设置私有属性的访问权限
    field2.setAccessible(true);
    ```
@@ -1902,8 +1902,6 @@ public static void main(String[] args) throws Exception {
    getParameterTypes()  // 获取参数类型的数组（使用getName能得到形参类型具体值）
    getExceptionTypes()  // 获取抛出的异常
    ```
-
-   
 
 3. 构造器：获取构造器结构
 
@@ -1993,16 +1991,16 @@ public class PropertiesTest {
 
 ```java
 public class PropertiesTest {
-	public static void main(String[] args) throws Exception {
-		Properties properties = new Properties();
-        //路径在idea中默认是当前module的src路径下寻找，当前项目的src目录下
-		ClassLoader cl = PropertiesTest.class.getClassLoader();
+    public static void main(String[] args) throws Exception {
+        Properties properties = new Properties();
+        // 路径在idea中默认是当前module的src路径下寻找(当前项目的src目录下)
+        ClassLoader cl = PropertiesTest.class.getClassLoader();
         InputStream is = cl.getResourceAsStream("com\\lsl\\reflect\\jdbc.properties");
-		properties.load(is);
-		String user = properties.getProperty("user");
+        properties.load(is);
+        String user = properties.getProperty("user");
 
-		System.out.println(user);
-	}
+        System.out.println(user);
+    }
 }
 ```
 
