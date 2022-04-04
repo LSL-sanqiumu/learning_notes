@@ -2128,25 +2128,25 @@ ACID，是指数据库管理系统（DBMS）在写入或更新资料的过程中
 
 1. 脏读：一个事务读到了另一个未提交的事务修改过的数据。
 2. 不可重复读：也就是在当事务A读取数据了但还没结束事务时，另一个事务修改了数据并提交，此时事务A再读取数据，读取到的数据是最新的，导致此时与先前的读取到的数据不一致，这就是不可重复读。
-3. 虚读(幻读)：一个事务先根据某些条件查询出一些记录，之后另一个事务又向表中插入了符合这些条件的记录，原先的事务再次按照该条件查询时，能把另一个事务插入的记录也读出来。（幻读在读未提交、读已提交、可重复读隔离级别都可能会出现）
+3. 虚读(幻读)：一个事务先根据某些条件查询出一些记录，之后另一个事务提交——向表中插入了符合这些条件的记录，原先的事务再次按照该条件查询时，能把另一个事务插入的记录也读出来。（幻读在读未提交、读已提交、可重复读隔离级别都可能会出现）
 
 **事务隔离级别：**
 
-1. 读未提交（read uncommitted）：（没有提交就能读到了）
+1. 读未提交（read uncommitted）：
 
    - 最低的隔离级别，事务A未提交就可以读到事务B未提交的数据。
    - 脏读就是此时出现。这种隔离级别一般是理论上的，大多数的数据库的隔离级别都是二档起步。
 
-2. 读已提交（read committed）：（提交之后才能读）
+2. 读已提交（read committed）：
 
    - 事务A只能读取到事务B提交之后的数据。
 
    - 解决了脏读现象，但存在不可重复读的问题，也会存在幻读的问题。
    - Oracle数据库的默认隔离级别，这种隔离级别下每一次读取到的数据都是真实的、持久化到硬盘中的数据。
 
-3. 可重复读（repeatable read）：（提交之后也读不到，读取到的都是刚刚开启事务时的数据）
+3. 可重复读（repeatable read）：
 
-   - 事务A开启后，无论多久，在事务A中读取到的数据都是一致的，即使事务B将数据修改并提交，事务A读到的数据还是没有发生变化的事务B提交前的数据。
+   - 事务A开启后，无论多久，在事务A中读取到的数据都是一致的，即使事务B将数据修改并提交，事务A读到的数据还是没有发生变化的（事务B提交前）的数据。
    - MySQL默认的隔离级别。
 
 4. 序列化/可串行化（serializable）：
@@ -2190,7 +2190,7 @@ select @@session.tx_isolation; -- 查看会话的隔离级别
 
 ![](img/read-uncommitted.png)
 
-设置会话级别后，按0-0-1-2-3的顺序执行SQL语句，观察查询结果。
+设置会话级别后，按0-0-1-2-3的顺序执行SQL语句，观察查询结果，存在脏读。
 
 2、验证 read committed：(删除数据，重新打开两个会话)
 
@@ -2200,9 +2200,9 @@ set session transaction isolation level read committed; -- 分别设置两个会
 
 ![](img/read-committed.png)
 
-设置会话级别后，按上述0-5的顺序执行SQL语句，观察查询结果。
+设置会话级别后，按上述0-5的顺序执行SQL语句，观察查询结果——事务中只能读取到持久化到数据库中的数据，事务中出现了读取不一致的情况，出现了不可重复读的问题。
 
-3.验证repeatable read：（打开新的两个会话，不用再设置隔离级别）
+3、验证repeatable read：（打开新的两个会话，不用再设置隔离级别）
 
 ```mysql
 insert into t_user values('零三零');
@@ -2226,7 +2226,7 @@ set session transaction isolation level serializable;
 
 ## 事务操作
 
-MySQL默认情况下支持提交事务，且是自动提交，每执行一次DML就自动提交，可设置关闭：
+MySQL默认情况下支持提交事务，且是自动提交，每执行一次DML就自动提交，可关闭自动提交：
 
 ```sql
 set autocommit=0; -- 关闭(0)或开启(1)事务自动提交，mysql默认开启事务自动提交
@@ -2238,7 +2238,7 @@ set autocommit=0; -- 关闭(0)或开启(1)事务自动提交，mysql默认开启
 start transaction; -- 标记事务开始，此时会自动关闭事务的自动提交
 -- insert\update\delete操作
 ...
-commit; / rollback; -- 执行提交或执行回滚，事务结束，执行完会自动开启事务的自动提交
+commit; / rollback; -- 执行提交或执行回滚后事务结束，执行完之后会自动开启事务的自动提交
 
 -- 了解
 savepoint; -- 设置事务保存点
@@ -2246,7 +2246,7 @@ rollback savepoint; -- 回滚到事务保存节点
 release savepoint; -- 撤销事务的保存节点
 ```
 
-模拟：
+事务操作示例：
 
 ```SQL
 CREATE DATABASE `shop` CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -2267,7 +2267,7 @@ UPDATE `account` SET money=money-500 WHERE `name`='A';
 UPDATE `account` SET money=money+500 WHERE `name`='B';
 COMMIT; -- 提交：成功提交时持久化成功
 ROLLBACK; -- 提交失败：回滚到原状态
-SET autocommit = 1; -- 开启，事务结束
+SET autocommit = 1; -- 开启事务自动提交，事务结束
 ```
 
 # 索引
@@ -2278,17 +2278,16 @@ SET autocommit = 1; -- 开启，事务结束
 
 参考博文：[CodingLabs - MySQL索引背后的数据结构及算法原理](http://blog.codinglabs.org/articles/theory-of-mysql-index.html)
 
-MySQL官方对索引的定义为：**索引（Index）是帮助MySQL高效获取数据的数据结构。**（有序的）
-
-索引是在字段上添加的，是为了提高查询效率而存在的。（类似目录的作用——就是为了缩小扫描范围，避免全表扫描）
+MySQL官方对索引的定义为：**索引（Index）是帮助MySQL高效获取数据的数据结构。**（索引是有序的）索引是在字段上添加的，是为了提高查询效率而存在的。（类似目录的作用——就是为了缩小扫描范围，避免全表扫描）
 
 ```mysql
 select * from `user` where name='陆拾陆'; 
 ```
 
-如上的select语句，因为没有为name加索引，所以会在name字段进行全字段查询，也就是全表扫描，这是MySQL查询的一种方式，另一种就是根据索引来查询。
+1. 如上的select语句，因为没有为name加索引，所以会在name字段进行全字段查询，也就是全表扫描，这是MySQL查询的一种方式，另一种就是根据索引来查询。
 
-根据索引进行查询，其实是缩小范围区间后的查询，当排序后才有范围区间一说，也就是mysql数据库中的索引也需要进行排序，并且这个索引的排序和TreeSet数据结构相同（TreeSet底层是一个自平衡的二叉树）。在MySQL中索引是一个B-Tree数据结构。索引的特征是：其遵循左小右大的原则存放，采用中序遍历的方式来取数据。
+2. 根据索引进行查询：实际是缩小范围区间后的查询，当排序后才有范围区间一说，也就是mysql数据库中的索引是需要进行排序的，并且这个索引的排序和TreeSet数据结构相同（TreeSet底层是一个自平衡的二叉树）。在MySQL中索引是一个B-Tree数据结构。索引的特征是：其遵循左小右大的原则存放，采用中序遍历的方式来取数据。
+
 
 **索引的优缺点：**
 
@@ -2302,19 +2301,65 @@ select * from `user` where name='陆拾陆';
 
 **索引原理：**
 
-![](img/2.索引原理.png)
+<img src="img/2.索引原理.png" style="zoom: 50%;" />
 
-【注意1：】任何数据库中，主键都会自动添加索引对象；MySQL中，有唯一性约束的字段也会字段创建索引对象。
+【注意1：】任何数据库中，**主键都会自动添加索引对象；MySQL中，有唯一性约束的字段也会自动创建索引对象。**
 
 【注意2：】任何数据库中，任何一张表的**任何一条记录**在硬盘存储上都有一个硬盘的物理存储编号。
 
-【注意3：】在MySQL中，索引是一个单独的对象，不同的存储引擎以不同的形式存在。MyISAM存储引擎中——索引存储在.MYI文件中；Innodb存储引擎中，索引存储在一个逻辑名称叫做tablespace的表中；在MEMORY存储引擎中，索引被存储在内存中。不管索引存储在哪里，索引在MySQL中都是以一个树的形式存在。
+【注意3：】在MySQL中，索引是一个单独的对象，不同的存储引擎以不同的形式存在。MyISAM存储引擎中——索引存储在.MYI文件中；Innodb存储引擎中，索引存储在一个逻辑名称叫做tablespace的表中；在MEMORY存储引擎中，索引被存储在内存中。不管索引存储在哪里，**索引在MySQL中都是以一个树的形式存在。**
 
-![](img/1.索引树_简单模型.png)
+<img src="img/1.索引树_简单模型.png" style="zoom:50%;" />
 
-什么情况下考虑给字段添加索引：
+**什么情况下考虑给字段添加索引：**
 
-![](img/3.何时加.png)
+<img src="img/3.何时加.png" style="zoom: 67%;" />
+
+## 索引的语法
+
+**创建索引：**
+
+```mysql
+-- 创建索引的语法，不加unique、fulltext则是创建常规索引
+create [unique | fulltext] index 索引名称 on 表名(字段1,字段2,...);
+-- 给某个表的字段添加常规索引
+create index `表`_`字段` index on `表`(`字段`); 
+-- 添加全文索引
+alter table table_name add fulltext index `表`(`字段`); 
+```
+
+```mysql
+-- 示例：为user表中的name字段添加常规索引，索引名称为idx_user_name
+-- 索引命名规范为：idx_表名_字段名
+create index idx_user_name on user(name);
+```
+
+**删除索引：**
+
+```mysql
+-- 删除表的某个索引
+drop index 索引名 on `表`; 
+```
+
+**查看索引：**
+
+```mysql
+-- 查看表的索引信息
+show index from `table_name`; 
+-- 单独显示索引信息
+show index from `table_name`\G; 
+```
+
+
+
+explain参考文章：[【MySQL优化】——看懂explain_漫漫长途，终有回转；余味苦涩，终有回甘-CSDN博客_explain](https://blog.csdn.net/jiadajing267/article/details/81269067)
+
+```mysql
+explain select * from `table_name`; -- 分析SQL执行情况，type是ALL的时候就不是使用索引来查询
+explain select * from `table_name` where match() against(``); -- 分析SQL执行情况
+```
+
+
 
 ## 索引结构和分类
 
@@ -2385,54 +2430,6 @@ Innodb中，根据索引的存储形式来分类，可分为：
 
 
 
-## 索引的语法
-
-**创建索引：**
-
-```mysql
--- 创建索引的语法，不加unique、fulltext则是创建常规索引
-create [unique | fulltext] index 索引名称 on 表名(字段1,字段2,...)
--- 给表1的字段添加索引
-create index `表1`_`字段` index on `表1`(`字段`); 
--- 添加全文索引
-alter table table_name add fulltext index `表`(`字段`); 
-```
-
-例子：
-
-```mysql
--- 为user表中的name字段添加常规索引，索引名称为idx_user_name
--- 索引命名规范为：idx_表名_字段名
-create index idx_user_name on user(name);
-```
-
-**删除索引：**
-
-```mysql
--- 删除表1的某个索引
-drop index 索引名 on `表1`; 
-```
-
-
-
-explain参考文章：[【MySQL优化】——看懂explain_漫漫长途，终有回转；余味苦涩，终有回甘-CSDN博客_explain](https://blog.csdn.net/jiadajing267/article/details/81269067)
-
-```mysql
-explain select * from `table_name`; -- 分析SQL执行情况，type是ALL的时候就不是使用索引来查询
-explain select * from `table_name` where match() against(``); -- 分析SQL执行情况
-```
-
-**查看索引：**
-
-```mysql
--- 查看表的索引信息
-show index from `table_name`; 
--- 单独显示索引信息
-show index from `table_name`\G; 
-```
-
-
-
 ## 索引失效与使用原则
 
 ### 验证索引的查询效率：
@@ -2488,14 +2485,14 @@ SQL提示：在SQL语句中加入一些提示来达到优化操作的目的。
 
 ```mysql
 -- SQL提示使用格式
-select xxx from table_name use index(索引名称) xxx
-select xxx from table_name ignore index(索引名称) xxx
-select xxx from table_name force index(索引名称) xxx
+select xxx from table_name use index(索引名称) xxx;
+select xxx from table_name ignore index(索引名称) xxx;
+select xxx from table_name force index(索引名称) xxx;
 ```
 
 ### 覆盖索引：
 
-- 查询使用了索引，并且需要返回的列，在该索引中已经全部能够找到，就叫覆盖索引。
+- 查询使用了索引，并且需要返回的列在该索引中已经全部能够找到，就叫覆盖索引。
 
 explain的Extra的信息解释：
 
@@ -2543,12 +2540,10 @@ create index idx_xxx on `table_name`(column(n));
 
 **什么时候用索引？**
 
-- 索引不是越多越好。
-- 不要对常变动的数据加索引。
-- 小数据量的表不需要加索引。
-- 索引一般加在常用来查询的字段上。
-
-
+1. 索引不是越多越好。
+2. 不要对常变动的数据加索引。
+3. 小数据量的表不需要加索引。
+4. 索引一般加在常用来查询的字段上。
 
 
 
