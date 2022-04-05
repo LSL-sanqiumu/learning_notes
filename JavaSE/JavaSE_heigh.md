@@ -2028,6 +2028,43 @@ public static void main(String[] args) throws Exception {
 }
 ```
 
+## 反射应用案例
+
+需求：完成一个“框架”类，在不改变该类的任何代码下，实现任意类的对象的创建，并能执行任意方法。（配置文件+反射）
+
+1. 需要创建的对象的全类名和需要执行的方法都定义在配置文件中。
+2. 在程序中加载并读取配置文件。
+3. 使用反射技术将类文件加载。
+4. 创建对象、方法执行。
+
+```java
+public class ReflexApplyTest {
+    public static void main(String[] args) throws Exception {
+        // 1、数据获取
+        Properties properties = new Properties();
+        ClassLoader classLoader = ReflexApplyTest.class.getClassLoader();
+        InputStream is = classLoader.getResourceAsStream("config.properties");
+        properties.load(is);
+        // 2、数据获取
+        String className = properties.getProperty("className");
+        String methodName = properties.getProperty("methodName");
+        // 3、加载类
+        Class<?> clazz = classLoader.loadClass(className);
+        // 4、创建对象
+        Object object = clazz.newInstance();
+        // 5、获取方法
+        Method method = clazz.getMethod(methodName);
+        // 6、方法执行
+        method.invoke(object);
+    }
+}
+```
+
+```properties
+className=com.lsl.pojo.Student
+methodName=show
+```
+
 # Properties配置文件
 
 ```java
