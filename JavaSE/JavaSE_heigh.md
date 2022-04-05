@@ -1852,123 +1852,180 @@ public static void main(String[] args) throws Exception {
 
 
 
-### 三：获取运行时类的结构
+### 三：获取运行时类各结构的对象
 
-1. 属性：获取属性的结构
+**1、获取类属性的信息**
 
-   ```java
-   Class clazz = Person.class;
-   // 获取所有的public权限的属性，包括父类的
-   // 获取到的每个值举例：public int com.LSL_sanqiumu.reflectdemo.pojo.Person.id
-   Field[] field1 = clazz.getFields(); 
-   // 获取所有的属性但不包含父类的，获取的值和上面类似
-   Field[] field3 = clazz.getDeclaredFields(); 
-   for (Field f : field3) {
-   	// 获取属性权限
-       // 权限都有对应的一个int类型的值
-   	int modifier = f.getModifiers();
-   	System.out.print(Modifier.toString(modifier) + "\t");
-   	// 获取属性的数据类型
-   	Class type = f.getType();
-   	// 获取属性的变量名
-   	String fieldName = f.getName();
-   }
-   // 获取私有属性
-   Field[] field2 = clazz.getDeclaredField("属性名"); 
-   // 设置私有属性的访问权限
-   field2.setAccessible(true);
-   ```
+```java
+/* xxxFields：获取属性对象数组 */
+public static void main(String[] args) throws Exception {
+    Class clazz = Student.class;
+    // 只能获取所有的public权限的属性，包括父类的
+    Field[] publicFields = clazz.getFields();
+    for (Field f : publicFields) {
+        System.out.println(f); //示例：public java.lang.String com.lsl.pojo.Student.www
+    }
+    // 获取所有的属性（包括私有的）但不包含父类的，获取的值和上面类似
+    Field[] allFields = clazz.getDeclaredFields();
+    for (Field df : allFields) {
+        System.out.println(df); //示例：private java.lang.String com.lsl.pojo.Student.name
+    }
+    // 仅是获取私有的属性信息，需要指定私有属性的name
+    Field privateField = clazz.getDeclaredField("name");
+   	// 实际上setAccessible是启用和禁用访问安全检查的开关
+    // 由于JDK的安全检查耗时较多.所以通过setAccessible(true)的方式关闭安全检查就可以达到提升反射速度的目的
+    // 对私有属性进行设置时，不打开这个开关关闭安全检查，会出现IllegalAccessException 
+	privateField.setAccessible(true);
+}
+```
 
-2. 方法：获取方法的结构
+Field类——属性对应的类，用于封装属性结构信息，Field类对象的一些方法如下：
 
-   ```java
-   Class clazz = Person.class;
-   //获取所有的方法，包括父类的
-   Method[] methods = clazz.getMethods();
-   // 获取所有声明了的方法，不包括父类的
-   Method[] declaredMethods = clazz.getDeclaredMethods();
-   for (Method m : declaredMethods) {
-       System.out.println(m);
-   }
-   // public void com.LSL_sanqiumu.reflectdemo.pojo.Person.info()
-   // public java.lang.String com.LSL_sanqiumu.reflectdemo.pojo.Person.show(java.lang.String)
-   ```
+1. `getModifiers()`：获取属性的权限，权限对应一个个整数，私有是2，公有是1。
+2. `getType()`：获取属性的数据类型。
+3. `getName()`：获取属性的名称。
 
-   ```java
-   getAnnotations()  // 获取注解
-   getModifiers()    // 获取权限修饰符
-   getReturnType()   // 获取返回值类型
-   getName()		  // 获取方法名
-   getParameterTypes()  // 获取参数类型的数组（使用getName能得到形参类型具体值）
-   getExceptionTypes()  // 获取抛出的异常
-   ```
+**2、获取类方法的结构的信息**
 
-3. 构造器：获取构造器结构
+```java
+public static void main(String[] args) throws Exception {
+    Class clazz = Student.class;
+    // 获取类中所有的public的方法的结构信息，包括父类中的public的方法（只是public的）
+    Method[] methods = clazz.getMethods(); // public native int java.lang.Object.hashCode()
+    // 获取类中声明了的所有的方法（包括私有的）的信息，不包括父类的（只是当前类本身的）
+    Method[] allMethods = clazz.getDeclaredMethods();
+    for (Method m : allMethods) {
+        System.out.println(m); // private void com.lsl.pojo.Student.test()
+    }
+    // 获取私有的方法的结构信息，需要指定私有方法的方法名
+    Method test = clazz.getDeclaredMethod("test");
+    System.out.println(test);
+    // 获取
+}
+```
 
-   ```java
-   Class clazz = Person.class;
-   // 获取当前类中的public的构造器
-   Constructor[] constructors = clazz.getConstructors();
-   // 获取当前类中的所有的声明了的构造器
-   Constructor[] declaredConstructors = clazz.getDeclaredConstructors();
-   ```
+Method类——方法对应的类，用于封装方法的结构信息，Method类对象的常用方法如下：
 
-4. 父类：
+1. `getAnnotations(Class<T> annotationClass)`：获取方法上的注解的信息。
+2. `getModifiers() `：获取方法的权限，权限对应一个个整数，私有的是2，公有的是1。
+3. `getReturnType()`：获取方法返回值类型。
+4. `getName()`：获取方法名。
+5. `getParameterTypes()`：获取参数类型信息的数组（再使用getName()能得到形参类型具体值）。
+6. `getExceptionTypes()`：获取抛出的异常类型（数组）。
 
-   ```java
-   // 获取运行时类的父类
-   clazz.getSuperclass();
-   // 获取运行时类带泛型的父类
-   Type type = clazz.getGenericSuperclass
-   // 获取泛型类型
-   ParameterizedType pt = (ParameterizedType) type;
-   Type[] actualTypeArguments = pt.getActualTypeArguments();
-   ```
+**3、获取构造器**
 
-5. 接口、包、注解：
+```java
+public static void main(String[] args) throws Exception {
+    Class clazz = Student.class;
+    // 获取所有的public的构造器，不包括父类的
+    Constructor[] constructor = clazz.getConstructors();
+    for (Constructor c : constructor) {
+        System.out.println(c); // public com.lsl.pojo.Student()
+    }
+    // 获取所有的构造器（包含私有的），不包括父类的
+    Constructor[] declaredConstructor = clazz.getDeclaredConstructors();
+    for (Constructor e : declaredConstructor
+        ) {
+        System.out.println(e); // private com.lsl.pojo.Student(java.lang.String)
+    }
+    // 获取无参构造器（必须得是public的）
+    Constructor noArgs = clazz.getConstructor();
+    // 获取有参构造器（必须得是public的）
+    Constructor argsCons = clazz.getConstructor(String.class, Integer.class);
+}
+```
 
-   ```java
-   Class[] interfaces1 = clazz.getInterfaces();
-   Class[] interfaces2 = clazz.getSuperclass().getInterfaces();
-   for (Class c : interfaces2) {
-       System.out.println(c);
-   }
-   Package aPackage = clazz.getPackage();
-   Annotation[] annotations = clazz.getAnnotations();
-   ```
+Constructor类——构造方法对应的类，用于封装构造方法的结构信息，Constructor类对象的常用方法如下：
 
-   
+- `newInstance()`：使用当前构造器实例化对象。
 
-### 四：调用指定内容
+**4、获取父类结构的信息**
+
+```java
+public static void main(String[] args) throws Exception {
+    Class clazz = Student.class;
+    // 获取运行时类的父类
+    Class superclass = clazz.getSuperclass();
+    System.out.println(superclass); //class java.lang.Object
+    // 获取运行时类带泛型的父类
+    Type genericSuperclass = clazz.getGenericSuperclass();
+    System.out.println(genericSuperclass);
+}
+```
+
+**5、包、接口、注解**
+
+```java
+public static void main(String[] args) throws Exception {
+    Class clazz = Student.class;
+    // 获取接口的信息
+    Class[] interfaces = clazz.getInterfaces();
+    for (Class c : interfaces) {
+        System.out.println(c); // interface com.lsl.pojo.TestSt
+    }
+    // 包名
+    Package packageName = clazz.getPackage();
+    System.out.println(packageName); // package com.lsl.pojo
+    // 注解信息
+    Annotation[] annotations = clazz.getAnnotations();
+    for (Annotation a : annotations) {
+        System.out.println(a);
+    }
+}
+```
+
+
+
+### 四：调用类结构的动作
 
 通过反射还可以对指定的对象设置值或取值、调用其方法和构造器。
 
-```java
-Person p = new Person();
-Field name = clazz.getDeclaredField("name");
-name.setAccessible(true); // 设置私有属性可访问
-name.set(p,"lsl");
-System.out.println(name.get(p));
-```
+**1、操作属性：**
 
 ```java
-private String show(String nation,String age){
-	System.out.println("我的国籍是：" + nation + age);
-	return nation;
+public static void main(String[] args) throws Exception {
+    Student s = new Student("陆拾陆",33);
+    Class<? extends Student> clazz = s.getClass();
+    // 获取私有属性对象
+    Field name = clazz.getDeclaredField("name");
+    name.setAccessible(true);
+    // 通过反射设置对象s的name属性——需要传入对象
+    name.set(s,"hello"); 
+    System.out.println(s);
 }
-// 获取该类的show方法，后面指定形参类型
-Method show = clazz.getDeclaredMethod("show", String.class,String.class);
-// 设置该私有方法可访问
-show.setAccessible(true);
-// 调用p对象的show方法，并传入形参；返回值
-Object returnValue = show.invoke(p,"zg","12");
-// 如果调用静态方法：xxxmethods.invoke(Xxx.class);
 ```
 
+**2、调用方法**
+
 ```java
-Constructor constructor = clazz.getDeclaredConstructor(String.class, int.class);
-constructor.setAccessible(true);
-Person lsl = (Person) constructor.newInstance("LSL", "22");
+public static void main(String[] args) throws Exception {
+    Student s = new Student("陆拾陆",33);
+    Class<? extends Student> clazz = s.getClass();
+    // 获取该类的show方法对象，后面可指定形参类型
+    Method show = clazz.getDeclaredMethod("show", String.class, Integer.class);
+    // 设置该私有方法可访问
+    show.setAccessible(true);
+    // 调用show()方法
+    Object o = show.invoke(s, "零三零", 22);
+    // 如果调用静态方法：xxxmethods.invoke(Xxx.class);
+    Method tests = clazz.getDeclaredMethod("tests");
+    System.out.println(tests); // public static void com.lsl.pojo.Student.tests()
+    tests.invoke(Student.class);
+}
+```
+
+**3、调用构造器来构造对象**
+
+```java
+public static void main(String[] args) throws Exception {
+    Student s = new Student("陆拾陆",33);
+    Class<? extends Student> clazz = s.getClass();
+    Constructor constructor = clazz.getDeclaredConstructor(String.class, Integer.class);
+    constructor.setAccessible(true);
+    Object student = constructor.newInstance("绿森林", 1000);
+    System.out.println(student);
+}
 ```
 
 # Properties配置文件
