@@ -2399,12 +2399,12 @@ hash索引的特点：
 ```mysql
 -- 创建索引的语法，不加unique、fulltext则是创建常规索引
 create [unique | fulltext] index 索引名称 on 表名(字段1,字段2,...);
--- 给某个表的字段添加常规索引
-create index `表`_`字段` index on `表`(`字段`); 
+-- 给某个表的字段添加常规索引——索引命名规范：idx_`表`_`字段`
+create index 索引名称 index on `表`(`字段`); 
 -- 添加全文索引
 alter table table_name add fulltext index `表`(`字段`); 
 -- 创建联合索引：联合索引的顺序有讲究（最左匹配原则）
-create index xxx_xxx_xxx on `table_name`(`字段1`,`字段2`,`字段3`);
+create index xxx_xxx_xxx on `table_name`(`字段1`,`字段2`,`字段3`,...);
 ```
 
 ```mysql
@@ -2635,67 +2635,110 @@ explain select * from mysql.user;
 
 ## 索引失效与使用原则
 
-### 验证索引的查询效率：
-
-1. 在某字段未建立索引之前，使用该字段来执行查询，看看耗时多少，例如：
-
-   ```mysql
-   select * from `table_name` where xx=xxx; 
-   ```
-
-2. 针对该字段创建索引。（`create index idx_tablename_xxx on tablename(xxx)`）
-
-3. 然后再次执行相同的select语句，查看耗时。
-
 ### 索引失效的n中情况：
 
-索引失效的第一种情况：
+（单列索引）以下这几种情况索引会失效，查询时不会走索引：
 
-- 模糊查询时，使用了%为开头会导致索引失效。
+1、在索引列上进行运算操作时，索引会失效，索引列使用了函数，索引就失效。
 
-索引失效的第二种情况：
+```mysql
+-- 对索引列进行了运算，索引失效
+explain select  * from tb_user where substring(phone,10,2) = '15';
+```
 
-- 使用or来分割条件时，要求or两边的条件字段都要有索引，才会走索引。
+2、字符串类型字段，不加单引号，索引会失效。（不加引号会导致类型转换，从而导致索引失效）。
 
-索引失效的第三种情况——最左前缀法则：（联合索引失效情况）
+```mysql
+explain select  * from tb_user where phone=17799990000;
+ explain select * from tb_user where profession='软件工程' and age>=30 and `status`=0;
+```
 
-1. 最左前缀法则：如果使用联合索引，查询时索引的最左列必须存在，并且不跳过索引中的列；如果最左列不存在，那么查询时索引全部失效；如果跳过某一列，索引将会部分失效（后面的索引字段失效）。（使用联合索引，但查询时不符合最左前缀法则，那么索引失效会部分失效，就不会走失效的索引去进行查询数据了）
-2. 使用联合索引时，如果出现这两个范围查询（>、<）时，范围查询右侧的索引会失效。
+3、模糊查询时，只要是头部模糊匹配，那么索引就会失效。
 
-索引失效的第四种情况：
+```mysql
+-- 只要是头部模糊匹配，那么索引就会失效
+explain select * from tb_user where profession like '%软件';
+explain select * from tb_user where profession like '_软件';
+-- 索引不失效
+explain select * from tb_user where profession like '软件%';
+explain select * from tb_user where profession like '软件_';
+```
 
-- 在索引列上进行运算操作时，索引会失效。
-- 例如sal索引，`select * from emp where sal+1 = 800;`，此时索引失效，因为sal进行了运算。
+4、使用or来分割条件时，要求or两边的条件字段都要有索引，才会走索引。
 
-索引失效的第五种情况：
+```mysql
+-- id、phone都有索引，但是由于age没有加索引，索引失效
+explain select * from tb_user where id=10 or age=23;
+explain select * from tb_user where phone='17799990017' or age=23;
+-- 为age建立索引就好
+```
 
-- 在where当中索引列使用了函数。
-- 例如ename索引，`explain select * from emp where lower(ename)='jack'`。
+5、数据分布影响：**如果MySQL评估使用索引比全表扫描更慢，那么就不会使用索引**。（某索引字段绝大部分数据满足某个筛选条件时，就不会走索引）
 
-索引失效的第六种情况：
+```mysql
+-- 大部分数据符合，直接走全部扫描
+explain select * from tb_user where phone >= '1779999000';
+-- 大部分数据不符合，才走索引（占比多少才会走呢？？）
+explain select * from tb_user where phone >= '17799990019';
+```
 
-- 字符串类型字段，不加单引号，索引会失效。（不加引号会导致类型转换，从而导致索引失效）
 
-数据分布影响：如果MySQL评估使用索引比全表扫描更慢，那么就不会使用索引。（某索引字段绝大部分数据满足某个筛选条件时，就不会走索引（联合索引有意外......））
+
+**最左前缀法则：（联合索引失效情况）**
+
+```mysql
+create index index_user_pro_age_sta on tb_user(profession,age,status); -- 创建联合索引 
+```
+
+1、最左前缀法则：如果使用联合索引，查询时索引的**最左列必须存在**，并且不跳过索引中的列；如果最左列不存在，那么查询时索引全部失效；如果跳过某一列，索引将会部分失效（跳过的那一列的后面的索引字段将会失效）。（使用联合索引，但查询时不符合最左前缀法则，那么索引失效会部分失效，就不会走失效的索引去进行查询数据了）
+
+```mysql
+-- 满足最左前缀法则
+explain select * from tb_user where profession='软件工程' and age=31 and `status`='0'; -- 使用到全部索引
+explain select * from tb_user where profession='软件工程' and age=31; -- 使用到profession、age的
+explain select * from tb_user where profession='软件工程'; -- 使用到profession的
+-- 不满足最左前缀法则（因为最左列profession不存在），不走索引，全部失效
+explain select * from tb_user where age=31 and `status`='0';
+explain select * from tb_user where `status`='0';
+-- 跳过age，status索引字段也将失效，只是profession有效
+explain select * from tb_user where profession='软件工程' and `status`='0';
+-- 索引全部生效，最左匹配法则与位置无关，最左字段必须存在
+explain select * from tb_user where age=31 and `status`='0' and profession='软件工程';
+```
+
+2、使用联合索引时，如果出现这两个范围查询（>、<）时，范围查询右侧的索引会失效。
+
+```mysql
+-- status字段索引失效
+explain select * from tb_user where profession='软件工程' and age>30 and `status`='0';
+explain select * from tb_user where profession='软件工程' and age<30 and `status`='0';
+-- 业务运行情况下使用>=或<=可以避免这个问题
+explain select * from tb_user where profession='软件工程' and age>=30 and `status`='0'; -- 全部生效
+```
+
+
 
 ### SQL提示：
 
-SQL提示：在SQL语句中加入一些提示来达到优化操作的目的。
+SQL提示：可以在SQL语句中加入一些提示来达到优化操作的目的。如果某字段有多个索引，那么可以指定使用哪个索引以达到操作优化的目的：
 
-1. `use index`：使用哪个索引。
-2. `ignore index`：不用哪个索引。
-3. `force index`：必须用哪个索引。
+1. `use index`：提示使用哪个索引（只是建议，还是由数据库系统权衡后决定使用哪个）。
+2. `ignore index`：提示不用哪个索引，忽略这个索引。
+3. `force index`：提示必须用哪个索引。
 
 ```mysql
 -- SQL提示使用格式
-select xxx from table_name use index(索引名称) xxx;
-select xxx from table_name ignore index(索引名称) xxx;
-select xxx from table_name force index(索引名称) xxx;
+select xxx from table_name use index(索引名称) xxx语句;    -- 用哪个
+select xxx from table_name ignore index(索引名称) xxx语句; -- 忽略哪个
+select xxx from table_name force index(索引名称) xxx语句;  -- 必须用哪个
+
+explain select * from tb_user use index(idx_user_pro) where profession='软件工程';
+explain select * from tb_user ignore index(idx_user_pro_age_sta) where profession='软件工程';
 ```
 
 ### 覆盖索引：
 
-- 查询使用了索引，并且需要返回的列在该索引中已经全部能够找到，就叫覆盖索引。
+select语句在查询过程中使用到了索引，并且需要返回的列在该索引中已经全部能够找到，就叫覆盖索引。
 
 explain的Extra的信息解释：
 
