@@ -2315,11 +2315,86 @@ select * from `user` where name='陆拾陆';
 3. 添加索引时考虑很少有DML操作的字段，因为DML操作之后索引需要重新排序。
 4. （建议不要随意添加索引，因为索引是需要维护的，过多的索引会降低系统性能）
 
+## 索引结构
+
+![](img/7.index_s.png)
+
+![](img/8.索引分类.png)
+
+### B+Tree索引
+
+索引底层结构演变：二叉树、红黑树 ===> B-Tree  ===> B+树。
+
+使用二叉树和红黑树都存在一个缺点，如下：
+
+![](img/9.tree.png)
+
+二叉树的每个节点最多只能有两个子节点，那么就会导致大数据量是层级深。使用B-Tree来避免二叉树和红黑树的缺点，B-Tree结构如下示例：
+
+![](img/10.B-tree.png)
+
+B-Tree：
+
+B+Tree是B-Tree的变种，相对于B树，B加树的所有数据都会出现在叶子节点，并且叶子节点会形成一个单向链表：
+
+![](img/11.B+Tree.png)
+
+Innodb的B+Tree的高度：
+
+<img src="img/14.树的高度.png" style="zoom:67%;" />
+
+### Hash索引
+
+hash索引通过hash算法来将键值换算成一个hash值，然后映射到hash表中对应的位置来存放数据。如果两个或多个键值都映射到hash表上同一位置，就会产生hash冲突（hash碰撞），可通过链表解决。
+
+![](img/hashIndex.png)
+
+hash索引的特点：
+
+1. 只能用于对等比较（=、in），不支持范围查询（between、<、>等）。
+2. 无法利用索引完成排序操作。
+3. 查询效率高，通常情况下只需一次检索，效率通常高于B+Tree索引。
+
+支持Hash索引的引擎：
+
+- Memory。
+- Innodb中具有自适应hash功能，在Innodb中，hash索引是存储引擎根据B+Tree索引在指定条件下自动构建的。
+
+
+
+## 索引分类
+
+作为Java开发工程师，可以不对索引特别清楚，会创建和删除就好，不过更懂原理可以在面试中多说点......
+
+索引分类：（MySQL中，主键约束、唯一性约束的字段默认带索引）
+
+1. 主键索引（PRIMARY KEY）：是针对表的主键创建的索引，默认自动创建且每张表只能有一个。
+2. 唯一索引（UNIQUE KEY）：可以存在多个唯一索引，多个列都可以标识为唯一索引，是为了避免重复的列出现。
+3. 常规索引（key、index）：默认的索引，使用key关键字来设置，用来快速定位特定数据，可以有多个。
+4. 全文索引（fulltext）：特定的引擎下才有(myisam)，全文索引查找的是文本中的关键字，而不是比较索引中的值，可以有多个。
+5. （单一索引、复合索引）。
+
+**Innodb中，根据索引的存储形式来分类，可分为：**
+
+1. 聚集索引（聚簇索引）：将数据存储和索引放在一块，索引结构的叶子节点保存了行数据。（一张表中必须有且只有一个）
+   - 如果存在主键，那么主键索引就是聚集索引。
+   - 如果不存在主键，那么就将第一个定义的非空唯一性索引作为聚集索引。
+   - 如果表没有主键和唯一性索引，那么Innodb会自动生成一个rowid作为隐藏的聚集索引。
+2. 二级索引：将数据与索引分开存储，索引结构的叶子节点关联的是对应的主键。（一张表中可有，且可以存在多个）
+
+![](img/索引分类结构.png)
+
+回表查询：先去二级索引找到对应id，再去聚集索引找到字段的全部信息。如`select * from user where name = 'Arm'`，因为为name字段加了索引，那么就会根据name字段的索引进行查询，因为需要查询的是所有的数据，那么此时就会拿到对应的id去聚集索引继续查找，然后再返回所需数据。
+
+![](img/13.回表查询.png)
+
+
+
 ## 索引的语法
 
 ### 语法
 
-**创建索引：**
+创建索引：
 
 ```mysql
 -- 创建索引的语法，不加unique、fulltext则是创建常规索引
@@ -2328,6 +2403,8 @@ create [unique | fulltext] index 索引名称 on 表名(字段1,字段2,...);
 create index `表`_`字段` index on `表`(`字段`); 
 -- 添加全文索引
 alter table table_name add fulltext index `表`(`字段`); 
+-- 创建联合索引：联合索引的顺序有讲究（最左匹配原则）
+create index xxx_xxx_xxx on `table_name`(`字段1`,`字段2`,`字段3`);
 ```
 
 ```mysql
@@ -2336,17 +2413,17 @@ alter table table_name add fulltext index `表`(`字段`);
 create index idx_user_name on user(name);
 ```
 
-**删除索引：**
+删除索引：
 
 ```mysql
 -- 删除表的某个索引
 drop index 索引名 on `表`; 
 ```
 
-**查看索引：**
+查看索引：
 
 ```mysql
--- 查看表的索引信息
+-- 查看表的索引信息：key_name索引名称 index_type索引类型 BTree B+树
 show index from `table_name`; 
 -- 单独显示索引信息
 show index from `table_name`\G; 
@@ -2395,6 +2472,164 @@ insert into tb_user (`name`, phone, email, profession, age, gender, `status`,cre
 ('后羿', '17799990022', 'altycj2000@139.com', '城市园林', 20,'1', '0', '2002-03-10 00:00:00'),
 ('姜子牙', '17799990023', '37483844@qq.com', '工程造价', 29,'1', '4', '2003-05-26 00:00:00');
 ```
+
+## 性能分析工具
+
+用于分析SQL执行性能，以便我们对SQL进行优化。（主要是优化查询语句）
+
+### 查看SQL执行频率
+
+通过以下指令可以查看数据库的insert、delete、update、select的访问频次：
+
+```mysql
+-- 查看服务器状态信息（全局），Com后加七个下划线来充当七个字符
+show global status like 'Com_______';
++---------------+-------+
+| Variable_name | Value | -- value 执行次数
++---------------+-------+
+| Com_binlog    | 0     |
+| Com_commit    | 0     |
+| Com_delete    | 0     | -- delete
+| Com_insert    | 0     | -- insert
+| Com_repair    | 0     |
+| Com_revoke    | 0     |
+| Com_select    | 5     | -- select
+| Com_signal    | 0     |
+| Com_update    | 0     | -- update
+| Com_xa_end    | 0     |
++---------------+-------+
+-- 查看服务器状态信息（当前会话）
+show session status like 'Com_______';
+```
+
+### 慢查询日志
+
+知道权重较高的SQL语句类型后，要对哪些语句进行优化呢？**借助慢查询日志定位运行效率低的SQL语句。**
+
+```mysql
+-- 查询慢查询日志功能是否开启（默认下是没有开启的）
+show variables like 'slow_query_log';
++----------------+-------+
+| Variable_name  | Value |
++----------------+-------+
+| slow_query_log | OFF   |
++----------------+-------+
+```
+
+开启慢查询日志，需要在MySQL的配置文件`/etc/my.cnf`（Linux系统下）中配置如下信息：
+
+```mysql
+# 开启慢查询日志
+slow_query_log=1
+# 设置慢查询日志的时间为2秒，SQL语句执行时间超2秒就会被视为慢查询，并记录
+long_query_time=2
+```
+
+配置后重启mysqld服务，然后再查看是否开启：
+
+```mysql
+show variables like 'slow_query_log';
++----------------+-------+
+| Variable_name  | Value |
++----------------+-------+
+| slow_query_log | ON    |
++----------------+-------+
+```
+
+Linux下配置完成之后，查看慢日志文件`/var/lib/mysql/localhost-slow.log`（会记录执行超过某个时间的SQL语句）。
+
+```linux
+cat /var/lib/mysql/localhost-slow.log
+tail -f /var/lib/mysql/localhost-slow.log 
+```
+
+Windows下在data目录里，用户名-slow.log就是。
+
+### profile详情
+
+show profile可以帮助我们了解每一条SQL的执行时间以及其执行时间都耗费到哪里去了。
+
+```mysql
+-- 查看是否支持profile操作
+select @@have_profiling;
++------------------+
+| @@have_profiling |
++------------------+
+| YES              |
++------------------+
+-- 查看是否开启：0-false 1-true
+select @@profiling;
++-------------+
+| @@profiling |
++-------------+
+|           0 |
++-------------+
+-- 开启profile
+set profiling=1;
+```
+
+profile详情的使用：
+
+```mysql
+-- 查看每一条SQL语句的执行耗时
+show profiles;
++----------+------------+--------------------+
+| Query_ID | Duration   | Query              | -- Duration  持续时间
++----------+------------+--------------------+
+|        1 | 0.00022275 | select @@profiling |
++----------+------------+--------------------+
+-- 查看指定Query_ID的SQL语句各个阶段的耗时情况
+show profile for query Query_ID;
+-- 查看指定Query_ID的SQL语句CPU的使用情况
+show profile cpu for query Query_ID;
+```
+
+### explain执行计划
+
+explain参考文章：[【MySQL优化】——看懂explain_漫漫长途，终有回转；余味苦涩，终有回甘-CSDN博客_explain](https://blog.csdn.net/jiadajing267/article/details/81269067)
+
+explain或desc命令：用来获取MySQL如何执行select语句的信息，包括select语句在执行过程中表如何连接和连接的顺序。其可以获取到：
+
+1. 表的读取顺序。
+2. 数据读取操作的操作类型。
+3. 哪些索引可以使用。
+4. 哪些索引被实际使用。
+5. 表之间的引用。
+6. 每张表有多少行被优化器查询。
+
+```mysql
+-- 语法：直接在select语句前加上explain关键字或desc关键字
+explain select xxx from xxx where xxx;
+desc select xxx from xxx where xxx;
+```
+
+例如：
+
+```mysql
+explain select * from mysql.user;
++---+------------+------+-----------+-----+--------------+-----+--------+-----+-----+----------+--------
+|id |select_type |table |partitions |type |possible_keys |key  |key_len |ref  |rows |filtered  |Extra  |
++---+------------+------+-----------+-----+--------------+-----+--------+-----+-----+----------+--------
+| 1 | SIMPLE     | user  | NULL     | ALL | NULL         | NULL| NULL   | NULL|   4 |   100.00 | NULL  |
++---+------------+------+-----------+-----+--------------+-----+--------+-----+-----+----------+--------
+```
+
+查询结果解释：
+
+1. `id`：select查询的序号值，表示查询中执行select子句或者是操作表的顺序（id相同，执行顺序从上往下；id不同，值越大越先执行）。
+2. `select_type`：表示查询的类型（参考意义不大），常见的有：
+   - SIMPLE：简单表，即不使用表连接或子查询。
+   - PRIMARY：主查询，即外层的查询。
+   - UNION：UNION中的第二个或者后面的查询语句。
+   - SUBOUERY：select、where之后包含了子查询。
+3. `type`：表示连接类型，性能由好到差的连接类型为：null、system、const、eq_ref、ref、range、index、all。（查询时不访问任何表时才可能会出现null，例如`explain select 'C';`）
+   - 访问系统表时才会出现system；根据主键和唯一索引查询一般会出现const；使用非唯一性索引时一般会出现ref；使用了索引但会遍历整个索引树是会出现index；出现all代表的是全表扫描，性能会较差。
+4. `possible_keys`：显示可能应用在这章表上的索引，一个或多个。
+5. `key`：实际使用的索引，如果为null，则没有使用索引。
+6. `key_len`：使用到的索引的字节数，该值为索引字段最大可能长度，并非实际使用长度，在不损失精度性的前提下，长度越短越好。
+7. `rows`：MySQL认为必须要执行的行数，在Innodb引擎的表中，是一个估计值，可能并不总是准确的。
+8. `filtered`：表示返回结果行数占需读取行数的百分比，filtered的值越大越好。
+9. `Extra`：代表额外的信息。
 
 
 
@@ -2512,229 +2747,6 @@ create index idx_xxx on `table_name`(column(n));
 2. 不要对常变动的数据加索引。
 3. 小数据量的表不需要加索引。
 4. 索引一般加在常用来查询的字段上。
-
-
-
-## 性能分析工具
-
-### 查看SQL执行频率
-
-通过该指令查看数据库的insert、delete、update、select的访问频次。
-
-```mysql
--- 查看服务器状态信息（全局）
-show global status like 'Com_______';
-+---------------+-------+
-| Variable_name | Value |
-+---------------+-------+
-| Com_binlog    | 0     |
-| Com_commit    | 0     |
-| Com_delete    | 0     |
-| Com_insert    | 0     |
-| Com_repair    | 0     |
-| Com_revoke    | 0     |
-| Com_select    | 5     |
-| Com_signal    | 0     |
-| Com_update    | 0     |
-| Com_xa_end    | 0     |
-+---------------+-------+
--- 查看服务器状态信息（当前会话）
-show session status like 'Com_______';
-```
-
-### 慢查询日志
-
-知道权重较高的SQL语句类型后，要对哪些语句进行优化呢？借助慢查询日志定位运行效率低的SQL语句。
-
-```mysql
--- 查询慢查询日志功能是否开启（默认下是没有开启的）
-show variables like 'slow_query_log';
-+----------------+-------+
-| Variable_name  | Value |
-+----------------+-------+
-| slow_query_log | OFF   |
-+----------------+-------+
-```
-
-开启慢查询日志，需要在MySQL的配置文件`/etc/my.cnf`（Linux系统下）中配置如下信息：
-
-```mysql
-# 开启慢查询日志
-slow_query_log=1
-# 设置慢查询日志的时间为2秒，SQL语句执行时间超2秒就会被视为慢查询，并记录
-long_query_time=2
-```
-
-配置后重启mysqld服务，然后再查看是否开启：
-
-```mysql
-show variables like 'slow_query_log';
-+----------------+-------+
-| Variable_name  | Value |
-+----------------+-------+
-| slow_query_log | ON    |
-+----------------+-------+
-```
-
-配置完成之后，查看慢日志文件`/var/lib/mysql/localhost-slow.log`（会记录执行超过某个时间的SQL语句）。
-
-```linux
-cat /var/lib/mysql/localhost-slow.log
-tail -f /var/lib/mysql/localhost-slow.log 
-```
-
-### profile详情
-
-show profile可以帮助我们了解时间都耗费到哪里去了。
-
-```mysql
--- 查看是否支持profile操作
-select @@have_profiling;
-+------------------+
-| @@have_profiling |
-+------------------+
-| YES              |
-+------------------+
--- 查看是否开启
-select @@profiling;
-+-------------+
-| @@profiling |
-+-------------+
-|           0 |
-+-------------+
--- 开启profile
-set profiling=1;
-```
-
-profile详情的使用：
-
-```mysql
--- 查看每一条SQL语句的执行耗时
-show profiles;
-+----------+------------+--------------------+
-| Query_ID | Duration   | Query              |
-+----------+------------+--------------------+
-|        1 | 0.00022275 | select @@profiling |
-+----------+------------+--------------------+
--- 查看指定Query_ID的SQL语句各个阶段的耗时情况
-show profile for query Query_ID;
--- 查看指定Query_ID的SQL语句CPU的使用情况
-show profile cpu for query Query_ID;
-```
-
-### explain执行计划
-
-explain参考文章：[【MySQL优化】——看懂explain_漫漫长途，终有回转；余味苦涩，终有回甘-CSDN博客_explain](https://blog.csdn.net/jiadajing267/article/details/81269067)
-
-```mysql
-explain select * from `table_name`; -- 分析SQL执行情况，type是ALL的时候就不是使用索引来查询
-explain select * from `table_name` where match() against(``); -- 分析SQL执行情况
-```
-
-
-
-explain或desc命令用来获取MySQL如何执行select语句的信息，包括select语句在执行过程中表如何连接和连接的顺序。
-
-```mysql
--- 语法：直接在select语句前加上关键字explain或desc
-explain select xxx from xxx where xxx;
-desc select xxx from xxx where xxx;
-```
-
-例如：
-
-```mysql
-explain select * from mysql.user;
-+---+------------+------+-----------+-----+--------------+-----+--------+-----+-----+----------+--------
-|id |select_type |table |partitions |type |possible_keys |key  |key_len |ref  |rows |filtered  |Extra  |
-+---+------------+------+-----------+-----+--------------+-----+--------+-----+-----+----------+--------
-| 1 | SIMPLE     | user  | NULL     | ALL | NULL         | NULL| NULL   | NULL|   4 |   100.00 | NULL  |
-+---+------------+------+-----------+-----+--------------+-----+--------+-----+-----+----------+--------
-```
-
-查询结果解释：
-
-1. `id`：select查询的序号值，表示查询中执行select子句或者是操作表的顺序（id相同，执行顺序从上往下；id不同，值越大越先执行）。
-2. `select_type`：表示查询的类型（参考意义不大），常见的有：
-   - SIMPLE：简单表，即不使用表连接或子查询。
-   - PRIMARY：主查询，即外层的查询。
-   - UNION：UNION中的第二个或者后面的查询语句。
-   - SUBOUERY：select、where之后包含了子查询。
-3. `type`：表示连接类型，性能由好到差的连接类型为：null、system、const、eq_ref、ref、range、index、all。（查询时不访问任何表时才可能会出现null，例如`explain select 'C';`）
-   - 访问系统表时才会出现system；根据主键和唯一索引查询一般会出现const；使用非唯一性索引时一般会出现ref；使用了索引但会遍历整个索引树是会出现index；出现all代表的是全表扫描，性能会较差。
-4. `possible_keys`：显示可能应用在这章表上的索引，一个或多个。
-5. `key`：实际使用的索引，如果为null，则没有使用索引。
-6. `key_len`：使用到的索引的字节数，该值为索引字段最大可能长度，并非实际使用长度，在不损失精度性的前提下，长度越短越好。
-7. `rows`：MySQL认为必须要执行的行数，在Innodb引擎的表中，是一个估计值，可能并不总是准确的。
-8. `filtered`：表示返回结果行数占需读取行数的百分比，filtered的值越大越好。
-9. `Extra`：代表额外的信息。
-
-## 索引结构和分类
-
-### B+Tree索引
-
-![](img/7.index_s.png)
-
-![](img/8.索引分类.png)
-
-使用二叉树和红黑树都存在一个缺点：
-
-![](img/9.tree.png)
-
-使用B-Tree来避免二叉树和红黑树的缺点：
-
-![](img/10.B-tree.png)
-
-B+Tree是B-Tree的变种，相对于B树，B加树的所有数据都会出现在叶子节点，并且叶子节点会形成一个单向链表：
-
-![](img/11.B+Tree.png)
-
-Innodb的B+Tree的高度：
-
-<img src="img/14.树的高度.png" style="zoom:67%;" />
-
-### Hash索引
-
-hash索引通过hash算法来将键值换算成一个hash值，然后映射到hash表中对应的位置来存放数据。
-
-如果两个或多个键值都映射到hash表上同一位置，就会产生hash冲突（hash碰撞），可通过链表解决。
-
-hash索引的特点：
-
-1. 只能用于对等比较（=、in），不支持范围查询（between、<、>等）。
-2. 无法利用索引完成排序操作。
-3. 查询效率高，通常情况下只需一次检索，效率通常高于B+Tree索引。
-
-支持Hash索引的引擎：
-
-- Memory。
-- Innodb中具有自适应hash功能，在Innodb中，hash索引是存储引擎根据B+Tree索引在指定条件下自动构建的。
-
-
-
-### 索引分类
-
-作为Java开发工程师，可以不对索引特别清楚，会创建和删除就好，不过更懂原理可以在面试中多说点......
-
-**索引分类：**（MySQL中，主键约束、唯一性约束的字段默认带索引）
-
-1. 主键索引（PRIMARY KEY）：是针对表的主键创建的索引，默认自动创建且每张表只能有一个。
-2. 唯一索引（UNIQUE KEY）：可以存在多个唯一索引，多个列都可以标识为唯一索引，是为了避免重复的列出现。
-3. 常规索引（key、index）：默认的索引，使用key关键字来设置，用来快速定位特定数据，可以有多个。
-4. 全文索引（fulltext）：特定的引擎下才有(myisam)，全文索引查找的是文本中的关键字，而不是比较索引中的值，可以有多个。
-5. （单一索引、复合索引）。
-
-**Innodb中，根据索引的存储形式来分类，可分为：**
-
-1. 聚集索引（聚簇索引）：将数据存储和索引放在一块，索引结构的叶子节点保存了行数据。（一张表中必须有且只有一个）
-   - 如果存在主键，那么主键索引就是聚集索引。
-   - 如果不存在主键，那么第一个唯一性索引就作为聚集索引。
-   - 如果表没有主键，没有唯一性索引，那么Innodb会自动生成一个rowid作为隐藏的聚集索引。
-2. 二级索引：将数据与索引分开存储，索引结构的叶子节点关联的是对应的主键。（一张表中可有，且可以存在多个）
-
-回表查询：先去二级索引找到对应id，再去聚集索引找到字段的全部信息。
-
-![](img/13.回表查询.png)
 
 
 
