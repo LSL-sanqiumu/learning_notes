@@ -1884,6 +1884,8 @@ Field类——属性对应的类，用于封装属性结构信息，Field类对�
 1. `getModifiers()`：获取属性的权限，权限对应一个个整数，私有是2，公有是1。
 2. `getType()`：获取属性的数据类型。
 3. `getName()`：获取属性的名称。
+4. `Field getField(String name)`：获取某个公有的属性对象。
+5. `Field getDeclaredField(String name)`：获取某个属性对象（可以是私有的）。
 
 **2、获取类方法的结构的信息**
 
@@ -1912,6 +1914,8 @@ Method类——方法对应的类，用于封装方法的结构信息，Method�
 4. `getName()`：获取方法名。
 5. `getParameterTypes()`：获取参数类型信息的数组（再使用getName()能得到形参类型具体值）。
 6. `getExceptionTypes()`：获取抛出的异常类型（数组）。
+7. `Method getMethod(String name, Class<?>... parameterTypes)`：获取某个公有的方法对象。
+8. `Method getDeclaredMethod(String name, Class<?>... parameterTypes)`：获取某个方法对象（可以是私有的、静态的）。
 
 **3、获取构造器**
 
@@ -1925,8 +1929,7 @@ public static void main(String[] args) throws Exception {
     }
     // 获取所有的构造器（包含私有的），不包括父类的
     Constructor[] declaredConstructor = clazz.getDeclaredConstructors();
-    for (Constructor e : declaredConstructor
-        ) {
+    for (Constructor e : declaredConstructor) {
         System.out.println(e); // private com.lsl.pojo.Student(java.lang.String)
     }
     // 获取无参构造器（必须得是public的）
@@ -2152,7 +2155,7 @@ public class PropertiesTest {
 | boolean containsAll(Collection c)  | 也是调用元素的equals方法来比较的；<br>拿两个集合的元素挨个比较，利用元素的equals方法。 |
 | boolean remove(Object obj)         | 通过元素的equals方法判断是否是要删除的那个元素。<br>只会删除找到的第一个元素 |
 | boolean removeAll(Collection coll) | 删除多个元素（相当于取集合的差集）                           |
-| boolean retainAll(Collection c)    | 把交集的结果存在当前集合中<br>不影响集合c，只影响到方法的调用者 |
+| boolean retainAll(Collection c)    | 把交集的结果替换掉当前集合中的全部元素<br>不影响集合c，只影响到方法的调用者 |
 | boolean equals(Object obj)         | 判断两个集合是否相等                                         |
 | Object[] toArray()                 | 集合转成Object数组（注意多态）                               |
 | hashCode()                         | 获取集合对象的哈希值                                         |
@@ -2182,8 +2185,8 @@ public static void main(String[] args) {
 
 **集合数组互转：**
 
-1. 数组 ===> 集合：toArray()，使用数组的toArray()方法。
-2. 集合 ===> 数组：Arrays.asList()，使用Arrarys的方法。
+1. 集合 ===> 数组：使用集合对象的toArray()方法。
+2. 数组===> 集合组：除了遍历外，使用Arrarys工具类的方法：Arrays.asList()。
 
 JDK5.0新增foreash循环（增强for循环），用来遍历集合或数组：
 
@@ -2200,7 +2203,7 @@ for (Object obj : arr) {
 
 ### 概述
 
-List接口下的集合实现类，是用来存储有序的可重复的数据的（存入的数据按顺序存入），就像是动态数组。
+List接口下的集合实现类，是用来**存储有序的可重复的数据的（存入的数据按顺序存入），可存储多个null元素**，就像是动态数组。
 
 List接口下三个实现类：
 
@@ -2263,23 +2266,21 @@ Set接口主要实现类：
 
 ### 概述
 
+Set是无序的集合，虽然无序，但取出的顺序是固定的（也就是hash值经计算完毕再得出的索引值不会每运行一次就改变一次）。Set集合不能存储重复的元素，有且只能有一个null元素。
+
 Set的无序性和不可重复性：（以HashSet为例）
 
-- 无序性：数据的添加不是按照数组索引的顺序添加，而是根据数据的哈希值来添加（不等于随机性）。
-- 不可重复性：保证添加的元素按照equals()判断返回false。
-- Set的底层是Map的实现类。
+1. 无序性：数据的添加不是按照数组索引的顺序添加，而是根据数据的哈希值来添加到哪个位置（不等于随机性）。
+2. 不可重复性：保证添加的元素按照equals()判断返回false。
+3. Set的底层是Map的实现类。
 
 ### Set接口方法
 
 1. Set接口没有定义新的方法，都是重写Collection接口里的方法。
-2. 虽然无序，但取出的顺序是固定的（也就是hash值经计算完毕再得出的索引值不会每运行一次就改变一次）。
-3. 使用要求：
-   1. 向Set中添加数据，数据对应类一定要重写hashCode()方法和equals()方法。
-      - 重写的hashCode()方法和equals()方法尽可能保持一致性：相等的对象必须具有相等的散列码（哈希值）。
-      - 重写是为了根据自己的需求定制相等对象的标准。
-      - 重写方法技巧：对象中用于在 equals() 方法中进行比较的 Field(属性)，都应该用来计算 hashCode 值（equals里用到的属性在hashCode里也用一下）。
-
-LinkedHashSet：添加数据的同时，每个数据还维护了两个引用，记录此数据的前一个数据和后一个数据（优点：对于频繁的遍历操作，LinkedHashSet效率更高）。
+2. 使用Set的要求：向Set中添加数据，数据对应类一定要重写hashCode()方法和equals()方法。
+   - 重写的hashCode()方法和equals()方法尽可能保持一致性：相等的对象必须具有相等的散列码（哈希值）。
+   - 重写是为了根据自己的需求定制相等对象的标准。
+   - 重写方法技巧：对象中用于在 equals() 方法中进行比较的 Field(属性)，都应该用来计算 hashCode 值（equals里用到的属性在hashCode里也用一下）。
 
 ```java
 class HashSetTest {
@@ -2520,7 +2521,7 @@ public class Generic<T> {
 }
 ```
 
-1. 可将泛型标识看作一个类型形参，这个类型形参是在对象创建的时候确定形参值的。泛型类中的泛型标识可用于成员变量、构造器形参、方法形参、方法返回值。
+1. 可将泛型标识看作一个类型形参，这个类型形参是在对象创建的时候确定形参值的。泛型类中的泛型标识可用于成员变量、构造器形参、普通方法形参、方法返回值。
 2. 方法中使用泛型标识，但不是泛型方法，只是使用了泛型标识的成员方法而已。
 3. 使用泛型标识的普通成员方法，不能是静态的。
 

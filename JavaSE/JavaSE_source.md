@@ -181,7 +181,45 @@ public LinkedList(Collection<? extends E> c) {
 
 ### add()
 
-<img src="source_img/6.linkedlist_add.png" style="zoom: 50%;" />
+<img src="source_img/6.linkedlist_add.png" style="zoom: 67%;" />
+
+1. 实现了双向列表和双端队列等特点。
+2. 可以添加任意元素(可重复)，包括null。
+3. 线程不安全，没有实现同步。
+
+# Set
+
+## HashSet
+
+
+
+## LinkedHashSet
+
+
+
+## TreeSet
+
+
+
+
+
+# Map
+
+## HashMap
+
+
+
+
+
+## LinkedHashMap
+
+
+
+
+
+## TreeMap
+
+
 
 
 
