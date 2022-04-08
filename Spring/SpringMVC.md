@@ -869,7 +869,7 @@ Tomcat有一个默认的servlet（在conf目录的web.xml中）会在服务器�
 
 **处理静态资源的方法一：**在springmvc.xml中加入`<mvc:default-servlet-handler/>`
 
-1. 加入这个标签，会由框架创建控制器对象`DefaultHttpServletRequestHangler`，通过这个对象可实现把接收的请求转发给Tomcat中默认的servlet，从而实现对静态资源的访问。
+1. 加入这个标签，会由框架创建控制器对象`DefaultHttpServletRequestHandler`，通过这个对象可实现把接收的请求转发给Tomcat中默认的servlet，从而实现对静态资源的访问。
 2. `<mvc:default-servlet-handler/>`和@RequestMapping注解会存在冲突，需要加上`<mvc:annotation-driven/>`来解决冲突。
 
 **处理静态资源的方法二：**springmvc.xml中加入`<mvc:resources mapping="" location=""/>`： 
@@ -878,7 +878,7 @@ Tomcat有一个默认的servlet（在conf目录的web.xml中）会在服务器�
 
 2. location：静态资源在你的项目中的位置，`location="/images/"`。
 
-3. 加入此配置后框架会自动创建一个处理器对象（`ResourceHttpServletRequestHangler`），这个处理器对象用来处理静态资源的访问，这样就不用再依赖tomcat服务器的默认的servlet。该方法的`<mvc:resources mapping="" location=""/>`和@RequestMapping注解存在冲突，也需要加上`<mvc:annotation-driven/>`来开启mvc注解驱动、解决冲突。
+3. 加入此配置后框架会自动创建一个处理器对象（`ResourceHttpServletRequestHandler`），这个处理器对象用来处理静态资源的访问，这样就不用再依赖tomcat服务器的默认的servlet。该方法的`<mvc:resources mapping="" location=""/>`和@RequestMapping注解存在冲突，也需要加上`<mvc:annotation-driven/>`来开启mvc注解驱动、解决冲突。
 
    ```xml
    <mvc:resources mapping="/html/**" location="/html/"/>

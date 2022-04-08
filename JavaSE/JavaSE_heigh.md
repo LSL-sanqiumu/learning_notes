@@ -2327,11 +2327,11 @@ Map：双列数据，存储key-value对的数据 ===> 类似函数y = f(x)。
 
 主要实现类：
 
-1. HashMap：主要实现类；线程不安全，效率较高；（底层：数组+链表(JDK7之前；数组+链表+红黑树(JDK8))）。
-  - LinkedHashMap：保证在遍历的时候按添加元素的顺序实现遍历（在HashMap底层结构基础上，添加了一对指针，指向前一个和后一个元素），对于频率的遍历操作，此类执行效率比HashMap高。
-2. TreeMap：保证按照添加的key-value来进行排序(按key来排)，实现排序遍历；考虑key的自然排序和定制排序；（底层使用红黑树）。
-3. Hashtable：JDK1.0，古老的实现类；线程安全的，效率较低，不能存储null的key-value（出现null会抛异常），使用基本和hashmap一样；
-  - Properties：常用来处理配置文件，key和value都是String型。
+1. HashMap：主要实现类；线程不安全，效率较高；（底层：数组+链表(JDK7之前)；数组+链表+红黑树(JDK8)）。
+2. LinkedHashMap：保证在遍历的时候按添加元素的顺序实现遍历（在HashMap底层结构基础上，添加了一对指针，指向前一个和后一个元素），对于频率的遍历操作，此类执行效率比HashMap高。
+3. TreeMap：保证按照添加的key-value来进行排序(按key来排)，实现排序遍历；考虑key的自然排序和定制排序；（底层使用红黑树）。
+4. Hashtable：JDK1.0，古老的实现类；线程安全的，效率较低，不能存储null的key-value（出现null会抛异常），使用基本和HashMap一样。
+5. Properties：常用来处理配置文件，key和value都是String型。
 
 Map的特点：
 
@@ -2365,7 +2365,7 @@ key-value源码分析：
  添加、删除操作： 
 
 1. Object put(Object key,Object value)：将指定key-value添加到(或修改)当前map对象中 。
-2. void putAll(Map m):将m中的所有key-value对存放到当前map中 。
+2. void putAll(Map m)：将m中的所有key-value对存放到当前map中 。
 3. Object remove(Object key)：移除指定key的key-value对，并返回value 。
 4. void clear()：清空当前map中的所有数据 。
 

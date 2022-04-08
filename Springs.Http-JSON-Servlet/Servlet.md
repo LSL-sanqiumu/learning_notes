@@ -382,7 +382,7 @@ servlet标签用来定义servlet对象，类似于spring中的bean标签，用�
 
 1. `<context-param>`标签是上下文参数（全局参数），定义在`<web-app>`标签中。
 2. `<context-param>`标签内还有`<param-name>`、`<param-value>`
-  - ``<param-name>`表示参数的name（key）。
+  - `<param-name>`表示参数的name（key）。
   - `<param-value>`表示name所对应的value。
 
 3. `<context-param>`定义的参数属于全局，该webapp下所有Servlet共享。
@@ -442,27 +442,27 @@ servlet中需要用到路径的有四处地方：
 一个Servlet可以编写多个url-pattern，服务器截断路径与servlet映射路径匹配的路径规则：
 
 
-- 精确匹配
+1. 精确匹配
 
   ```xml
   <url-pattern>/system/hello</url-pattern>
   <url-pattern>/user</url-pattern>
   ```
 
-- 扩展匹配
+2. 扩展匹配
 
   ```xml
   <url-pattern>/user/*</url-pattern>
   ```
 
-- 后缀匹配
+3. 后缀匹配
 
   ```xml
   <url-pattern>*.action</url-pattern>
   <url-pattern>*.do</url-pattern>
   ```
 
-- 全部匹配（此时访问该webapp下的资源全部都会映射到该servlet）
+4. 全部匹配（此时访问该webapp下的资源全部都会映射到该servlet）
 
   ```xml
   <url-pattern>/*</url-pattern>
