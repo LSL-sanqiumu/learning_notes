@@ -2323,7 +2323,7 @@ class Scholar {
 
 ### 概述
 
-Map：双列数据，存储key-value对的数据 ===> 类似函数y = f(x)。
+Map：双列数据，存储key-value对的数据 ===> 类似函数 y = f(x)。
 
 主要实现类：
 
@@ -2345,7 +2345,7 @@ key-value源码分析：
 
 2. `tab[i] = newNode(hash, key, value, null);`，newNode返回`return new Node<>(hash, key, value, next);`，而`Node<K,V> implements Map.Entry<K,V>`，存放键值对的Node实现了Entry接口；
 
-3. HashMap中有一个内部类EntrySet，一个成员变量`transient Set<Map.Entry<K,V>> entrySet`；为了遍历方便，会创建一个EntrySet集合，该集合存放元素的类型是Entry，有key、value（transient Set<Map.Entry<K,V>> entrySet`，该对象只是指向一个Node），证明如下：
+3. HashMap中有一个内部类EntrySet，一个成员变量`transient Set<Map.Entry<K,V>> entrySet`；为了遍历方便，会创建一个EntrySet集合，该集合存放元素的类型是Entry，有key、value（`transient Set<Map.Entry<K,V>> entrySet`，该对象只是指向一个Node），证明如下：
 
    - ```java
      Map map = new HashMap();

@@ -191,9 +191,111 @@ public LinkedList(Collection<? extends E> c) {
 
 ## HashSet
 
+1. HashSet底层时HashMap（数组+链表+红黑树）。
+2. 添加元素：计算元素的hash值并将hash值转为数组的索引值，然后去数组中判断该位置是否已添加元素：
+   - 未添加：直接存入。（数组table中数据——节点）
+   - 已添加：调用equals()方法比较，如果相同就放弃添加，如果不一致，则添加到最后。
+3. Java8中，如果一条链表的元素个数超过默认值8，并且数组table的大小大于等于64，就会将数据树化。
+
+### 构造器源码
+
+无参构造器：
+
+```java
+public HashSet() {
+    map = new HashMap<>();
+}
+```
+
+HashSet底层是HashMap。
+
+有参构造器：
+
+```java
+public HashSet(Collection<? extends E> c) {
+    map = new HashMap<>(Math.max((int) (c.size()/.75f) + 1, 16));
+    addAll(c);
+}
+```
+
+### add()
+
+add()方法执行：
+
+![](source_img/7.hashset_add().svg)
+
+```java
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+               boolean evict) {
+    Node<K,V>[] tab; Node<K,V> p; int n, i; // 辅助变量
+    // table是HashMap中的一个成员变量Node[],判断是否进行初始化——第一次扩容
+    if ((tab = table) == null || (n = tab.length) == 0)
+        n = (tab = resize()).length;
+    // 利用得到的hash值来计算出该key应该存放到table表的哪个位置
+    if ((p = tab[i = (n - 1) & hash]) == null)
+        // 这个位置没有添加元素，则直接创建Node直接添加进去
+        tab[i] = newNode(hash, key, value, null);
+    // 如果当前位置存在元素，再进行以下操作
+    else {
+        Node<K,V> e; K k; // 在需要的地方在创建变量
+        // 当前索引位置对应的第一个元素的hash与准备添加的key的hash一致
+        // 并且两者是同一对象或者不是同一对象但内容相同（满足这其中之一就认为是相同的对象）
+        // 是同一对象就不加入
+        if (p.hash == hash &&
+                ((k = p.key) == key || (key != null && key.equals(k))))
+            e = p;
+        // 再判断 p 是不是一棵红黑树
+        else if (p instanceof TreeNode)
+            // 如果时，就调用这个方法添加（很复杂的一个方法）
+            e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+        // 如果当前table对应的索引已经是一个链表，使用for循环，依次和链表中元素比较
+        // (1)如果都不相同，添加进链表。
+        // （如果链表数据达到8个就会对当前链表进行树化，不过表长度小于64，则还不会进行树化，只是进行table的扩容）
+        // (2)与某个相同，结束，不添加，break
+        else {
+            for (int binCount = 0; ; ++binCount) {
+                if ((e = p.next) == null) {
+                    p.next = newNode(hash, key, value, null);
+                    if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        treeifyBin(tab, hash);
+                    break;
+                }
+                if (e.hash == hash &&
+                        ((k = e.key) == key || (key != null && key.equals(k))))
+                    break;
+                p = e;
+            }
+        }
+        if (e != null) { // existing mapping for key
+            V oldValue = e.value;
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;
+            afterNodeAccess(e);
+            // 不返回空，则添加失败
+            return oldValue;
+        }
+    }
+    ++modCount;
+    // threshold=12，size代表添加进table的数据
+    // 如果size大于12，则扩容
+    if (++size > threshold)
+        resize();
+    // 为HashMap的子类而设置的一个方法，对于HaspMap来说是一个空的方法
+    afterNodeInsertion(evict);
+    // 代表添加成功
+    return null;
+}
+```
+
+
+
+
+
 
 
 ## LinkedHashSet
+
+
 
 
 
