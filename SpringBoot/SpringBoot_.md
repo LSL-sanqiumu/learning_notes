@@ -304,6 +304,12 @@ public class LslApplication {
 }
 ```
 
+**自动配置原理：**
+
+
+
+
+
 ## 开发技巧
 
 ### Lombok
@@ -482,7 +488,7 @@ spring:
 
 静态资源路径下的favicon.ico图标可以作为网页标签图标，只有当没有配置静态资源路径前缀的时候才有效。
 
-## 请求处理
+## 请求—路径映射
 
 **关于请求映射路径：**
 
@@ -509,7 +515,7 @@ spring:
         enabled: true # 选择性开启表单rest风格
 ```
 
-## 数据接收
+## 请求—数据接收
 
 请求中携带参数、cookie、请求头等信息的接收，参考SpringMVC的注解使用与参数接收。
 
@@ -686,6 +692,8 @@ spring:
 ## servlet原生组件
 
 嵌入式servlet，使用Servlet、Filter、Listener等组件进行开发。
+
+
 
 # 数据操作场景
 
