@@ -779,9 +779,9 @@ public String returnStringView(HttpServletRequest request, String name, String a
 
 处理器方法返回值是String，那么有@ResponseBody注解时，表示的是文本数据，content-Type：text/plain;charset=ISO-8859-1，解决这个乱码问题在@RequestMapping加入produces属性，值为"text/plain;charset=utf-8"；处理流程和上面类型，使用StringHttpMessageConverter，默认字符编码ISO-8859-1。
 
-# RESTFul风格
+# RESTful风格
 
-## RESTFul是什么
+## RESTful是什么
 
 以下都摘录自：[理解RESTful架构 - 阮一峰的网络日志 (ruanyifeng.com)](https://www.ruanyifeng.com/blog/2011/09/restful.html)
 
@@ -923,7 +923,7 @@ SpringMVC中处理编码的过滤器一定要配置到其他过滤器之前，�
 
 # 处理器内—域对象共享数据
 
-## 向Request域共享数据
+## 向request域共享数据
 
 **HttpServletRequest：使用ServletAPI向request域对象共享数据。**
 
@@ -1091,6 +1091,13 @@ public ResponseEntity<byte[]> testResponseEntity(HttpSession session) throws IOE
 
 文件上传要求form表单的请求方式必须为post，并且添加属性`enctype="multipart/form-data"`，SpringMVC中将上传的文件封装到MultipartFile对象中，通过此对象可以获取文件相关信息。
 
+```html
+<form action="/su/testUpload" method="post" enctype="multipart/form-data">
+    <input type="file" name="photo">
+    <input type="submit" name="photo">
+</form>
+```
+
 具体实现步骤：
 
 1. 添加依赖。
@@ -1108,7 +1115,7 @@ public ResponseEntity<byte[]> testResponseEntity(HttpSession session) throws IOE
 
    ```xml
    <!--必须通过该文件解析器的解析才能将文件转换为MultipartFile对象-->
-   <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"></bean>
+   <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
    ```
 
 3. 控制器方法：
@@ -1133,6 +1140,7 @@ public ResponseEntity<byte[]> testResponseEntity(HttpSession session) throws IOE
        photo.transferTo(new File(finalPath));
        return "success";
    }
+   // 最终存放在Tomcat的webapps的对应的webapp的根目录里的photo目录
    ```
 
 

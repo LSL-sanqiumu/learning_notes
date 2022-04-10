@@ -1316,10 +1316,10 @@ AOP全称Aspect Oriented Programming，意为面向切面编程，也叫做面�
 
 ### 相关术语
 
-1. 连接点（joinPoint）：连接点是程序在运行过程中能够插入切面的地点，比如方法调用、异常抛出、字段修改等。
-2. 切入点（pointCut，切点）：在哪些类哪些方法上切入，这些方法就是切入点。
-3. 通知（advice）：在方法执行的什么位置（**when:**方法前/方法后/方法前后）做什么（**what:**增强的功能）。
-4. 切面（aspect）：切面 = 切入点 + 通知，通俗点就是：**在什么时机，什么地方，做什么增强！**切面是散落在系统各处通用的业务逻辑代码，切面通常是一个类，是通知和切入点的集合。
+1. **连接点（joinPoint）**：连接点是程序在运行过程中能够插入切面的地点，比如方法调用、异常抛出、字段修改等。
+2. **切入点（pointCut，切点）**：在哪些类哪些方法上切入，这些方法就是切入点。
+3. **通知（advice）**：在方法执行的什么位置（**when:**方法前/方法后/方法前后）做什么（**what:**增强的功能）。
+4. **切面（aspect）**：切面 = 切入点 + 通知，通俗点就是：**在什么时机，什么地方，做什么增强！**切面是散落在系统各处通用的业务逻辑代码，切面通常是一个类，是通知和切入点的集合。
 5. 目标对象（target）：切入点所在的对象，（使用JDK动态代理的AOP，目标对象是接口的实现类的对象）。
 6. 织入（weave）：把切面加入到对象，并创建出代理对象的过程。（由 Spring 来完成）
 
@@ -1426,7 +1426,7 @@ after切面在invoke()中用try finally 包裹业务代码。业务代码执行�
    }
    ```
 
-3. 使用JavaConfig或XML来使切面生效（否则切面类就是一个简单的类、bean）：
+3. 使用JavaConfig或XML来使切面生效（将切面注册进IoC容器，否则切面类就是一个简单的类、bean）：
 
    1. **使用JavaConfig方式：** 
 
@@ -1498,8 +1498,6 @@ public void afterReturning(String num,int age){
 
 
 
-
-
 ## 基于XML配置实现
 
 ### 命名空间
@@ -1524,7 +1522,7 @@ XML的aop命名空间：
 
 ### 实现步骤
 
-以上面使用注解实现的代码为例，去掉Audience类的注解，然后在XML文件里根据以下操作进行配置（二选一）：
+以上面使用注解实现的代码为例，去掉Audience类的注解，然后在XML文件里根据以下操作进行配置：
 
 1. 使用除Around外的通知：
 
@@ -1532,6 +1530,7 @@ XML的aop命名空间：
    <!-- 需要把用到的类注册到IoC容器中 -->
    <bean id="p" class="com.lsl.pojo.PerformanceImpl"/>
    <bean id="as" class="com.lsl.annotation.Audience"/>
+   <!-- aop:aspect常用于日志、缓存 -->
    <!-- 方式一：将没有注解的Audience对象转为切面，并配置通知方法 -->
    <aop:config>
        <aop:aspect ref="as">
@@ -1550,9 +1549,10 @@ XML的aop命名空间：
        <aop:aspect ref="as">
            <aop:pointcut id="performance" expression="execution(* com.lsl.pojo.Performance.perform(..))"/>
            <aop:before method="beforePro" pointcut-ref="performance"/>
-   
        </aop:aspect>
    </aop:config>
+   <!-- 方式三：使用aop:advisor，常用于事务管理，基于Spring的API接口和XML实现
+   需要实现接口MethodBeforeAdvice、AfterAdvice、AfterReturningAdvice -->
    ```
 
 2. 使用环绕通知：
@@ -1762,7 +1762,7 @@ public class Service {
 
 1. 在xml配置文件配置事务管理器。
 2. 配置事务通知规则。
-3. 配置切入点和切面。
+3. 配置切面。
 4. （需要依赖：spring-tx、以及aop的）
 
 ```xml
