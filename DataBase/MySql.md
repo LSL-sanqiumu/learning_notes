@@ -2273,14 +2273,13 @@ release savepoint; -- 撤销事务的保存节点
 CREATE DATABASE `shop` CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE `shop`;
 CREATE TABLE `account`(
-`id` INT(3) NOT NULL AUTO_INCREMENT,
-`name` VARCHAR(30) NOT NULL,
-`money` DECIMAL(9,2) NOT NULL,
-PRIMARY KEY(`id`)
+    `id` INT(3) NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(30) NOT NULL,
+    `money` DECIMAL(9,2) NOT NULL,
+    PRIMARY KEY(`id`)
 )ENGINE=INNODB DEFAULT CHARSET=utf8;
 
-INSERT INTO `account`(`name`,`money`) 
-VALUES ('A',2000),('B',10000);
+INSERT INTO `account`(`name`,`money`) VALUES ('A',2000),('B',10000);
 
 SET autocommit = 0; -- 关闭事务自动提交
 START TRANSACTION; -- 开始事务
@@ -2712,7 +2711,7 @@ explain select * from tb_user where profession='软件工程'; -- 使用到profe
 -- 不满足最左前缀法则（因为最左列profession不存在），不走索引，全部失效
 explain select * from tb_user where age=31 and `status`='0';
 explain select * from tb_user where `status`='0';
--- 跳过age，status索引字段也将失效，只是profession有效
+-- 跳过age，status索引将失效，只有profession有效
 explain select * from tb_user where profession='软件工程' and `status`='0';
 -- 索引全部生效，最左匹配法则与位置无关，最左字段必须存在
 explain select * from tb_user where age=31 and `status`='0' and profession='软件工程';
@@ -3565,9 +3564,7 @@ lock table 表名,.... write;
 unlock tables; -- 客户端断开连接也可释放
 ```
 
-**元数据锁：**
-
-自动加锁。
+**元数据锁（MDL）：**自动加锁。
 
 ![](img/37.元数据lock.png)
 
@@ -3703,16 +3700,28 @@ MySQL的四种后台线程：
 
 ## **MVCC**
 
+![](img/51.MVCC相关概念.png)
+
 MVCC——多版本并发控制。MVCC基本概念如下：
 
-1、当前读：指读取的是记录的最新版本，读取时还要保证其他并发事务不能对当前的记录进行修改，所以此时在读取的时候会对对应的记录加锁。
+1、当前读：指读取的是记录的最新版本，读取时还要保证其他并发事务不能对当前的记录进行修改，所以此时在读取的时候会对对应的记录加锁。（`select...lock in share mode`（共享锁）、`select... for update`、`update`、`insert`、`delete`（排他锁）都是一种当前读。）
 
-- `select...lock in share mode`（共享锁）、`select... for update`、`update`、`insert`、`delete`（排他锁）都是一种当前读。
+2、快照读：简单的select（不加锁）就是快照读，读取的是记录数据的可见版本（有可能是历史数据），不加锁，是非阻塞读。
 
-1. 快照读：
-2. MVCC：
+- Read Committed：每次select，都生成一个快照读。
+- Repeatable Read：开启事务后第一个select语句才是快照读的地方。
+- Serializable：快照读会退化为当前读。
 
-![](img/51.MVCC相关概念.png)
+3、MVCC（Multi Version Concurrency Control）
+
+多版本并发控制。Innodb存储引擎中会维护一个数据的多个版本，使得读写操作没有冲突，快照读为MySQL实现MVCC提供了一个非阻塞读功能。MVCC实现依赖于数据库记录中的三个隐式字段、undo log日志和readView。
+
+![](img/隐藏字段.png)
+
+```mysql
+-- linux下：查看隐藏字段
+ibd2sdi xxx.ibd;
+```
 
 
 
