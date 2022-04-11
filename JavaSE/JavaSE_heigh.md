@@ -2228,12 +2228,12 @@ List接口下三个实现类：
 
 **常用方法总结：**
 
-1. 增加：add(E e)
-2. 删除：remove(int index) / remove(Object obj)
-3. 修改：set(int index, Object ele)
-4. 查询：get(int index)
-5. 插入：add(int index, Object obj)
-6. 长度：size()
+1. 增加：add(E e)。
+2. 删除：remove(int index) / remove(Object obj)。
+3. 修改：set(int index, Object ele)。
+4. 查询：get(int index)。
+5. 插入：add(int index, Object obj)。
+6. 长度：size()。
 7. 遍历的三种方式：迭代器Iterator、foreach循环、普通循环。
 
 **不同情况下List集合的选择：**（如何选择ArrayList和LinkedList）

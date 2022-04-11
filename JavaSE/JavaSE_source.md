@@ -237,7 +237,7 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
         tab[i] = newNode(hash, key, value, null);
     // 如果当前位置存在元素，再进行以下操作
     else {
-        Node<K,V> e; K k; // 在需要的地方在创建变量
+        Node<K,V> e; K k; // 在需要的地方再创建变量
         // 当前索引位置对应的第一个元素的hash与准备添加的key的hash一致
         // 并且两者是同一对象或者不是同一对象但内容相同（满足这其中之一就认为是相同的对象）
         // 是同一对象就不加入
@@ -249,6 +249,7 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
             // 如果时，就调用这个方法添加（很复杂的一个方法）
             e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
         // 如果当前table对应的索引已经是一个链表，使用for循环，依次和链表中元素比较
+        // （先比较hash，不同再用equals()比较）
         // (1)如果都不相同，添加进链表。
         // （如果链表数据达到8个就会对当前链表进行树化，不过表长度小于64，则还不会进行树化，只是进行table的扩容）
         // (2)与某个相同，结束，不添加，break
@@ -276,7 +277,7 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
         }
     }
     ++modCount;
-    // threshold=12，size代表添加进table的数据
+    // threshold=12，size代表添加进table的数据（添加进数组中或数组中的node节点中）
     // 如果size大于12，则扩容
     if (++size > threshold)
         resize();
@@ -287,15 +288,68 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
 }
 ```
 
+### 总结
 
-
-
+1. 从构造器可以看出，HashSet底层就是HashMap。
+2. table数组扩容机制：集合初始容量为16，负载因子（加载因子）0.75；如果添加进HashSet的元素达到16 * 0.75=12，那就会对table数组进行扩容，扩容两倍。
+3. 值的存储：HashSet的值存储在HashMap的key上，HashMap的value统一为`PRESENT`（现在、当下、目前）。
+4. 值添加过程：
+   1. 添加对象时，先计算对象的hash值，然后根据hash值得到一个索引值。
+   2. table数组中，如果该索引位置没有存放值，那就直接存放；如果已经存放有值了，那就调用equals()方法比较，如果是同一对象，则放弃添加，如果是不同的对象，则添加到最后，形成链表。（注意，使用的是对象类中的equals()方法，尽量重写该方法，自己觉得对象相等的规则）
+   3. 在Java8中，链表的元素个数达到了8，并且table的大小 >= 64，才会对单链表进行树化，否则仍然会采用数组的扩容机制来扩容table数组，直到满足树化条件。
 
 
 
 ## LinkedHashSet
 
+```java
+public class LinkedHashSet<E>
+    extends HashSet<E>
+    implements Set<E>, Cloneable, java.io.Serializable { ... }
+```
 
+LinkedHashSet是HashSet的子类。
+
+### 构造器
+
+无参构造器：
+
+```java
+public LinkedHashSet() {
+    super(16, .75f, true);
+}
+// super()指向的构造器
+HashSet(int initialCapacity, float loadFactor, boolean dummy) {
+    map = new LinkedHashMap<>(initialCapacity, loadFactor);
+}
+```
+
+有参构造器：
+
+```java
+public LinkedHashSet(int initialCapacity) {
+    super(initialCapacity, .75f, true);
+}
+// super()指向的构造器
+HashSet(int initialCapacity, float loadFactor, boolean dummy) {
+    map = new LinkedHashMap<>(initialCapacity, loadFactor);
+}
+```
+
+结论：初始化默认容量为16，底层是LinkedHashMap（HashMap的子类），加载因子0.75。
+
+
+
+### add()
+
+![](source_img/8.linkedhashset.svg)
+
+和HashSet基本一致。
+
+### 结论
+
+1. LinkedHashSet维护了一个哈希表和双向链表。
+2. 添加过程中的逻辑和HashSet基本一致。
 
 
 
