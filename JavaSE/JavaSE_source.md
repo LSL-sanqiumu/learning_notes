@@ -355,7 +355,7 @@ HashSet(int initialCapacity, float loadFactor, boolean dummy) {
 
 ## TreeSet
 
-
+往TreeSet中添加数据要求是相同类的对象。
 
 
 
@@ -363,11 +363,99 @@ HashSet(int initialCapacity, float loadFactor, boolean dummy) {
 
 ## HashMap
 
+### 构造器
 
+```java
+public HashMap() {
+    this.loadFactor = DEFAULT_LOAD_FACTOR; // all other fields defaulted
+}
+```
+
+初始化加载因子：DEFAULT_LOAD_FACTOR = 0.75、`HashMap$Node[] table = null`。
+
+### put()
+
+HashSet底层就是HashMap，HashMap的put()如下：
+
+![](source_img/9.hashMap.png)
+
+```java
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
+               boolean evict) {
+    Node<K,V>[] tab; Node<K,V> p; int n, i; // 辅助变量
+    // table是HashMap中的一个成员变量Node[],判断是否进行初始化——第一次扩容
+    if ((tab = table) == null || (n = tab.length) == 0)
+        n = (tab = resize()).length;
+    // 利用得到的hash值来计算出该key应该存放到table表的哪个位置
+    if ((p = tab[i = (n - 1) & hash]) == null)
+        // 这个位置没有添加元素，则直接创建Node直接添加进去
+        tab[i] = newNode(hash, key, value, null);
+    // 如果当前位置存在元素，再进行以下操作
+    else {
+        Node<K,V> e; K k; // 在需要的地方再创建变量
+        // 当前索引位置对应的第一个元素的hash与准备添加的key的hash一致
+        // 并且两者是同一对象或者不是同一对象但内容相同（满足这其中之一就认为是相同的对象）
+        // 是同一对象就不加入
+        if (p.hash == hash &&
+                ((k = p.key) == key || (key != null && key.equals(k))))
+            e = p;
+        // 再判断 p 是不是一棵红黑树
+        else if (p instanceof TreeNode)
+            // 如果时，就调用这个方法添加（很复杂的一个方法）
+            e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+        // 如果当前table对应的索引已经是一个链表，使用for循环，依次和链表中元素比较
+        // （先比较hash，不同再用equals()比较）
+        // (1)如果都不相同，添加进链表。
+        // （如果链表数据达到8个就会对当前链表进行树化，不过表长度小于64，则还不会进行树化，只是进行table的扩容）
+        // (2)与某个相同，结束，不添加，break
+        else {
+            for (int binCount = 0; ; ++binCount) {
+                if ((e = p.next) == null) {
+                    p.next = newNode(hash, key, value, null);
+                    if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+                        treeifyBin(tab, hash);
+                    break;
+                }
+                if (e.hash == hash &&
+                        ((k = e.key) == key || (key != null && key.equals(k))))
+                    break;
+                p = e;
+            }
+        }
+        if (e != null) { // existing mapping for key
+            V oldValue = e.value;
+            if (!onlyIfAbsent || oldValue == null)
+                e.value = value;
+            afterNodeAccess(e);
+            // 不返回空，则添加失败
+            return oldValue;
+        }
+    }
+    ++modCount;
+    // threshold=12，size代表添加进table的数据（添加进数组中或数组中的node节点中）
+    // 如果size大于12，则扩容
+    if (++size > threshold)
+        resize();
+    // 为HashMap的子类而设置的一个方法，对于HaspMap来说是一个空的方法
+    afterNodeInsertion(evict);
+    // 代表添加成功
+    return null;
+}
+```
+
+### 结论
+
+1. table数组扩容机制：集合初始容量为16，负载因子（加载因子）0.75；如果添加进HashSet的元素达到16 * 0.75=12，那就会对table数组进行扩容，扩容两倍。
+2. 值添加过程：
+   1. 添加对象时，先计算对象的hash值，然后根据hash值得到一个索引值。
+   2. table数组中，如果该索引位置没有存放值，那就直接存放；如果已经存放有值了，那就调用equals()方法比较，如果是同一对象，则放弃添加，如果是不同的对象，则添加到最后，形成链表。（注意，使用的是对象类中的equals()方法，尽量重写该方法，自己觉得对象相等的规则）
+   3. 在Java8中，链表的元素个数达到了8，并且table的大小 >= 64，才会对单链表进行树化，否则仍然会采用数组的扩容机制来扩容table数组，直到满足树化条件。
 
 
 
 ## LinkedHashMap
+
+
 
 
 

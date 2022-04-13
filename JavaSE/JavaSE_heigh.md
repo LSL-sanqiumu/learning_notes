@@ -2142,7 +2142,7 @@ public class PropertiesTest {
 
 集合使用了泛型，不指定泛型时添加元素进集合时是默认的Object，可以添加Object及其子类，因为Object是所有类的直接或间接父类，所以任何类型的数据都可以添加进集合，此时也构成多态行为。
 
-**关于Collection接口声明的方法：**Collection接口是List、Set接口的父接口，其方法的具体实现在子接口中，其定义的抽象方法中常用的有如下：
+**关于Collection接口声明的方法：**
 
 | 抽象方法                           | 作用                                                         |
 | ---------------------------------- | ------------------------------------------------------------ |
@@ -2328,9 +2328,13 @@ Map：双列数据，存储key-value对的数据 ===> 类似函数 y = f(x)。
 主要实现类：
 
 1. HashMap：主要实现类；线程不安全，效率较高；（底层：数组+链表(JDK7之前)；数组+链表+红黑树(JDK8)）。
-2. LinkedHashMap：保证在遍历的时候按添加元素的顺序实现遍历（在HashMap底层结构基础上，添加了一对指针，指向前一个和后一个元素），对于频率的遍历操作，此类执行效率比HashMap高。
+2. LinkedHashMap：保证在遍历的时候按添加元素的顺序实现遍历（在HashMap底层结构基础上，添加了一对指针，指向前一个和后一个元素），对于高频率的遍历操作，此类执行效率比HashMap高。
 3. TreeMap：保证按照添加的key-value来进行排序(按key来排)，实现排序遍历；考虑key的自然排序和定制排序；（底层使用红黑树）。
-4. Hashtable：JDK1.0，古老的实现类；线程安全的，效率较低，不能存储null的key-value（出现null会抛异常），使用基本和HashMap一样。
+4. Hashtable：JDK1.0，古老的实现类；线程安全的（put()加了同步），效率较低。
+   - 其键和值都不能为null（否则抛出空指针异常），使用基本和HashMap一样。
+   - 底层数组 `HashMap$Entry[] `初始长度为11，负载因子0.75。
+   - 扩容机制：达到临界值后，旧容量使用位运算-左移，然后再加1。
+
 5. Properties：常用来处理配置文件，key和value都是String型。
 
 Map的特点：
@@ -2341,11 +2345,11 @@ Map的特点：
 
 key-value源码分析：
 
-1. `alt + 7`：查看类结构；
+1. `alt + 7`：查看类结构。
 
-2. `tab[i] = newNode(hash, key, value, null);`，newNode返回`return new Node<>(hash, key, value, next);`，而`Node<K,V> implements Map.Entry<K,V>`，存放键值对的Node实现了Entry接口；
+2. `tab[i] = newNode(hash, key, value, null);`，newNode返回`return new Node<>(hash, key, value, next);`，而`Node<K,V> implements Map.Entry<K,V>`，存放键值对的Node实现了Entry接口。
 
-3. HashMap中有一个内部类EntrySet，一个成员变量`transient Set<Map.Entry<K,V>> entrySet`；为了遍历方便，会创建一个EntrySet集合，该集合存放元素的类型是Entry，有key、value（`transient Set<Map.Entry<K,V>> entrySet`，该对象只是指向一个Node），证明如下：
+3. HashMap中有一个内部类EntrySet、一个成员变量`transient Set<Map.Entry<K,V>> entrySet`；为了遍历方便，会创建一个EntrySet集合，该集合存放元素的类型是Entry，有key、value（`transient Set<Map.Entry<K,V>> entrySet`，该对象只是指向一个Node），证明如下：
 
    - ```java
      Map map = new HashMap();
@@ -2359,6 +2363,10 @@ key-value源码分析：
      ```
 
    - HashMap$Node存放到entrySet是为了方便对其进行遍历；Map.Entry接口提供了getKey、getValue方法。
+
+![](source_img/10.mapentry.svg)
+
+
 
 ### 常用方法
 
