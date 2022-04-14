@@ -154,7 +154,8 @@ http://redis.io/、http://www.redis.cn/。
 6. `expire key 10`：设置指定过期时间，单位s，到期自动清除key。
 7. `ttl key`：查看当前key剩余时间。
 8. `type key`：查看当前key的类型。
-9. 可去官网查看命令。
+9. `del key`：删除指定key。
+10. 可去官网查看命令。
 
 Redis是单线程的，Redis的性能瓶颈在于机器的内存和网络带宽而不是CPU，可以使用单线程实现，所以就使用单线程了。
 
@@ -166,26 +167,26 @@ Redis是单线程的，Redis的性能瓶颈在于机器的内存和网络带宽�
 
 ### String
 
-String类型，也就是字符串类型，是Redis中最简单的存储类型，其value是字符串，不过根据字符串的格式不同，又可以分为3类：普通字符串、数值型字符串（整型数据的字符、浮点型数据的字符）。
+String类型，也就是字符串类型，是Redis中最简单的存储类型，其value是字符串，不过根据字符串的格式不同，又可以分为3类：普通字符串、数值型字符串（整型数据的字符、浮点型数据的字符），无论是哪种数据类型，底层都是字节数组形式存储，只不过编码方式不同。（字符串最大512M）
 
 **值的设置（创建）：**
 
 1. 设置单个key-value：
-   - `set key value`：设置key-value。
-   - `getset key value`：先获取当前key的值再设置（如果不存在则返回空并设置，如果存在则返回原值并设置）。
-   - `setnx key value`：set if not exist，如果key不存在就设置。（分布式锁中常用）。
+   - **`set key value`：设置key-value。**
+   - `getset key value`：先获取当前key的值再设置（如果不存在则返回空然后设置，如果存在则返回原值后再设置）。
+   - **`setnx key value`：set if not exist，如果key不存在就设置。（分布式锁中常用）。**
 2. 设置多个key-value：
-   - `mset key1 value1 key2 value2 ...`：一次设置多个key-value。
+   - **`mset key1 value1 key2 value2 ...`：一次设置多个key-value。**
    - `msetnx k1 v1 k2 v2 k3 v3 ...`：对多个进行设置，原子性操作，要么都设置成功，要么都失败。
 3. 设置key-value值及过期时间：（单位s）
-   - `setex key time value`：set with expire，设置key的值和它的过期时间，如果不存在会先创建key。
-4. 替换值：（位置下标从01开始）
+   - **`setex key time value`：set with expire，设置key的值和它的过期时间，如果不存在会先创建key。**
+4. 替换值：（位置下标从0开始）
    - `setrange key 1 "替换值"`：从某位置开始替换字符串（包括指定位置），不存在的key-value将会当作空白字符。
 
-**值的获取：**
+**值的获取：**（获取整个key的值、获取key的部分值）
 
-- `get key`；
-- `mget k1 k2 k3 ...`：一次获取多个值。
+- **`get key`。**
+- **`mget k1 k2 k3 ...`：一次获取多个值。**
 - `getrange key 0 3`：获取指定区间的字符串，是闭区间。
 - `getrange key 0 -1`：查看当前key，和`get key`的作用一样。
 
@@ -194,13 +195,13 @@ String类型，也就是字符串类型，是Redis中最简单的存储类型，
 - `append key "xxx"`：在value值末尾追加字符，如果key不存在则相当于`set key xxx`。
 - `strlen key`：查看String类型的key对应值的字符长度。
 
-**对数值型字符的运算操作：**increment
+**对数值型字符的运算操作：**（increment增加、decrement递减）
 
 1. 加：
-   1. `incr key`：加一操作。
+   1. **`incr key`：加一操作。**
    2. `incrby key 10`：以指定步长增加。
 2. 减：
-   - `decr key`：自减。
+   - **`decr key`：自减。**
    - `decrby key 10`：指定步长来自减。
 
 **对于对象，可以这样来创建String的key-value，例如：**
@@ -216,12 +217,14 @@ String类型的应用：计数、对象缓存等。
 
 列表，可以实现栈、队列、阻塞队列等数据结构，基本所有的list命令都以l开头。
 
+![](img/8.list.png)
+
 **增加：**
 
-1. `lpush list value`：插入值到列表list头部。
-2. `rpush list value`：插入值到列表list的尾部。
-3. `linsert list [选项] value1 newvalue`：在列表list中某个值前面或后面插入一个值；
-  - 选项为before或after；
+1. `lpush list value`：创建列表并插入值到列表list头部。
+2. `rpush list value`：创建列表并插入值到列表list的尾部。
+3. `linsert list [选项] value1 newvalue`：在列表list中某个值前面或后面插入一个值。
+  - 选项为before或after。
   - 如果list中存在多个value1，则在下标最小的前面插入。
 
 **获取：**
@@ -276,8 +279,10 @@ set中值不能重复，无序。
 
 Hash类型，也叫散列，其value是一个无序字典，类似于Java中的HashMap结构。Hash类型的key的value值类似map集合。这种类型的数据是：key-Map。
 
+String结构是将对象序列化为JSON字符串后存储，当需要修改对象某个字段时很不方便，而Hash结构可以将对象中的每个字段独立存储，可以针对单个字段做CRUD。
+
 1. 创建：
-   - `hset myhash field value  filed value ... `和`hmset myhash f1 v1 f2 v2 ...`。
+   - `hset myhash field value filed value ... `和`hmset myhash f1 v1 f2 v2 ...`。
 2. 获取属性值：
    - `hget myhash field `：获取myhash 的值中的某个属性值。
    - `hmget myhash f1 f2 f3 ...`：获取myhash 的值中的属性f1、f2、f3的值。
@@ -293,7 +298,7 @@ Hash类型，也叫散列，其value是一个无序字典，类似于Java中的H
 6. 其它：
    - `hincrby myhash field 1`：自增。
    - `hdecr myhash field 1`：自减。
-   - hsetex、hsetnx，和string使用类似。
+   - hsetex、hsetnx，和String中类似指令的使用类似。
 
 可以用于存储用户信息等经常变动的数据。hash更适合对象数据的存储，string更适合的是字符串数据的存储。
 

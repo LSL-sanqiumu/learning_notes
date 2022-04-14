@@ -321,14 +321,15 @@ UPDATE `myblogs`.`t_user` SET `avatar` = '/images/admin.png' WHERE `id` = '1';
 UPDATE `myblogs`.`t_user` SET `create_time` = '2021-07-21 21:59:54' WHERE `id` = '1'; 
 UPDATE `myblogs`.`t_user` SET `email` = 'xxx@163.com' WHERE `id` = '1'; 
 UPDATE `myblogs`.`t_user` SET `nickname` = '潮汐' WHERE `id` = '1'; 
-UPDATE `myblogs`.`t_user` SET `password` = 'e10adc3949ba59abbe56e057f20f883e' , `type` = '1' , `update_time` = '2021-07-21 22:00:17' , `username` = 'test' WHERE `id` = '1';  #这里的密码是经MD5加密处理后的
+UPDATE `myblogs`.`t_user` SET `password` = 'e10adc3949ba59abbe56e057f20f883e' , `type` = '1' , `update_time` = '2021-07-21 22:00:17' , `username` = 'test' WHERE `id` = '1';  #这里的密码是经MD5加密处理后的 88634878ac06724be565dd5ba4461ef7
+
 ```
 
 创建完毕后就是设置jar包在服务器后台不断运行。
 
 ## jar包不停运行
 
-如果直接执行`nohub java -jar xxx.jar &`会报下面的错误：
+如果直接执行`nohup java -jar xxx.jar &`会报下面的错误：
 
 ```
 nohup: ignoring input and appending output to ‘nohup.out’
@@ -338,7 +339,7 @@ nohup: ignoring input and appending output to ‘nohup.out’
 
 （在使用nohup命令的时候，经常由于输出nohup.out的路径没有写入权限，而无法使用nohup。这是可以使用Linux重定向的方法，将nohup.out重定向至一个有写入权限的路径，或者直接扔到/dev/null中。）解决方法就是将 nohup 的日志输出到 /dev/null，这个目录会让所有到它这的信息自动消失：
 
-`nohup ./program >/dev/null 2>/dev/null &）`
+`nohup ./program >/dev/null 2>/dev/null &`
 
 执行完毕，退出MobaXterm_Portable，去浏览器访问公网IP:8080。
 
