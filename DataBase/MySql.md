@@ -317,11 +317,11 @@ MySQL当前时间：`now()`获取系统当前时间（`YYYY-MM-DD  HH-mm-ss`）�
 
 字段属性是字段除数据类型外的属性，一般有以下属性：
 
-1. PK（`primary key`）：主键；
-2. Not Null（`not null`）：非空，不能为空；
-3. Unsigned（`unsigned`）：无符号；
-4. Auto Incr（`auto_increment`）：理解为自增，自动在上一条记录的基础上+1（默认）（通常用来设置唯一的主键，必须是整数，可设置步长和起始值）；
-5. Zero fill（`zero fill`）：0填充，比如3位整数，多余的位数用0填充；
+1. PK（`primary key`）：主键。
+2. Not Null（`not null`）：非空，不能为空。
+3. Unsigned（`unsigned`）：无符号。
+4. Auto Incr（`auto_increment`）：理解为自增，自动在上一条记录的基础上+1（默认）（通常用来设置唯一的主键，必须是整数，可设置步长和起始值）。
+5. Zero fill（`zero fill`）：0填充，比如3位整数，多余的位数用0填充。
 
 6. Default（`default`）：设置默认值。
 
@@ -434,9 +434,9 @@ MySQL的外键约束用来在两个表数据之间建立连接，其中一张表
 
 **注意事项：**
 
-1. 删除有外键关系的表时，**需要先删除主表，然后再删除从表**。
-2. 从表中外键字段的值可以为null。
-3. 外键引用主表中的某个字段，**主表中被引用的字段不一定是主键，但至少具有唯一性（要有唯一性约束）**。
+1. 外键引用主表中的某个字段，**主表中被引用的字段不一定是主键，但至少具有唯一性（要有唯一性约束）**。
+2. 删除有外键关系的表时，**需要先删除主表，然后再删除从表**。
+3. 从表中外键字段的值可以为null。
 
 最佳实践：数据库就是单纯的表，只用来存数据，只有行和列。使用多张表就创建外键。
 
@@ -446,16 +446,16 @@ MySQL的外键约束用来在两个表数据之间建立连接，其中一张表
 create table 表名(
 	字段定义...
 	[constraint] `外键名称` foreign key (`外键字段名`) references `主表`(主表字段) [属性]
-)engine=innodb default charset=utf8；
+)engine=innodb default charset=utf8;
 -- constraint ：用于设置外键约束名称，可以省略，默认的外键约束名称为`从表名_ibfk_1`
 -- foreign key：外键设置，用于指定从表的外键字段
 -- references：主表及主键设置，用于指定主表和主键
 -- 属性可选，属性说明：
-	-- CASCADE：主表删除或修改记录时，从表也会对关联记录的外键字段进行修改。
-	-- RESTRICT：删除或修改主表记录，子表中若有关联记录，则不允许主表删除或修改。
-	-- SET NULL：主表删除或修改主表记录时，从表会将关联记录的外键字段设为null。（innodb不支持）
-	-- ON UPDATE CASCADE：主表修改记录时，从表关联记录的外键字段也会修改。（将CASCADE改为RESTRICT，意思相反）
-	-- ON DELETE CASCADE：主表删除记录时，从表关联记录的外键字段也会删除。（将CASCADE改为RESTRICT，意思相反）
+	-- cascade：主表删除或修改记录时，从表也会对关联记录的外键字段进行修改。
+	-- restrict：删除或修改主表记录，子表中若有关联记录，则不允许主表删除或修改。
+	-- set null：主表删除或修改主表记录时，从表会将关联记录的外键字段设为null。（innodb不支持）
+	-- on update cascade：主表修改记录时，从表关联记录的外键字段也会修改。（将CASCADE改为RESTRICT，意思相反）
+	-- on delete cascade：主表删除记录时，从表关联记录的外键字段也会删除。（将CASCADE改为RESTRICT，意思相反）
 ```
 
 实例演示：	
@@ -486,7 +486,7 @@ CREATE TABLE `t_student1`(
 
 **外键的创建方式二：在创建表完成之后再添加外键约束**
 
-外键名的命名规范：`fk_从表名_主表名`，名称长度不超三十字符。
+外键名的命名规范：`fk_从表名_主表名`，名称长度不超三十个字符。
 
 ```MYSQL
 alter table 表名 add [constraint `外键名称`] foreign key (`外键字段名`) references `主表`(`主表列名`) [属性];
@@ -503,12 +503,12 @@ alter table 表名 drop foreign key 外键名;
 **查看外键：**
 
 ```mysql
+-- 通过查看建表语句来查看外键
+show create table `表名`;
 -- 查看数据库中某张表的外键
 select * from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where constraint_schema='数据库' and table_name='从表名';
 -- 使结果每个列分行显示
 select * from INFORMATION_SCHEMA.KEY_COLUMN_USAGE where constraint_schema='数据库' and table_name='从表名'\G;
--- 通过查看建表语句来查看外键
-show create table `表名`;
 ```
 
 # -------SQL start-------
@@ -537,7 +537,7 @@ show create table `表名`;
 1. 创建数据库（使用命令创建数据库时，如果不设置字符集则是默认的字符集(不支持中文)，值得注意的是MySQL中，utf8mb4才是真正的utf8）
 
    ```mysql
-   create database [if not exists] database_name character set utf8 collate utf8_general_ci;
+   create database [if not exists] database_name character set utf8mb4 collate utf8mb4_general_ci;
    ```
 
 2. 删除数据库
@@ -564,7 +564,7 @@ show create table `表名`;
 
 ```mysql
 -- 语法
-CREATE TABLE [IF NOT NULL] 表名(
+create table [if not exists] 表名(
     `字段名` 列数据类型(长度) [属性] [索引] [说明],
     `字段名` 列数据类型(长度) [属性] [索引] [说明],
     `字段名` 列数据类型(长度) [属性] [索引] [说明],
@@ -576,15 +576,15 @@ CREATE TABLE [IF NOT NULL] 表名(
 
 ```SQL
 -- 示例
-CREATE TABLE IF NOT EXISTS `students`(
-`id` INT(4) NOT NULL AUTO_INCREMENT COMMENT '学号',
-`name` VARCHAR(30) NOT NULL DEFAULT '匿名' COMMENT '姓名',
-`pwd` VARCHAR(20) NOT NULL DEFAULT '123456' COMMENT '密码',
-`sex` VARCHAR(2) NOT NULL DEFAULT '女' COMMENT '性别',
-`birthday` DATETIME DEFAULT NULL COMMENT '生日',
-`address` VARCHAR(100) DEFAULT NULL COMMENT '地址',
-`email` VARCHAR(20) DEFAULT NULL COMMENT '邮箱',
-PRIMARY KEY(`id`) 
+create table if not exists `students`(
+    `id` INT(4) NOT NULL AUTO_INCREMENT COMMENT '学号',
+    `name` VARCHAR(30) NOT NULL DEFAULT '匿名' COMMENT '姓名',
+    `pwd` VARCHAR(20) NOT NULL DEFAULT '123456' COMMENT '密码',
+    `sex` VARCHAR(2) NOT NULL DEFAULT '女' COMMENT '性别',
+    `birthday` DATETIME DEFAULT NULL COMMENT '生日',
+    `address` VARCHAR(100) DEFAULT NULL COMMENT '地址',
+    `email` VARCHAR(20) DEFAULT NULL COMMENT '邮箱',
+    PRIMARY KEY(`id`) 
 )ENGINE=INNODB DEFAULT CHARSET=utf8; 
 ```
 
@@ -598,7 +598,7 @@ create table `table_name` as select ... from ......;
 删除表：
 
 ```sql
-DROP TABLE IF EXISTS `table-name`;       -- 删除表
+drop table if exists `table-name`;
 ```
 
 ## 常用查看命令
@@ -606,7 +606,7 @@ DROP TABLE IF EXISTS `table-name`;       -- 删除表
 ```sql
 show create database `database_name`; -- 查看创建数据库的语句
 show create table `table_name`; -- 查看创建表的语句
-describe `table_name`; -- 查看表的结构 （describe table_name）
+describe `table_name`; -- 查看表的结构
 desc `table_name`; -- 查看表的结构
 
 show status; -- 查看广泛的服务器状态信息
@@ -626,7 +626,7 @@ select * from tables where TABLE_SCHEMA='数据库名' and TABLE_NAME='表名';
 
 **MySQL的默认编码是Latin1，不支持中文，但可以修改：**
 
-1. 第一种就是创表的时候就修改，charset=utf8。
+1. 第一种：就是创表的时候就修改，charset=utf8。
 2. 第二种：在my.ini中配置默认的编码：`character-set-server=utf8`。（但不建议使用此种方法，因为第一种是sql上的修改，换台电脑也能运行，但第二种是物理上的修改，如果另一个的数据库my.ini配置里没有这句，那就运行不了了）。
 
 ## 修改表结构
@@ -635,15 +635,15 @@ select * from tables where TABLE_SCHEMA='数据库名' and TABLE_NAME='表名';
 
 ```mysql
  -- 修改表名
-alter table `table-name` rename as `new-tablename`;      
+alter table `table-name` rename as `new-tablename`;
 -- 添加新字段（还可以使用该命令添加索引、约束等）
-alter table `table-name` add 字段名 类型与属性;      
+alter table `table-name` add 字段名 类型与属性;
  -- 修改字段类型、属性和约束
-alter table `table-name` modify 字段名 字段类型与属性;  
+alter table `table-name` modify 字段名 字段类型与属性;
 -- 相当于modify加多了一个修改字段名的功能
-alter table `table-name` change 字段名 新字段名 字段类型与属性; 
+alter table `table-name` change 字段名 新字段名 字段类型与属性;
  -- 删除字段
-alter table `table-name` drop 字段名;   
+alter table `table-name` drop 字段名;
 ```
 
 ```mysql
@@ -695,7 +695,7 @@ insert into `表` select ... from ...;  -- 很少用
 为表插入date类型的数据：（函数`str_to_date('字符串日期', '日期格式')`）
 
 1. date类型的数据不能直接通过字符串的形式添加，要插入date类型的数据就要使用函数`str_to_date('字符串日期', '日期格式')`把varchar类型转换为date类型，字符串日期要和日期格式对应`str_to_date('2013-9-1','%Y-%m-%d')`。（详细用法可去教程网站去了解）
-2. mysql的日期时间格式有：%Y（年）、%m（月）、%d（日）、%h（时）、%i（分）、%s（秒）。
+2. mysql的日期时间格式有：%Y（年）、%m（月）、%d（日）、%H（时）、%i（分）、%s（秒）。
 3. 如果字符串日期格式是`%Y-%m-%d`，那就不用写函数，会自动帮转换。
 
 `date_format(Date, format)`函数：将日期转换成特定格式的字符串
@@ -731,7 +731,7 @@ update `table-name` set `字段1`=新值1,`字段2`=新值2,... where `字段3`=
 ```mysql
 -- delete属于DML语句   只删除数据，但数据在硬盘上的存储空间不会被释放
 -- 缺点：删除效率低   优点：支持回滚，数据可以恢复
-delete from `table-name` [where 条件]; -- 从指定表删除符合条件的数据，没有条件时会删除整张表
+delete from `table-name` [where 条件]; -- 从指定表删除符合条件的数据，没有条件时会删除整张表的数据
 
 -- truncate 清空数据库表中的数据，但表的结构和索引约束不会变
 -- 删除效率高，不支持回滚，数据不可恢复，属于DDL操作
@@ -799,10 +799,10 @@ select 字段x,count(distinct `字段1`,...) from `table-name`; -- 去掉该字�
 其他操作：
 
 ```SQL
-SELECT VERSION(); -- 查询版本
-SELECT 1000*4-34 AS '结果'; -- 计算值
-SELECT @@auto_increment_increment; -- 查询自增的步长
-SELECT `age`+1 AS 长大一岁 FROM result; -- 指定字段加一后显示，不会改变表内数据
+select VERSION(); -- 查询版本
+select 1000*4-34 as '结果'; -- 计算值
+select @@auto_increment_increment; -- 查询自增的步长
+select `age`+1 as 长大一岁 from result; -- 指定字段加一后显示，不会改变表内数据
 ```
 
 语法：` select 表达式 from table-name;`；数据库中的表达式：文本值、字段、null、函数、计算表达式、系统变量等。
@@ -835,12 +835,12 @@ select ... where `字段` in (110,120); -- 该字段值是否有在该集合里�
 | is not null         | 不是null     |                        |
 | like                | 含有某个值   | 模糊查询，结合%或_使用 |
 
-| 常用于子查询         | 含义           | 描述                                                      |
-| :------------------- | :------------- | :-------------------------------------------------------- |
-| in(xx,xx,xx,...)     | 符合里面的值   | 某字段的值能对应in里面的某一个数据<br />返回true或者false |
-| not in(xx,xx,xx,...) | 不符合里面的值 | 某字段的值不在这几个值中<br />返回true或者false           |
-| exists()             | 存在里面的值   |                                                           |
-| not exists()         | 不存在里面的值 |                                                           |
+| 常用于子查询         | 含义           | 描述                                                         |
+| :------------------- | :------------- | :----------------------------------------------------------- |
+| in(xx,xx,xx,...)     | 符合里面的值   | 某字段的值能对应in里面的某一个数据<br />返回true或者false    |
+| not in(xx,xx,xx,...) | 不符合里面的值 | 某字段的值不在这几个值中<br />返回true或者false              |
+| exists()             | 存在里面的值   | EXISTS 运算符用于判断查询子句是否有记录，<br>如果有一条或多条记录存在返回 True，否则返回 False。 |
+| not exists()         | 不存在里面的值 |                                                              |
 
 
 
@@ -873,9 +873,9 @@ like，模糊查询，支持使用通配符`%`或`_`匹配：
 
    ```sql
    select 分组函数 from `table-name`; -- 分组函数如下
-   count(`字段`); -- 行数计数，会忽略所有的null
-   count(*); -- 不会忽略null
-   count(1); -- 1 相当于将分组对应字段赋予1再进行求和
+   count(`字段`);  -- 统计行数，会忽略所有的null
+   count(*);      -- 统计行数，不会忽略null
+   count(1);      -- 统计行数，相当于将分组对应字段赋予1再进行求和
    sum(`字段`); avg(`字段`); max(`字段`); min(`字段`); -- 求总和 求平均值 求最大值 求最小值
    ```
 
@@ -900,7 +900,7 @@ select `分组字段`,分组函数 from table_name group by `分组字段` havin
 默认的 MySQL 配置中 的`sql_mode `是`only_full_group_by`：
 
 - only_full_group_by ：使用这个就是使用和oracle一样的 group 规则，select后的字段都要在group中，或者select后的字段本身是聚合列(SUM、AVG、MAX、MIN) 才行（因为聚合列会根据分组的字段来将数据聚合成一列）。
-- group by支持select时声明的别名，因为mysql对此做了拓展引起的，这个取决于mysql中的一个参数 ONLY_FULL_GROUP_BY 。
+- group by支持select后声明的别名，因为mysql对此做了拓展引起的，这个取决于mysql中的一个参数 ONLY_FULL_GROUP_BY 。
 - SQL92与SQL99对`only_full_group_by`的标准不一致。
 
 分组查询实例：
@@ -908,25 +908,21 @@ select `分组字段`,分组函数 from table_name group by `分组字段` havin
 ```mysql
 -- 创建订单表
 create table t_order(
-  id int not null AUTO_INCREMENT COMMENT '订单id',
-  user_id bigint not null comment '下单人id',
-  user_name varchar(16) not null default '' comment '用户名',
-  price decimal(10,2) not null default 0 comment '订单金额',
-  the_year SMALLINT not null comment '订单创建年份',
-  PRIMARY KEY (id)
+    id int not null AUTO_INCREMENT COMMENT '订单id',
+    user_id bigint not null comment '下单人id',
+    user_name varchar(16) not null default '' comment '用户名',
+    price decimal(10,2) not null default 0 comment '订单金额',
+    the_year SMALLINT not null comment '订单创建年份',
+    PRIMARY KEY (id)
 )engine=innodb default charset=utf8 comment '订单表';
 
--- 插入数据
+-- 插入
 insert into t_order(user_id,user_name,price,the_year) values
-  (1001,'甲',11.11,'2017'),
-  (1001,'甲',22.22,'2018'),
-  (1001,'甲',88.88,'2018'),
-  (1002,'乙',33.33,'2018'),
-  (1002,'乙',12.22,'2018'),
-  (1002,'乙',16.66,'2018'),
-  (1002,'乙',44.44,'2019'),
-  (1003,'丙',55.55,'2018'),
-  (1003,'丙',66.66,'2019');
+(1001,'甲',11.11,'2017'),(1001,'甲',22.22,'2018'),
+(1001,'甲',88.88,'2018'),(1002,'乙',33.33,'2018'),
+(1002,'乙',12.22,'2018'),(1002,'乙',16.66,'2018'),
+(1002,'乙',44.44,'2019'),(1003,'丙',55.55,'2018'),
+(1003,'丙',66.66,'2019');
 ```
 
 查询每个用户每年的订单量：
@@ -973,11 +969,11 @@ SQL92、SQL99的区别可参考：[SQL92 与 SQL99 - 知乎 (zhihu.com)](https:/
    ```mysql
    SELECT * FROM student s, course c ,teacher t ,sc
    WHERE
-   #表链接条件
+   # 表链接条件
    s.sid = sc.`sid` 
    AND c.cid = sc.`cid`
    AND c.tid =t.tid
-   #筛选条件
+   # 筛选条件
    AND t.tname = '张三';
    ```
 
@@ -985,9 +981,9 @@ SQL92、SQL99的区别可参考：[SQL92 与 SQL99 - 知乎 (zhihu.com)](https:/
 
    ```sql
    -- on 为连接条件，可理解为交集区域
-   select ... from `表1` xxx join `表2` on ...; （四种）
-   select ... from `表1` xxx join `表2` on ... where ...;  （三种）
-   --  where是为了选数据，选取连接查询后得到的数据
+   select ... from `表1` xxx join `表2` on ...; -- （四种）
+   select ... from `表1` xxx join `表2` on ... where ...; --  （三种）
+   -- where是为了选数据，选取连接查询后得到的数据
    ```
 
 

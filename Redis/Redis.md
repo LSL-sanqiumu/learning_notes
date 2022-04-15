@@ -163,11 +163,13 @@ Redis是单线程的，Redis的性能瓶颈在于机器的内存和网络带宽�
 
 # 数据类型和操作
 
+Redis中的key都是String类型的，而value则有八种数据类型。
+
 ## 五大数据类型
 
 ### String
 
-String类型，也就是字符串类型，是Redis中最简单的存储类型，其value是字符串，不过根据字符串的格式不同，又可以分为3类：普通字符串、数值型字符串（整型数据的字符、浮点型数据的字符），无论是哪种数据类型，底层都是字节数组形式存储，只不过编码方式不同。（字符串最大512M）
+String类型，也就是字符串类型，是Redis中最简单的存储类型，其value是字符串，不过根据字符串的格式不同，又可以分为3类：普通字符串、数值型字符串（整型数据的字符、浮点型数据的字符），无论是哪种数据类型，底层都是字节数组形式存储，只不过编码方式不同。（value可容纳数据长度最大为512Mb）
 
 **值的设置（创建）：**
 
@@ -219,61 +221,91 @@ String类型的应用：计数、对象缓存等。
 
 ![](img/8.list.png)
 
+Redis中的List类型与Java中的LinkedList类似，可以看做是一个双向链表结构。既可以支持正向检索和也可以支持反向检索。特征也与LinkedList类似：
+
+1. 有效、可重复；插入、删除速度快，查询速度一般。
+2. 常用来存储一个有序数据，例如：朋友圈点赞列表、评论列表等。
+
 **增加：**
 
-1. `lpush list value`：创建列表并插入值到列表list头部。
-2. `rpush list value`：创建列表并插入值到列表list的尾部。
+1. **`lpush list value`：**创建列表并插入一个或多个值到列表list头部。
+2. **`rpush list value`：**创建列表并插入一个或多个值到列表list的尾部。
 3. `linsert list [选项] value1 newvalue`：在列表list中某个值前面或后面插入一个值。
   - 选项为before或after。
   - 如果list中存在多个value1，则在下标最小的前面插入。
 
 **获取：**
 
-1. `lindex list index`：根据index下标取值。
-2. `lrange list 0 -1`：获取当前list的所有的值；`lrange list 0 3`：闭区间，获取闭区间内的值。
+1. `lindex list index`：根据index下标取值。（从左边算，index由0开始）
+2. **`lrange list 0 -1`：**获取当前list的所有的值；`lrange list 0 3`：闭区间，获取闭区间内的值。
 3. `llen list`：获取列表list的长度。
 
 **移除：**
 
-1. `lpop list`、`rpop list`：移除list的第一个或最后一个值，可以在后面指定移除的数量来移除多个。
-2. `rpoplpush newlist oldlist`：移除一个列表的最后一个元素到一个新的列表，
-3. `lrem list count value`：从指定value开始移除（包括指定的value），count是移除的数量。
-4. `ltrim mylist 1 2`：通过下标截断mylist，最后只剩下截取的元素，这里是是1、2下标的元素。
+1. **`lpop list`、`rpop list`：**移除list的第一个或最后一个值并返回，可以在后面指定移除的数量来移除多个，如果列表没有元素了则返回nil。
+2. **`blpop list 时间s`、`brpop list 时间s`：**移出并获取列表的第一个或最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
+   - 如果列表为空则返回nil，否则则返回两个元素：列表的key和弹出的value。
+
+3. **`rpoplpush newlist oldlist`：**移除一个列表的最后一个元素到一个新的列表。
+4. **`lrem list count value`：**从指定value开始移除（包括指定的value），count是移除的数量。
+5. **`ltrim mylist 1 2`：**通过下标截断mylist，最后只剩下截取的元素，这里是是1、2下标的元素。
 
 **更改：**
 
-- `lset list 0 value`：更改list的指定下标的value，列表或value不存在会报错。
+- **`lset list 0 value`：**更改list的指定下标的value，列表或value不存在会报错。
 
+**使用List来模拟数据结构：**
 
+1. 如何利用List结构模拟一个栈?入口和出口在同一边。
+2. 如何利用List结构模拟一个队列?入口和出口在不同边。
+3. 如何利用List结构模拟一个阻塞队列?入口和出口在不同边，出队时采用BLPOP或BRPOP。
 
 ### Set
 
-set中值不能重复，无序。
+Redis的Set结构与Java中的HashSet类似，可以看做是一个value为null的HashMap。因为也是一个hash表，因此具备与HashSet类似的特征：
 
-增加：
+- 无序、不可重复；查找快，支持交集、并集、差集等功能。
 
-- `sadd myset value`：往myset中存入一个或多个值。
+**添加：**
 
-获取：
+- **`sadd myset value`：**往myset中存入一个或多个值。
 
-1. `smembers myset`：查看myset所有的值。
+**获取：**
+
+1. **`smembers myset`：**查看myset所有的值。
 2. `srandmember myset [count]`：随机获取某个值，可在后面指定获取个数。
-3. `sismember myset value`：某个值是不是myset的成员。
-4. `scard myset`：获取set集合中值的个数。
+3. **`sismember myset value`：**某个值是不是myset的成员。
+4. **`scard myset`：**获取set集合中值的个数。
 
-移除：
+**移除：**
 
-- `srem myset value`：移除一个或多个值，不是原子性操作，只要指定的value中有一个存在myset就可以移除成功。
+- **`srem myset value`：**移除一个或多个值，不是原子性操作，只要指定的value中有一个存在myset就可以移除成功。
 - `spop myset [count]`：随机移除值，可指定移除数量。
 - `smove myset targetset value `：移动myset中的value到targetset，如果targetset不存在会自动创建。
 
-集合性操作：
+**集合性操作：**
 
-- `sdiff set1 set2`：获取差集，返回的是set1中的不同于set2值；
-- `sunion set1 set2`：获取并集；
-- `sinter set1 set2`：获取交集；
+- **`sdiff set1 set2`：**获取差集，返回的是set1中的不同于set2值。
+- **`sunion set1 set2`：**获取并集。
+- **`sinter set1 set2`：**获取交集。
 
-共同关注、共同爱好、二度好友、推荐好友，（六度分割理论）。
+应用：共同关注、共同爱好、二度好友、推荐好友，（六度分割理论）。
+
+```properties
+将下列数据用Redis的Set集合来存储：张三的好友有：李四、王五、赵六；李四的好友有：王五、麻子、二狗。
+利用Set的命令实现下列功能：
+•计算张三的好友有几人
+•计算张三和李四有哪些共同好友
+•查询哪些人是张三的好友却不是李四的好友
+•查询张三和李四的好友总共有哪些人
+•判断李四是否是张三的好友
+•判断张三是否是李四的好友
+•将李四从张三的好友列表中移除
+```
+
+
+
+
 
 ### Hash
 
@@ -282,19 +314,19 @@ Hash类型，也叫散列，其value是一个无序字典，类似于Java中的H
 String结构是将对象序列化为JSON字符串后存储，当需要修改对象某个字段时很不方便，而Hash结构可以将对象中的每个字段独立存储，可以针对单个字段做CRUD。
 
 1. 创建：
-   - `hset myhash field value filed value ... `和`hmset myhash f1 v1 f2 v2 ...`。
+   - **`hset myhash field value filed value ... `和`hmset myhash f1 v1 f2 v2 ...`。**
 2. 获取属性值：
-   - `hget myhash field `：获取myhash 的值中的某个属性值。
-   - `hmget myhash f1 f2 f3 ...`：获取myhash 的值中的属性f1、f2、f3的值。
-   - `hgetall myhash `：获取该myhash的值中的所有属性和属性值。
+   - **`hget myhash field `：**获取myhash 的值中的某个属性值。
+   - **`hmget myhash f1 f2 f3 ...`：**获取myhash 的值中的属性f1、f2、f3的值。
+   - **`hgetall myhash `：**获取该myhash的值中的所有属性和属性值。
 3. 删除：
-   - `hdel myhash field `：删除myhash 的值中的某个属性和属性值。
+   - **`hdel myhash field `：**删除myhash 的值中的某个属性和属性值。
 4. 获取：
-   - `hlen myhash`：获取hash表的字段数量。
-   - `hkeys myhash`：获取myhash的值中所有的键。
-   - `hvals myhash`：获取hash表中value中所有的value。
+   - **`hlen myhash`：**获取hash表的字段数量。
+   - **`hkeys myhash`：**获取myhash的值中所有的键。
+   - **`hvals myhash`：**获取hash表中value中所有的value。
 5. 判断：
-   - `hexists myhash filed`：myhash中指定字段是否存在。
+   - **`hexists myhash filed`：**myhash中指定字段是否存在。
 6. 其它：
    - `hincrby myhash field 1`：自增。
    - `hdecr myhash field 1`：自减。
@@ -302,19 +334,59 @@ String结构是将对象序列化为JSON字符串后存储，当需要修改对�
 
 可以用于存储用户信息等经常变动的数据。hash更适合对象数据的存储，string更适合的是字符串数据的存储。
 
-### Zset
+### Zset—SortedSet
 
-在set的基础上增加一个值用于排序，相对于有序的set。
+Redis的SortedSet是一个可排序的set集合，与Java中的TreeSet有些类似，但底层数据结构却差别很大。SortedSet中的每一个元素都带有一个score属性，可以基于score属性对元素排序，底层的实现是一个跳表（SkipList）加 hash表。SortedSet具备下列特性：
 
-- `zadd myzset 1 one ...`：添加一个或多个值，1就是score，用来排序；
-- `zrangebyscore myzset -inf +inf [withscores]`：在负无穷到正无穷根据升序排序，后面的可选；
-- `zrevrange myzset 0 -1`：降序排列；
-- `zrem myzset value`：移除；
-- `zrange myzset xx xx`：获取区间的子串，闭区间；
-- `zcard myzset`：获取长度（集合内元素个数）；
-- `zcount myzset min max`：统计区间内元素个数；
+- 可排序、不可重复；查询速度快。
 
-应用：set排序、班级成绩表、工资表、排行榜、重要消息提权等。
+Zset也可以看作是在set的基础上增加一个值用于排序，相对于有序的set。
+
+**添加：**
+
+- `zadd myzset 1 one ...`：添加一个或多个值，1就是score，用来排序。
+
+**删除：**
+
+- `zrem myzset value`：移除。
+
+**获取：**
+
+1. `zscore key member `：获取sorted set中的指定元素的score值。
+2. `zrank key member`：获取sorted set 中的指定元素的排名。
+3. `zcard key`：获取sorted set中的元素个数。
+4. `zrange myzset xx xx`：获取区间的子串，闭区间。
+5. `zrange myzset xx xx`：获取区间的子串，闭区间。
+6. zrangebyscore key min max：按照score排序后，获取指定score范围内的元素
+
+**排序：**
+
+- `zrangebyscore myzset -inf +inf [withscores]`：在负无穷到正无穷根据升序排序，后面的可选。
+- `zrevrange myzset 0 -1`：降序排列。
+
+**统计：**
+
+- `zcount myzset min max`：统计区间内元素个数。
+
+**集合：**
+
+- zdiff、zinter、zunion：求差集、交集、并集。
+
+应用：set排序、班级成绩表、工资表、排行榜、重要消息提权等。因为SortedSet的可排序特性，经常被用来实现排行榜这样的功能。
+
+```properties
+将班级的下列学生得分存入Redis的SortedSet中：Jack 85, Lucy 89, Rose 82, Tom 95, Jerry 78, Amy 92, Miles 76
+并实现下列功能：
+1.删除Tom同学
+2.获取Amy同学的分数
+3.获取Rose同学的排名
+4.查询80分以下有几个学生
+5.给Amy同学加2分
+6.查出成绩前3名的同学
+7.查出成绩80分以下的所有同学
+```
+
+
 
 ## 三种特殊数据类型
 
