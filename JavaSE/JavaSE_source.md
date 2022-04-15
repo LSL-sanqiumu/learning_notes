@@ -355,9 +355,92 @@ HashSet(int initialCapacity, float loadFactor, boolean dummy) {
 
 ## TreeSet
 
-往TreeSet中添加数据要求是相同类的对象。
+TreeSet的底层是TreeMap，使用TreeMap的key来存储集合元素，所有的key的value都是PRESENT。
 
+### 构造器
 
+![](source_img/11.treemap.svg)
+
+无参构造器，初始化TreeMap后comparator为null，没有比较规则，此时的TreeMap内的元素不会进行排序。
+
+```java
+public static void main(String[] args) {
+    TreeSet t = new TreeSet(new Comparator() {
+        @Override
+        public int compare(Object o1, Object o2) {
+            return ((String)o1).compareTo((String) o2);
+        }
+    });
+    t.add("a");
+    t.add("d");
+    t.add("b");
+    t.add("c");
+    System.out.println(t);
+}
+```
+
+有参构造器，传入一个Comparator比较器，添加进去的元素会按照这个比较器的比较规则来进行大小的比较，从而实现排序。
+
+### add()
+
+![](source_img/12.treeset.png)
+
+```java
+public V put(K key, V value) {
+    Entry<K,V> t = root;
+    if (t == null) {
+        compare(key, key); // type (and possibly null) check
+
+        root = new Entry<>(key, value, null);
+        size = 1;
+        modCount++;
+        return null;
+    }
+    int cmp;
+    Entry<K,V> parent;
+    // split comparator and comparable paths
+    Comparator<? super K> cpr = comparator;
+    if (cpr != null) {
+        do {
+            parent = t;
+            cmp = cpr.compare(key, t.key);
+            if (cmp < 0)
+                t = t.left;
+            else if (cmp > 0)
+                t = t.right;
+            else
+                return t.setValue(value);
+        } while (t != null);
+    }
+    else {
+        if (key == null)
+            throw new NullPointerException();
+        @SuppressWarnings("unchecked")
+            Comparable<? super K> k = (Comparable<? super K>) key;
+        do {
+            parent = t;
+            cmp = k.compareTo(t.key);
+            if (cmp < 0)
+                t = t.left;
+            else if (cmp > 0)
+                t = t.right;
+            else
+                return t.setValue(value);
+        } while (t != null);
+    }
+    Entry<K,V> e = new Entry<>(key, value, parent);
+    if (cmp < 0)
+        parent.left = e;
+    else
+        parent.right = e;
+    fixAfterInsertion(e);
+    size++;
+    modCount++;
+    return null;
+}
+```
+
+使用比较器来对元素进行比较，如果比较相等则不添加。
 
 # Map
 
@@ -453,19 +536,11 @@ final V putVal(int hash, K key, V value, boolean onlyIfAbsent,
 
 
 
-## LinkedHashMap
+## LinkedHashMap TreeMap
 
+LinkedHashSet的底层就是LinkedHashMap，LinkedHashMap和HashMap差不多，只不过LinkedHashMap维护的是一个双向链表，其他差不多。
 
-
-
-
-
-
-## TreeMap
-
-
-
-
+TreeMap和TreeSet也差不多，TreeSet底层就是TreeMap。
 
 # else
 
@@ -537,9 +612,7 @@ private static class Node<E> {
 //new Vector();   创建了长度为10的数组，扩容为2倍	
 ```
 
-关于源码分析：分析所调用的行为结构的内部逻辑。
-
-
+关于源码分析：分析所调用的行为结构的内部逻辑。 
 
 
 
