@@ -12,7 +12,7 @@ JavaEE是为了企业级Java开发准备的，WEB分为：前端（页面渲染�
 
 **端口号port：**任何一个软件或应用都有的，是应用的唯一代表，用来定位计算机上某个应用或服务的，通常和计算机IP地址结合。
 
-推荐书籍：《MySQL必知必会》《高性能MySQL》《MySQL技术内幕——Innodb存储引擎》
+推荐书籍：《MySQL必知必会》《高性能MySQL》《MySQL技术内幕——Innodb存储引擎》。
 
 ### 数据库分类
 
@@ -2105,8 +2105,6 @@ SELECT * FROM md5test WHERE `name`='小明' AND pwd=md5('1233456');
 
 事务就是一个完整的业务逻辑，不可再分的、最小的工作单元，事务指是程序中一系列严密的逻辑操作，而且所有操作必须全部成功完成，否则在每个操作中所作的所有更改都会被撤消（本质上，事务是批量的DML语句执行同时成功或同时执行失败）。（只有DML语句才有事务一说，也就是insert、update、delete这三个才有事务，涉及到数据的增、删、改就一定要考虑数据的安全问题。）
 
-![](img/事务.png)
-
 **为什么需要存在事务机制？**
 
 以转账业务来说，完整的转账流程需要从一个账号中减去转账金额，再在转入的目标账号中增加金额，这时这个业务逻辑的完成就需要两条DML语句了，而事务机制就是保证这两个DML语句高度关联，要么同时成功、要么同时失败，保证整个业务不会出错。也就是说，事务机制就是为了保证一些需要多个DML语句才能完成业务实现的业务的准确完成和数据安全。如果所有的业务都可以通过一条DML语句搞定的话，事务也就没有存在的价值。
@@ -2118,15 +2116,13 @@ SELECT * FROM md5test WHERE `name`='小明' AND pwd=md5('1233456');
 ACID，是指数据库管理系统（DBMS）在写入或更新资料的过程中，为保证事务（transaction）是正确可靠的所必须具备的四个特性：原子性（atomicity，或称不可分割性）、一致性（consistency）、隔离性（isolation，又称独立性）、持久性（durability）。
 
 1. 原子性：不可分割性，同一个事务中，所有操作要么都执行成功，要么都执行失败，以保证数据的一致性。
-   - MySQL事务中不支持原子性，如果事务中某一条SQL出错，仍然会继续向下执行其他SQL。
-
+   - MySQL中事务不支持原子性，如果事务中某一条SQL出错，仍然会继续向下执行其他SQL，提交后仍然会持久化。（也就是说MySQL中，如果事务中某条SQL操作错误，数据库系统不会自动执行回滚操作，而是过滤掉错误的再继续执行其他SQL，回滚操作需要）
 2. 一致性：事务执行结束后，数据库的完整性约束没有被破坏，事务执行的前后都是合法的数据状态。
    - 数据库的完整性约束包括但不限于：实体完整性（如行的主键存在且唯一）、列完整性（如字段的类型、大小、长度要符合要求）、外键约束、用户自定义完整性（如转账前后，两个账户余额的和应该不变）等。
 
    - 事务的目的就是为了保证操作前后数据的一致性。
 3. 隔离性：多个事务并发执行时，一个事务的执行不影响其他事务的执行。
    - 通常使用锁机制保持事务的隔离性。
-
 4. 持久性：事务处理完成提交后，对数据的修改就是永久的，即便系统故障也不会丢失。（事务提交就相当于将没有保存到硬盘的数据保存到硬盘）。
 
 在许多地方的实际应用中，这四个特性并没有被完全实现，比如MySQL、Redis的事务就不支持原子性，所以后来这四个特性渐渐地变成了衡量事务的四个维度而不是事务必须满足的条件。
@@ -2266,26 +2262,30 @@ release savepoint; -- 撤销事务的保存节点
 
 事务操作示例：
 
-```SQL
-CREATE DATABASE `shop` CHARACTER SET utf8 COLLATE utf8_general_ci;
+```mysql
+create database `shop` character set utf8 collate utf8_general_ci;
 USE `shop`;
-CREATE TABLE `account`(
+create table `account`(
     `id` INT(3) NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(30) NOT NULL,
     `money` DECIMAL(9,2) NOT NULL,
     PRIMARY KEY(`id`)
-)ENGINE=INNODB DEFAULT CHARSET=utf8;
+)engine=innodb default charset=utf8;
 
-INSERT INTO `account`(`name`,`money`) VALUES ('A',2000),('B',10000);
+insert into `account`(`name`,`money`) values ('A',2000),('B',10000);
 
-SET autocommit = 0; -- 关闭事务自动提交
-START TRANSACTION; -- 开始事务
-UPDATE `account` SET money=money-500 WHERE `name`='A';
-UPDATE `account` SET money=money+500 WHERE `name`='B';
-COMMIT; -- 提交：成功提交时持久化成功
-ROLLBACK; -- 提交失败：回滚到原状态
-SET autocommit = 1; -- 开启事务自动提交，事务结束
+set autocommit = 0; -- 关闭事务自动提交
+start transaction; -- 开始事务
+update `account` set money=money-500 where `name`='A';
+update `account` set money=money+500 where `name`='B';
+commit; -- 提交：成功提交时持久化成功
+rollback; -- 提交失败：回滚到原状态
+set autocommit = 1; -- 开启事务自动提交，事务结束
 ```
+
+## 事务实现原理
+
+![](img/事务.png)
 
 # 索引
 
