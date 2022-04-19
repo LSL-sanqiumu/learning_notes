@@ -27,6 +27,13 @@ Redis：REmote DIctionary Server（远程字典服务）
 5. 支持主从集群、分片集群。
 6. 支持多语言客户端。
 
+**学习重点：**
+
+1. Redis的数据类型。
+2. 事务、通道、持久化、集群。
+3. Redis中如何实现分布式锁。
+4. 生产环境中可能存在的问题：缓存穿透、缓存雪崩、缓存击穿。
+
 **Redis的数据类型：**
 
 1. 五大基本数据类型：String、List、Set、Hash、Sorted set（也称为Zset，其底层有两种实现方式：一种是ziplist压缩表，一种是zset(dict、skiplist)）。
@@ -237,18 +244,17 @@ Redis中的List类型与Java中的LinkedList类似，可以看做是一个双向
 **获取：**
 
 1. `lindex list index`：根据index下标取值。（从左边算，index由0开始）
-2. **`lrange list 0 -1`：**获取当前list的所有的值；`lrange list 0 3`：闭区间，获取闭区间内的值。
+2. **`lrange list 0 -1`：**获取当前list的所有的值；`lrange list 0 3`：闭区间，获取闭区间内所有下标对应的值。
 3. `llen list`：获取列表list的长度。
 
 **移除：**
 
 1. **`lpop list`、`rpop list`：**移除list的第一个或最后一个值并返回，可以在后面指定移除的数量来移除多个，如果列表没有元素了则返回nil。
-2. **`blpop list 时间s`、`brpop list 时间s`：**移出并获取列表的第一个或最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
+2. **`rpoplpush newlist oldlist`：**移除一个列表的最后一个元素并插入到一个新的列表的头部。
+3. **`blpop list 时间s`、`brpop list 时间s`：**移出并获取列表的第一个或最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
    - 如果列表为空则返回nil，否则则返回两个元素：列表的key和弹出的value。
-
-3. **`rpoplpush newlist oldlist`：**移除一个列表的最后一个元素到一个新的列表。
 4. **`lrem list count value`：**从指定value开始移除（包括指定的value），count是移除的数量。
-5. **`ltrim mylist 1 2`：**通过下标截断mylist，最后只剩下截取的元素，这里是是1、2下标的元素。
+5. **`ltrim mylist 1 2`：**通过下标截断mylist，最后原列表只剩下截取的元素（这里截取1、2下标的元素）。
 
 **更改：**
 
@@ -256,9 +262,9 @@ Redis中的List类型与Java中的LinkedList类似，可以看做是一个双向
 
 **使用List来模拟数据结构：**
 
-1. 如何利用List结构模拟一个栈?入口和出口在同一边。
-2. 如何利用List结构模拟一个队列?入口和出口在不同边。
-3. 如何利用List结构模拟一个阻塞队列?入口和出口在不同边，出队时采用BLPOP或BRPOP。
+1. 如何利用List结构模拟一个栈？——入口和出口在同一边。
+2. 如何利用List结构模拟一个队列？——一边是入口一边是出口。
+3. 如何利用List结构模拟一个阻塞队列？——入口和出口在不同边，出队时采用blpop或brpop。（没有数据时弹出操作会被阻塞）
 
 ### Set
 
@@ -344,33 +350,36 @@ Zset也可以看作是在set的基础上增加一个值用于排序，相对于�
 
 **添加：**
 
-- `zadd myzset 1 one ...`：添加一个或多个值，1就是score，用来排序。
+- **`zadd myzset 1 one [score value...]`：**添加一个或多个值，1就是score，用来排序。
 
 **删除：**
 
-- `zrem myzset value`：移除。
+- **`zrem myzset value`：**移除。
 
 **获取：**
 
-1. `zscore key member `：获取sorted set中的指定元素的score值。
-2. `zrank key member`：获取sorted set 中的指定元素的排名。
-3. `zcard key`：获取sorted set中的元素个数。
-4. `zrange myzset xx xx`：获取区间的子串，闭区间。
-5. `zrange myzset xx xx`：获取区间的子串，闭区间。
-6. zrangebyscore key min max：按照score排序后，获取指定score范围内的元素
+1. **`zscore key member `**：获取sorted set中的指定元素的score值。
+2. **`zrank key member`：**获取sorted set 中的指定元素的排名。
+3. **`zcard key`：**获取sorted set中的元素个数。
+4. **`zrange myzset xx xx`：**获取区间的子串，闭区间。
+6. **`zrangebyscore key min max`：**按照score排序后，获取指定score范围内的元素
 
 **排序：**
 
 - `zrangebyscore myzset -inf +inf [withscores]`：在负无穷到正无穷根据升序排序，后面的可选。
-- `zrevrange myzset 0 -1`：降序排列。
+- **`zrevrange myzset 0 -1`：**降序排列。
 
 **统计：**
 
-- `zcount myzset min max`：统计区间内元素个数。
+- **`zcount myzset min max`：**统计区间内元素个数。
+
+**计算：**
+
+- **`zincrby myzet 10 member`：**按指定步长增加。
 
 **集合：**
 
-- zdiff、zinter、zunion：求差集、交集、并集。
+- **zdiff、zinter、zunion：**求差集、交集、并集。
 
 应用：set排序、班级成绩表、工资表、排行榜、重要消息提权等。因为SortedSet的可排序特性，经常被用来实现排行榜这样的功能。
 
@@ -717,27 +726,25 @@ Redis事务：
 
 悲观锁：很悲观，认为什么时候都会出现问题，无论做什么都加上锁。
 
-乐观锁：
+乐观锁：很乐观，认为什么时候都不会出现问题，不会上锁；更新的时候会判断在此期间是否有人修改过数据。
 
-- 很乐观，认为什么时候都不会出现问题，不会上锁；更新的时候会判断在此期间是否有人修改过数据。
-
-  ```xml
-  <!-- 使用watch来实现乐观锁 -->
-  set money 100
-  watch money
-  multi
-  incrby monnnnney 200
-  exec                  <!-- 在执行事务前检测到money发生了变化，事务操作就会失败 -->
-  unwatch				  <!-- 如果执行失败，先解锁，获取新值再次监视，再事务 -->
-  watch money
-  xxx事务
-  <!-- 线程2 -->
-  decr money 60
-  ```
+```xml
+<!-- 使用watch来实现乐观锁 -->
+set money 100
+watch money
+multi
+incrby monnnnney 200
+exec                  <!-- 在执行事务前检测到money发生了变化，事务操作就会失败 -->
+unwatch				  <!-- 如果执行失败，先解锁，获取新值再次监视，再事务 -->
+watch money
+xxx事务
+<!-- 线程2 -->
+decr money 60
+```
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# redis配置文件
+# Redis配置文件
 
 Redis是一个高性能的key-value数据库。 Redis支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。 Redis不仅仅支持简单的key-value类型的数据，同时还提供list，set，zset，hash等数据结构的存储。 Redis支持数据的备份，即master-slave模式的数据备份。
 
@@ -1482,7 +1489,7 @@ aof-rewrite-incremental-fsync yes
  在aof重写的时候，如果打开了aof-rewrite-incremental-fsync开关，系统会每32MB执行一次fsync。
  这对于把文件写入磁盘是有帮助的，可以避免过大的延迟峰值
 
-# redis持久化
+# Redis持久化
 
 ## RDB
 
@@ -1528,7 +1535,7 @@ RDB的数据不实时，同时使用两者时服务器重启也只会找AOF文�
 如果Enable AOF，好处是在最恶劣情况下也只会丢失不超过两秒数据，启动脚本较简单只load自己的AOF文件就可以了，代价一是带来了持续的IO，二是AOF rewrite的最后将rewrite过程中产生的新数据写到新文件造成的阻塞几乎是不可避免的。只要硬盘许可，应该尽量减少AOF rewrite的频率，AOF重写的基础大小默认值64M太小了，可以设到5G以上，默认超过原大小100%大小重写可以改到适当的数值。
 如果不Enable AOF，仅靠Master-Slave Repllcation实现高可用性也可以，能省掉一大笔IO，也减少了rewrite时带来的系统波动。代价是如果Master/Slave 同时挂掉，会丢失 十几分钟的数据，启动脚本也要比较两个Master/Slave中的RDB文件，载入较新的那个，微博就是这种架构。
 
-# redis订阅和发布
+# Redis订阅和发布
 
 见官方文档：[psubscribe 命令 -- Redis中国用户组（CRUG）](http://www.redis.cn/commands/psubscribe.html)。
 

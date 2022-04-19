@@ -2378,7 +2378,7 @@ hash索引的特点：
 
 1. 主键索引（PRIMARY KEY）：是针对表的主键创建的索引，默认自动创建且每张表只能有一个。
 2. 唯一索引（UNIQUE KEY）：可以存在多个唯一索引，多个列都可以标识为唯一索引，是为了避免重复的列出现。
-3. 常规索引（key、index）：默认的索引，使用key关键字来设置，用来快速定位特定数据，可以有多个。
+3. 常规索引（key、index）：默认的索引，用来快速定位特定数据，可以有多个。
 4. 全文索引（fulltext）：特定的引擎下才有(myisam)，全文索引查找的是文本中的关键字，而不是比较索引中的值，可以有多个。
 5. （单一索引、复合索引）。
 
@@ -2684,9 +2684,9 @@ explain select * from tb_user where phone='17799990017' or age=23;
 5、数据分布影响：**如果MySQL评估使用索引比全表扫描更慢，那么就不会使用索引**。（某索引字段绝大部分数据满足某个筛选条件时，就不会走索引）
 
 ```mysql
--- 大部分数据符合，直接走全部扫描
+-- 大部分数据符合（75%符合），直接走全表扫描
 explain select * from tb_user where phone >= '1779999000';
--- 大部分数据不符合，才走索引（占比多少才会走呢？？）
+-- 大部分数据不符合，才走索引（占比多少才会走呢？？不符合的占比超0.75才会走，只是0.75也不会走索引）
 explain select * from tb_user where phone >= '17799990019';
 ```
 
@@ -2698,7 +2698,7 @@ explain select * from tb_user where phone >= '17799990019';
 create index index_user_pro_age_sta on tb_user(profession,age,status); -- 创建联合索引 
 ```
 
-1、最左前缀法则：如果使用联合索引，查询时索引的**最左列必须存在**，并且不跳过索引中的列；如果最左列不存在，那么查询时索引全部失效；如果跳过某一列，索引将会部分失效（跳过的那一列的后面的索引字段将会失效）。（使用联合索引，但查询时不符合最左前缀法则，那么索引失效会部分失效，就不会走失效的索引去进行查询数据了）
+1、最左前缀法则：如果使用联合索引，查询时索引的**最左列必须存在**，并且不跳过索引中的列；如果最左列不存在，那么查询时索引全部失效；如果跳过某一列，索引将会部分失效（跳过的那一列的后面的索引字段将会失效）。
 
 ```mysql
 -- 满足最左前缀法则
@@ -2730,14 +2730,14 @@ explain select * from tb_user where profession='软件工程' and age>=30 and `s
 
 SQL提示：可以在SQL语句中加入一些提示来达到优化操作的目的。如果某字段有多个索引，那么可以指定使用哪个索引以达到操作优化的目的：
 
-1. `use index`：提示使用哪个索引（只是建议，还是由数据库系统权衡后决定使用哪个）。
-2. `ignore index`：提示不用哪个索引，忽略这个索引。
-3. `force index`：提示必须用哪个索引。
+1. `use index(索引名称)`：提示建议使用哪个索引（只是建议，还是由数据库系统权衡后决定使用哪个）。
+2. `ignore index(索引名称)`：提示不要用哪个索引，忽略这个索引。
+3. `force index(索引名称)`：提示必须要用哪个索引。
 
 ```mysql
 -- SQL提示使用格式
-select xxx from table_name use index(索引名称) xxx语句;    -- 用哪个
-select xxx from table_name ignore index(索引名称) xxx语句; -- 忽略哪个
+select xxx from table_name use index(索引名称) xxx语句;    -- 建议用哪个
+select xxx from table_name ignore index(索引名称) xxx语句; -- 忽略掉哪个
 select xxx from table_name force index(索引名称) xxx语句;  -- 必须用哪个
 
 explain select * from tb_user use index(idx_user_pro) where profession='软件工程';
@@ -2864,15 +2864,13 @@ EXPLAIN SELECT * FROM app_user WHERE `name`='用户999999';
 
 ## 数据插入优化
 
-insert优化：
-
-批量插入，但插入应该尽量不超过500~1000条数据。
+insert优化：批量插入，但插入应该尽量不超过500~1000条数据。
 
 ```mysql
-insert into `table_name` values(),(),...
+insert into `table_name` values(),(),...;
 ```
 
-手动提交事务
+手动提交事务：按主键顺序来插入。
 
 ```mysql
 start transaction
@@ -2882,20 +2880,18 @@ insert into `table_name` values(),(),();
 commit;
 ```
 
-按主键顺序来插入。
+一次性大批量插入使用insert性能会较低，此时可以使用load指令；使用load指令的三步操作如下：
 
-一次性大批量插入使用insert时性能会较低，此时可以使用load指令；使用load指令的三步操作如下：
-
-```cmd
--- 登录数据库时，加上参数--local-infile
+```MySQL
+-- 1、登录数据库时，加上参数--local-infile
 mysql --local-infile -u root -p
 ```
 
 ```mysql
--- 设置全局参数，开启从本地加载文件导入数据的开关
+-- 2、设置全局参数，开启从本地加载文件导入数据的开关
 -- select @@local_infile;
 set global local_infile=1;
--- 执行load指令将准备好的数据加载到表结构中
+-- 3、执行load指令将准备好的数据加载到表结构中
 -- 本地数据存储文件/root/sql1.log，属性使用道号分割，每一行都使用换行分割
 -- 属性对应表中字段值，行对应表中每一行记录
 load data local infile '/root/sql1.log' into table 表 fields terminated by ',' lines terminated by '\n'
