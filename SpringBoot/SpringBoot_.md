@@ -242,7 +242,9 @@ SpringBoot**将我们常用的功能场景抽取出来，做成一系列的场�
 3. SpringBoot所有场景启动器见：https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-starter。
 4. `*-spring-boot-starter`： 这种命名方式的都是第三方为我们提供的用于简化开发的场景启动器。
 
-## 关于自动配置
+## 自动配置
+
+**概述：**
 
 SpringBoot会根据引入的场景启动器，自动配置好引入场景所需要的配置。例如：
 
@@ -405,7 +407,7 @@ idea中安装lombok插件，并在springboot项目中引入Lombok插件来简化
 3. 激活指定环境的两种方式：
 
    - 在默认配置文件中激活，激活方式为`spring.profiles.active=环境标识名`，例如`spring.profiles.active=pro`。
-   - 命令行激活：java -jar xxx.jar --**spring.profiles.active=Xxx环境标识名 --xxxx=xxx**，（命令行启动SpringBoot项目jar包文件时可以指定配置文件中的配置项的值，运行时会覆盖原来的值）。
+   - 命令行激活：`java -jar xxx.jar --spring.profiles.active=Xxx环境标识名 --xxxx=xxx ...`，（命令行启动SpringBoot项目jar包文件时可以指定配置文件中的配置项的值，运行时会覆盖原来的值，可指定多个）。
 
 4. 指定好环境配置，默认配置与环境配置会同时生效，当有同名配置项时，profile配置中的优先（环境配置中的相同配置优先）。
 
@@ -691,7 +693,9 @@ spring:
 
 ## servlet原生组件
 
-嵌入式servlet，使用Servlet、Filter、Listener等组件进行开发。
+SpringBoot支持嵌入式servlet容器，可以使用Servlet、Filter、Listener等这些web元生组件进行开发。
+
+
 
 
 

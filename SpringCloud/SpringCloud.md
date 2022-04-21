@@ -1148,11 +1148,11 @@ eureka:
 
 ### Eureka停更说明
 
-Eureka停更已经停更了，如果还有一些老项目使用的话，上面的知识已经够用了。
+Eureka已经停更了，如果还有一些老项目使用的话，上面的知识已经够用了。
 
 https://github.com/Netflix/eureka/wiki，官方说明，2.0版本不再更新。
 
-```txt
+```properties
 Eureka 2.0 (Discontinued)
 
 The existing open source work on eureka 2.0 is discontinued. The code base and artifacts that were released as part of the existing repository of work on the 2.x branch is considered use at your own risk.

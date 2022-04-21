@@ -716,8 +716,7 @@ System.out.println(byteToStr);
 
 - StringBuilder：可变的字符序列；JDK5.0新增，线程不安全的，效率高；底层用char[]数组存储；（什么时候用：不是多线程，不需要考虑线程安全的时候）。
 
-
-### 源码分析
+**源码分析：**
 
 ```java
 // String
@@ -736,7 +735,7 @@ StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".len
 // （指导意义：开发中建议大家使用：StringBuffer(int capacity)或StringBuilder(int capacity),先指定好容量，减少扩容几率）
 ```
 
-### StringBuffer常用方法
+**StringBuffer常用方法：**
 
 1. **`append(xxx)`**：提供了很多的append()方法，用于进行字符串拼接 。
 
@@ -767,7 +766,7 @@ StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".len
   }
   ```
 
-其他方法：
+**其他方法：**
 
 - `public int indexOf(String str) `：str字符串在StringBuffer字符串第一次出现的起始下标，如果没有子串会返回-1；
 - `public String substring(int start,int end)` ：返回`[start , end)`之间的子串；
@@ -775,21 +774,17 @@ StringBuffer sb2 = new StringBuffer("abc"); // char[] value = new char["abc".len
 - `public char charAt(int n )` ：返回指定下标的字符；
 - `public void setCharAt(int n ,char ch)`：修改指定下标的字符。
 
-总结：
+**总结：**
 
-- 增：append()；
-
-- 删：delete(int start,int end)；
-
-- 改：setCharAt(int n ,char ch) / replace(int start, int end, String str)；
-
-- 查：charAt(int n)；
-
-- 插入：insert(int offset, xxx)；
-
-- 长度：length()；
-
-- 遍历：for() + char()  / toString()。
+| 方法                                                         | 作用 |
+| ------------------------------------------------------------ | ---- |
+| append()                                                     | 增   |
+| delete(int start, int end)                                   | 删   |
+| setCharAt(int n ,char ch) <br>replace(int start, int end, String str) | 改   |
+| charAt(int n)                                                | 查   |
+| insert(int offset, xxx)                                      | 插入 |
+| length()                                                     | 长度 |
+| for() + char()  或者 toString()                              | 遍历 |
 
 
 **【注意】StringBuilder 和 StringBuffer 非常类似，均代表可变的字符序列，而且提供相关功能的方法也一样**。
