@@ -1916,7 +1916,215 @@ public static void main(String[] args) {
 
 [面试官：请你说一下 Bean 的生命周期 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/344140024)
 
+[Spring Bean生命周期，好像人的一生。。 - 三分恶 - 博客园 (cnblogs.com)](https://www.cnblogs.com/three-fighter/p/16007800.html#:~:text=Bean的生命周,记、成长、离世。)
 
+## 生命周期
+
+bean的生命周期：
+
+1. Spring容器加载配置文件，获取到需要创建的bean的信息。
+2. 利用反射API来创建bean的实例：
+   1. 如果bean声明了属性，将会被设置；如果属性本身需要注入的是另外的bean，那么将对其进行解析和设置。
+   2. 如果bean所在类实现了`BeanNameAware`接口，bean ID将被传递给setBeanName()方法。
+   3. 如果bean所在类实现了`BeanFactoryAware`接口，Spring将调用setBeanFactory()方法，将BeanFactory容器实例传入。
+   4. 如果bean所在类实现了`ApplicationContextAware`接口，Spring将调用Bean的setApplicationContext()方法，将bean所在应用上下文引用传进来。
+   5. 如果容器中有`BeanPostProcessor`接口实现类的对象，初始化之前将会调用`postProcessBeforeInitialization()`方法。
+   6. 如果bean所在类实现了`InitializingBean`接口，在Spring设置好配置文件中定义的bean的所有属性后，将调用afterPropertiesSet()方法；如果配置文件中的Bean定义包含init-method属性，该属性的值将解析为bean所在类的方法名称，初始化的时候会调用这个方法。
+   7. 如果容器中有`BeanPostProcessor`接口实现类的对象，初始化之后将会调用`postProcessAfterInitialization()`方法。
+   8. 此时，Bean已经准备就绪，可以被应用程序使用了。bean将一直驻留在应用上下文中，直到应用上下文被销毁。
+   9. 如果bean实现了`DisposableBean`接口，Spring将调用它的destory()接口方法，同样，如果配置文件中的Bean定义包含destory-method 属性，所以会调用bean所在类的相应方法定义。
+3. 结束。
+
+## 生命周期的验证
+
+### 用来测试的pojo
+
+```java
+public class SingletonBean implements BeanNameAware, BeanFactoryAware, ApplicationContextAware,  InitializingBean, DisposableBean {
+    private String test;
+
+    public SingletonBean() throws InterruptedException {
+        Thread.sleep(1000);
+        System.out.println("1.使用空参构造器创建对象");
+    }
+    public void setTest(String test) throws InterruptedException {
+        this.test = test;
+        Thread.sleep(1000);
+        System.out.println("    开始属性初始化 start...");
+        Thread.sleep(1000);
+        System.out.println("2.属性初始化——通过setter为自定义属性赋值");
+    }
+    @Override
+    public void setBeanName(String s) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("3.bean——实现了BeanNameAware接口，bean的ID将传递给setBeanName()，ID为：" + s);
+    }
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("4.bean——实现了BeanFactoryAware接口，BeanFactory将传入给setBeanFactory()");
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("5.bean——实现了ApplicationContextAware接口，applicationContext传入给setApplicationContext()");
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("7.bean——实现了InitializingBean接口，在Spring设置好该bean的所有属性后，将调用afterPropertiesSet()方法——初始化方法一");
+    }
+    public void initMethod() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("8.bean——在配置中指定了init-method属性，自定义的初始化方法（初始化方法二（自定义））");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("    属性初始化结束 end...");
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("10.bean销毁前夕...——销毁bean前要执行的接口声明的方法");
+    }
+    public void myDestoryMethod(){
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("11.执行myPreDestory()——销毁bean前要执行的自定义的方法");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("---------------destroy-----------------");
+    }
+
+    public String getTest() {
+        return test;
+    }
+
+    @Override
+    public String toString() {
+        return "SingletonBean{" + "test='" + test + '\'' + '}';
+    }
+}
+```
+
+### 用来进行测试的后置处理器
+
+```java
+public class MyBeanPostProcessor implements BeanPostProcessor {
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof SingletonBean){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("6.后置处理器(BeanPostProcessor接口实现类)：在显式调用初始化方法前添加我们自己的逻辑");
+        }
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof SingletonBean){
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("9.后置处理器(BeanPostProcessor接口实现类)：在显式调用初始化方法完成后添加我们自己的逻辑");
+        }
+        return bean;
+    }
+}
+```
+
+### 配置
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="myBeanPostProcessor" class="com.lsl.mybean.MyBeanPostProcessor"/>
+    <bean id="myBean" class="com.lsl.mybean.SingletonBean" init-method="initMethod" destroy-method="myDestoryMethod">
+        <property name="test" value="myBean的属性"/>
+    </bean>
+</beans>
+```
+
+
+
+### 测试主类
+
+```java
+public class MyBeanTest {
+    public static void main(String[] args) throws InterruptedException {
+        System.out.println("0.new ClassPathXmlApplicationContext，文件加载");
+        ApplicationContext context = new ClassPathXmlApplicationContext("beanLifeTest.xml");
+        SingletonBean bean = (SingletonBean) context.getBean("myBean");
+        // 执行销毁，如果bean实现了DisposableBean接口，Spring将调用它的destory()接口方法
+        // 同样，如果bean使用了destory-method 声明销毁方法，该方法也会被调用
+        ((ClassPathXmlApplicationContext) context).destroy();
+    }
+}
+```
+
+结果：
+
+```pascal
+0.new ClassPathXmlApplicationContext，文件加载
+1.使用空参构造器创建对象
+    开始属性初始化 start...
+2.属性初始化——通过setter为自定义属性赋值
+3.bean——实现了BeanNameAware接口，bean的ID将传递给setBeanName()，ID为：myBean
+4.bean——实现了BeanFactoryAware接口，BeanFactory将传入给setBeanFactory()
+5.bean——实现了ApplicationContextAware接口，applicationContext传入给setApplicationContext()
+6.后置处理器(BeanPostProcessor接口实现类)：在显式调用初始化方法前添加我们自己的逻辑
+7.bean——实现了InitializingBean接口，在Spring设置好该bean的所有属性后，将调用afterPropertiesSet()方法——初始化方法一
+8.bean——在配置中指定了init-method属性，自定义的初始化方法（初始化方法二（自定义））
+    属性初始化结束 end...
+9.后置处理器(BeanPostProcessor接口实现类)：在显式调用初始化方法完成后添加我们自己的逻辑
+10.bean销毁前夕...——销毁bean前要执行的接口声明的方法
+11.执行myPreDestory()——销毁bean前要执行的自定义的方法
+---------------destroy-----------------
+```
 
 # spring5新特性
 
