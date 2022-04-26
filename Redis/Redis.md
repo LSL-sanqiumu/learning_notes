@@ -222,6 +222,34 @@ String类型的应用：计数、对象缓存等。
 
 
 
+### Hash
+
+Hash类型，也叫散列，其value是一个无序字典，类似于Java中的HashMap结构。Hash类型的key的value值类似map集合。这种类型的数据是：key-Map。
+
+String结构是将对象序列化为JSON字符串后存储，当需要修改对象某个字段时很不方便，而Hash结构可以将对象中的每个字段独立存储，可以针对单个字段做CRUD。
+
+1. 创建：
+   - **`hset myhash field value filed value ... `、`hmset myhash f1 v1 f2 v2 ...`。**
+2. 获取属性值：
+   - **`hget myhash field `：**获取myhash 的值中的某个属性值。
+   - **`hmget myhash f1 f2 f3 ...`：**获取myhash 的值中的属性f1、f2、f3的值。
+   - **`hgetall myhash `：**获取该myhash的值中的所有属性和属性值。
+3. 删除：
+   - **`hdel myhash field `：**删除myhash 的值中的某个属性和属性值。
+4. 获取：
+   - **`hlen myhash`：**获取hash表的字段数量。
+   - **`hkeys myhash`：**获取myhash的值中所有的键。
+   - **`hvals myhash`：**获取hash表中value中所有的value。
+5. 判断：
+   - **`hexists myhash filed`：**myhash中指定字段是否存在。
+6. 其它：
+   - `hincrby myhash field 1`：自增。
+   - hsetnx，和String中类似指令的使用类似。
+
+可以用于存储用户信息等经常变动的数据。hash更适合对象数据的存储，string更适合的是字符串数据的存储。
+
+
+
 ### List
 
 列表，可以实现栈、队列、阻塞队列等数据结构，基本所有的list命令都以l开头。
@@ -250,7 +278,7 @@ Redis中的List类型与Java中的LinkedList类似，可以看做是一个双向
 **移除：**
 
 1. **`lpop list`、`rpop list`：**移除list的第一个或最后一个值并返回，可以在后面指定移除的数量来移除多个，如果列表没有元素了则返回nil。
-2. **`rpoplpush newlist oldlist`：**移除一个列表的最后一个元素并插入到一个新的列表的头部。
+2. **`rpoplpush list elselist `：**移除一个列表的最后一个元素并插入到另一个列表的头部。
 3. **`blpop list 时间s`、`brpop list 时间s`：**移出并获取列表的第一个或最后一个元素， 如果列表没有元素会阻塞列表直到等待超时或发现可弹出元素为止。
    - 如果列表为空则返回nil，否则则返回两个元素：列表的key和弹出的value。
 4. **`lrem list count value`：**从指定value开始移除（包括指定的value），count是移除的数量。
@@ -258,13 +286,15 @@ Redis中的List类型与Java中的LinkedList类似，可以看做是一个双向
 
 **更改：**
 
-- **`lset list 0 value`：**更改list的指定下标的value，列表或value不存在会报错。
+- **`lset list 0 newvalue`：**更改list的指定下标的value，列表或value不存在会报错。
 
 **使用List来模拟数据结构：**
 
 1. 如何利用List结构模拟一个栈？——入口和出口在同一边。
 2. 如何利用List结构模拟一个队列？——一边是入口一边是出口。
 3. 如何利用List结构模拟一个阻塞队列？——入口和出口在不同边，出队时采用blpop或brpop。（没有数据时弹出操作会被阻塞）
+
+
 
 ### Set
 
@@ -311,35 +341,6 @@ Redis的Set结构与Java中的HashSet类似，可以看做是一个value为null�
 
 
 
-
-
-### Hash
-
-Hash类型，也叫散列，其value是一个无序字典，类似于Java中的HashMap结构。Hash类型的key的value值类似map集合。这种类型的数据是：key-Map。
-
-String结构是将对象序列化为JSON字符串后存储，当需要修改对象某个字段时很不方便，而Hash结构可以将对象中的每个字段独立存储，可以针对单个字段做CRUD。
-
-1. 创建：
-   - **`hset myhash field value filed value ... `和`hmset myhash f1 v1 f2 v2 ...`。**
-2. 获取属性值：
-   - **`hget myhash field `：**获取myhash 的值中的某个属性值。
-   - **`hmget myhash f1 f2 f3 ...`：**获取myhash 的值中的属性f1、f2、f3的值。
-   - **`hgetall myhash `：**获取该myhash的值中的所有属性和属性值。
-3. 删除：
-   - **`hdel myhash field `：**删除myhash 的值中的某个属性和属性值。
-4. 获取：
-   - **`hlen myhash`：**获取hash表的字段数量。
-   - **`hkeys myhash`：**获取myhash的值中所有的键。
-   - **`hvals myhash`：**获取hash表中value中所有的value。
-5. 判断：
-   - **`hexists myhash filed`：**myhash中指定字段是否存在。
-6. 其它：
-   - `hincrby myhash field 1`：自增。
-   - `hdecr myhash field 1`：自减。
-   - hsetex、hsetnx，和String中类似指令的使用类似。
-
-可以用于存储用户信息等经常变动的数据。hash更适合对象数据的存储，string更适合的是字符串数据的存储。
-
 ### Zset—SortedSet
 
 Redis的SortedSet是一个可排序的set集合，与Java中的TreeSet有些类似，但底层数据结构却差别很大。SortedSet中的每一个元素都带有一个score属性，可以基于score属性对元素排序，底层的实现是一个跳表（SkipList）加 hash表。SortedSet具备下列特性：
@@ -350,11 +351,11 @@ Zset也可以看作是在set的基础上增加一个值用于排序，相对于�
 
 **添加：**
 
-- **`zadd myzset 1 one [score value...]`：**添加一个或多个值，1就是score，用来排序。
+- **`zadd myzset 1 v1 [score v2, score v3,...]`：**添加一个或多个值，1就是score，用来排序。
 
 **删除：**
 
-- **`zrem myzset value`：**移除。
+- **`zrem myzset value`：**移除一个或多个。
 
 **获取：**
 
@@ -362,7 +363,7 @@ Zset也可以看作是在set的基础上增加一个值用于排序，相对于�
 2. **`zrank key member`：**获取sorted set 中的指定元素的排名。
 3. **`zcard key`：**获取sorted set中的元素个数。
 4. **`zrange myzset xx xx`：**获取区间的子串，闭区间。
-6. **`zrangebyscore key min max`：**按照score排序后，获取指定score范围内的元素
+6. **`zrangebyscore key min max`：**按照score排序后，获取指定score范围内的元素。
 
 **排序：**
 
@@ -411,6 +412,8 @@ Zset也可以看作是在set的基础上增加一个值用于排序，相对于�
 - `geohash china:city beijing xian ...`：使用Geohash位置52点整数编码，使用Geohash位置52点整数编码，将二维经纬度转换为一维的字符串；
 - 底层基于zset实现，可以使用`zrem`来进行删除操作，`zrem china:city beijing`。
 
+
+
 ### hyperloglog
 
 基数：不重复的元素，可以接受误差。Redis Hyperloglog 基数统计的算法。
@@ -421,6 +424,8 @@ Zset也可以看作是在set的基础上增加一个值用于排序，相对于�
 - `pfcount key`：统计基数数量；
 - `pfmerge key key1 key2`：合并技术到key，会去重；
 - 允许容错就可以使用，如果不允许就使用set或自己的数据类型。
+
+
 
 ### bitmaps
 

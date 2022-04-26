@@ -1,6 +1,6 @@
 # JDBC概述
 
-Java DataBase Connectivity（Java语言连接数据库），SUN公司制定的一套接口，接口都有调用者和实现者，Java程序员就是调用者，数据库厂家就是实现者，JDBC本质上就是一套接口。
+Java DataBase Connectivity（Java语言连接数据库），SUN公司制定的一套接口，接口都有调用者和实现者，Java程序员就是调用者，数据库厂家就是实现者，JDBC本质上就是一套接口（用于执行SQL语句的Java API）。
 
 为什么要面向接口编程？为了降低程序耦合度，提高程序拓展能力。面向抽象编程（多态机制就是典型的）。
 
@@ -17,13 +17,13 @@ Java DataBase Connectivity（Java语言连接数据库），SUN公司制定的�
 # 所需依赖
 
 ```xml
-<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc --><!-- Spring整合jdbc -->
 <dependency>
   <groupId>org.springframework</groupId>
   <artifactId>spring-jdbc</artifactId>
   <version>5.3.8</version>
 </dependency>
-<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java --> <!-- 数据库驱动程序 -->
 <dependency>
     <groupId>mysql</groupId>
     <artifactId>mysql-connector-java</artifactId>
@@ -172,11 +172,17 @@ public static void main(String[] args) {
 }
 ```
 
+## Spring整合JDBC
+
+
+
+
+
 # JDBC编程涉及的类
 
 ## DriverManager
 
-用于加载数据库驱动。
+用于检查所加载的数据库驱动程序是否可以建立连接。
 
 ```java
 // 原本是DriverManager.registerDriver(new com.mysql.jdbc.Driver()); 
@@ -186,7 +192,7 @@ Class.forName("com.mysql.jdbc.Driver"); // 规定写法，加载驱动
 
 ## Connection
 
-用于获取JVM运行的Java进程与数据库之间的连接。
+数据库连接对象，用于获取JVM运行的Java进程与数据库之间的连接。
 
 ```java
 Connection connection = (Connection) DriverManager.getConnection(url,username,password);
@@ -195,6 +201,8 @@ Connection connection = (Connection) DriverManager.getConnection(url,username,pa
 ```
 
 ## Statement
+
+Statement对象，执行静态SQL语句并返回结果。
 
 ### 方法介绍
 

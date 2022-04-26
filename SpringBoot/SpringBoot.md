@@ -1884,7 +1884,7 @@ public class SpringBootMainConfigClass {
 
 ```java
 @SpringBootConfiguration // 代表是一个配置类
-@EnableAutoConfiguration // 自动配置
+@EnableAutoConfiguration // 自动配置，springboot全局开关
 @ComponentScan(         // 包扫描，默认扫描当前包和子包，使spring注解生效
     excludeFilters = {@Filter(
     type = FilterType.CUSTOM,
@@ -1897,7 +1897,7 @@ public class SpringBootMainConfigClass {
 public @interface SpringBootApplication {}
 ```
 
-**最重要的角色`@EnableAutoConfiguration`注解：**
+**最重要的角色`@EnableAutoConfiguration`注解，如下：**
 
 ```java
 // @EnableAutoConfiguration
@@ -1947,14 +1947,14 @@ spring.factories文件，写死了springboot启动就默认加载的所有配置
 
 ### 2.自动配置流程：
 
-1. 先加载所有的自动配置类（xxxAutoConfigConfiguration.class）；
-2. 每个自动配置类按照条件进行生效，其属性值默认都会绑定配置文件中指定的值（xxxxProperties.class里面拿，xxxProperties.class和配置文件进行了绑定）；
-3. 生效的配置类就会给容器中装配很多组件，只要容器中有这些组件，相当于这些功能就有了；
+1. 先加载所有的自动配置类（xxxAutoConfigConfiguration.class）。
+2. 每个自动配置类按照条件进行生效，其属性值默认都会绑定配置文件中指定的值（xxxxProperties.class里面拿，xxxProperties.class和配置文件进行了绑定）。
+3. 生效的配置类就会给容器中装配很多组件，只要容器中有这些组件，相当于这些功能就有了。
 4. 定制化配置操作
-   - 用户通过配置类直接自己@Bean往容器注册组件来替换底层的组件；
+   - 用户通过配置类直接自己@Bean往容器注册组件来替换底层的组件。
    - 用户去看这个组件是获取配置文件中的什么值就去修改，通过application文件（yaml文件或properties文件）修改。
 
-流程：xxxxxAutoConfiguration ---> 组件  ---> xxxxProperties.class里面拿值  ----> 从application.properties配置文件拿值
+流程：xxxxxAutoConfiguration  ===> 组件  ===> xxxxProperties.class里面拿值  ===> 从application.properties配置文件拿值。
 
 # 底层注解
 
@@ -2041,5 +2041,3 @@ public class Config {
 ```
 
 
-
-#
