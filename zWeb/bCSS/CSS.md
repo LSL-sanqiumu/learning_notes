@@ -177,7 +177,7 @@ html > body table + ul {
 	<p>紧邻同胞元素选择器：选择同属一个父元素的子代元素，并且这两个子代元素必须紧邻。</p>
 	<p>是h1同胞但不紧邻</p>
 </div>
-<!-- 两个p都在h2后面并且都同属一个父元素，所以h2后面的p都会被选中 -->
+<!-- 两个p都在h2后面并且都同属一个父元素，所以h2后面所有的p都会被选中 -->
 h2 ~ p {
     color: red;
 }
@@ -217,8 +217,8 @@ a:visited:hover {
 | **:only-of-type**        | 选择同胞中唯一一种元素类型的元素<br>img:only-of-type {......}    img这种类型在其父类中是只有一个的，可以有其他同胞元素 |
 | **:first-child**         | 第一个子元素<br>li:first-child {......}   选择第一个li元素   |
 | **:last-child**          | 最后一个子元素                                               |
-| **:first-of-type**       | 选择某种元素的第一个子代元素                                 |
-| **:last-of-type**        | 选择某种元素的最后一个子代元素                               |
+| **:first-of-type**       | 选择某种元素类型的第一个子代元素                             |
+| **:last-of-type**        | 选择某种元素类型的最后一个子代元素                           |
 | **:nth-child(n)**        | 选择某种元素的第n个子元素（n是从0~无穷的整数）<br>:nth-child(1) 和 :first-child 等效<br>括号内可以填入表达式，an+b或an-b，a、b是具体数，n代表0~无穷 |
 | **:nth-last-child(n)**   | 以倒序的方式来选择                                           |
 | **:nth-of-type(n)**      | 选择某种类型元素的第n个元素                                  |
@@ -270,20 +270,42 @@ font-style：italic是斜体，normal是不倾斜。
 
 复合属性：`font: font-style font-weight  font-size/line-height font-family;`
 
-1. 按上面顺序书写，属性间以空格隔开；
-2. 不需要设置的属性值可以省略（会使用默认值），但font-size、font-family必须存在；
-3. `font：正斜 粗细 大小/行高 字体`；
+1. 按上面顺序书写，属性间以空格隔开。
+2. 复合写法中不需要设置的属性值可以省略（会使用默认值），但font-size、font-family必须存在。
+3. `font：正斜 粗细 大小/行高 字体`。
+
+`@font-face {}`：用于引入自定义字体。
+
+```css
+@font-face {
+    font-family: "xxx"; /* 引入的字体族的描述，以便引用 */
+    src: url(),url(),...; /* 源和备用源 */
+    /*src: url() format(),url() format(),...; format()告诉代理所用字体的格式，还能为不带常规拓展名的字体文件制定格式*/ 
+}
+```
+
+format的值有：
+
+1. embedded-opentype：eot格式。
+2. opentype：otf格式。
+3. svg：svg格式。
+4. truetype：ttf格式。
+5. woff：woff格式。
+
+
 
 ## 文本属性
 
 文本的外观，比如文本的颜色、对齐文本、装饰文本、文本缩进、行间距等。
 
-- color：文本颜色，规范建议使用十六进制的RGB颜色值，字母小写，颜色可以缩写时使用缩写；
-- text-align：文本对齐，left（默认）、right、center；
-- text-decoration：装饰文本，给文本添加下划线、删除线、上划线等，none（默认）、underline（下划线）、overline（上划线）、line-through（删除线）；
-- text-indent：文本缩进，通常是将段落的首行缩进，数值，单位px或em等，em是相对单位，相对当前元素（font-size）的1个文字的大小，如果当前元素没有设置font-size，则相对父元素；
-- line-height：行高（行间距），行间距由上间距、文本高度、下间距组成，值、像素，行高不加单位时指当前元素的多少倍；
-- text-shadow：文字阴影，只有四个值（和盒子阴影的前四个值是一样的）。
+- color：文本颜色，规范建议使用十六进制的RGB颜色值，字母小写，颜色可以缩写时使用缩写。
+- text-align：文本对齐，left（默认）、right、center。
+- vertical-align：纵向对齐，只能用于行内元素和置换元素。（baseline（默认）、bottom、middle、top、text-top等）
+- text-decoration：装饰文本，给文本添加下划线、删除线、上划线等，none（默认）、underline（下划线）、overline（上划线）、line-through（删除线）。
+- text-indent：文本缩进，通常是将段落的首行缩进，数值，单位px或em等，em是相对单位，相对当前元素（font-size）的1个文字的大小，如果当前元素没有设置font-size，则相对父元素。
+- text-transform：文本大小写转换。
+- line-height：行高（行间距），行间距由上间距、文本高度、下间距组成，值、像素，行高不加单位时指当前元素的多少倍。
+- text-shadow：文字阴影，只有四个值（和盒子阴影的前四个值是一样的，`text-shadow: rag(x,x,x) 横向偏移量 纵向偏移量 模糊半径;`）。
 
 ## 元素显示模式
 
@@ -312,24 +334,24 @@ inline-block——行内块元素：img、input、td，同时具有块元素和�
 2. 默认宽度为其本身内容的宽度；
 3. 高度、宽度、内边距、外边距可以控制。
 
-不同模式间的转换：display
+不同模式间的转换：display。
 
 ## 背景
 
-背景颜色：background-color：transparent（透明的）、颜色；
+背景颜色：background-color：transparent（透明的）或颜色值。
 
-背景图片：background-image：url()；
+背景图片：background-image：url()。
 
-背景平铺：background-repeat：repeat（默认）、no-repeat、repeat-x、repeat-y；
+背景平铺：background-repeat：repeat（默认）、no-repeat、repeat-x、repeat-y。
 
-背景位置：background-position：x y；
+背景位置：background-position：x y。
 
-- x坐标、y坐标，x和y可以使用精确单位或方位名词（top、bottom、right、left、center），如果只指定一个方位名词，另一个忽略，此时忽略的是默认居中;
-- 如果是精确单位，第一个一定是x坐标，第二个一定是y坐标；
-- 如果只指定一个数值，那么这个数值一定是x坐标，另一个默认center；
+- x坐标、y坐标，x和y可以使用精确单位或方位名词（top、bottom、right、left、center），如果只指定一个方位名词，另一个忽略，此时忽略的是默认居中。
+- 如果是精确单位，第一个一定是x坐标，第二个一定是y坐标。
+- 如果只指定一个数值，那么这个数值一定是x坐标，另一个默认center。
 - 如果使用混合使用，第一个一定是x坐标，第二个一定是y坐标。
 
-背景固定：background-attachment：scroll（随内容滚动，默认）、fixed（固定）；
+背景固定：background-attachment：scroll（随内容滚动，默认）、fixed（固定）。
 
 ```css
 /* 复合写法，位置没有限制 */
@@ -340,31 +362,28 @@ css3，ie9+才支持：背景色半透明：`background-color：rgba(0, 0, 0, .8
 
 ## CSS三大特性
 
-### 层叠性
+### 优先级/特指度
 
-层叠性主要解决样式冲突问题，相同选择器设置相同的样式（值不同），此时一个样式就会覆盖另一个冲突的样式。
+解决使用不同选择符选择了相同的元素下的样式冲突问题。
 
-重叠性原则：就近原则，哪个离body结构近哪个就执行，注意**只是覆盖冲突的样式，并不是全部覆盖**。（如果是不同css文件中的样式起冲突呢？一般都不会出现不同文件下的样式冲突，因为样式文件都对应一个结构）。
+如果选择器相同（特指度相同），那就是层叠；选择器不同时则根据权重判断，各选择器权重如下：
 
+- 通配符*：`0,0,0,0`；继承或者连结符（>、+等）是没有特指度的，连0都没有。
+- 元素选择器：`0,0,0,1`。
+- 类、属性选择、伪类选择器：`0,0,1,0`。
+- ID选择器：`0,1,0,0`。
+- 行内样式style=""：`1,0,0,0`。
+- `!important`，表示最重要， 权重是无穷大但对特指度没有任何影响，用于样式属性值最后并以空格隔开。
 
+复合选择器的权重叠加：权重会叠加但不会有进位，权重比较是从左往右一个个数对应比较。
 
-**css样式层叠优先级是:**
-浏览器缺省 < 外部样式表（引入的css文件） < 内部样式表（`<style>`标签内的样式） < 内联样式（标签中style属性声明的样式）
-
-**其中样式表又有:**
-类选择器(.class) < 类派生选择器(.class h1) < ID选择器(#id) < ID派生选择器(#id h1)
-
-派生选择器以前叫上下文选择器，所以完整的层叠[优先级](https://so.csdn.net/so/search?q=优先级&spm=1001.2101.3001.7020)是:
-浏览器缺省 < 外部样式表(css文件) < 外部样式表类选择器 < 外部样式表类派生选择器 < 外部样式表ID选择器 < 外部样式表ID派生选择器 < 内部样式表(`<style>`标签内的样式) < 内部样式表类选择器 < 内部样式表类派生选择器 < 内部样式表ID选择器 < 内部样式表ID派生选择器 < 内联样式(style=”)
-共12个优先级
-
-
+`0,0,1,1`大于`0,0,0,1`，`0,0,1,0`大于`0,0,0,13`，以此类推。
 
 ### 继承性
 
-子元素继承父元素的某些样式，如text-、font-、line-、这些开头的可以继承，以及color属性。
+继承：某些样式不仅能应用到所指元素上，还应用到元素的后代上。（特例：body元素定义了背景样式但html没有定义，此时背景样式会向上传递给html元素）
 
-line-height：可以不加单位，不加单位时表倍数，当前元素的倍数。
+border、大多数盒模型属性不会被继承；text-、font-、line-这些开头的可以继承，以及color属性。（line-height：可以不加单位，不加单位时表倍数，当前元素的倍数。）
 
 常用的css可继承的属性：
 
@@ -391,22 +410,20 @@ line-height：可以不加单位，不加单位时表倍数，当前元素的倍
 - 光标属性：cursor
 
 
-### 优先级/特指度
 
-解决不同书写方式下的相同内容样式冲突问题。
+### 层叠性
 
-选择器不同时，看权重：
+层叠性主要解决样式冲突问题，相同选择器设置相同的样式（值不同），此时一个样式就会覆盖另一个冲突的样式。
 
-- 继承或者*、连结符（>、+等）：`0,0,0,0`；
-- 元素选择器：`0,0,0,1`；
-- 类、属性选择、伪类选择器：`0,0,1,0`；
-- ID选择器：`0,1,0,0`；
-- 行内样式style=""：`1,0,0,0`；
-- `!important`最重要：无穷大。
+重叠性原则：就近原则，哪个离body结构近哪个就执行，注意**只是覆盖冲突的样式，并不是全部覆盖**。（如果是不同css文件中的样式起冲突呢？一般都不会出现不同文件下的样式冲突，因为样式文件都对应一个结构）。
 
-复合选择器的权重叠加：
+---
 
-权重会叠加但不会有进位，权重比较是从左往右一个个比较。
+**css样式优先级是：**浏览器缺省 < 外部样式表（引入的css文件） < 内部样式表（`<style>`标签内的样式） < 内联样式（标签中style属性声明的样式）。
+
+完整的优先级：浏览器缺省 < 外部样式表(css文件) < 外部样式表类选择器 < 外部样式表类派生选择器 < 外部样式表ID选择器 < 外部样式表ID派生选择器 < 内部样式表(`<style>`标签内的样式) < 内部样式表类选择器 < 内部样式表类派生选择器 < 内部样式表ID选择器 < 内部样式表ID派生选择器 < 内联样式(style=”)；共12个优先级。
+
+
 
 ## 盒模型
 
@@ -414,8 +431,8 @@ line-height：可以不加单位，不加单位时表倍数，当前元素的倍
 
 盒子模型有两个，标准盒模型和替代盒模型：
 
-- 标准盒模型（box-sizing：content-box）（默认的）：width和height是指content的大小，整个盒子的大小为border+padding+content；
-- 替代盒模型（box-sizing：border-box）：width和height是指整个盒子的大小；
+- 标准盒模型（box-sizing：content-box）（默认的）：width和height是指content的大小（整个盒子的大小为border+padding+content）。
+- 替代盒模型（box-sizing：border-box）：width和height则是指整个盒子的大小（整个盒子的大小为border+padding+content）。
 - 指定了width和height时，它俩一个是content不变（标准盒模型），一个是盒子大小不会变（替代盒模型）。
 
 ### **border：**边框
@@ -473,7 +490,7 @@ margin：0 auto；块级元素必须设置了宽度才能实现水平居中。�
 
 注意：行内元素为了照顾兼容性，尽量只设置左右内外边距，不要设置上下内外边距。
 
-### box-shadow:盒子阴影
+### box-shadow：盒子阴影
 
 CSS3新增盒子阴影：`box-shadow：h-shadow v-shadow blur spread color inset;`
 
@@ -746,6 +763,16 @@ CSS提供了三种传统的布局方式（简单地说就是盒子的排列顺�
 
 ![](image/css编写规范.png)
 
+[CSS 代码的书写规范、顺序 | DeveWork](https://devework.com/css-written-specifications.html)（[CSS 代码的书写规范、顺序 - 云+社区 - 腾讯云 (tencent.com)](https://cloud.tencent.com/developer/article/1025155)）。
+
+1. 位置：position、top、right、z-index、display、float等。
+2. 大小：width、height、padding、margin。
+3. 文字：font、line-height、letter-spacing、color、text-align等。
+4. 背景：background、border等。
+5. 其他：animation、transition等。
+
+
+
 ## 浏览器前缀
 
 ![](image/浏览器前缀.png)
@@ -767,8 +794,7 @@ CSS提供了三种传统的布局方式（简单地说就是盒子的排列顺�
     margin: 0;
     padding: 0;
 }
-em,
-i {
+em,i {
     font-style: normal;
 }
 li {

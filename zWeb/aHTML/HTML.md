@@ -209,12 +209,12 @@ definition description，定义描述——定义列表具体内容
 - 单选按钮和复选框可以有checked属性，用于指定默认选中的选项。
 - type为text的input表单控件可以使用maxlength属性设置可输入字符数。
 
-| 属性      | 属性值 | 描述                        |
-| --------- | ------ | --------------------------- |
-| name      | 自定义 | 定义input元素的名称         |
-| value     | 自定义 | 定义input元素的值           |
-| checked   | check  | 规定此input首次加载时被选中 |
-| maxlength | 正整数 | 规定输入字符的最大长度      |
+| 属性      | 属性值 | 描述                                                         |
+| --------- | ------ | ------------------------------------------------------------ |
+| name      | 自定义 | 定义input元素的名称                                          |
+| value     | 自定义 | 定义input元素的值<br>如果是按钮则表示按钮上的文字<br>其它的则表示元素内容值 |
+| checked   | check  | 规定此input首次加载时被选中                                  |
+| maxlength | 正整数 | 规定输入字符的最大长度                                       |
 
 
 
@@ -233,8 +233,10 @@ label是input元素标记标签，用于绑定一个表单元素，当点击`<la
 
 ```html
 <select>
-	<option></option>
-    <option slected="selected"></option> <!--默认选中-->
+    <!-- value中的值为提交到服务器的值，如果没有value则默认提交该标签内容 -->
+	<option value=""></option> 
+    <!-- 默认选中 -->
+    <option slected="selected"></option> 
     <option></option>
     ...
 </select>
