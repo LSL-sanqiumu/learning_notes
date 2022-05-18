@@ -6,7 +6,7 @@
 
 HTML 元素指的是从开始标签（start tag）到结束标签（end tag）的所有代码。元素有其属性，内联样式只是属性中的一种而已。
 
-
+标签的语义——标签的含义。
 
 ## DOCTYPE
 
@@ -57,7 +57,7 @@ span意为跨度、跨距，是一个行内元素，一行内可以存在多个�
 
 ## 实体符号
 
-空格：`&nbsq;`；大于号：`&gt;`；小于号：`&lt;`。
+常用的——（空格：`&nbsq;`；大于号：`&gt;`；小于号：`&lt;`）。
 
 ```html
 <a href="https://baidu.com" disabled="true">百度&copy;</a>
@@ -75,20 +75,37 @@ span意为跨度、跨距，是一个行内元素，一行内可以存在多个�
 <!-- border：设置边框宽度等，后面用css操作-->
 ```
 
+| 属性   | 属性值 | 说明 |
+| ------ | ------ | ---- |
+| src    |        |      |
+| alt    |        |      |
+| title  |        |      |
+| width  |        |      |
+| height |        |      |
+| border |        |      |
+
+根目录：目录第一层称为该目录的根目录。
+
+相对路径：相当于当前文件为参考的路径去寻找目标资源。
+
+绝对路径：目录的绝对路径，通常是从盘符开始。
+
+
+
 ## a
 
 a是anchor的缩写，意为锚。
 
+1. href：链接地址，内部链接或外部链接。（**空链接：**#来代替；**下载链接：**链接地址是文件，文件是.exe或.zip格式）
+2. target：_black-重新开一个窗口加载；_self：当前页跳转
+3. 锚点链接：锚点链接的href属性值为`#idName`的形式idName为目标标签的id属性名，用于快速定位页面中某个位置。
+
 ```html
 <a href="" target=""></a>
-<!-- href：链接地址，内部链接或外部链接；空链接：#来代替；下载链接：链接地址是文件，文件是.exe或.zip格式 -->
-<!-- target：_black-重新开一个窗口加载；_self：当前页跳转-->
 <!-- 各种网页元素都可以加超链接-->
 ```
 
-锚点链接：用于快速定位页面中某个位置
 
-- 锚点链接的href属性值为`#idName`的形式idName为目标标签的id属性名。
 
 ## 列表
 
@@ -232,11 +249,11 @@ label是input元素标记标签，用于绑定一个表单元素，当点击`<la
 ### select：
 
 ```html
-<select>
+<select name="" id="">
     <!-- value中的值为提交到服务器的值，如果没有value则默认提交该标签内容 -->
-	<option value=""></option> 
+	<option value="">xxx</option> 
     <!-- 默认选中 -->
-    <option slected="selected"></option> 
+    <option slected="selected">xxx</option> 
     <option></option>
     ...
 </select>
