@@ -611,8 +611,8 @@ CSS3新增盒子阴影：`box-shadow：h-shadow v-shadow blur spread color inset
 
 让一个元素在页面中显示或隐藏。
 
-1. display：是显式隐藏，使用none属性值，block属性值还有显示元素的意思；
-2. visibility：是显式隐藏，visible（元素可视）、hidden（元素隐藏），隐藏后继续占有原来的位置；
+1. display：是显式隐藏，使用none属性值，block属性值还有显示元素的意思。
+2. visibility：是显式隐藏，visible（元素可视）、hidden（元素隐藏），隐藏后继续占有原来的位置。
 3. overflow：是隐式隐藏，溢出隐藏，visible、hidden、scroll（总是有滚动条）、auto（在溢出的时候出现滚动条）。
 
 ## CSS高级技巧
@@ -621,8 +621,8 @@ CSS3新增盒子阴影：`box-shadow：h-shadow v-shadow blur spread color inset
 
 精灵图（sprites）：为了有效地减少请求的次数，提高访问速度
 
-- 把多张小背景图整合到一张大背景图中，主要针对背景图使用；
-- 移动大背景图，得到小的背景图；
+- 把多张小背景图整合到一张大背景图中，主要针对背景图使用。
+- 移动大背景图，得到小的背景图。
 - 一般背景图都是往左往上移动，是负值。
 
 ### 字体图标
@@ -659,35 +659,29 @@ CSS3新增盒子阴影：`box-shadow：h-shadow v-shadow blur spread color inset
 
 ### CSS用户界面样式
 
-鼠标样式-光标形状：
+1. 鼠标样式-光标形状——`cursor: `
+   - default，默认属性值，小白箭头。
+   - pointer，小手。
+   - move，移动。
+   - text，文本。
+   - not-allow，禁止。
+2. 轮廓线：表单有默认的蓝色轮廓线，如果要去掉默认的，给表单添加`outline：0;` 或 `outline：none;` 样式即可。
 
-- `cursor: `
-  1. default，默认属性值，小白；
-  2. pointer，小手；
-  3. move，移动；
-  4. text，文本；
-  5. not-allow，禁止
+3. 文本域：默认的文本域是可以拖拽的，使用 `resize：none;` 样式可以防止拖拽。
 
-轮廓线：表单有默认的蓝色轮廓线
-
-- 给表单添加outline：0；或outline：none；样式就可以去掉默认的。
-
-文本域：默认的文本域可以拖拽
-
-- 使用resize：none；样式可以防止拖拽。
 
 ### vertical-align属性应用
 
-vertical-align属性经常用于设置图片或者表单（行内块元素）和文字垂直对齐；vertical-align属性只适用于行内元素和行内块元素。
+vertical-align属性经常用于设置图片或者表单（行内块元素）和文字垂直对齐；vertical-align属性**只适用于行内元素和行内块元素**。
 
-- baseline：基线对齐，默认的对齐方式，元素放置在父元素的基线上；
-- top：元素顶端与行中最高元素的顶端对齐；
-- middle：元素放置于父元素的中部；
+- baseline：基线对齐，默认的对齐方式，元素放置在父元素的基线上。
+- top：元素顶端与行中最高元素的顶端对齐。
+- middle：元素放置于父元素的中部。
 - bottom：元素顶端与行中最低元素的顶端对齐。
 
-图片底部会有一个空白缝隙，原因是行内块元素会和文字的基线对齐，解决办法：
+图片底部会有一个空白缝隙，原因是**行内块元素会和文字的基线对齐**，解决办法：
 
-1. 给图片添加vertical-align：middle或top或bottom；（提倡使用）
+1. 给图片添加vertical-align：middle或top或bottom。（提倡使用）
 2. 把图片转为块元素。
 
 ### 省略号显示溢出文本
@@ -726,9 +720,89 @@ display: -webkit-box;
 
 多行文本的更推荐由后台人员来实现。
 
+### 常见布局技巧
+
+**1、margin负值：**
+
+- margin负值会向左移动，可用于实现盒子的边框的重叠。（重叠的边框，当使用`a:hover	`来设置边框颜色时，这时会出现某一边被其他的盒子边框覆盖的情况，这时如果当前元素都没有加定位那就可以加相对定位，如果都已经有定位了那就使用`z-index`来提层）
+
+![](image/margin负值.png)
+
+**2、文字围绕浮动元素：**浮动元素不会压住文字
+
+![](image/f-f.png)
+
+```html
+<div class="box">
+    <div class="pic">
+        <img src="img/terminal.png" alt="">
+    </div>
+    <p>大家好大家好大家好大家好大家好大家好大家好大家好(๑╹◡╹)ﾉ”</p>
+</div>
+```
+
+```css
+* {margin: 0;padding: 0;}
+.box {width: 300px;height: 100px;background-color: #00a4ff;margin: 30px auto 0;}
+.pic img{float: left;width: 100px;height: 100px;margin-right: 20px;}
+```
+
+**3、行内块元素运用：**行内块元素间有间隔，使用`text-align`可以将行内元素、行内块元素进行居中对齐。
+
+![](image/inline.png)
+
+```html
+<div class="nav-page">
+    <a href="#" class="before">&lt;&lt;上一页</a>
+    <a href="#">2</a>
+    <a href="#">3</a>
+    <a href="#">4</a>
+    <a href="#">5</a>
+    <a href="#">...</a>
+    <a href="#" class="after">&gt;&gt;下一页</a>
+    到第
+    <input type="text" class="">
+    页
+    <button>确定</button>
+</div>
+```
+
+```css
+* {margin: 0;padding: 0;}
+.nav-page {text-align: centmargin-top: 30px;}
+.nav-page a {display: inline-block;width: 36px;height: 36px;line-height: 36px;text-decoration: none;text-align: center;font-size: 14px;color: whitesmoke;background-color: tomato;}
+.nav-page .before, 
+.nav-page .after {width: 85px;}
+.nav-page input {width: 45px;height: 36px;text-align: center;border: 1px solid #ccc;outline: none;
+}
+.nav-page button {width: 60px;height: 36px;border: 1px solid #ccc;background-color: #ccc;}
+```
+
+**4、CSS三角的运用：**
+
+![](image/css三角.png)
+
+```html
+<div class="box">
+    <span class="miaosha">$1650
+        <i></i>
+    </span>
+    <span class="price">$5650</span>
+</div>
+```
+
+```css
+.box {width: 160px;height: 24px;border: 1px solid red;margin: auto;}
+.box .miaosha {display: inline-block;position: relative;width: 90px;height: 100%;color: #fff;text-align: center;font-weight: 600;background-color: red;}
+.box .miaosha i {position: absolute;top: 0;right: 0;border-color: transparent #fff transparent transparent;border-style: solid;border-width: 24px 10px 0 0;}
+.box .price {color: gray;text-decoration: line-through;}
+```
 
 
-## 网页布局
+
+## 布局与规范
+
+### 网页布局
 
 页面布局的三大核心：盒子模型、浮动、定位；网页布局的本质就是用CSS摆放盒子（把盒子摆放到相应位置）。CSS提供了三种传统的布局方式（简单地说就是盒子的排列顺序是咋样的），实际开发中一个页面都包含这三种布局（移动端中还有新的布局方式）：
 
@@ -749,40 +823,42 @@ display: -webkit-box;
 
 **页面布局整体思路：**
 
-1. 确定页面版心（可视区）。
-2. 分析页面的行模型，执行网页布局第一准则。
-3. 列模块经常浮动布局，先确定列大小，再确定列位置，网页布局第二准则。
-4. 制作HTML结构（遵循先有结构，后有样式）。
-5. 理清楚布局结构。
+1. 先确定页面版心（可视区、主体区域）。
+2. 再分析页面的上下布局，多个块级元素纵向排列找标准流，多个块级元素横向排列找浮动。
+3. 然后分析左右结构——列模块经常使用浮动布局，先确定列大小，再确定列位置（网页布局第二准则）。
+4. 遵循的逻辑：
+   - 制作HTML结构（遵循先有结构，后有样式）。
+   - 理清楚布局结构再写代码。
+   - （理清布局，自上向下、自左向右、由外而内，先结构后样式，一步步进行操作）
 
-**网页布局过程：**
 
-1. 先准备好相关的网页元素，网页元素基本都是盒子Box。
-2. 利用CSS设置好盒子样式，然后摆放到相应位置。
-3. 往盒子里面加内容。
-4. 网页布局的核心就是用CSS摆放盒子。
+**网页布局过程：**（网页布局的核心就是用CSS摆放盒子）
+
+1. 准备好相关的网页标签，网页标签元素基本都是盒子Box。
+2. 然后利用CSS设置好盒子样式，摆放到合适位置。
+3. 再往盒子里面加内容进行调整。
 
 **导航栏：实际开发使用li+a的做法。**
 
-## CSS编写规范
+![](image/nav.png)
+
+### CSS编写规范
 
 [CSS 代码的书写规范、顺序 | DeveWork](https://devework.com/css-written-specifications.html)（[CSS 代码的书写规范、顺序 - 云+社区 - 腾讯云 (tencent.com)](https://cloud.tencent.com/developer/article/1025155)）。
 
-1. 位置-显示相关：display、position、top、right、z-index、float等。
+1. 位置-显示相关：display、position、top、right、z-index、float、clear、visibility、overflow等。
 2. 大小-盒子相关：width、height、padding、margin等。
 3. 文字-文本相关：font、line-height、letter-spacing、color、text-align等。
 4. 背景-背景边框：background、border等。
 5. 其他-其他操作：animation、transition等（动画、变换、背景渐变、阴影等）。
 
-![](image/css编写规范.png)
+## 其他
 
-
-
-## 浏览器前缀
+### 浏览器前缀
 
 ![](image/浏览器前缀.png)
 
-## 图片格式
+### 图片格式
 
 ![](image/图片.png)
 
@@ -995,7 +1071,7 @@ animation-timing-function（动画的速度曲线细节）：
 
 ## 概述
 
-移动端开发有单独制作移动端页面和响应式页面两种，目前市场主流还是单独制作移动端页面。
+移动端开发有单独制作移动端页面和响应式页面两种，目前市场**主流还是单独制作移动端页面**。
 
 视口：分为视觉视口（屏幕可视区）、布局视口（移动端浏览器默认设置的布局视口）、理想视口（设备多宽，布局视口就多宽）。
 
