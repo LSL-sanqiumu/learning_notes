@@ -224,6 +224,8 @@ a:visited:hover {
 | **:nth-of-type(n)**      | 选择某种类型元素的第n个元素                                  |
 | **:nth-last-of-type(n)** | 以倒序的方式来选择                                           |
 
+![](image/结构伪类.png)
+
 **动态伪类：**多用于超链接。
 
 | 超链接伪类   | 说明     |
@@ -243,7 +245,7 @@ a:visited:hover {
 
 ### 伪元素选择器
 
-在文档中插入虚构的元素。需要注意的是，伪元素选择器只能出现在所有选择器的最后。
+在文档中插入虚构的元素，这个元素在文档树中是找不到的，因此是伪元素。需要注意的是，伪元素选择器只能出现在所有选择器的最后，创建的元素属于行内元素，权重为1。
 
 | 伪元素             | 说明                                               |
 | ------------------ | -------------------------------------------------- |
@@ -262,7 +264,7 @@ h2:after {
 }
 ```
 
-
+应用场景：通过伪元素来实现字体图标、在图像链接上添加半透明黑幕、用于清除浮动。
 
 ## 字体
 
@@ -829,7 +831,7 @@ display: -webkit-box;
 4. 遵循的逻辑：
    - 制作HTML结构（遵循先有结构，后有样式）。
    - 理清楚布局结构再写代码。
-   - （理清布局，自上向下、自左向右、由外而内，先结构后样式，一步步进行操作）
+   - （**理清布局，自上向下、自左向右、由外而内，先结构后样式，一步步进行操作**）
 
 
 **网页布局过程：**（网页布局的核心就是用CSS摆放盒子）
@@ -862,7 +864,13 @@ display: -webkit-box;
 
 ![](image/图片.png)
 
+### SEO优化标签
 
+```html
+<title>Title</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+```
 
 # Emmet语法
 
@@ -904,7 +912,7 @@ a:hover {
 button,input {
     font-family:Microsoft YaHei,Heiti SC,tahoma,arial,Hiragino Sans GB,"\5B8B\4F53",sans-serif;
     border: 0;
-    outline: n
+    outline: none;
 }
 body{
     -webkit-font-smoothing:antialiased;
@@ -941,11 +949,15 @@ body{
 
 ![](image/html5.png)
 
-
+![](image/html5-form.png)
 
 ## CSS3新增
 
-
+1. 新增选择器：属性选择器、结构伪类选择器、伪元素选择器。
+2. 盒子模型样式设置——`box-sizing`。
+3. filter属性：将模糊或颜色偏移等图形效果应用于元素上。（语法格式`filter: 函数();`，例如`filter: blur(5px);`blur是模糊处理函数）
+4. calc函数：在声明css属性时可通过该函数执行一些计算。（`width: clac(100% - 80px);`，可进行加减乘除运算）
+5. 过渡：从一个状态慢慢过渡到另外一个状态。（经常和`:hover`一起搭配使用）
 
 
 
@@ -1002,15 +1014,15 @@ transform，CSS3，元素的位移（translate）、旋转（rotate）、缩放�
 
 
 
-
-
-
-
 ## 过渡
 
-过渡写到本身上，谁做动画给谁加。
+过渡写到本身上，谁做动画给谁加。（在元素的属性上生效）
 
+```css
+transition: 要过渡的属性 花费时间 运动曲线 何时开始;
+```
 
+![](image/transaction.png)
 
 
 
