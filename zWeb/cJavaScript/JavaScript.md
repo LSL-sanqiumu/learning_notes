@@ -23,7 +23,7 @@ JavaScript（网景公司）、Jscript（微软），JavaScript最流行。ECMAS
 2. js文件的拓展名不是必须的。
 3. 引入外部js文件时script标签内不要写js代码，写进去的不会生效。
 4. 外部js文件引入不受浏览器同源策略的影响，但会受页面协议（http、https）的影响。
-5. 但没有使用defer和async属性时，浏览器会按`<script>`标签出现的顺序来依次解释，前一个解释完才轮到下一个。
+5. 没有使用defer和async属性时，浏览器会按`<script>`标签出现的顺序来依次解释，前一个解释完才轮到下一个。
 6. 还有其他功能：比如推迟脚本执行、异步执行脚本、动态加载脚本等。
 
 ![](img/import.png)
@@ -353,13 +353,13 @@ JavaScript代码由浏览器中JavaScript解析器来执行，JavaScript解析�
         console.log(num); // （最后输出：undefined）
         var num = 20;
     }
-   	// 上面的相当于：
-    var num;
+    // 上面的相当于：
     function fun(){
         var num;
         console.log(num); 
         num = 20;
     }
+    var num;
     num = 10;
     fun();
 </script>
@@ -379,14 +379,14 @@ JavaScript代码由浏览器中JavaScript解析器来执行，JavaScript解析�
 </script>
 ```
 
-上述代码最后的运行结果表明，**函数提升优先级高于变量提升，且不会被同名变量声明覆盖，但是当同名变量赋值后会被覆盖**。
+上述代码最后的运行结果表明，**函数提升优先级高于变量提升，且不会被同名变量声明覆盖，但是当同名变量赋值后同名函数会被覆盖**。
 
 ```js
 // 实际执行：
 function foo(){console.log('函数声明')} // 可以看做是 var foo; foo = function(){};
 var foo; // 变量名与函数名冲突，变量声明被忽略
 console.log(foo); // 输出函数声明体
-foo = '此时会覆盖它-那个与我同名的函数'; // 覆盖
+foo = '此时会覆盖它-那个与我同名的函数'; // 会覆盖掉函数，之后不能再执行调用foo()函数
 console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
 ```
 

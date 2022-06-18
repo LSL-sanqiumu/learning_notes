@@ -301,7 +301,7 @@ format的值有：
 文本的外观，比如文本的颜色、对齐文本、装饰文本、文本缩进、行间距等。
 
 - color：文本颜色，规范建议使用十六进制的RGB颜色值，字母小写，颜色可以缩写时使用缩写。
-- text-align：文本对齐，left（默认）、right、center，影响的是行内、行内块元素。
+- text-align：横向对齐文本对齐，left（默认）、right、center，影响的是行内、行内块元素。
 - vertical-align：纵向对齐，只能用于行内元素和置换元素。（baseline（默认）、bottom、middle、top、text-top等）
 - text-decoration：装饰文本，给文本添加下划线、删除线、上划线等，none（默认）、underline（下划线）、overline（上划线）、line-through（删除线）。
 - text-indent：文本缩进，通常是将段落的首行缩进，数值，单位px或em等，em是相对单位，相对当前元素（font-size）的1个文字的大小，如果当前元素没有设置font-size，则相对父元素。
