@@ -9,7 +9,7 @@
 
 # ECMAScript-语法标准
 
-JavaScript（网景公司）、Jscript（微软），JavaScript最流行。ECMAScript规定了JS编程的基本语法和基础核心知识，是所有厂商共同遵守的一套JS语法工业标准。使用VS code。
+JavaScript（网景公司）、Jscript（微软），JavaScript最流行。ECMAScript规定了JS编程的基本语法和基础核心知识，是所有厂商共同遵守的一套JS语法工业标准。
 
 ## base
 
@@ -89,23 +89,43 @@ var a = b = c = 9 //相当于 var a = 9; b=9;c=9;
   age = '21';
   ```
 
+JavaScript的七种数据类型：
+
+| 数据类型  | 说明                                | 默认值                                                       |
+| --------- | ----------------------------------- | ------------------------------------------------------------ |
+| Undefined | 未初始化的变量的默认值就是undefined | 只有一个值：undefined                                        |
+| Null      | 空值                                | 只有一个值：null；null值表示一个空指针对象，类型为object<br>null值表面上与undefined等价 |
+| Boolean   | 布尔类型，可以进行运算              | 只有两个值：true、false（默认）                              |
+| Number    | 数值，包含浮点型和整型              | 默认值是0                                                    |
+| String    |                                     |                                                              |
+| Symbol    |                                     |                                                              |
+| Object    |                                     |                                                              |
+
 ![](img/data_type.png)
 
 ### 数值型
 
-- `0x`开头表示十六进制数，`0`开头表示八进制数。
+浮点数时，如果小数点后没有数字或者是0，将会转换为整型数来处理；浮动数的精度最高可达17位小数。（要注意的是，浮点数的计算并不精确）
+
+科学计数法：3e3=3000；3e-3=0.003。（默认情况，小数点后至少包含6个0时，浮动值就会转换为科学计数法）
+
+进制：`0x`开头表示十六进制数，`0`开头表示八进制数（严格模式下是`0o`）。
 
 一些特殊值（了解）：
 
-- `Number.MAX_VALUE`：1.7976931348623157e+308。（10的308次方）
-- `Number.MIN_VALUE`：5e-324。（10的-324次方）
-- `Infinity`：无穷大。（`alert(Number.MAX_VALUE * 2);`）
-- `-Infinity`：无穷小。（` alert(-Number.MAX_VALUE * 2);`）
-- `NaN`：表示非数字。（`alert('hello' - 100);`）
+1. `Number.MAX_VALUE`：1.7976931348623157e+308。（10的308次方）
+2. `Number.MIN_VALUE`：5e-324。（10的-324次方）
+3. `Infinity`：无穷大。（`alert(Number.MAX_VALUE * 2);`）
+4. `-Infinity`：无穷小。（` alert(-Number.MAX_VALUE * 2);`）
+5. `NaN`：
+   - not a number，表示非数字；任何与NaN的运算都是NaN，NaN不等于NaN。（`alert('hello' - 100);`）
+   - 0、-0、+0之间相互做除法运算都会返回NaN。
+   - 分母是有符号0或无符号0，而分子是非0值，则返回`Infinity`或`-Infinity`。
+
 
 一个判断方法：
 
-- `isNaN(x)`：判断x是否是非数字，返回布尔值。
+- `isNaN(x)`：判断x是否是非数字，对于任何不能转换为数字的值都将返回true。
 
 ### 字符串
 
@@ -127,6 +147,8 @@ var falg = true;
 // true 或 false可以进行运算（true代表1，false代表0）
 var flag = true + 1;
 console.log(typeof flag);
+// 将值转换为Boolean类型  空字符、0、NaN、null、undefined都将转换为false
+console.log(typeof Boolean(flag));
 ```
 
 - NaN和数组相加为NaN，null和数字相加为数字本身。
@@ -135,7 +157,7 @@ console.log(typeof flag);
 
 ```js
 var name = '陆拾陆';
-alert(typeof name);
+alert(typeof name);   // 未声明的变量的类型为undefined
 ```
 
 ### 数据类型转换
