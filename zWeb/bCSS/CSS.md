@@ -873,9 +873,51 @@ display: -webkit-box;
 
 ## 表格
 
+table标签的一个属性——**border-collapse**，其属性值作用如下：
 
+1. `seperate`：边框之间分离。
+2. `collapse`：两两相临边框合并。
 
+```html
+<div class="box">
+    <table>
+        <caption><h4>这是一个表格</h4></caption>
+        <thead>
+        <tr>
+            <th>序号</th>
+            <th>姓名</th>
+            <th>年龄</th>
+            <th>性别</th>
+            <th>家乡</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>1</td>
+            <td>王曼</td>
+            <td>22</td>
+            <td>女</td>
+            <td>台湾省</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+```
 
+```css
+.box {
+        width: 600px;
+        margin: 100px auto;
+    }
+    table {
+        border-collapse: collapse;
+        text-align: center;
+    }
+    th,td {
+        width: 90px;
+        border: 1px solid #000;
+    }
+```
 
 # Emmet语法
 
