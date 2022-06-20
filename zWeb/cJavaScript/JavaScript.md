@@ -250,6 +250,8 @@ console.log(0.07 * 00); // 7.000000000000001
    1. 有NaN参与的都是NaN，有不是数值的操作数，则会使用Number()进行转换。
    2. 无穷、0之间的行为忽略。
 2. 加减法：有NaN，则返回NaN；与字符相加相当于字符拼接；与字符相减会在后台将字符串转换为数值，再进行减法操作。
+   - undefined与除字符串之外的相加都是NaN，undefined + 字符串=undefined字符串。
+
 
 ### 赋值运算符
 
@@ -261,6 +263,7 @@ console.log(0.07 * 00); // 7.000000000000001
 
 1. +、-：一元加和减：其可以用来进行数据类型转换，用于变量前，相当于使用Number()函数。（例`var num = "01"; var n = -num;`）
 2. ++、--。
+3. !。
 
 ### 条件操作符
 
@@ -358,7 +361,7 @@ with语句——将代码作用域设置为特定的对象：
 let array = new Array(); // 创建了一个空数组
 let array = new Array(2); // 创建了一个长度为2的数组
 let array = []; // 创建了一个空数组，长度为0
-let array = ['值1','值2','值3','值4','值5']; // 创建并初始化
+let array = ['值1','值2','值3','值4','值5']; // 创建并初始化，数组内可存储任意类型数据
 
 alert(array[9]); // 可访问任意下标的值，如果不含数据的下标则返回undefined
 array.length; // 数组长度
@@ -370,11 +373,25 @@ array.length; // 数组长度
 array.length = 10; // 更改数组长度来扩容，扩出来的位置默认是 undefined
 ```
 
+数组操作：
+
+1. 查：数组[下标]。
+2. 改：数组[下标] = 新值。
+3. 增：
+   1. array.push(新增内容)——将一个或多个元素添加到数组末尾，并会返回数组的新长度。
+   2. array.unshift(新增内容)——将一个或多个元素添加到数组开头，并会返回数组的新长度。
+4. 删：
+   1. array.pop()——删除最后一个元素。
+   2. array.shift()——删除第一个元素。
+   3. array.splice(开始下标，操作个数)——从指定下标元素开始删除多个元素。
+
 
 
 ## 函数
 
-### 函数的使用
+执行特定任务的代码块。
+
+### 函数的基本使用
 
 函数声名和调用：
 
@@ -385,31 +402,38 @@ function show(){
 }
 // 都是这样调用函数
 show();
-```
-
-参数：函数的形参个数无限制，传入的实参也不要求全部都和形参对应上，形参默认值为undefined。
-
-```js
-function show(v1,v2,v3){
-    alert("这是一个函数");
-    console.log(v1 + v2 + v3);
-}
 // 声明函数方式2：函数表达式（变量里存函数），此时函数为匿名函数，show是变量名
 var show = function(arg){
     alert("传入的参数为" + arg);
 }
-show("arg");
-// 调用函数
-show(1,2);
 ```
 
-返回值：直接return就好。
+函数命名规范：
+
+1. 小驼峰，前缀应该为动词。
+2. 常用动词：
+   1. can：判断是否可执行某个动作。
+   2. has：判断是否含某个值。
+   3. is：判断是否是某个值。
+   4. get：获取某个值。
+   5. set：设置某个值。
+   6. load：加载某些数据。
+
+### 函数的参数
+
+参数：函数的形参个数无限制，传入的实参也不要求全部都和形参对应上，形参默认值为undefined。
+
+开发中尽量保证形参和实参个数一致。
 
 ```js
-function show(v1,v2){
-    return v1 + v2; 
+function fun(参数列表) {
+    函数体
 }
-// 函数没有return时返回的是undefined
+function show(v1,v2,v3){
+    alert("这是一个函数");
+    console.log(v1 + v2 + v3);
+}
+show(22,33,44); // 传入实参
 ```
 
 **使用`arguments`获取参数：**
@@ -432,9 +456,22 @@ arguments是一个伪数组，只有函数才有arguments：
 - 没有一些真正数组的方法，例如pop()、push()方法等。
 - 可以通过数组的方式对里面存储的实参进行遍历。
 
+### 函数的返回值
+
+返回值：直接return就好。返回多个值：返回数组。
+
+```js
+function show(v1,v2){
+    return v1 + v2;  // return后，函数即立即结束
+}
+// 函数中return后不接数据或没有显式声明return时返回的是undefined
+```
+
+
+
 ### 域
 
-**作用域：**
+**作用域：**限定变量名的可用性范围
 
 1. 全局作用域：整个script标签、或者一个单独的js文件。
 2. 局部作用域（函数作用域）：在函数内部就是局部作用域，这个代码名字只在函数内部起作用。
@@ -444,7 +481,7 @@ arguments是一个伪数组，只有函数才有arguments：
 
 1. 全局变量：
    - 全局作用域下的变量，局部作用域（函数内部）外声明的变量。
-   - 【特殊】：在函数内部没有声明，但直接赋值的变量也是全局变量（函数需要执行才会初始化）。
+   - 【特殊】：在函数内部或块内没有声明，但直接赋值的变量将是全局变量（函数需要执行才会初始化）。
    - 浏览器关闭时销毁，比较消耗资源。
 2. 局部变量：
    - 局部作用域（函数内部）的变量，只能在其声明处的函数内部使用。
@@ -466,6 +503,50 @@ function f1(){
 var num = 33;
 f1(); // 11
 ```
+
+### 匿名函数
+
+将匿名函数赋值给一个变量，并通过变量名称来调用函数。Web API中大量使用。
+
+```js
+// 函数表达式
+let fun = function (){
+    // 函数体
+}
+// 调用
+fun();
+```
+
+立即执行函数：不需要调用就执行的函数。
+
+```js
+// 函数名不是必须的
+// 方式1
+(function (){
+    // 函数体
+})();
+// 方式2
+(function (){
+    // 函数体
+}());
+```
+
+### 函数传参赋值技巧
+
+```js
+function fn(x, y){
+    x = x || 0;
+    y = y || 0;
+}
+// 没有传入参数时：x=0，y=0
+function fn(x = 0, y = 0){
+	
+}
+```
+
+
+
+
 
 ## 预解析
 
@@ -557,16 +638,17 @@ console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
 
 ## 对象
 
-### 创建对象
+### 对象声明与调用
 
-**创建对象方式一：通过**字面量创建对象
+**创建对象方式一：**通过字面量创建对象
 
 ```html
 <script type="text/javascript">
-    var o = {}; // 创建空对象
+    let o = {}; // 创建空对象
     o.age = 23; // 设置对象属性及值
-    var obj = {
-        username: '陆拾陆',
+    let obj = {
+        // 属性名、方法名可以使用""或''，一般省略，遇到空格、中横线时则需要加上
+        username: '陆拾陆', 
         password: '123456',
         address: 'Beijing',
         saiHi: function(){
@@ -575,17 +657,18 @@ console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
     };
     // 使用对象属性 对象名.属性 对象名['属性名']
     alert(obj.username);
-    alert(obj['username']);
-    // 调用方法
+    // 必须加引号
+    alert(obj['username']); 
+    // 调用对象的方法
     obj.saiHi();
 </script>   
 ```
 
-**创建对象方式二：通过**new Object创建对象
+**创建对象方式二：**通过new Object创建对象
 
 ```html
 <script type="text/javascript"> 
-    var obj = new Object(); // 创建了一个空对象
+    let obj = new Object(); // 创建了一个空对象
     obj.username = '陆拾陆';
     obj.password = '123456';
     obj.address = 'Beijing';
@@ -601,7 +684,7 @@ console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
 
 ```html
 <script type="text/javascript"> 
-    // 声明构造函数 首字母要大写 不需要return 属性、方法前面必须要this
+    // 声明构造函数 首字母要大写 不需要return，属性、方法前面必须要使用this
     function CreateObj(username,age){
         this.username = username;
         this.age = age;
@@ -610,7 +693,7 @@ console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
         }
     }
     // 使用构造函数创建对象
-    var obj = new CreateObj('陆拾陆',21);
+    let obj = new CreateObj('陆拾陆',21);
     obj.sayHi('这是由构造函数创建的对象中的方法');
     alert(obj['username']);
 </script>
@@ -635,7 +718,7 @@ console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
             alert(message);
         }
     }
-    var obj = new CreateObj('陆拾陆','21');
+    let obj = new CreateObj('陆拾陆','21');
     // 使用构造函数创建对象
     for (var key in obj) {
         alert(key); // 得到属性名
@@ -643,6 +726,31 @@ console.log(foo); // 输出 '此时会覆盖它-那个与我同名的函数'
     }
 </script>
 ```
+
+### 操作和遍历对象
+
+1. 调用：属性调用——`对象.属性、对象['属性']`；方法调用——`对象.方法()`。
+2. 赋值：属性重新赋值——`对象.属性 = 值`；方法重新赋值——`对象.方法 = function(){};`。
+3. 添加新属性：`对象.新属性 = 值`。（去对象里选找，有则修改，无则新增）
+4. 删除对象属性：`delete 对象.属性 `。
+
+遍历对象的语句——for...in语句：
+
+```js
+let stu = {
+    name : '陆拾陆',
+    age : 22,
+    sayHi : function (){
+        console.log('hello object');
+    }
+};
+for (const stuKey in stu) {
+    console.log(`对象属性名：${stuKey}`);
+    console.log(`对象属性值：${stu[stuKey]}`);
+}
+```
+
+
 
 ### 内置对象
 
@@ -660,6 +768,15 @@ MDN文档查看：[JavaScript 标准内置对象 - JavaScript | MDN (mozilla.org
 
 - 传入参数，并返回值。
 - 最大、最小值传入数组。
+
+```js
+// min - max 的随机函数
+function getRandom(min,max) {
+    return Math.floor(Math.Random() * (max)) + min;
+}
+```
+
+
 
 #### **Date：**
 
@@ -720,9 +837,10 @@ MDN文档查看：[JavaScript 标准内置对象 - JavaScript | MDN (mozilla.org
 
 检测是否为数组对象的两种方式：
 
-instanceof，`xx instanceof Array`判断是否为数组。
+1. instanceof，`xx instanceof Array`判断是否为数组。
 
-H5新增方法：`Array.isArray(arr)`，传入arr并判断是否是数组，返回boolean值。
+2. H5新增方法：`Array.isArray(arr)`，传入arr并判断是否是数组，返回boolean值。
+
 
 创建的数组对象的方法：（都会改变原数组）
 
