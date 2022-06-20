@@ -155,6 +155,7 @@ definition description，定义描述——定义列表具体内容
 
 ```html
 <table>
+    <caption><h2>表格大标题</h2></caption>
     <thead>
     <tr>			<!--table row-->
     	<th></th>   <!--table head，加粗并居中显示-->
@@ -174,6 +175,7 @@ definition description，定义描述——定义列表具体内容
 </table>
 <!-- table默认边框宽度为0，table的边框分为外框（行的框）和行里面的单元格的框-->
 <!-- table的属性：实际开发很少使用属性 -->
+<!-- table、th、td可设置border -->
 ```
 
 | <table>的属性 | 属性值              | 描述                                              |
