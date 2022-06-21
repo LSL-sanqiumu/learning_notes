@@ -17,7 +17,7 @@ JavaScript（网景公司）、Jscript（微软），JavaScript最流行。ECMAS
 
 ## 引入位置
 
-三种引入JavaScript的方式，内嵌式、外部JS引入、行内JS。（执行顺序：外部 > 内嵌 > 行内）。
+三种引入JavaScript的方式，内嵌式、外部JS引入、行内(内联)JS。（执行顺序：外部 > 内嵌 > 行内(内联)）。
 
 关于js资源：
 
@@ -48,7 +48,7 @@ JavaScript（网景公司）、Jscript（微软），JavaScript最流行。ECMAS
     prompt('输入信息'); // 输入框
     alert('弹窗显示信息'); // 警示框
     console.log('控制台打印输出日志'); // 控制台日志打印函数
-    document.write("hello javascript"); // 页面中写入
+    document.write("hello javascript"); // 页面中写入，只追加到body后
 </script>
 ```
 
@@ -186,7 +186,7 @@ alert(typeof num);
 
 1. 字符串长度：`.length`属性。
 2. 字符串拼接：使用`+`拼接字符串，都会是字符串。
-3. 几乎所有值都有的`toString()`方法（null和undefined没有），该方法唯一用途就是返回当前值的字符串等价物；`toString()`方法可。传入参数，表示进制。
+3. 几乎所有值都有的`toString()`方法（null和undefined没有），该方法唯一用途就是返回当前值的字符串等价物；`toString()`方法可传入参数，表示进制。
 4. String()函数：如果值有toString()函数就调用该函数并返回结果，如果没有就返回null、或者undefined。
 
 **模板字面量：**
@@ -202,8 +202,6 @@ alert(typeof num);
    ```
 
    插值表达式中可以调用变量、函数、方法，可以是模板字符串。
-
-3. 
 
 
 
@@ -284,7 +282,7 @@ console.log(0.07 * 00); // 7.000000000000001
 1. 操作数都是数值则进行数值比较。
 2. 操作数都是字符则逐个比较字符串对应字符编码，直到比较出结果。
 3. 某一个是数值，则将另一个转换为数值再进行比较。
-4. 某一个是对象，则调用`valueOf()`方法（没有该方法则调用toString()方法）取得结果后再根据规则来比较。
+4. 某一个是对象，则调用`valueOf()`方法（没有该方法则调用toString()方法）取得结果后再根据以上规则来比较。
 5. 布尔值都将转换为数值。
 
 ### 逻辑运算符
@@ -300,13 +298,15 @@ console.log(0.07 * 00); // 7.000000000000001
    2. 第一个操作数能求值为false，则返回第二个操作数。
    3. 两个操作数都是对象，就返回第一个。
    4. 两个操作数都是null、NaN、或undefined，则返回它们自身。
-4. 总结：无论是`&&`还是`||`，运算结果都是最后被执行的那个表达式，符合短路条件时不会在执行后面的内容。
+4. 总结：无论是`&&`还是`||`，运算结果都是最后被执行的那个表达式，符合短路条件时不会再执行后面的内容。
 
 ### 位运算符
 
 位运算：JavaScript中所有的数值都以64位格式存储；位操作符则是先把值转换为32位整数，再进行位操作，之后再把结果转换为64位。对于我们开发者而言，只需考虑32位即可。位操作符运用到非数值，会先使用Number()函数，然后再进行位操作。操作符书写和Java中的一致。
 
+![](img/位运算1.png)
 
+![](img/位运算2.png)
 
 ### 运算符优先级
 
@@ -506,7 +506,7 @@ f1(); // 11
 
 ### 匿名函数
 
-将匿名函数赋值给一个变量，并通过变量名称来调用函数。Web API中大量使用。
+函数表达式——将匿名函数赋值给一个变量，并通过变量名称来调用函数。Web API中大量使用。
 
 ```js
 // 函数表达式
@@ -520,20 +520,26 @@ fun();
 立即执行函数：不需要调用就执行的函数。
 
 ```js
-// 函数名不是必须的
-// 方式1
+// 函数名不是必须的，可以传入参数
+// 立即执行函数1
 (function (){
     // 函数体
 })();
-// 方式2
+// 立即执行函数2
 (function (){
     // 函数体
 }());
+// 参数传入
+// 立即执行函数2
+(function (){
+    // 函数体
+}(1,2,3));
 ```
 
 ### 函数传参赋值技巧
 
 ```js
+// 防止无参数传入时出错
 function fn(x, y){
     x = x || 0;
     y = y || 0;
@@ -543,8 +549,6 @@ function fn(x = 0, y = 0){
 	
 }
 ```
-
-
 
 
 
@@ -1020,15 +1024,19 @@ JavaScript提供了三个特殊的引用类型：String、Boolean、Number。基
 
 ![](img/堆和栈.png)
 
+
+
+
+
 # DOM
 
-Web API，由浏览器通过的一套操作浏览器功能和页面元素的API（DOM、BOM）。
+Web API，由浏览器提供的一套操作浏览器功能和页面元素的API（DOM——操作HTML和CSS、BOM——操作浏览器）。
 
 ![](img/dom.png)
 
 ## 获取元素对象
 
-**1.根据ID获取：** `document.getElementById('id值');`。
+**1.根据ID名获取：** `document.getElementById('id值');`。
 
 ```html
 <body>
@@ -1042,7 +1050,7 @@ Web API，由浏览器通过的一套操作浏览器功能和页面元素的API�
 </body>
 ```
 
-**2.根据HTML标签获取：** `document.getElementsByTagName('标签名');`。
+**2.根据HTML标签名获取：** `document.getElementsByTagName('标签名');`。
 
 ```html
 <body>
@@ -1081,6 +1089,7 @@ Web API，由浏览器通过的一套操作浏览器功能和页面元素的API�
       console.dir(content);
       // 根据指定选择器返回第一个元素对象
       var s = document.querySelector('.content');
+      // 根据指定选择器返回所有对应元素对象
       var all = document.querySelectorAll('div');
       console.dir(s);
     </script>
@@ -1099,6 +1108,21 @@ Web API，由浏览器通过的一套操作浏览器功能和页面元素的API�
     console.log(htmlEle);
 </script>
 ```
+
+**5.通过选择器方式获取：**（最常用）
+
+```js
+// document.querySelector(选择器);  根据选择器来获取到指定的元素
+// 根据指定选择器返回第一个元素对象
+var s = document.querySelector('.content');
+// 根据指定选择器返回多个元素对象，返回的是存储对象的伪数组
+var all = document.querySelectorAll('div');
+var all = document.querySelectorAll('ul li');
+```
+
+
+
+
 
 ## 事件
 
@@ -1120,7 +1144,14 @@ Web API，由浏览器通过的一套操作浏览器功能和页面元素的API�
 
 ## 操作元素
 
+元素的内容、属性、属性值，其实都封装到了元素对象的属性和属性值里；**操作元素，就是获取元素对象后对元素对象的属性、属性值进行增、删、改等操作，或者用来实现其它一些特殊需求。**
+
 ### **改变元素内容：**
+
+元素内容的对应属性：
+
+1. `innerHtml`：其值渲染到页面时，会解析值里面所存在的HTML标签。
+2. `innerText`：其值渲染到页面时，只会去除空格和换行，不会对含有的HTML标签进行解析。
 
 ```html
 <body>
@@ -1131,7 +1162,7 @@ Web API，由浏览器通过的一套操作浏览器功能和页面元素的API�
       // 使用元素对象的属性来更改元素内容
       var btn = document.getElementById('btn');
       var div = document.querySelectorAll('div');
-      // div.innerText = '2021.12.31'; 不添加事件，会随着页面的加载而执行更改
+      // div.innerText = '2021.12.31'; 不添加事件，会直接随着页面的加载而执行更改
       btn.onclick = function(){
         // innerText 不会识别HTML标签，内存中存在的标签也充当字符显示  非标准
         // 会去除内容中的空格和换行
@@ -1152,7 +1183,7 @@ Web API，由浏览器通过的一套操作浏览器功能和页面元素的API�
 
 ### **修改表单元素的属性内容：**
 
-可以利用DOM操作的有`type、value、checked、selected、disabled（true or false）`，操作步骤和上面差不多。
+可以利用DOM操作的有`type、value、checked、selected、disabled（true or false）`，操作步骤和上面差不多，获取对象后直接调用属性即可。
 
 ### **修改元素的样式属性内容：**
 
