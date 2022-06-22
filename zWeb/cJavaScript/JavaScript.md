@@ -1026,15 +1026,96 @@ JavaScript提供了三个特殊的引用类型：String、Boolean、Number。基
 
 
 
+# Document Object Model
 
+DOM表示由节点构成的文档，通过DOM的API可以添加、修改、删除页面各个部分。
 
-# DOM
+## Node类型节点
 
-Web API，由浏览器提供的一套操作浏览器功能和页面元素的API（DOM——操作HTML和CSS、BOM——操作浏览器）。
+任何的HTML、XML文档都可以用DOM表示为由节点构成的层级结构，文档中所有的内容（标签、属性、文本、注释等）都是节点。节点共有12种类型，每种类型都对应着文档中的某一项内容，例如元素节点对应HTML文档的标签、属性节点表示属性。
 
-![](img/dom.png)
+根节点为document，其唯一直接子节点是html元素，即documentElement。
 
-## 获取元素对象
+### 节点基本属性
+
+Node接口是所有节点都必须实现的，因此所有节点都共享相同的基本属性和方法，基本的共同属性如下：
+
+1. 每个节点都有nodeType属性，其值由Node接口定义的12数值常量表示，常用的三个如下：
+
+   - 元素节点：Node.ELEMENT.NODE = 1。
+   - 属性节点：Node.ATTRIBUTE.NODE = 2。
+   - 文本节点：Node.TEXT.NODE = 3。
+
+   ```js
+   // 判断是否是元素节点
+   if (document.documentElement.nodeType === Node.ELEMENT_NODE) {
+       document.write('这是一个元素节点');
+   }
+   ```
+
+   
+
+2. nodeName、nodeValue属性，具体值取决于节点类型，对于元素节点，前者是标签名，后者始终为null。
+
+   ```js
+   if (document.documentElement.nodeType === Node.ELEMENT_NODE) {
+           document.write(document.documentElement.nodeName);
+           document.write(document.documentElement.nodeValue);
+       }
+   ```
+
+3. 表节点关系的属性：childNodes、parentNode、firstChild、lastChild、nextSibling、previousSibling，都是只读。
+
+   - childNodes：使用伪数组NodeList存储节点，该属性包含指定节点对象的所有的子节点（文本节点、元素节点等）；除了通过下标的方式获取子节点对象外还可以通过其`item(n)`方法来获取。
+   - 将childNodes的NodeList转为数组：`Array.prototype.slice()`、ES6的`Array.from(xxx.childNodes)`。
+   - 某节点对象只有一个子节点时nextSibling、previousSibling都是null，而此时firstChild、lastChild指向同一个节点。
+   - `hasChildNodes()`：如果返回true，则存在一个或多个子节点。
+
+4. ownerDocument属性。
+
+### 节点基本操作
+
+添加与替换节点：
+
+1. `appendChild(newNode)`：添加一个新节点，会在childNodes列表末尾添加上节点；对于把已经存在的节点传给该函数，因为DOM中一个节点在同一文档中不会同时出现在两个或更多个地方，因此此时相当于把已经存在的节点移动到childNodes列表末尾。
+2. `insertBefore(newNode, someNode)`：插入到某个节点前，第一个参数为要插入的节点，第二个为参照节点；如果参照节点为null，则此时该方法与`appendChild(newNode)`效果一致。
+3. `replaceChild(newNode, someNode)`：用newNode替换掉someNode，被替换的将从文档树中移除。
+
+移除节点：
+
+- `removeChild(someNode)`：移除某个节点，移除后文档中不再有原节点的位置。
+
+复制节点：
+
+- `cloneNode()`：返回与调用该方法的节点一模一样的节点。传入参数为true——深复制，复制节点及其整个子DOM树；传入false——只复制调用该方法的节点，不会复制该节点的子DOM树。
+
+处理文本节点：
+
+- `normalize()`：处理文档子树中的文本节点，会检查节点的所有后代，如果发现空文本节点就会将其删除，如果发现文本节点之间互为同胞关系则进行合并成一个文本节点。
+
+## Document类型节点
+
+HTMLDocument继承了Document，document则是HTMLDocument的实例。
+
+**`document`——文档对象**，表示整个HTML页面，其是window对象的一个属性，其特征如下：
+
+- `nodeType=9`；`nodeName='#document'`；nodeValue、parentNode、ownerNode都为null。
+- 只有一个子节点：html。
+
+### 获取特殊节点
+
+**document的使用：**
+
+1. 获取html元素节点：`document.documentElement`。
+2. 获取body元素节点：`document.body`。
+3. 获取文档信息：
+   1. 获取与修改title标签的文本：`document.title`。
+   2. 获取页面URL相关信息：`document.URL`——当前页面完整的url；`document.domain`——当前页面的域名；`document.referrer`——页面来源。
+      - 可以对域名信息进行修改，但必须设置为URL中有的值，而且对`document.domain`一旦放松就不能再收紧。
+
+### 获取节点引用
+
+**获取元素节点的引用：**
 
 **1.根据ID名获取：** `document.getElementById('id值');`。
 
@@ -1050,7 +1131,11 @@ Web API，由浏览器提供的一套操作浏览器功能和页面元素的API�
 </body>
 ```
 
-**2.根据HTML标签名获取：** `document.getElementsByTagName('标签名');`。
+**2.根据HTML标签名获取：** `document.getElementsByTagName('标签名');`
+
+- 返回HTMLCollection对象，和NodeList类似，不过HTMLCollection有一个额外的方法——`namedItem('name属性值')`，通过标签的name属性获得某一项的引用。
+- 可通过传入通配符`*`来获取全部节点对象。
+- 传入的参数实际上不区分大小写
 
 ```html
 <body>
@@ -1077,7 +1162,11 @@ Web API，由浏览器提供的一套操作浏览器功能和页面元素的API�
 </body>
 ```
 
-**3.HTML5新增-通过类名获取元素对象：**
+**3.通过标签的name属性获取元素对象：**`getElementsByName('name的值')`
+
+
+
+**4.HTML5新增-通过类名获取元素对象：**
 
 ```html
 <body>
@@ -1096,19 +1185,6 @@ Web API，由浏览器提供的一套操作浏览器功能和页面元素的API�
 </body>
 ```
 
-**4.获取特殊元素：**
-
-```html
-<script>
-    // 获取body元素对象
-    var body = document.body;
-    console.log(body);
-    // 获取html元素对象
-    var htmlEle = document.documentElement;
-    console.log(htmlEle);
-</script>
-```
-
 **5.通过选择器方式获取：**（最常用）
 
 ```js
@@ -1120,9 +1196,60 @@ var all = document.querySelectorAll('div');
 var all = document.querySelectorAll('ul li');
 ```
 
+### 特殊集合
+
+document对象的几个特殊集合，这些集合都是HTMLCollection的实例。
+
+1. `document.anchors`：文档中所有带name属性的a元素。
+2. `document.forms`：文档中所有的from元素（返回结果和`getElementByTagName('form')`一样）。
+3. `document.images`：文档中所有的img元素（返回结果和`getElementByTagName('img')`一样）。
+4. `document.links`：文档中所有带href属性的a元素。
+
+### 文档写入
+
+向文档写入内容，写入在body标签中：
+
+1. `document.write(string参数)`。
+2. `document.writeln(string参数)`：会在字符串末尾追加一个换行符`\n`。
+3. 注意：如果在页面加载完成后再进行写入，会重写整个页面，原来的内容将会被写入的都代替掉。
+
+## Element类型节点
+
+Element，表示HTML或XML元素，其nodeType=1、nodeName=标签名、nodeValue为null。
+
+可通过元素节点对象的nodeName、tagName来获取元素的标签名，HTML中元素标签名以大写形式返回。
+
+```js
+// 不确定脚本运行在HTML还是XML，可这样以便便于比较
+if (element.tagName.toLowerCase() == 'div') {
+    
+}
+```
+
+HTMLElement直接继承了Element并添加了一些属性，所有的HTML元素都通过HTMLElement类型表示。元素节点的属性：id、title、lang、dir、className等。
+
+```js
+let div = document.getElementById('mydiv');
+console.log(div.title);
+```
 
 
 
+### 操作元素属性
+
+操作元素节点对象的属性的主要的三个方法：
+
+1. `getAttribute(属性名)`：通过属性名获取属性值，属性名不区分大小写；通常用该方法用于获取自定义属性的值。
+2. `setAttribute(属性名, 属性值)`：设置属性值；适用于HTML属性及自定义属性。
+3. `removeAttribute(属性名)`：把整个属性从元素中去除。
+
+
+
+# DOM
+
+Web API，由浏览器提供的一套操作浏览器功能和页面元素的API（DOM——操作HTML和CSS、BOM——操作浏览器）。
+
+![](img/dom.png)
 
 ## 事件
 
