@@ -66,7 +66,7 @@ JavaScript（网景公司）、Jscript（微软），JavaScript最流行。ECMAS
 var name; // 声明一个变量
 name = '陆拾陆';
 var age = 21; // 声明变量并赋值
-var a = b = c = 9 //相当于 var a = 9; b=9;c=9;
+var a = b = c = 9 // 相当于 var a = 9; b=9;c=9; 关键字var只影响到最先的一个，其他关键字同理
 ```
 
 1. 更新变量：变量被重新赋值后，原来的值被覆盖，以最后一次赋值为准。
@@ -81,7 +81,7 @@ var a = b = c = 9 //相当于 var a = 9; b=9;c=9;
    - 与var作用相似，主要区别是var是函数作用域，而let是块作用域且没有声明提升。
    - var可以重复声明同一变量，而let不允许在同一作用域内重复声明同一变量（但可以在嵌套的块中重复声明）。
    - var在全局作用域声明的变量会成为window对象的属性，而let在全局域声明的则不会。
-   - 因为let不会导致变量提升，在let声明前的执行瞬间称为暂时性死区，在此阶段引用如何后面才声明的都会抛出ReferenceError。
+   - 因为let不会导致变量提升，在let声明前的执行瞬间称为暂时性死区，在此阶段引用如果后面才声明的都会抛出ReferenceError。
 2. 使用let时，为了避免SyntaxError，要保证页面不会重复声明同一变量。
 
 **使用const关键字声明变量：**
@@ -304,9 +304,11 @@ console.log(0.07 * 00); // 7.000000000000001
 
 位运算：JavaScript中所有的数值都以64位格式存储；位操作符则是先把值转换为32位整数，再进行位操作，之后再把结果转换为64位。对于我们开发者而言，只需考虑32位即可。位操作符运用到非数值，会先使用Number()函数，然后再进行位操作。操作符书写和Java中的一致。
 
-![](img/位运算1.png)
+与、或、非、异或。
 
-![](img/位运算2.png)
+左移、右移、无符号右移
+
+
 
 ### 运算符优先级
 
@@ -544,7 +546,7 @@ function fn(x, y){
     x = x || 0;
     y = y || 0;
 }
-// 没有传入参数时：x=0，y=0
+// 没有传入参数时就是 x=0，y=0
 function fn(x = 0, y = 0){
 	
 }
@@ -776,7 +778,7 @@ MDN文档查看：[JavaScript 标准内置对象 - JavaScript | MDN (mozilla.org
 ```js
 // min - max 的随机函数
 function getRandom(min,max) {
-    return Math.floor(Math.Random() * (max)) + min;
+    return Math.floor(Math.random() * (max - min)) + min;
 }
 ```
 
@@ -1030,13 +1032,19 @@ JavaScript提供了三个特殊的引用类型：String、Boolean、Number。基
 
 DOM表示由节点构成的文档，通过DOM的API可以添加、修改、删除页面各个部分。
 
-## Node类型节点
+Web API，由浏览器提供的一套操作浏览器功能和页面元素的API（DOM——操作HTML和CSS、BOM——操作浏览器）。
+
+![](img/dom.png)
+
+## 节点与节点操作
+
+### Node类型节点
 
 任何的HTML、XML文档都可以用DOM表示为由节点构成的层级结构，文档中所有的内容（标签、属性、文本、注释等）都是节点。节点共有12种类型，每种类型都对应着文档中的某一项内容，例如元素节点对应HTML文档的标签、属性节点表示属性。
 
 根节点为document，其唯一直接子节点是html元素，即documentElement。
 
-### 节点基本属性
+#### 节点基本属性
 
 Node接口是所有节点都必须实现的，因此所有节点都共享相同的基本属性和方法，基本的共同属性如下：
 
@@ -1071,9 +1079,21 @@ Node接口是所有节点都必须实现的，因此所有节点都共享相同�
    - 某节点对象只有一个子节点时nextSibling、previousSibling都是null，而此时firstChild、lastChild指向同一个节点。
    - `hasChildNodes()`：如果返回true，则存在一个或多个子节点。
 
-4. ownerDocument属性。
+4. Element Traversal API增加的五个属性：
 
-### 节点基本操作
+   - `childElementCount`：子元素数量，不包括文本节点和注释节点。
+
+   - `firstElementChild`：指向第一个Element类型的子元素。
+
+   - `lastElementChild`：指向最后一个Element类型的子元素。
+
+   - `previousElementSibling`：指向前一个Element类型的同胞元素。
+
+   - `nextElementSibling`：指向后一个Element类型的同胞元素。
+
+5. ownerDocument属性。
+
+#### 节点基本操作
 
 添加与替换节点：
 
@@ -1093,7 +1113,7 @@ Node接口是所有节点都必须实现的，因此所有节点都共享相同�
 
 - `normalize()`：处理文档子树中的文本节点，会检查节点的所有后代，如果发现空文本节点就会将其删除，如果发现文本节点之间互为同胞关系则进行合并成一个文本节点。
 
-## Document类型节点
+### Document类型节点
 
 HTMLDocument继承了Document，document则是HTMLDocument的实例。
 
@@ -1102,7 +1122,7 @@ HTMLDocument继承了Document，document则是HTMLDocument的实例。
 - `nodeType=9`；`nodeName='#document'`；nodeValue、parentNode、ownerNode都为null。
 - 只有一个子节点：html。
 
-### 获取特殊节点
+#### 获取特殊节点
 
 **document的使用：**
 
@@ -1113,9 +1133,9 @@ HTMLDocument继承了Document，document则是HTMLDocument的实例。
    2. 获取页面URL相关信息：`document.URL`——当前页面完整的url；`document.domain`——当前页面的域名；`document.referrer`——页面来源。
       - 可以对域名信息进行修改，但必须设置为URL中有的值，而且对`document.domain`一旦放松就不能再收紧。
 
-### 获取节点引用
+#### 获取节点引用
 
-**获取元素节点的引用：**
+**获取元素节点的引用：**（也可以通过元素节点调用，只不过是在该节点内进行搜索）
 
 **1.根据ID名获取：** `document.getElementById('id值');`。
 
@@ -1164,9 +1184,7 @@ HTMLDocument继承了Document，document则是HTMLDocument的实例。
 
 **3.通过标签的name属性获取元素对象：**`getElementsByName('name的值')`
 
-
-
-**4.HTML5新增-通过类名获取元素对象：**
+**4.HTML5新增-通过类名获取元素对象：**`getElementsByClassName('类名')`
 
 ```html
 <body>
@@ -1196,7 +1214,7 @@ var all = document.querySelectorAll('div');
 var all = document.querySelectorAll('ul li');
 ```
 
-### 特殊集合
+#### 特殊集合
 
 document对象的几个特殊集合，这些集合都是HTMLCollection的实例。
 
@@ -1205,7 +1223,7 @@ document对象的几个特殊集合，这些集合都是HTMLCollection的实例�
 3. `document.images`：文档中所有的img元素（返回结果和`getElementByTagName('img')`一样）。
 4. `document.links`：文档中所有带href属性的a元素。
 
-### 文档写入
+#### 文档写入
 
 向文档写入内容，写入在body标签中：
 
@@ -1213,7 +1231,7 @@ document对象的几个特殊集合，这些集合都是HTMLCollection的实例�
 2. `document.writeln(string参数)`：会在字符串末尾追加一个换行符`\n`。
 3. 注意：如果在页面加载完成后再进行写入，会重写整个页面，原来的内容将会被写入的都代替掉。
 
-## Element类型节点
+### Element类型节点
 
 Element，表示HTML或XML元素，其nodeType=1、nodeName=标签名、nodeValue为null。
 
@@ -1233,9 +1251,11 @@ let div = document.getElementById('mydiv');
 console.log(div.title);
 ```
 
+#### 获取元素节点
 
+见Document类型中的获取节点引用。
 
-### 操作元素属性
+#### 操作元素属性
 
 操作元素节点对象的属性的主要的三个方法：
 
@@ -1243,37 +1263,37 @@ console.log(div.title);
 2. `setAttribute(属性名, 属性值)`：设置属性值；适用于HTML属性及自定义属性。
 3. `removeAttribute(属性名)`：把整个属性从元素中去除。
 
+元素的attributes属性，其中包含了NamedNodeMap实例-类似NodeList，**元素的每个属性**都表示为一个Attr节点并保存到这个对象中。NamedNodeMap对象方法：
 
+1. `getNamedItem(name)`：返回nodeName = name 的属性节点。
+2. `removeNamedItem(name)`：删除nodeName = name 的属性节点，该方法会返回被删除属性的Attr节点。
+3. `setNamedItem(node)`：添加新的Attr节点。
+4. `item(index)`：返回某处节点。
 
-# DOM
+#### 自定义元素属性
 
-Web API，由浏览器提供的一套操作浏览器功能和页面元素的API（DOM——操作HTML和CSS、BOM——操作浏览器）。
-
-![](img/dom.png)
-
-## 事件
-
-**事件三要素：**1.事件源（被触发对象） 2.事件类型（如何触发） 3.事件处理程序（触发后的行为）。
-
-![](img/事件.png)
+![](img/自定义属性.png)
 
 ```html
 <body>
-    <button id="btn">点一下</button>
+    <div getTime="2" data-time-now="2022"></div>
     <script>
-      var btn = document.getElementById('btn');
-      btn.onclick = function(){
-        alert('点击按钮触发的弹窗');
-      }
+      var div = document.querySelector('div');
+      var getTime = div.getAttribute('getTime');
+      div.setAttribute('getTime','2022-1-1');
+      // H5新增自定义获取属性的方法  ie-ie11才开始支持
+      // dataset是一个集合 里面存放了所有自定义的以data开头的属性
+      div.dataset.timeNow = '2022-01-01';
+      console.log('getTime:' + getTime);
+      // data集合存储自定义属性 是以驼峰命名法存储key 如下：
+      console.log('data-time-now:' + div.dataset.timeNow);
     </script>
 </body>
 ```
 
-## 操作元素
 
-元素的内容、属性、属性值，其实都封装到了元素对象的属性和属性值里；**操作元素，就是获取元素对象后对元素对象的属性、属性值进行增、删、改等操作，或者用来实现其它一些特殊需求。**
 
-### **改变元素内容：**
+#### 修改元素中的HTML内容
 
 元素内容的对应属性：
 
@@ -1304,324 +1324,15 @@ Web API，由浏览器提供的一套操作浏览器功能和页面元素的API�
 </body>
 ```
 
-### **改变常见元素的属性内容：**
 
- `alt、src、href、id、title`等，都和innerHtml类似，都是元素对象的属性（如果该元素有的话），就可以通过获取到对象后，直接调用属性来直接赋值。
 
-### **修改表单元素的属性内容：**
+#### 创建元素
 
-可以利用DOM操作的有`type、value、checked、selected、disabled（true or false）`，操作步骤和上面差不多，获取对象后直接调用属性即可。
-
-### **修改元素的样式属性内容：**
-
-![](img/修改样式.png)
-
-行内样式操作：样式较少或功能简单的情况下使用
-
-```html
-<style>
-    div {
-        width: 100px;
-        height: 100px;
-        background-color: aqua;
-    }
-</style>
-<body>
-    <div></div>
-    <script>
-      var div = document.querySelector('div');
-      div.onclick = function(){
-        // 行内样式操作
-        // div.style.backgroundColor = 'pink';
-        this.style.backgroundColor = 'pink';
-      }
-    </script>
-</body>
+```js
+document.createElement('标签名'); // 创建某个元素
 ```
 
-类名操作方式：
-
-```html
-<style>
-    div {
-        width: 100px;
-        height: 100px;
-        background-color: salmon;
-    }
-    .change {
-        background-color: pink;
-    }
-</style>
-</head>
-<body>
-    <div class=""></div>
-    <script>
-        var div = document.querySelector('div');
-        div.onclick = function(){
-            // 赋值后会覆盖原先的类名
-            div.className = 'change';
-        }
-    </script>
-</body>
-```
-
-![](img/e2.png)
-
-### 排他思想：
-
-```html
-<body>
-    <button>按钮1</button>
-    <button>按钮2</button>
-    <button>按钮3</button>
-    <button>按钮4</button>
-    <button>按钮5</button>
-    <script>
-      var btns = document.getElementsByTagName('button');
-      for(var i = 0; i < btns.length; i++){
-        btns[i].onclick = function(){
-          for(var i = 0; i < btns.length; i++){
-            btns[i].style.backgroundColor = '';
-          }
-          this.style.backgroundColor = 'pink';
-        }
-      }
-    </script>
-</body>
-```
-
-### 属性操作：
-
-**获取属性值：**
-
-![](img/get_attrValue.png)
-
-```html
-<body>
-    <button id="value">按钮1</button>
-    <script>
-      var btns = document.getElementsByTagName('button');
-      var v1 = btns[0].id;
-      var v2 = btns[0].getAttribute('id');
-      console.log(v1);
-      console.log(v2);
-    </script>
-</body>
-```
-
-**设置属性值：**
-
-```html
-<body>
-    <button id="value">按钮1</button>
-    <button id="value">按钮1</button>
-    <script>
-      var btns = document.getElementsByTagName('button');
-      btns[0].id = 'hello1';
-      btns[1].setAttribute('id','hello2');
-      console.log(btns[0].id);
-      console.log(btns[1].id);
-    </script>
-</body>
-```
-
-**移除属性值：**
-
-```html
-<body>
-    <button id="value">按钮1</button>
-    <script>
-      var btns = document.getElementsByTagName('button');
-      btns[0].removeAttribute('id');
-      console.log(btns[0].id);
-    </script>
-</body>
-```
-
-### 自定义属性：
-
-![](img/自定义属性.png)
-
-```html
-<body>
-    <div getTime="2" data-time-now="2022"></div>
-    <script>
-      var div = document.querySelector('div');
-      var getTime = div.getAttribute('getTime');
-      div.setAttribute('getTime','2022-1-1');
-      // H5新增自定义获取属性的方法  ie-ie11才开始支持
-      // dataset是一个集合 里面存放了所有自定义的以data开头的属性
-      div.dataset.timeNow = '2022-01-01';
-      console.log('getTime:' + getTime);
-      // data集合存储自定义属性 是以驼峰命名法存储key 如下：
-      console.log('data-time-now:' + div.dataset.timeNow);
-    </script>
-</body>
-```
-
-## 节点操作
-
-### 概述
-
-利用节点层级关系获取元素，逻辑性强，但兼容性差。
-
-![](img/node.png)
-
-### 父子节点
-
-**父子节点的获取：**（找不到就返回null）
-
-```html
-<body>
-    <div id="demo">
-      <div class="box">
-        <span class="e"></span>
-      </div>
-    </div>
-    <ul>
-      <li></li>
-    </ul>
-    <script>
-      var e = document.querySelector('.e');
-      // 获取父节点
-      console.log(e.parentNode);
-      // 获取子节点 childNodes：包含所有的子节点，文本节点、元素节点等
-      var ul = document.querySelector('ul');
-      console.log(ul.childNodes);
-    </script>
-</body>
-```
-
-因为 childNodes包含所有的子节点，如果只想获取到里面的元素节点，就需要专门处理。（因此我们一般不提倡使用childNodes）。
-
-```html
-<script>
-    var ul = document.querySelector('ul');
-    for(var i = 0; i < ul.childNodes.length; i++){
-        if(ul.childNodes[i].nodeType == 1){
-            // 是元素节点
-            console.log(ul.childNodes[i]);
-        }
-    }
-</script>
-```
-
-**获取子节点：**（找不到就返回null）
-
-![](img/parentNode_child.png)
-
-```html
-<script>
-    var ul = document.querySelector('ul');
-    console.log(ul.children);
-</script>
-```
-
-获取第一个节点或最后一个节点：（找不到就返回null）
-
-```html
-<script>
-    var ul = document.querySelector('ul');
-    console.log(ul.firstChild); // 返回第一个节点 不管是元素节点、文本节点或其它
-    console.log(ul.lastChild); // 返回最后一个节点 不管是元素节点、文本节点或其它
-    // ie9 以上兼容的
-    console.log(ul.firstElementChild); // 返回第一个子元素节点
-    console.log(ul.lastElementChild); // 返回最后一个子元素节点
-    // 实际开发使用 没有兼容性问题
-    console.log(ul.childern[0]);
-    console.log(ul.childern[ul.childern.length - 1]);
-</script>
-```
-
-### 兄弟节点
-
-```html
-<body>
-    <div>我是div</div>
-    <span>我是span</span>
-    <ul>
-      <li></li>
-    </ul>
-    <script>
-      var div = document.querySelector('div');
-      // 
-      console.log(div.nextSibling); // 下一个兄弟节点  包含元素节点、文本节点等等
-      console.log(div.previousSibling); // 前一个兄弟节点
-      // 得到兄弟节点 -  元素节点 ie9支持
-      console.log(div.nextElementSibling);
-      console.log(div.previousElementSibling);
-    </script>
-</body>
-```
-
-获取兄弟元素节点，解决兼容性问题：
-
-```html
-<script>
-    function getNextElementSibling(element){
-        var el = elment;
-        while(el = el.nextSibling){
-            if(el.nodeType === 1){
-                return el;
-            }
-        }
-        return null;
-    }
-</script>
-```
-
-### 添加节点
-
-```html
-<body>
-    <ul><li>123</li></ul>
-    <script>
-      // 1.创建元素节点 
-      var li = document.createElement('li');
-      // 2.添加子级节点 在后面追加
-      var ul = document.querySelector('ul');
-      ul.appendChild(li); 
-      // 3.在指定位置添加子节点
-      var lili = document.createElement('li');
-      ul.insertBefore(lili,ul.children[0]);
-    </script>
-</body>
-```
-
-### 删除节点
-
-```html
-<script>
-    // 删除子节点
-	var ul = document.querySelector('ul');
-    ul.removeChild(ul.childern[0]);
-</script>
-```
-
-```html
-<!-- 阻止链接跳转 -->
-<a href="javascript:void(0)"></a>
-<a href="javascript:;"></a>
-```
-
-### 复制节点
-
-![](img/cloneNode.png)
-
-```html
-<script>
-    // 删除子节点
-	var ul = document.querySelector('ul');
-    // cloneNode(true) 深拷贝，复制标签和里面的内容
-    // cloneNode(true) 浅拷贝，只复制标签
-    var cNode = ul.childern[0].cloneNode();
-    ul.appendChild(cNode);
-</script>
-```
-
-![](img/e3.png)
-
-### 创建元素-了解
+追加元素的操作：appendChild()、insertBefore()、replaceChild()。
 
 ![](img/createEle.png)
 
@@ -1652,71 +1363,265 @@ Web API，由浏览器提供的一套操作浏览器功能和页面元素的API�
 </html>
 ```
 
-## DOM重点核心
+#### 操作元素样式
 
-针对元素的操作，增、删、改、查、属性操作、事件操作。
+![](img/修改样式.png)
 
-# 高级DOM
-
-## 注册事件
-
-![](img/h_sign.png)
-
-事件监听方式1：
-
-![](img/h_addListener.png)
+行内(内联)样式操作：直接修改元素样式，样式较少或功能简单的情况下使用
 
 ```html
+<style>
+    div {
+        width: 100px;
+        height: 100px;
+        background-color: aqua;
+    }
+</style>
 <body>
-    <button>点我</button>
+    <div></div>
     <script>
-      var btn = document.querySelector('button');
-      // 事件监听-注册事件 事件类型是字符型，必须加引号，不能带on
-      btn.addEventListener('click',function(){
-        alert(22);
-      })
-      // 同一元素同一事件可以添加多个侦听器（事件处理程序）
-      btn.addEventListener('click',function(){
-        alert(33);
-      })
+      var div = document.querySelector('div');
+      div.onclick = function(){
+        // 行内样式操作
+        // div.style.backgroundColor = 'pink';
+        this.style.backgroundColor = 'pink';
+      }
     </script>
 </body>
 ```
 
-事件监听方式2：（非标准，ie9以前支持，该方式不能在生产环境中使用，了解一下）
+类名操作方式——通过修改类名来完成样式的添加：
 
-![](img/h_addListener2.png)
-
-## 删除事件
-
-传统的方式来删除事件：
-
-```js
-xxx.onclick = null;
+```html
+<style>
+    div {
+        width: 100px;
+        height: 100px;
+        background-color: salmon;
+    }
+    .change {
+        background-color: pink;
+    }
+</style>
+</head>
+<body>
+    <div class=""></div>
+    <script>
+        var div = document.querySelector('div');
+        div.onclick = function(){
+            // 赋值后会覆盖原先的类名
+            div.className = 'change';
+        }
+    </script>
+</body>
 ```
+
+
+
+
+
+### Text类型节点
+
+文本节点——nodeType=3、nodeName='#text'、nodeValue的值为其内容。文本节点的data属性和nodeValue值一致。
+
+获取文本节点：通过节点关系可以获取到几乎全部节点对象。
+
+文本节点操作——其内容的增、删、改：
+
+1. `appendDate(text)`：文本节点内容末尾追加文本text。
+2. `deleteDate(offset, count)`：从位置offset开始删除count个字符，删除区间——[offset, offset+count]。
+3. `insertDate(offset, text)`：将文本text插入到offset位置。
+4. `replaceDate(offset, count, text)`：用text替换[offset,count)区间的文本。
+5. `splitText(offset)`：拆分成两个文本节点，[0,offset]为一个节点，其余的为一个节点；调用该方法的节点的nextSibling就是[0,offset]区间的节点。
+6. `substringDate(offset, count)`：从某位置起获取count个文本；获取[offset, count+offset]区间的文本。
+
+注意：修改文本节点时，大于号、小于号、引号会被转义（为啥我没测出来？或者需要自己去完成转义？）。
+
+文本节点的创建：`document.createTextNode(text)`——创建内容为text的文本节点。
+
+normalize()方法的使用——合并文本节点：在相邻文本节点的父节点上调用该方法，所有的同胞文本节点就会合并成一个文本节点。
+
+splitTest(偏移量)：指定偏移量来将一个文本节点拆分成两个文本节点，常用于从文本节点中提取数据的DOM解析技术。
+
+### Comment类型节点
+
+Comment，注释的节点类型，其nodeType=8、nodeValue=注释内容、nodeName='#comment'。
+
+Comment类型与Text类型都继承自同一个基类——CharacterData，有除splitText()方法之外Text节点所有的字符串操作方法。
+
+创建注释节点：`document.createComent(内容)`。
+
+### DocumentType类型节点
+
+DocumentType——包含文档类型信息。
+
+### Attr类型节点
+
+属性节点不被认为是DOM树的一部分。推荐使用操作属性的方法来操作属性而不是直接使用属性节点来操作属性。
+
+Attr对象的三个属性：name——属性名、value——属性值、specified——一个布尔值，表示属性使用的是默认值还是被指定的值，
+
+
+
+
+
+## 排他思想
 
 ```html
 <body>
-    <button>点我</button>
+    <button>按钮1</button>
+    <button>按钮2</button>
+    <button>按钮3</button>
+    <button>按钮4</button>
+    <button>按钮5</button>
+    <script>
+      var btns = document.getElementsByTagName('button');
+      for(var i = 0; i < btns.length; i++){
+        btns[i].onclick = function(){
+          for(var i = 0; i < btns.length; i++){
+            btns[i].style.backgroundColor = '';
+          }
+          this.style.backgroundColor = 'pink';
+        }
+      }
+    </script>
+</body>
+```
+
+
+
+## 事件
+
+事件就是浏览器或用户执行的某种动作，为响应事件而调用的函数称为事件处理程序（事件监听器）。
+
+**事件三要素：**1.事件源（被触发对象） 2.事件类型（如何触发） 3.事件处理程序（触发后的行为）。在添加事件时，要先确定事件添加的目标节点对象，然后再按需确定添加什么事件、事件触发后的行为。常见的鼠标事件有以下几个，事件处理程序的名字以on开头，如下示例：
+
+![](img/事件.png)
+
+```html
+<body>
+    <button id="btn">点一下</button>
+    <script>
+        var btn = document.getElementById('btn');
+        btn.onclick = function(){
+            alert('点击按钮触发的弹窗');
+        }
+    </script>
+</body>
+```
+
+### 注册事件
+
+事件的三要素之一是事件源，而给事件源的元素添加事件就是所谓的注册事件——注册事件处理程序。
+
+**HTML事件处理程序：**
+
+特定元素支持的每个事件都可以使用事件处理程序的名字以HTML属性的形式指定，属性值为必须能执行的JavaScript代码。如下：
+
+```html
+<!-- 注意此时的onclick属性值是JavaScript代码，并且可以访问全局作用域的一切 -->
+<input type="button" value="Click ME" onclick="console.log('clicked');">
+```
+
+这种方式的事件处理程序：
+
+1. 会创建一个函数用于封装属性值。该函数有一个特殊的局部变量event，其中保存了一个event对象；在创建的这个函数中，this相当于事件的目标元素对象。这个动态创建的包装函数的作用域被拓展了，在这函数中，document、**元素自身成员**都可以被当成局部变量来访问：
+
+   ```js
+   // 实现原理是通过with
+   function() {
+       with(document) {
+       	with(this) {
+               // 属性值——JavaScript代码
+           }
+       }
+   }
+   ```
+
+   ```html
+   <form action="">
+       <input type="text" name="username" value="6">
+       <!-- 元素自身为username，可直接访问到其值-username.value -->
+       <input type="button" value="echo username" onclick="console.log(username.value);">
+   </form>
+   ```
+
+2. 为避免错误，大多数HTML事件处理程序会封装进try-catch块内。
+
+   ```html
+   <input type="button" value="echo username" onclick="try{xxx}catch(ex) {}">
+   ```
+
+**DOM0事件处理程序：**
+
+把一个函数赋值给一个事件处理程序属性。
+
+```js
+let btn = document.getElementById('myBtn');
+btn.onclick = function () {
+    console.log(this.id); // myBtn
+}
+// 移除事件处理程序
+btn.onclick = null;
+```
+
+**注意：HTML事件处理程序和DOM0事件处理程序，在同一个元素同一个事件中只能设置一个处理函数，最后注册的处理函数将会覆盖前面注册的处理函数。**
+
+**DOM2事件处理程序：**
+
+DOM2 Events为事件处理程序的赋值和移除定义了两个方法：`addEventListener()`、`removeEventListener()`；这两个方法接收3个参数：事件名称、事件处理函数、布尔值；布尔值是true时表示是在捕获阶段调用事件处理函数，是false(默认)表示在冒泡阶段调用。
+
+```js
+let btn = document.getElementById('myBtn');
+btn.addEventListener('click',function () {  // IE9之前使用attachEvent()
+    console.log(this.id); // myBtn
+},false);
+btn.addEventListener('click',() => {
+    console.log('hello');
+});
+```
+
+DOM2方式的主要优势就是可以为同一事件添加多个事件处理程序，执行顺序按注册顺序依次执行。
+
+一些事件名称：click、mouseover等。
+
+删除事件监听器——`removeEventListener()`：
+
+```html
+<body>
+    <button>点击删除事件监听器</button>
     <script>
       var btns = document.querySelectorAll('button');
       btns[0].addEventListener('click',fun); // 调用时不需要小括号和调用声明
       function fun(){
         alert(333);
-        // 点击触发事件并执行后 重新加载页面前不会再触发
+        // 点击触发事件并执行后，重新加载页面前点击button不会再触发
+        // 删除btns[0].addEventListener('click',fun);
         btns[0].removeEventListener('click',fun);
       }
     </script>
 </body>
 ```
 
-## DOM事件流
+### 事件流
+
+事件流，描述了页面接收事件的顺序，是指事件发生时事件在元素节点之间的传播顺序。
+
+1. 事件冒泡，由IE开发团队提出，事件从最具体的元素开始触发，然后逐级向上传播到DOM最顶层节点。（现代浏览器中的事件会一直冒泡到window对象）
+2. 事件捕获，网景公司提出，最不具体的节点最先收到事件，而最具体的节点最后收到事件。
+   - （事件捕获中，document元素最先捕获，然后沿DOM树依次向下传播，直到到达实际的目标元素）。
+   - 实际上所有浏览器都是从window对象开始捕获，而DOM2 Events规范规定是从document开始。
+   - 实际开发中，几乎不会使用事件捕获。
+   - 规范明确规定捕获阶段不命中事件目标，但实际上捕获阶段在事件目标上会触发事件。
 
 ![](img/h_事件流.png)
 
-![](img/h_事件流2.png)
+注意事项：
 
-![](img/h_事件流3.png)
+1. js代码中只能执行捕获或者冒泡中的某个阶段，也就是说事件要么处于捕获阶段，要么处于冒泡阶段，不会同时处于两个阶段。
+2. onclick 和 attachEvent只能到冒泡阶段。
+3. 可通过事件监听器的第三个参数来决定在捕获阶段或者冒泡阶段调用事件处理程序。
+4. 有些事件没有冒泡的：如onblur、onfocus、onmouseenter、onmouseleave等。
 
 验证事件流：
 
@@ -1754,16 +1659,16 @@ xxx.onclick = null;
 - 捕获阶段：document ===> html ===> body ===> father ===> son，依次触发。
 - 冒泡阶段：son ===> father ===> body ===> html ===> document，依次触发。
 
-## 事件对象
+### 事件对象与常用属性
 
-### 事件对象的获取：
+**事件对象：**在DOM中发生事件时，所有相关信息都会被收集并存储在一个名为event的对象中，event对象是传给事件处理程序的唯一参数。如下：
 
 ```html
 <body>
     <div>123</div>
     <script>
       var div = document.querySelector('div');
-      // 1.有了事件后系统自动创建事件对象，在事件侦听函数写入标识就可获取
+      // 1.有了事件后系统自动创建事件对象，在事件处理函数写入标识就可获取
       // 2.如下的event1、event2就是事件对象，事件对象名称可自己确定 常用event、evn、e
       // 3.事件对象是事件的一系列数据的集合 比如鼠标点击事件 ===> 包含鼠标坐标 
       
@@ -1782,11 +1687,11 @@ xxx.onclick = null;
 </body>
 ```
 
-### 事件对象的常用方法：
+**事件对象的常用属性方法：**
 
 ![](img/h_事件方法.png)
 
-target、srcElement、this：
+关于target、srcElement、this的说明：
 
 ```html
 <body>
@@ -1816,7 +1721,7 @@ target、srcElement、this：
 </body>
 ```
 
-type、preventDefault()、retuenValue：
+关于type、preventDefault()、retuenValue的说明：
 
 ```html
 <body>
@@ -1850,7 +1755,7 @@ type、preventDefault()、retuenValue：
 </body>
 ```
 
-### 阻止冒泡的两种方式：
+### 阻止冒泡的方式
 
 ```html
 body>
@@ -1858,7 +1763,6 @@ body>
     <div class="son">son盒子</div>
   </div>
   <script>
-    // 4.冒泡阶段 addEventListener的第三个参数缺省或false 则是冒泡阶段
     var sonB = document.querySelector('.son');
     sonB.addEventListener('click',function(e){
       alert('son bubble');
@@ -1881,48 +1785,7 @@ body>
 </body>
 ```
 
-### 事件委托：
-
-![](img/h_事件委托.png)
-
-```html
-<body>
-  <ul>
-    <li>点我，弹窗！</li>
-    <li>点我，弹窗！</li>
-    <li>点我，弹窗！</li>
-  </ul>
-  <script>
-    // 事件委托原理：给父节点添加侦听器，利用事件冒泡影响每一个子节点 
-    // 实现需求：点击每个li都会弹窗
-    var ul = document.querySelector('ul');
-    ul.addEventListener('click',function(e){
-      //alert('弹弹弹！');
-      e.target.style.backgroundColor = 'pink';
-    });
-  </script>
-</body>
-```
-
-### 了解-禁止鼠标右键：
-
-```html
-<body>
-  我是一段不愿意分享的文字...
-  <script>
-    // contextmenu 禁用鼠标右键
-    document.addEventListener('contextmenu',function(e){
-      e.preventDefault();
-    });
-    // selectstart 禁止选中文字
-    document.addEventListener('selectstart',function(e){
-      e.preventDefault();
-    });
-  </script>
-</body>
-```
-
-### 鼠标事件对象：
+### 鼠标事件对象
 
 ![](img/h_鼠标事件对象.png)
 
@@ -1938,7 +1801,7 @@ body>
 </body>
 ```
 
-### 跟随鼠标的图片：
+示例——跟随鼠标的图片：
 
 ![](img/h_跟随.png)
 
@@ -1968,7 +1831,9 @@ body>
 </body>
 ```
 
-### 常用键盘事件：
+
+
+### 常用键盘事件
 
 **键盘触发事件：**
 
@@ -2017,13 +1882,60 @@ body>
 </body>
 ```
 
-### 案例：
+案例：
 
 ![](img/e4.png)
 
 ![](img/e5.png)
 
-# BOM
+
+
+### 事件委托
+
+![](img/h_事件委托.png)
+
+```html
+<body>
+  <ul>
+    <li>点我，弹窗！</li>
+    <li>点我，弹窗！</li>
+    <li>点我，弹窗！</li>
+  </ul>
+  <script>
+    // 事件委托原理：给父节点添加侦听器，利用事件冒泡影响每一个子节点 
+    // 实现需求：点击每个li都会弹窗
+    var ul = document.querySelector('ul');
+    ul.addEventListener('click',function(e){
+      //alert('弹弹弹！');
+      e.target.style.backgroundColor = 'pink';
+    });
+  </script>
+</body>
+```
+
+### 了解-禁止鼠标右键：
+
+```html
+<body>
+  我是一段不愿意分享的文字...
+  <script>
+    // contextmenu 禁用鼠标右键
+    document.addEventListener('contextmenu',function(e){
+      e.preventDefault();
+    });
+    // selectstart 禁止选中文字
+    document.addEventListener('selectstart',function(e){
+      e.preventDefault();
+    });
+  </script>
+</body>
+```
+
+## DOM重点核心
+
+针对元素的操作，增、删、改、查、属性操作、事件操作。
+
+# Browser Object Model
 
 ## 概述
 
@@ -2367,7 +2279,7 @@ const的特性：
 3. 值不允许修改。
 4. 在块内声明，就只在块级作用域有效。
 
-应用场景： 声明对象类型使用 const，非对象类型声明选择 let。（const声明对象，是不是对象地址不会变？？？）
+应用场景： 声明对象类型使用 const，非对象类型声明选择 let。
 
 ## 解构赋值
 
