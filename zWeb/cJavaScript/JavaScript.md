@@ -792,7 +792,7 @@ function getRandom(min,max) {
 
 ![](img/dateformat.png)
 
-获取时间戳：从1970年1月1日（世界标准世界）起的毫秒数。
+获取时间戳（从1970年1月1日（世界标准世界）起的毫秒数）的四种方式：
 
 ```html
 <script type="text/javascript"> 
@@ -879,7 +879,7 @@ function getRandom(min,max) {
 </script>
 ```
 
-数组索引方法：
+数组索引方法（可用于判断数组中是否存在某元素）：
 
 ![](img/index.png)
 
@@ -960,7 +960,7 @@ JavaScript提供了三个特殊的引用类型：String、Boolean、Number。基
 
 ![](img/str_return.png)
 
-获得重复次数最多的字符：
+获得重复次数最多的字符：（将字符作为属性放进对象，遍历字符并与对象中属性进行匹配，得到各个字符的数量，最后再遍历对象取出值最大的属性）
 
 ```html
 <script type="text/javascript">
@@ -1030,7 +1030,7 @@ JavaScript提供了三个特殊的引用类型：String、Boolean、Number。基
 
 # Document Object Model
 
-DOM表示由节点构成的文档，通过DOM的API可以添加、修改、删除页面各个部分。
+DOM表示由节点构成的文档，通过DOM的API可以添加、修改、删除页面各个部分。DOM就是一套应用程序编程接口，文档对象模型中定义了文档的逻辑结构，以及程序访问和操作文档的方式。
 
 Web API，由浏览器提供的一套操作浏览器功能和页面元素的API（DOM——操作HTML和CSS、BOM——操作浏览器）。
 
@@ -1048,7 +1048,7 @@ Web API，由浏览器提供的一套操作浏览器功能和页面元素的API�
 
 Node接口是所有节点都必须实现的，因此所有节点都共享相同的基本属性和方法，基本的共同属性如下：
 
-1. 每个节点都有nodeType属性，其值由Node接口定义的12数值常量表示，常用的三个如下：
+1. 每个节点都有nodeType属性，其值由Node接口定义的12个数值常量表示，常用的三个如下：
 
    - 元素节点：Node.ELEMENT.NODE = 1。
    - 属性节点：Node.ATTRIBUTE.NODE = 2。
@@ -1067,9 +1067,9 @@ Node接口是所有节点都必须实现的，因此所有节点都共享相同�
 
    ```js
    if (document.documentElement.nodeType === Node.ELEMENT_NODE) {
-           document.write(document.documentElement.nodeName);
-           document.write(document.documentElement.nodeValue);
-       }
+       document.write(document.documentElement.nodeName);
+       document.write(document.documentElement.nodeValue);
+   }
    ```
 
 3. 表节点关系的属性：childNodes、parentNode、firstChild、lastChild、nextSibling、previousSibling，都是只读。
@@ -1103,7 +1103,7 @@ Node接口是所有节点都必须实现的，因此所有节点都共享相同�
 
 移除节点：
 
-- `removeChild(someNode)`：移除某个节点，移除后文档中不再有原节点的位置。
+- `removeChild(someNode)`：移除someNode节点，移除后文档中不再有该节点的位置，该节点及其内部全部都将在DOM树消失。
 
 复制节点：
 
@@ -1203,7 +1203,7 @@ HTMLDocument继承了Document，document则是HTMLDocument的实例。
 </body>
 ```
 
-**5.通过选择器方式获取：**（最常用）
+**5.通过选择器方式获取：**`querySelector()` `querySelectorAll()`（最常用）
 
 ```js
 // document.querySelector(选择器);  根据选择器来获取到指定的元素
@@ -1257,6 +1257,8 @@ console.log(div.title);
 
 #### 操作元素属性
 
+元素的属性都是元素节点对象的属性。
+
 操作元素节点对象的属性的主要的三个方法：
 
 1. `getAttribute(属性名)`：通过属性名获取属性值，属性名不区分大小写；通常用该方法用于获取自定义属性的值。
@@ -1270,7 +1272,7 @@ console.log(div.title);
 3. `setNamedItem(node)`：添加新的Attr节点。
 4. `item(index)`：返回某处节点。
 
-#### 自定义元素属性
+#### 自定义元素的属性
 
 ![](img/自定义属性.png)
 
@@ -1281,7 +1283,7 @@ console.log(div.title);
       var div = document.querySelector('div');
       var getTime = div.getAttribute('getTime');
       div.setAttribute('getTime','2022-1-1');
-      // H5新增自定义获取属性的方法  ie-ie11才开始支持
+      // H5新增自定义获取属性的方法  ie11才开始支持
       // dataset是一个集合 里面存放了所有自定义的以data开头的属性
       div.dataset.timeNow = '2022-01-01';
       console.log('getTime:' + getTime);
@@ -1350,11 +1352,7 @@ document.createElement('标签名'); // 创建某个元素
       }
     </script>
 </body>
-```
-
-重绘后的HTML页面会变为：
-
-```html
+<!-- 重绘后的HTML页面会变为 -->
 <html>
 <head></head>
 <body>
@@ -1428,12 +1426,12 @@ document.createElement('标签名'); // 创建某个元素
 
 文本节点操作——其内容的增、删、改：
 
-1. `appendDate(text)`：文本节点内容末尾追加文本text。
-2. `deleteDate(offset, count)`：从位置offset开始删除count个字符，删除区间——[offset, offset+count]。
-3. `insertDate(offset, text)`：将文本text插入到offset位置。
-4. `replaceDate(offset, count, text)`：用text替换[offset,count)区间的文本。
+1. `appendData(text)`：文本节点内容末尾追加文本text。
+2. `deleteData(offset, count)`：从位置offset开始删除count个字符，删除区间——[offset, offset+count]。
+3. `insertData(offset, text)`：将文本text插入到offset位置。
+4. `replaceData(offset, count, text)`：用text替换[offset,count)区间的文本。
 5. `splitText(offset)`：拆分成两个文本节点，[0,offset]为一个节点，其余的为一个节点；调用该方法的节点的nextSibling就是[0,offset]区间的节点。
-6. `substringDate(offset, count)`：从某位置起获取count个文本；获取[offset, count+offset]区间的文本。
+6. `substringData(offset, count)`：从某位置起获取count个文本；获取[offset, count+offset]区间的文本。
 
 注意：修改文本节点时，大于号、小于号、引号会被转义（为啥我没测出来？或者需要自己去完成转义？）。
 
@@ -1475,22 +1473,26 @@ Attr对象的三个属性：name——属性名、value——属性值、specifi
     <button>按钮4</button>
     <button>按钮5</button>
     <script>
-      var btns = document.getElementsByTagName('button');
-      for(var i = 0; i < btns.length; i++){
-        btns[i].onclick = function(){
-          for(var i = 0; i < btns.length; i++){
-            btns[i].style.backgroundColor = '';
-          }
-          this.style.backgroundColor = 'pink';
+        var btns = document.getElementsByTagName('button');
+        // 为每个按钮都注册点击事件
+        for(var i = 0; i < btns.length; i++){
+            btns[i].onclick = function(){
+                // 事件触发后，排他自身外的元素后再设置自身样式
+                for(var i = 0; i < btns.length; i++){
+                    btns[i].style.backgroundColor = '';
+                }
+                this.style.backgroundColor = 'pink';
+            }
         }
-      }
     </script>
 </body>
 ```
 
+## DOM重点核心
 
+针对元素的操作，增、删、改、查、属性操作、事件操作。
 
-## 事件
+# 事件
 
 事件就是浏览器或用户执行的某种动作，为响应事件而调用的函数称为事件处理程序（事件监听器）。
 
@@ -1510,7 +1512,7 @@ Attr对象的三个属性：name——属性名、value——属性值、specifi
 </body>
 ```
 
-### 注册事件
+## 注册事件
 
 事件的三要素之一是事件源，而给事件源的元素添加事件就是所谓的注册事件——注册事件处理程序。
 
@@ -1603,7 +1605,7 @@ DOM2方式的主要优势就是可以为同一事件添加多个事件处理程�
 </body>
 ```
 
-### 事件流
+## 事件流
 
 事件流，描述了页面接收事件的顺序，是指事件发生时事件在元素节点之间的传播顺序。
 
@@ -1659,7 +1661,7 @@ DOM2方式的主要优势就是可以为同一事件添加多个事件处理程�
 - 捕获阶段：document ===> html ===> body ===> father ===> son，依次触发。
 - 冒泡阶段：son ===> father ===> body ===> html ===> document，依次触发。
 
-### 事件对象与常用属性
+## 事件对象与常用属性
 
 **事件对象：**在DOM中发生事件时，所有相关信息都会被收集并存储在一个名为event的对象中，event对象是传给事件处理程序的唯一参数。如下：
 
@@ -1755,49 +1757,49 @@ DOM2方式的主要优势就是可以为同一事件添加多个事件处理程�
 </body>
 ```
 
-### 阻止冒泡的方式
+## 阻止冒泡的方式
 
 ```html
-body>
-  <div class="father">
-    <div class="son">son盒子</div>
-  </div>
-  <script>
-    var sonB = document.querySelector('.son');
-    sonB.addEventListener('click',function(e){
-      alert('son bubble');
-      // 方法1，存在兼容性问题
-      e.stopPropagation();
-      // 方法2：非标准，设置为true时禁止冒泡
-      e.cancelBubble = true;
-      // 兼容性写法
-      if(e && e.stopPropagation){
-        e.stopPropagation;
-      }else{
-        window.event.cancelBubble = true;
-      }
-    },false);
-    var fatherB = document.querySelector('.father');
-    fatherB.addEventListener('click',function(){
-      alert('father bubble');
-    },false);
-  </script>
+<body>
+    <div class="father">
+        <div class="son">son盒子</div>
+    </div>
+    <script>
+        var sonB = document.querySelector('.son');
+        sonB.addEventListener('click',function(e){
+            alert('son bubble');
+            // 方法1，存在兼容性问题
+            e.stopPropagation();
+            // 方法2：非标准，设置为true时禁止冒泡
+            e.cancelBubble = true;
+            // 兼容性写法
+            if(e && e.stopPropagation){
+                e.stopPropagation();
+            }else{
+                window.event.cancelBubble = true;
+            }
+        },false);
+        var fatherB = document.querySelector('.father');
+        fatherB.addEventListener('click',function(){
+            alert('father bubble');
+        },false);
+    </script>
 </body>
 ```
 
-### 鼠标事件对象
+## 鼠标事件对象
 
 ![](img/h_鼠标事件对象.png)
 
 ```html
 <body>
-  <script>
-    document.addEventListener('click',function(e){
-      console.log(e.clientX);
-      console.log(e.pageX);
-      console.log(e.screenX);
-    });
-  </script>
+    <script>
+        document.addEventListener('click',function(e){
+            console.log(e.clientX);
+            console.log(e.pageX);
+            console.log(e.screenX);
+        });
+    </script>
 </body>
 ```
 
@@ -1833,7 +1835,7 @@ body>
 
 
 
-### 常用键盘事件
+## 常用键盘事件
 
 **键盘触发事件：**
 
@@ -1890,7 +1892,7 @@ body>
 
 
 
-### 事件委托
+## 事件委托
 
 ![](img/h_事件委托.png)
 
@@ -1913,7 +1915,7 @@ body>
 </body>
 ```
 
-### 了解-禁止鼠标右键：
+## 了解-禁止鼠标右键
 
 ```html
 <body>
@@ -1931,9 +1933,113 @@ body>
 </body>
 ```
 
-## DOM重点核心
+# 案例
 
-针对元素的操作，增、删、改、查、属性操作、事件操作。
+## 复选框全选
+
+```html
+<body>
+<form action="">
+    <input type="checkbox" name="all" id="j_cbAll">
+    <input type="checkbox" name="ex">
+    <input type="checkbox" name="ex">
+    <input type="checkbox" name="ex">
+    <input type="checkbox" name="ex">
+</form>
+<script>
+    let j_cbAll = document.getElementById('j_cbAll');
+    let j_tbs = document.getElementsByName('ex');
+    j_cbAll.onclick = function () {
+        // 全选 this.checked
+        console.log(this.checked);
+        for (let i = 0; i < j_tbs.length; i++) {
+            j_tbs[i].checked = this.checked;
+        }
+    }
+    // 取消全选
+    for (let i = 0; i < j_tbs.length; i++) {
+        j_tbs[i].onclick = function (){
+            let flag = true;
+            for (let j = 0; j < j_tbs.length; j++) {
+                if (!j_tbs[i].checked) {
+                    flag = false;
+                    break;
+                }
+            }
+            j_cbAll.checked = flag;
+        }
+    }
+</script>
+```
+
+## 动态生成表格
+
+[详解a标签中href="javascript:"的几种用法 - hello_HON - 博客园 (cnblogs.com)](https://www.cnblogs.com/newones/p/12688580.html#:~:text=a标签的一种写法 <%2Fa> ，所以就来整理下a标签中href的几种用法。,这是常用的方法，但是这种方法在传递this等参数的时候很容易出问题，而且javascript%3A协议作为a的href属性的时候不仅会导致不必要的触发window.onbeforeunload事件，在IE里面更会使gif动画图片停止播放。 W3C标准不推荐在href里面执行javascript语句 这种方法是很多网站最常用的方法，也是最周全的方法，onclick方法负责执行js函数，而void是一个操作符，void (0)返回undefined，地址不发生跳转。)
+
+```html
+    <style>
+        body {
+            background-image: url("1.png");
+        }
+        table {
+            margin: 100px auto;
+            border-collapse: collapse;
+            text-align: center;
+        }
+        table th,td {
+            width: 160px;
+            padding: 10px;
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+<table>
+    <caption><h4>动态生成表格</h4></caption>
+    <thead>
+        <tr>
+            <td>姓名</td>
+            <td>学科</td>
+            <td>成绩</td>
+            <td>操作</td>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<script>
+    let data = [
+        {name:'陆拾陆',subject:'JavaScript',score:0},
+        {name:'刘宇涵',subject:'哲学',score:90},
+        {name:'吕文博',subject:'文学',score:80},
+        {name:'林涛',subject:'法学',score:88},
+        {name:'李子晨',subject:'逻辑学',score:93},
+    ];
+    let tbody = document.querySelector('tbody');
+    for (let i = 0; i < data.length; i++) {
+        let tr = document.createElement('tr');
+        tbody.appendChild(tr);
+        for (const dataKey in data[i]) {
+            let td = document.createElement('td');
+            td.innerText = data[i][dataKey];
+            tr.appendChild(td);
+        }
+        // 创建删除单元格
+        let td = document.createElement('td');
+        td.innerHTML = '<a href="javascript:;">删除</a>';
+        tr.appendChild(td);
+    }
+    let as = document.getElementsByTagName('table')[0].querySelectorAll('a');
+    for (let i = 0; i < as.length; i++) {
+        as[i].onclick = function () {
+            tbody.removeChild(this.parentNode.parentNode);
+        }
+    }
+</script>
+</body>
+```
+
+
 
 # Browser Object Model
 
