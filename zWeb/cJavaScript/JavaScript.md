@@ -1933,7 +1933,7 @@ DOM2方式的主要优势就是可以为同一事件添加多个事件处理程�
 </body>
 ```
 
-# 案例
+# 事件案例
 
 ## 复选框全选
 
@@ -2029,6 +2029,7 @@ DOM2方式的主要优势就是可以为同一事件添加多个事件处理程�
         td.innerHTML = '<a href="javascript:;">删除</a>';
         tr.appendChild(td);
     }
+    // 删除实现
     let as = document.getElementsByTagName('table')[0].querySelectorAll('a');
     for (let i = 0; i < as.length; i++) {
         as[i].onclick = function () {
@@ -2045,42 +2046,47 @@ DOM2方式的主要优势就是可以为同一事件添加多个事件处理程�
 
 ## 概述
 
-![](img/bom.png)
-
 ![](img/bom_构成.png)
 
-![](img/window.png)
+![](img/bom.png)
+
+window对象：
+
+1. 是JavaScript访问浏览器窗口的一个接口。
+2. 是一个全局对象，函数或使用var定义在全局作用域中的变量都会成为window对象的属性和方法；window对象有一个特殊属性-window.name。
 
 ## window对象常见事件
 
 ### 页面加载事件
 
-![](img/bom_window对象.png)
-
-```html
-    <script>
-      window.onload = function(){
-        var btn = document.querySelector('button');
-        btn.addEventListener('click',function(){
-          alert('OK');
-        });
-        alert('页面加载完毕就触发');
-      }
-      window.addEventListener('load',function(){
-        alert('window1');
-      });
-      window.addEventListener('load',function(){
-        alert('window2');
-      });
-      document.addEventListener('DOMContentLoaded',function(){
-        alert(33);
-      });
-      // load 是等页面全部加载完毕才触发 包括页面dom元素、图片、flash、css等
-      // DOMContentLoaded 是DOM加载完毕，不包含图片、flash、css等 加载速度会比load更快
-    </script>
-```
+window.onload——页面加载事件，当文档内容完全加载完成就会触发事件处理程序（图像、脚本文件、CSS文件等完全加载）。
 
 ![](img/bom_load.png)
+
+```html
+<script>
+    window.onload = function(){
+        var btn = document.querySelector('button');
+        btn.addEventListener('click',function(){
+            alert('OK');
+        });
+        alert('页面加载完毕就触发');
+    }
+    window.addEventListener('load',function(){
+        alert('window1');
+    });
+    window.addEventListener('load',function(){
+        alert('window2');
+    });
+    document.addEventListener('DOMContentLoaded',function(){
+        alert(33);
+    });
+    // load 是等页面全部加载完毕才触发 包括页面dom元素、图片、flash、css等
+    // DOMContentLoaded 是DOM加载完毕，不包含图片、flash、css等 加载速度会比load更快
+</script>
+```
+
+
 
 ### 调整窗口大小事件
 
@@ -2088,39 +2094,40 @@ DOM2方式的主要优势就是可以为同一事件添加多个事件处理程�
 
 ## 定时器
 
-### setTime()定时器
+**setTime()定时器的创建与停止：**只执行一次的定时器
+
+1. 创建：`window.setTimeout(定时器执行函数,延迟ms数);`
+2. 停止：`window.clearTimeout(定时器标识);`
 
 ```html
- <script>
+<script>
     // 1.window.setTimeout(调用函数,延迟ms数); 延迟毫秒数可以省略，省略时是0
     // 2.调用函数可以直接使用匿名函数，也可以外面声明函数后直接写函数名（不用带括号）
     // 3.调用函数可以是字符形式：'函数名()'，此时要加括号 ---不提倡
     // 4.页面中可能有多个定时器，可以为定时器加标识符（命名）
     // 5.只调用一次 
     setTimeout(function(){
-      alert('2000ms过去了');
+        alert('文件加载2000ms后');
     },2000);
     var timer2 = setTimeout(function(){
-      alert('3000ms过去了：bongbong');
+        alert('文件加载3000ms后：bongbong');
     },3000);
+    window.clearTimeout(timer2);
 </script>
 ```
 
-setTimeout()所调用的函数也被称为回调函数callback（需要等待时间的函数，时间到了再调用函数，因此称为回调函数），触发后调用的函数也可称为回调函数。
+setTimeout()所调用的函数也被称为回调函数callback（需要等待时间的函数，时间到了再调用函数，因此称为回调函数），触发后调用的函数也可称为回调函数。也可以理解为，特定时机需要执行的行为。
 
-**停止setTime()定时器：**
+**setInterval()定时器的创建与清除：**重复执行的定时器
 
-![](img/bom_stoptimer.png)
+1. 创建：`window.setInterval(定时器执行函数, 毫秒数)`，每隔多少毫秒就执行一次（可以实现倒计时效果）。
+2. 清除：`window.clearInterval(定时器标识);`。
 
-### setInterval()定时器
-
-![](img/bom_interval.png)
-
-可以实现倒计时效果。
-
-### 清除定时器
-
-![](img/bom_cleartimer.png)
+```js
+// 后面的参数表示给定时器执行函数传入的参数 
+// 毫秒数（默认0）和参数都是可选项    setTimeout()也一样
+window.setInterval(定时器执行函数, 毫秒数, 参数1, 参数2, ...);
+```
 
 
 
@@ -2143,7 +2150,7 @@ this的指向只有在函数执行的时候才能确定this到底指向谁，一
             console.log(this);
         },1000);
         fun(); // window.fun();
-        // 2.方法调用中谁调用就指向谁
+        // 2.对象方法中调用，是谁调用该方法就指向谁
         var obj = {
             sayHi : function(){
                 console.log(this); // this指向obj这个对象
@@ -2165,46 +2172,156 @@ this的指向只有在函数执行的时候才能确定this到底指向谁，一
 
 ## JavaScript执行机制
 
-![](img/bom_jsrun.png)
-
-![](img/bom_jsasyc.png)
-
-![](img/bom_js.png)
+1. JavaScript，单线程执行，所有任务都需要排队执行，前一个执行完成才会执行后一个。（问题：JS程序执行时间过长会造成渲染页面不连惯，导致页面渲染加载阻塞）
+2. 同步与异步：
+   - 同步任务：都在主线程上执行——执行栈。
+   - 异步任务：JavaScript的异步通过回调函数实现，异步任务相关回调函数会添加到任务队列里。
+   - 异步任务的三种类型：一是普通事件，如click、resize等；二是资源加载，如load、error等；三是定时器，如setTimeOut、setInterval等。
+3. JavaScript程序执行机制：
+   1. 先执行执行栈中的同步任务。
+   2. 异步任务（回调函数）将放入任务队列中。
+   3. 一旦执行栈中所有的同步任务执行完毕，系统就会按次序读取任务队列中的异步任务，于是被读取的异步任务结束等待状态而进入执行栈，然后开始执行。
 
 js执行机制：
 
 ![](img/bom_js执行机制.png)
 
-## location对象
+## window——属性
 
-### 概述
+这些属性返回的都是对象。
 
-![](img/bom_location.png)
+### location对象
 
-URL：统一资源定位符
+window对象下有一个属性——location，用于获取或设置窗体的URL，并且可以用于解析URL。这个属性返回的是一个对象，因此该属性也被称为location对象。
+
+URL（统一资源定位符）：
 
 ![](img/bom_url.png)
 
-### 属性
+location对象的属性：
 
 ![](img/bom_locationM.png)
 
 - 可以通过herf属性和定时器实现页面跳转。
 - search属性，可以获取到表单使用get方法提交的参数，`?v1=v&....`，通过一定处理就可跨页面获取到前一个页面提交的参数。
 
-### 方法
+location对象的方法：
 
 ![](img/bom_locationFun.png)
 
 - location.assign()：会记录浏览历史，所以可以实现后退功能。
 
-## navigator对象
+### navigator对象
 
-![](img/bom_navigator.png)
+navigator，也是window的属性之一，返回包含了浏览器的信息的navigator对象，常用的该对象的属性是userAgent——返回客户机发送服务器的user-agent头部的值。
 
-## history对象
+使用navigator来判断用户从哪个终端打开页面并实行跳转：
+
+```js
+if((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowserNG|WebOS|Symbian|Windows Phone)/i))) {
+  window.location.href = ''; // 手机
+}else {
+  window.location.href = ''; // 电脑
+}
+```
+
+
+
+### history对象
 
 ![](img/bom_history.png)
+
+# BOM案例
+
+## 倒计时
+
+时间倒计表：
+
+```html
+  <style>
+    div {
+      width: 400px;
+      margin: 100px auto;
+    }
+    div span {
+      display: inline-block;
+      width: 60px;
+      background-color: #24292e;
+      color: #fff;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div>
+  <span class="hour">1</span>
+  <span class="minute">2</span>
+  <span class="second">3</span>
+</div>
+<script>
+  let span = document.getElementsByTagName('span');
+  let time = +new Date('2022-7-1 00:00:00');
+  countDown();
+  window.setInterval(countDown,1000);
+  function countDown(){
+    let nowTime = +new Date();
+    let times = (time - nowTime) / 1000;
+    let h = parseInt(times / 60 / 60 % 24);
+    h = h < 10 ? '0' + h : h;
+    let m = parseInt(times / 60 % 60);
+    m = m < 10 ? '0' + m : m;
+    let s = parseInt(times % 60);
+    s = s < 10 ? '0' + s : s;
+    span[0].innerHTML = h;
+    span[1].innerHTML = m;
+    span[2].innerHTML = s;
+    return  h + '时' + m + '分' + s + '秒';
+  }
+</script>
+</body>
+```
+
+再次发送倒计时：
+
+```html
+<body>
+<input type="number"> <button>点击发送</button>
+<script>
+  let btn = document.getElementsByTagName('button');
+  let time = 10;
+  // 点击事件
+  btn[0].onclick = function (){
+    btn[0].disabled = true;
+    btn[0].innerHTML = '10秒后可再次发发送';
+    let timer = setInterval(function (){
+      if (time === 0){
+        btn[0].innerHTML = '点击发送';
+        btn[0].disabled = false;
+        time = 10;
+        window.clearInterval(timer);
+      }else {
+        time--;
+        btn[0].innerHTML = time + '秒后可再次发发送';
+      }
+    },1000);
+  }
+</script>
+</body>
+```
+
+## 页面跳转
+
+```js
+let time = 5;
+let timer = setInterval(function (){
+  time--;
+  if (time === 0) {
+    window.location.href = 'https://www.bilibili.com/';
+  }
+},1000);
+```
+
+
 
 # PC端网页特效
 
@@ -2213,6 +2330,10 @@ URL：统一资源定位符
 ### offset
 
 ![](img/pc_offset.png)
+
+返回的偏移量都是相对带有定位的父元素，如果没有单位，则相对body。获取元素宽高时，不包括margin。
+
+offset的方式获取值与通过style获取属性值的区别：（注意，style不能获取内嵌样式表的值）
 
 ![](img/pc_offsty.png)
 
@@ -2243,6 +2364,8 @@ URL：统一资源定位符
 ```
 
 ### 模态框拖拽
+
+利用事件对象的pageX、pageY；还有offsetLeft、offsetTop。
 
 
 

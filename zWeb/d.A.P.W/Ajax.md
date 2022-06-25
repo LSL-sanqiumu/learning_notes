@@ -2,15 +2,14 @@
 
 ## 概述
 
-Ajax（Asynchronous JavaScript and XML，异步JavaScript与XML技术），是一种有效利用JavaScript和DOM（Document Object Model，文档对象模型）的操作，以达到局部web页面替换加载的异步通信手段。利用ajax实时地从服务器获取内容（**无刷新获取数据**）。
+Ajax（Asynchronous JavaScript and XML，异步JavaScript与XML技术），是一种有效利用JavaScript和DOM（Document Object Model，文档对象模型）的操作，以达到局部web页面替换加载的异步通信手段。利用ajax实时地从服务器获取内容（**无刷新获取数据**）。XML，可拓展标记语言，全都是自定义标签，被设计来传输和存储数据。目前在ajax中已经被json取代。
 
-XML，可拓展标记语言，全都是自定义标签，被设计来传输和存储数据。目前在ajax中已经被json取代。
+1. ajax特点：可以无需刷新页面而与服务器端进行通信；允许你根据用户事件来更新部分页面内容。
 
-ajax特点：可以无需刷新页面而与服务器端进行通信；允许你根据用户事件来更新部分页面内容。
+2. AJAX 的缺点：没有浏览历史，不能回退；存在跨域问题(必须同源，不能跨页面) ； SEO 不友好。
 
-AJAX 的缺点：没有浏览历史，不能回退；存在跨域问题(必须同源，不能跨页面) ； SEO 不友好。
+3. 核心对象：XMLHttpRequest，AJAX 的所有操作都是通过该对象进行的。
 
-核心对象：XMLHttpRequest，AJAX 的所有操作都是通过该对象进行的。
 
 ## Node.js安装
 
@@ -157,10 +156,6 @@ btns[1].onclick =  function(){ // 事件触发函数，当触发时就运行x.ab
     x.abort();
 }
 ```
-
-
-
-
 
 # 框架的使用
 
