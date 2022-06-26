@@ -662,7 +662,7 @@ alter table 表名 modify column 字段名 字段类型 comment '修改后的字
 
 # DML
 
-数据操作语言，insert、update、delete；对表的字段的内容进行操作，需要commit。
+数据操作语言，insert、update、delete；对表的字段的内容进行操作，需要commit（自动提交默认开启了）。
 
 ## 添加
 

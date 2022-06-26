@@ -1,3 +1,33 @@
+# 数据结构与算法
+
+作者：王boy
+链接：https://www.zhihu.com/question/28873750/answer/170477311
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+
+
+总起
+先放结论，根据实际问题去设计数据结构，在数据结构基础上进行[算法](https://www.zhihu.com/search?q=算法&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})设计。即，数据结构特点决定了算法的设计。
+举一些简单的例子，如果数据结构是链式存储的[二叉树](https://www.zhihu.com/search?q=二叉树&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})，那么就可以在其上面使用深度优先搜索以及广度优先搜索。如果是图数据结构，需要根据图的特点来设计算法，在深度优先遍历或广度优先遍历的时候就需要考虑记录访问过的结点。
+
+数据结构
+数据结构很重要。一些大师在进行编程之前在[数据结构](https://www.zhihu.com/search?q=数据结构&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})上花费的时间是最多的。只有将数据结构设计好了，才能在此基础上使用算法。
+接下来，介绍一下数组，[链表](https://www.zhihu.com/search?q=链表&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})，树，图，队列，栈相关的内容以及它们之间存在的一些关系。
+数组这种数据结构有其随机访问的特点，靠下标就能访问。这种访问方式十分高效。
+链表虽然不能利用下标访问，但对于内存的使用很具有灵活性，所以这个优点让它应用也十分广泛。因为在实际程序我们不能总是确定内存中有合适的空间。链表最大的作用感觉也在于此，其更适用于[非随机访问](https://www.zhihu.com/search?q=非随机访问&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})的情况。
+但是显然链表这种结构存在查找效率低的特点，这种问题应该如何解决呢？有没有一种办法既可以灵活分配内存，同时又能提高查找效率呢？（查找这个动作，往往是程序必不可少的一部分，几乎所有的程序都会涉及到查找这个动作，所以其效率便十分重要了）
+先说一下总的方法，有序是查询得以优化的重要原因。先来说说树，树的组织一般也是[链式存储](https://www.zhihu.com/search?q=链式存储&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})的，好处就在于原来n个条目的数据存储在链表中，当我们进行查询时，查询第3个就必须经过第2个。查询第n个，就必须得经过前n-1个[结点](https://www.zhihu.com/search?q=结点&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})。那么问题来了，难道结点n前面的那些结点都需要经过吗？显然不是，这也说明了链表的局限性。相对而言，树的组织方式使我们在遍历时可以进行选择，比如说，二叉树中我们需要选定一个分支，相对而言，链表中我们没得选择。选择的出现带来了一定的优化。比如[二叉排序树](https://www.zhihu.com/search?q=二叉排序树&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})，堆等。这些树的构建，都是根据我们的目的来进行构建的。
+栈，队列，则是由现实世界借鉴而来的。首先，现实世界中，[队列栈](https://www.zhihu.com/search?q=队列栈&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})这些形式普遍存在于现实生活中，而程序从某种角度是服务于现实生活中，所以就抽象出了计算机中的所谓栈，[队列](https://www.zhihu.com/search?q=队列&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})的概念。思想体现在程序的执行过程中，体现在程序开发设计中。事实上，栈，队列的思想不仅体现在了软件层面，计算机硬件层面也是很多地方应用了这中思想，比如[指令队列](https://www.zhihu.com/search?q=指令队列&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})（指令执行的先后顺序决定了队列适用于它），比如说寄存器栈（计算的次序决定了可以用栈来实现）。另外，[函数](https://www.zhihu.com/search?q=函数&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})调用机制也是栈的应用，a调用b,b调用c,这个过程在我们看来比较简单，但是在计算机中，在调用时则需要保存一系列信息，调用的过程以及返回的过程（c只能返回到b,不能直接返回到c）这个过程适合通过栈这种结构来进行模拟。
+
+算法
+设计了好的数据结构，只是成功了一半，因为数据结构是静态的，只是组织数据的一种方式，你不去操作它（如访问），它是无法发挥它的作用的。所以，我们需要在此基础上去根据我们的目的进行相应的操作，而操作的方式不同，耗费的时间也是不一样的，我们需要找到好的操作方案。这里所说的方案，就是算法。
+举一个简单的例子，你打算从家到学校，有多个[公交](https://www.zhihu.com/search?q=公交&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})可以坐，可以产生很多方案，每一种方案都是你对于达成目标的一种设计，我们称之为算法。人们往往会在众多方案中寻找最优的算法。我们这里的方案的数量是有限的，但是事实上，很多问题的方案是无限的，或者巨大的，我们无法一一去尝试这些方案。所以我们总结了一些优秀算法的准则，思想，比如说[贪心算法](https://www.zhihu.com/search?q=贪心算法&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})，动态规划等思想。
+算法为何依赖于数据结构呢？为回答这个问题，举一个通俗的例子。你在学校捡到了一张[饭卡](https://www.zhihu.com/search?q=饭卡&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})，上面有姓名，学院，班级。然后你要去将饭卡还给失主。接下来，你会找到其学院，然后找到班级，然后在班级中通过询问同学找到[失主](https://www.zhihu.com/search?q=失主&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})。（姓名，学院，班级）在这里我们认为是数据结构，因其把这些数据组织到一张卡上了。接下来，想象另一种情形，假如说饭卡上只有姓名，而学院，班级在另一张信息卡上。那么你可能找遍全校也找不到失主。
+将一些数据组织在一起，能够为算法提供必要的基础信息，关联信息，使得算法在执行过程中能够快速找到相关信息（比如，上面例子中的学院，班级）。
+
+
+
 # ~~概念~~
 
 数据项：数据的不可分的最小单位，一个数据元素可由若干个数据项组成。
@@ -50,7 +80,7 @@
 
 常用的数据结构：数组（array）、栈（stack）、队列（queue）、链表（linked list）、树（tree）、图（graph）、堆（heap）、散列表（hash）。
 
-<img src="img/数据结构.svg" style="zoom:50%;" />
+<img src="img/数据结构.svg" style="zoom: 67%;" />
 
 数据结构的学习：xxx结构是是什么？说出其优缺点和应用场景，如何实现。
 
@@ -155,7 +185,7 @@ public void sum(int arr[]){
     	sum += arr[i];
     }
 }
-// O(n)
+// O(n)  new ArrayList()节点数随着arr.length增而增
 public void appendNum(int arr[]){
     ArrayList list = new ArrayList();
     for(int i = 0; i < arr.length; i++){
@@ -1537,6 +1567,8 @@ public class TestThreadBT {
 
 
 # 图graph
+
+
 
 
 
