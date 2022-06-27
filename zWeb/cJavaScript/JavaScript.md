@@ -519,7 +519,11 @@ let fun = function (){
 fun();
 ```
 
-立即执行函数：不需要调用就执行的函数。
+### 立即执行函数
+
+立即执行函数：不需要调用就执行的函数；主要作用就是，创建了一个独立的作用域。
+
+立即执行函数的写法：（第二个括号可以看作是调用该函数，可以传入参数，可以为函数命名）
 
 ```js
 // 函数名不是必须的，可以传入参数
@@ -1933,9 +1937,9 @@ DOM2方式的主要优势就是可以为同一事件添加多个事件处理程�
 </body>
 ```
 
-# 事件案例
+## 事件案例
 
-## 复选框全选
+### 复选框全选
 
 ```html
 <body>
@@ -1972,7 +1976,7 @@ DOM2方式的主要优势就是可以为同一事件添加多个事件处理程�
 </script>
 ```
 
-## 动态生成表格
+### 动态生成表格
 
 [详解a标签中href="javascript:"的几种用法 - hello_HON - 博客园 (cnblogs.com)](https://www.cnblogs.com/newones/p/12688580.html#:~:text=a标签的一种写法 <%2Fa> ，所以就来整理下a标签中href的几种用法。,这是常用的方法，但是这种方法在传递this等参数的时候很容易出问题，而且javascript%3A协议作为a的href属性的时候不仅会导致不必要的触发window.onbeforeunload事件，在IE里面更会使gif动画图片停止播放。 W3C标准不推荐在href里面执行javascript语句 这种方法是很多网站最常用的方法，也是最周全的方法，onclick方法负责执行js函数，而void是一个操作符，void (0)返回undefined，地址不发生跳转。)
 
@@ -2231,9 +2235,9 @@ if((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobil
 
 ![](img/bom_history.png)
 
-# BOM案例
+## BOM案例
 
-## 倒计时
+### 倒计时
 
 时间倒计表：
 
@@ -2309,7 +2313,7 @@ if((navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobil
 </body>
 ```
 
-## 页面跳转
+### 页面跳转
 
 ```js
 let time = 5;
@@ -2325,9 +2329,9 @@ let timer = setInterval(function (){
 
 # PC端网页特效
 
-## 元素偏移量-offset系列
+## 三系列属性
 
-### offset
+### 元素偏移量-offset系列
 
 ![](img/pc_offset.png)
 
@@ -2335,9 +2339,10 @@ let timer = setInterval(function (){
 
 offset的方式获取值与通过style获取属性值的区别：（注意，style不能获取内嵌样式表的值）
 
-![](img/pc_offsty.png)
+1. offset系列：获取到元素的偏移量或元素大小——获取的是一个不带单位的数值，只能读不能赋值。
+2. style：只能获取到行内样式的样式值，获取宽高之类的，获取的是样式属性的值——是带单位的字符串，可读可赋值。
 
-### 获取鼠标在盒子内坐标
+**案例——获取鼠标在盒子内坐标：**
 
 ```html
 <head>
@@ -2363,84 +2368,465 @@ offset的方式获取值与通过style获取属性值的区别：（注意，sty
 </body>
 ```
 
-### 模态框拖拽
+**案例——模态框拖拽：**
 
 利用事件对象的pageX、pageY；还有offsetLeft、offsetTop。
 
+```html
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+        <style>
+            body {
+                width: 100%;
+                height: 1080px;
+            }
+            .login_header {
+                position: absolute;
+                top: 100px;
+                left: 50%;
+                margin-left: -50px;
+                width: 100px;
+                background-color: salmon;
+                text-align: center;
+            }
+            .login {
+                width: 720px;
+                height: 400px;
+                position: absolute;
+                background-color: #fff;
+            }
+            .header {
+                text-align: center;
+            }
+            .header button {
+                position: absolute;
+                width: 46px;
+                height: 46px;
+                line-height: 46px;
+                text-align: center;
+                right: -23px;
+                top: -23px;
+                background-color: #f8f2f7;
+                border-radius: 50%;
+                border: 0;
+            }
+            .content {
+                text-align: right;
+                z-index: 1;
+            }
+            .content input {
+                width: 495px;
+                height: 50px;
+                margin-right: 82px;
+                margin-top: 30px;
+                border: 1px solid #ede8ed;
+                font-size: 16px;
+            }
+            .sub a {
+                display: block;
+                width: 360px;
+                height: 58px;
+                line-height: 58px;
+                text-align: center;
+                text-decoration: none;
+                color: #000;
+                margin: 42px 0 0 180px;
+                border: 1px solid #ede8ed;
+            }
+            #mask {
+                width: 100%;
+                height: 100%;
+                background-color: #a7a5a7;
+                z-index: 3;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login_header"><a href="#">登陆</a></div>
+        <div class="login" style="display: none;top: 50%;
+                                  left: 50%;
+                                  margin-top: -200px;
+                                  margin-left: -360px;">
+            <div class="header">
+                <h4>登陆会员</h4>
+                <button>关闭</button>
+            </div>
+            <div class="content">
+                <div>
+                    <label for="user">用户名：</label><input type="text" id="user" placeholder="请输出用户名">
+                </div>
+                <div>
+                    <label for="passwd">登陆密码：</label><input type="password" id="passwd" placeholder="请输入密码">
+                </div>
+            </div>
+            <div class="sub">
+                <a href="">登录会员</a>
+            </div>
+        </div>
+        <div id="mask" style="background-color: #a7a5a7;display: none"></div>
+        <script>
+            // 1.获取元素对象
+            let link = document.querySelector('.login_header');
+            let mask = document.getElementById('mask');
+            let login = document.querySelector('.login');
+            let close = document.querySelector('.header button');
+            let header = document.querySelector('.header');
+            // 2.点击弹出登录框
+            link.addEventListener('click',function (){
+                mask.style.display = 'block';
+                login.style.display = 'block';
+            });
+            // 3.点击close就退出
+            close.addEventListener('click',function (){
+                mask.style.display = 'none';
+                login.style.display = 'none';
+            })
+            // 4.拖拽事件
+            login.addEventListener('mousedown',function (e){
+                // 鼠标相对盒子内的位置
+                let x = e.pageX - login.offsetLeft;
+                let y = e.pageY - login.offsetTop;
+                document.addEventListener('mousemove',move);
+                function move(e){
+                    // 移动到的位置减去相对位置，就是新的位置
+                    login.style.marginLeft = '0';
+                    login.style.marginTop = '0';
+                    login.style.left = e.pageX - x  + 'px';
+                    login.style.top = e.pageY - y   +'px';
+                }
+                document.addEventListener('mouseup',function (){
+                    document.removeEventListener('mousemove',move);
+                })
+            })
+        </script>
+    </body>
+</html>
+```
 
 
-### 放大镜效果
 
-![](img/pc_jdF.png)
-
-## 元素可视区-client系列
-
-### client属性
+### 元素可视区-client系列
 
 ![](img/pc_client.png)
 
-### 立即执行函数
-
-立即执行函数：不需要调用就执行的函数；主要作用就是，创建了一个独立的作用域。
-
-立即执行函数的写法：（第二个括号可以看作是调用该函数，可以传入参数，可以为函数命名）
-
-1. 写法一：`(function(){})();`。
-2. 写法二：`(function(){}());`
-
-### 淘宝flexible源码分析
+可应用于内容自适应。
 
 
 
+### 元素滚动-scroll系列
 
-
-
-
-## 元素滚动-scroll系列
-
-### scroll属性
+scroll属性：
 
 ![](img/pc_scroll.png)
 
+![](img/scroll.png)
+
+scroll事件：当拖动滚动条时就会触发的事件。
+
+```js
+document.addEventListener('scroll',function(){
+    
+})
+```
+
+scroll应用案例——页面滚动到一定位置时将元素固定。
 
 
-### scroll事件
 
-当拖动滚动条时就会触发的事件。
-
-### 仿淘宝固定侧边栏
-
-
-
-## 三大系列总结
+### 三大系列总结
 
 ![](img/pc_threeAll.png)
 
-## mouseenter和mouseover的区别
+## mouseenter和mouseover
+
+
 
 ![](img/pc_mm.png)
 
 ## 动画函数封装
 
-### 动画实现原理
-
-通过定时器使元素产生运动，停止时就移除定时器。
+动画实现原理：通过定时器使元素产生运动，停止时就移除定时器。
 
 缓慢动画原理：
 
 ![](img/pc_缓慢动画.png)
 
-### 封装
+封装：函数封装、对象封装，将动画函数封装到单独的js文件。
 
-函数封装、对象封装。
+```js
+function animate(obj, target,callback){
+    clearInterval(obj.timer);
+    obj.timer = setInterval(function (){
+        // 整数步长 不要出现小数
+        //let step = Math.ceil((target - obj.offsetLeft) / 10);
+        let step = (target - obj.offsetLeft) / 10;
+        console.log(step)
+        // 向上取整与向下取整
+        step = step>0 ? Math.ceil(step):Math.floor(step);
+        if (obj.offsetLeft === target){
+            clearInterval(obj.timer);
+            // 回调函数，动画执行完毕再执行
+            if (callback){
+                callback();
+            }
+        }
+        obj.style.left = obj.offsetLeft + step + 'px';
+    },15)
+}
+```
 
-动画函数封装到单独的js文件。
-
-## 常见网页特效
-
-### 网页轮播图
 
 
+## 网页轮播图
+
+### 页面构造
+
+- 一个大盒子用于限定轮播图显示区域，盒子内的左按钮、右按钮和底部的小圆圈用于控制轮播图切换。
+
+![](img/轮播图.svg)
+
+创建轮播区盒子并摆放好其位置，然后加入盒子内容再设置好位置和样式，图像要在轮播方向上横向摆放。代码如下：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="index.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        a{
+            text-decoration: none;
+            color: #000;
+        }
+        ul,ol {
+            list-style: none;
+        }
+        .focus {
+            position: relative;
+            width: 600px;
+            height: 337.5px;
+            margin: 100px auto;
+            background-color: salmon;
+            overflow: hidden;
+        }
+        .focus ul{
+            position: absolute;
+            width: 3000px;
+        }
+        .focus ul li{
+            float: left;
+        }
+        .focus ul img {
+            width: 600px;
+            vertical-align: bottom;
+        }
+        .arrow-left, .arrow-right {
+            display: none;
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            border-radius: 50%;
+            background-color: aquamarine;
+            text-align: center;
+            z-index: 1;
+        }
+        .arrow-left {
+            top: 50%;
+            margin-top: -15px;
+        }
+        .arrow-right {
+            right: 0;
+            top: 50%;
+            margin-top: -15px;
+        }
+        .focus ol {
+            position: absolute;
+            bottom: 0;
+            margin-bottom: 10px;
+            margin-left: 60px;
+        }
+        .focus ol li {
+            float: left;
+            margin-left: 10px;
+            width: 10px;
+            height: 10px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+        }
+        .current {
+            background-color: fuchsia;
+        }
+    </style>
+</head>
+<body>
+<div class="focus">
+    <a href="#" class="arrow-left">&lt;</a>
+    <a href="#" class="arrow-right">></a>
+    <ul>
+        <li><a href="#"><img src="1.png" alt=""></a></li>
+        <li><a href="#"><img src="2.png" alt=""></a></li>
+        <li><a href="#"><img src="3.png" alt=""></a></li>
+        <li><a href="#"><img src="4.png" alt=""></a></li>
+    </ul>
+    <ol class="circle">
+
+    </ol>
+</div>
+</body>
+</html>
+```
+
+### 需求
+
+1. 鼠标聚焦到轮播区时，左侧、右侧按钮显现，鼠标移出了轮播区则隐藏。
+2. 动态生成小圆圈，点击小圆圈时可以滚动图片。
+3. 点击左侧、右侧按钮可以滚动图片。
+4. 点击按钮时，图片滚动，小圆圈也跟着变化。
+5. 自动轮播图播放
+
+### 需求实现
+
+1. 先实现左侧、右侧按钮的显示与隐藏——通过mouseenter、mouseleave事件。
+2. 小圆圈动态生成（通过for循环和节点创建、节点插入）。
+3. 为每个小圆圈添加点击事件——点击后小圆圈变色（通过排他思想实现单个变色），然后图片滚动。
+4. 图片滚动的规律是图片排行乘以图片宽度，n*width，为每张图片加入自定义属性以便根据索引数值来计算移动总距离。
+5. 滚动函数——封装：
+   1. 传入移动对象、目标移动的距离、回调函数，通过定时器实现动态移动效果，移动步长一般设置为`(目标移动距离-移动方向上的位置)/10`。
+6. 实现右侧按钮的滚动功能。
+7. 实现左侧按钮的功能功能。
+8. 自动播放功能。
+9. 节流阀。
+
+```js
+window.addEventListener('load', function (){
+    let arrow_l = document.querySelector('.arrow-left');
+    let arrow_r = document.querySelector('.arrow-right');
+    let focus = document.querySelector('.focus');
+    // 点击按钮或者小圆圈的辅助变量
+    let num=0;
+    let circle = 0;
+    // 1.左右按钮的显示与隐藏
+    focus.addEventListener('mouseenter',function (){
+        arrow_l.style.display = 'block';
+        arrow_r.style.display = 'block';
+        clearInterval(timer);
+        timer = null;
+    });
+    focus.addEventListener('mouseleave',function (){
+        arrow_l.style.display = '';
+        arrow_r.style.display = '';
+        timer = setInterval(function (){
+            arrow_r.click();
+        },2000);
+    });
+    // 2.动态生成小圆圈
+    let ul = document.querySelector('.focus ul');
+    let ol = document.querySelector('.focus ol');
+    let focusWith = focus.offsetWidth;
+    for (let i = 0; i < ul.children.length; i++) {
+        let li = document.createElement('li');
+        li.setAttribute('index',`${i}`);
+        ol.appendChild(li);
+        li.addEventListener('click',function (){
+            // 3.点击小圆圈变色
+            for (let j = 0; j < ol.children.length; j++) {
+                ol.children[j].className = '';
+            }
+            this.className = 'current';
+            // 4.点击小圆圈，图片移动
+            let index = this.getAttribute('index');
+            num = index;
+            circle = index;
+            animate(ul,-index*focusWith);
+        });
+    }
+    // 5.点击小圆圈变色——排他
+    ol.children[0].className = 'current';
+
+    // 6.点击按钮，图片移动
+    let firstChild = ul.children[0].cloneNode(true);
+    ul.appendChild(firstChild);
+    // 右侧按钮
+    arrow_r.addEventListener('click',function (){
+        if (num === ul.children.length-1) {
+            // 无缝滚动：复制第一张图到最后，当滚动第一张图时快速滚动回第一张
+            ul.style.left = '0';
+            num = 0;
+        }
+        num++;
+        animate(ul,-num*focusWith);
+        circle++;
+        // 小圆圈
+        if (circle ===4){
+            circle = 0;
+        }
+        for (let i = 0; i < ol.children.length; i++) {
+            ol.children[i].className = '';
+        }
+        ol.children[circle].className = 'current';
+    });
+    // 左侧按钮
+    arrow_l.addEventListener('click',function (){
+        if (num === 0) {
+            // 无缝滚动：复制第一张图到最后，当滚动第一张图时快速滚动回第一张
+            num = ul.children.length-1;
+            ul.style.left = -num * focusWith + 'px';
+        }
+        num--;
+        animate(ul,-num*focusWith);
+        circle--;
+        // 小圆圈
+        if (circle < 0){
+            circle = ol.children.length-1;
+        }
+        for (let i = 0; i < ol.children.length; i++) {
+            ol.children[i].className = '';
+        }
+        ol.children[circle].className = 'current';
+    });
+    // 7.自动播放
+    let timer = setInterval(function (){
+        arrow_r.click();
+    },2000);
+
+})
+// 函数封装 功能：元素区域移动 animate(移动对象, 目标移动距离,回调函数)
+function animate(obj, target,callback){
+    clearInterval(obj.timer);
+    obj.timer = setInterval(function (){
+        // 步长是变化的，以达到一个较好的动态效果
+        // 设置整数步长的方式一 
+        //let step = Math.ceil((target - obj.offsetLeft) / 10);
+        let step = (target - obj.offsetLeft) / 10;
+        // 设置整数步长的方式二
+        step = step>0 ? Math.ceil(step):Math.floor(step);
+        // 移动距离与目标移动距离
+        if (obj.offsetLeft === target){
+            clearInterval(obj.timer);
+            // 回调函数，动画执行完毕再执行
+            if (callback){
+                callback();
+            }
+        }
+        obj.style.left = obj.offsetLeft + step + 'px';
+        },15)
+}
+```
+
+### 节流阀
+
+节流阀目的：上一个函数动画执行完成完毕后，再去执行下一个函数动画，使得事件无法连续触发。
+
+核心实现思路：通过回调函数，添加一个变量来控制函数，锁住函数和解锁函数。
 
 
 
