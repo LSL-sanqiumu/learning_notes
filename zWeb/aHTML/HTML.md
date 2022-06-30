@@ -33,11 +33,12 @@ HTML 元素指的是从开始标签（start tag）到结束标签（end tag）�
 
 ## div、span
 
-div、span标签是没有语义的，可以将它们当作一个存放东西的盒子。
+div、span标签是没有语义的，可以将它们当作一个存放东西的盒子。也可将div、span称为图层。
 
-div，division的缩写，意为分割、分区；div是一个块级元素，单独占一块（一行），不设置高度时高度由里面的内容决定。
+- div，division的缩写，意为分割、分区；div是一个块级元素，单独占一块（一行），不设置高度时高度由里面的内容决定。
 
-span意为跨度、跨距，是一个行内元素，一行内可以存在多个该标签。
+- span意为跨度、跨距，是一个行内元素，一行内可以存在多个该标签。
+
 
 ```html
 <div></div>
@@ -178,13 +179,13 @@ definition description，定义描述——定义列表具体内容
 <!-- table、th、td可设置border -->
 ```
 
-| <table>的属性 | 属性值              | 描述                                              |
-| :-----------: | :------------------ | :------------------------------------------------ |
-|     align     | left、right、center | 表格相对周围元素的对齐方式                        |
-|    border     | 像素值              | 默认没有边框宽度                                  |
-|  cellpadding  | 像素值              | 单元格边缘与内容的空白距，默认1px                 |
-|  cellspacing  | 像素值              | 单元格之间、外框与内框之间的空白，<br>默认的是2px |
-|     width     | 像素值或百分比      | 整个表格的宽度                                    |
+| **`<table>`**标签的属性 | 属性值              | 描述                                              |
+| :---------------------: | :------------------ | :------------------------------------------------ |
+|          align          | left、right、center | 表格相对周围元素的对齐方式                        |
+|         border          | 像素值              | 默认没有边框宽度                                  |
+|       cellpadding       | 像素值              | 单元格边缘与内容的空白距，默认1px                 |
+|       cellspacing       | 像素值              | 单元格之间、外框与内框之间的空白，<br>默认的是2px |
+|          width          | 像素值或百分比      | 整个表格的宽度                                    |
 
 合并单元格：用于td标签
 
@@ -213,18 +214,18 @@ definition description，定义描述——定义列表具体内容
 
 ### input：
 
-| 常用的type属性值 | 描述                                     |
-| :--------------: | :--------------------------------------- |
-|       text       | 单行的输入字段，默认可输入20个字符       |
-|     password     | 密码                                     |
-|      submit      | 提交按钮，把表单数据发送给服务器         |
-|      reset       | 重置按钮，清除表单数据                   |
-|      button      | 可点击按钮（多数用于启动JavaScript脚本） |
-|      radio       | 单选按钮                                 |
-|     checkbox     | 复选框                                   |
-|      hidden      | 定义隐藏的输入字段                       |
-|       file       | 文件上传                                 |
-|      image       | 图像提交按钮                             |
+| 常用的type属性值 | 描述                                           |
+| :--------------: | :--------------------------------------------- |
+|       text       | 单行的输入字段，默认可输入20个字符             |
+|     password     | 密码                                           |
+|      submit      | 提交按钮，把表单数据发送给服务器               |
+|      reset       | 重置按钮，清除表单数据                         |
+|      button      | 可点击按钮（多数用于启动JavaScript脚本）       |
+|      radio       | 单选按钮                                       |
+|     checkbox     | 复选框                                         |
+|      hidden      | 定义隐藏的输入字段，表单提交会自动提交到服务器 |
+|       file       | 文件上传                                       |
+|      image       | 图像提交按钮                                   |
 
 - name和value属性是每个表单元素都应该有的值，主要给后台人员使用。
 - 单选按钮或复选框按钮要有相同的name值。
@@ -237,6 +238,17 @@ definition description，定义描述——定义列表具体内容
 | value     | 自定义，类似变量值 | 定义input元素的值<br>如果是按钮则表示按钮上的文字<br>其它的则表示元素内容值 |
 | checked   | check              | 规定此input首次加载时被选中                                  |
 | maxlength | 正整数             | 规定输入字符的最大长度                                       |
+
+### readonly与disabled：
+
+```html
+<form action="">
+  <!-- 这两个都是只读，不能修改；区别在于 readonly的可以提交到服务器，disabled的即使有name属性也不能提交-->
+  usercode：<input type="text" name="usercode" value="111" readonly>
+  username：<input type="text" name="username" value="陆拾陆" disabled>
+  <input type="submit">
+</form>
+```
 
 
 
@@ -254,7 +266,7 @@ label是input元素标记标签，用于绑定一个表单元素，当点击`<la
 ### select：
 
 ```html
-<select name="" id="">
+<select name="" id="" multiple="multiple"> <!-- multiple="multiple" 表示支持多选 -->
     <!-- value中的值为提交到服务器的值，如果没有value则默认提交该标签内容 -->
 	<option value="">xxx</option> 
     <!-- 默认选中 -->

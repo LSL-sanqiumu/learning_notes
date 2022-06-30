@@ -12,6 +12,55 @@ Spring Boot是由Pivotal团队提供的全新框架，其设计目的是用来�
 2. application.yml，根据需要进行一定的配置。
 3. 各种整合操作。
 
+**手动搭建SpringBoot环境：**
+
+搭建SpringBoot项目可以通过IDEA的SpringBoot向导来搭建，这里采用手动搭建方式。
+
+**1、创建Maven项目，然后进行以下操作：**
+
+场景启动器的引入：（starter场景的artifactId见https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-starter。）
+
+```xml
+<!-- pom.xml中引入父依赖 -->
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.6.5</version>
+    <relativePath/> <!-- lookup parent from repository -->
+</parent>
+<!-- pom.xml中引入场景启动器：spring-boot-starter是必须的 -->
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+    <!-- 测试依赖 -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+    ......
+</dependencies>
+```
+
+按以下示例创建好主启动类：
+
+```java
+@SpringBootApplication
+public class Review01QuickstartApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(Review01QuickstartApplication.class, args);
+    }
+}
+```
+
+**2、用yml文件或properties文件进行配置**
+
+resources目录下创建application.properties或application.yml配置文件。
+
+**3、利用SpringBoot整合MyBatis、Spring、SpringMVC等**
+
 
 
 ## 关于yml配置文件
@@ -2039,5 +2088,4 @@ public class Config {
 
 }
 ```
-
 

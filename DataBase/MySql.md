@@ -213,7 +213,8 @@ default-character-set=utf8mb4
    1. 修改密码：`ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'root';`。
    2. 设置密码永不过期：`alter user 'root'@'localhost' identified by 'root' password expire never;`。
 8. 授予远程访问：`create user 'root'@'%' identified with mysql_native_password by 'root';grant all privileges on *.* to 'root'@'%' with grant option;`；刷新权限`flush privileges;`。（默认情况下不能通过root来进行远程登录）
-   - 如何查看用户是否能远程登录？进入mysql后，`use mysql`，然后`select host,user from user`，就可查出，host是指可使用该用户来登录的主机，如果是host是`%`就表明任何主机都可使用该账户登录。
+   - 如何查看用户是否能远程登录？进入mysql后，`use mysql`，然后`select host,user from user;`，就可查出，host是指可使用该用户来登录的主机，如果是host是`%`就表明任何主机都可使用该账户登录。
+   - `GRANT ALL PRIVILEGES ON *.* TO root@'%' IDENTIFIED BY 'Grand_p0ss' WITH GRANT OPTION; FLUSH PRIVILEGES;`MySQL5使用该命令开启远程登录，然后刷新权限。
 9. 因为部分可视化工具，不支持最新版本 mysql 8.0 加密规则，导致无法链接：
    - 可以修改加密规则：`ALTER USER 'root'@'%' IDENTIFIED BY 'root' PASSWORD EXPIRE NEVER;`。
    - 或者这样：`ALTER USER 'root'@'%' IDENTIFIED with mysql_native_password by 'root';`。

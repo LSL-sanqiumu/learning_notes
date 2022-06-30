@@ -1001,8 +1001,9 @@ yum：一个shell前端软件包管理器，基于rpm包管理，能够从指定
 2. 解压压缩包，移动：`mv xx /usr/local/tomcat`。
 3. 进入Tomcat的bin目录，`vim setclasspath.sh`配置JAVA_HOME。
 4. 进入Tomcat的bin目录，执行`sudo ./startup.sh`。
-4. 确保端口开放。
-4. 设置开机重启。
+5. 确保端口开放。
+6. 设置开机重启：`systemctl`。
+7. 关机：进入Tomcat的bin目录，执行`sudo ./shutdown.sh`。
 
 
 
