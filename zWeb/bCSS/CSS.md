@@ -1,4 +1,4 @@
-# CSS
+# CSS基础
 
 ## css的引入
 
@@ -569,6 +569,34 @@ CSS3新增盒子阴影：`box-shadow：h-shadow v-shadow blur spread color inset
    }
    ```
 
+## BFC
+
+## BFC
+
+### 概念
+
+BFC（Block Formatting Context），格式化上下文，指一个独立的渲染区域，或者说是一个隔离的独立容器。
+
+（一个独立的封闭空间，不会影响到其外面的内容。）
+
+### 条件
+
+可以形成BFC的元素有：
+
+1. 浮动元素，float；
+2. 绝对定位元素，position；
+3. 元素的display为（inline-block、table-cell、table-caption、flex）中的一个；
+4. 元素的overflow除visible以外的值（hidden、auto、scroll）；
+5. 根元素body。
+
+### 特性
+
+1. 内部的box会在垂直方向上一个接一个放置；
+2. 垂直方向上的距离由margin决定；
+3. BFC的区域不会和浮动（float）的元素的区域重叠；
+4. 计算BFC的高度，浮动元素也参与计算；
+5. BFC就是页面上的一个独立容器，容器里面的子元素不会影响外面的元素。
+
 
 
 ## 四种定位
@@ -919,17 +947,9 @@ table标签的一个属性——**border-collapse**，其属性值作用如下�
     }
 ```
 
-# Emmet语法
+# HTML5和CSS3简版
 
-![](image/emmet.png)
-
-5. `div.xxx`，`div#xxx`
-6. `div.xxx$*5`
-7. `div{$*5}`
-
-# HTML5和CSS3
-
-## 初始化css
+## 初始化css模板
 
 ```css
 * {
@@ -980,21 +1000,48 @@ body{
 
 ## HTML5新增
 
-新增特性都有兼容性问题，IE9+才支持。HTML5新增语义化标签：
+### 新增语义化标签
 
-- header：头部标签
-- nav：导航标签
-- article：内容标签
-- section：定义文档某个区域
-- aside：侧边栏标签
-- footer：尾部标签
+新增特性都有兼容性问题，IE9+才支持。HTML5新增语义化标签：header——头部标签、nav——导航标签、article——内容标签、section——定义文档某个区域、aside——侧边栏标签、footer——尾部标签。
 
-新增的多媒体标签：
+![](image/newhtml5.png)
 
-- 音频：audio
-- 视频：video
+### 新增的多媒体标签
 
-![](image/html5.png)
+视频：
+
+```html
+ <video src="../../../learning_video/海蒂和爷爷.mp4" controls="controls"  width="" height="" preload="none" poster="static/img/leijun.png" muted="muted"></video>
+```
+
+![](image/video.png)
+
+音频：
+
+```html
+<audio src=""></audio>
+```
+
+![](image/audio.png)
+
+### 新增表单相关
+
+新增的input类型：
+
+| input类型     | 说明                |
+| ------------- | ------------------- |
+| type="email"  | 输入必须为email类型 |
+| type="url"    | 输入必须为URL类型   |
+| type="date"   | 输入必须为日期类型  |
+| type="time"   | 输入必须为时间类型  |
+| type="month"  | 输入必须为月类型    |
+| type="week"   | 输入必须为周类型    |
+| type="number" | 输入必须为数字类型  |
+| type="tel"    | 输入必须为手机号码  |
+| type="search" | 搜索框              |
+| type="color"  | 颜色选择表单        |
+
+新增表单属性：
 
 ![](image/html5-form.png)
 
@@ -1038,7 +1085,7 @@ transform，CSS3，元素的位移（translate）、旋转（rotate）、缩放�
 
 3D位移：
 
-- `transform: translate3d(x, y, z)`：里面的xyz不能省略；可以单独设置，和2D转换的一致，translateZ()一般都是像素px；
+- `transform: translate3d(x, y, z)`：里面的xyz不能省略；可以单独设置，和2D转换的一致，translateZ()一般都是像素px。
 
 透视：perspective
 
@@ -1063,7 +1110,7 @@ transform，CSS3，元素的位移（translate）、旋转（rotate）、缩放�
 
 ## 过渡
 
-过渡写到本身上，谁做动画给谁加。（在元素的属性上生效）
+过渡写到本身上，谁做动画给谁加。（在元素的属性上生效）过渡常和`:hover`一起搭配使用。	
 
 ```css
 transition: 要过渡的属性 花费时间 运动曲线 何时开始;
@@ -1124,20 +1171,38 @@ animation-timing-function（动画的速度曲线细节）：
 
   ![](image/逐字显示.png)
 
-  
 
-# ~~单移动端~~
+# 弹性布局与栅格布局
+
+## 弹性布局
+
+
+
+
+
+## 栅格布局
+
+
+
+# 单移动端
 
 ## 概述
 
 移动端开发有单独制作移动端页面和响应式页面两种，目前市场**主流还是单独制作移动端页面**。
 
-视口：分为视觉视口（屏幕可视区）、布局视口（移动端浏览器默认设置的布局视口）、理想视口（设备多宽，布局视口就多宽）。
+视口：
 
-meta视口标签：(标准的viewport设置)
+1. 分为视觉视口（屏幕可视区，所看到的网站的区域）。
+2. 布局视口（移动端浏览器默认设置的布局视口）。
+3. 理想视口（为了使网站在移动端有最理想的浏览和阅读宽度而设定。设备多宽，布局视口就多宽）。
+
+![](image/viewport.png)
+
+meta之视口标签及其属性：
 
 ```html
-<meta name="viewport" content="width=dece-widthhhhh, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<!-- 标准的viewport设置 -->
+<meta name="viewport" content="width=dece-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
 ```
 
 ![](image/meta视口.png)
@@ -1146,18 +1211,36 @@ meta视口标签：(标准的viewport设置)
 
 背景图片宽高——背景缩放：
 
-- background-size：宽度  高度；（单位：长度、百分比、cover（宽高等比拉伸到能覆盖背景区域）、contain（右下角开始等比拉伸到某一边碰到背景区域某一边，类似图片在背景区域所能等比放大完全显示的最大尺寸）；只设置宽高其中一个就是等比设置）
+- background-size：宽度  高度；（宽高单位：长度、百分比；宽高的特殊值：、cover（宽高等比拉伸到能覆盖背景区域）、contain（右下角开始等比拉伸到某一边碰到背景区域某一边，类似图片在背景区域所能等比放大完全显示的最大尺寸）；只设置宽高其中一个也是等比设置）
 
 
 ## 移动端技术解决方案
 
-移动端初始化CSS推荐使用normalize.css；
+移动端初始化CSS推荐使用normalize.css（[normalize.css (csstools.github.io)](https://csstools.github.io/normalize.css/)）。
 
-下载地址：[normalize.css (csstools.github.io)](https://csstools.github.io/normalize.css/)；
+特殊样式：
 
-![](image/移动端css特殊样式.png)
+```css
+box-sizing: border-box;
+-webkit-box-sizing: border-box;
+-webkit-tap-highlight-color: transparent;
+/* 移动端浏览器 在ios中加上这个属性才能给按钮和输入框自定义样式 */
+-webkit-apperarance: none;
+/* 禁用长按页面时弹出菜单 */
+img,a {-webkit-touch-callout: none;}
+```
 
-![](image/移动端布局.png)
+单独制作移动端页面：（主流）
+
+1. 使用流式布局（百分值布、局）。
+2. flex弹性布局（推荐）。
+3. less + rem + 媒体查询。
+4. 混合布局。
+
+响应式页面兼容移动端：
+
+1. 媒体查询。
+2. bootstarp。
 
 ## 单移动端页面
 
@@ -1165,33 +1248,35 @@ meta视口标签：(标准的viewport设置)
 
 ![](image/流式布局.png)
 
-总结：
+**总结：需要设定好主体盒子的width，后面的子元素设置为百分值时默认以父盒子为参考，并且应该设定最大最小宽度，防止尺寸过小或过大引起的布局失效。**
 
-- 设定好主体盒子的width，后面的子元素设置为百分值时默认以父盒子为参考，应该设定最大最小宽度，防止尺寸过小或过大引起的布局失效。
+
 
 ### flex弹性布局
 
-弹性盒：设置为display：flex/inline-flex的元素，弹性盒可以是任意元素。
+弹性盒：设置`display：flex或inline-flex;`的元素，弹性盒可以是任意元素。
 
 ![](image/flexfather.png)
 
-- flex-direction：row（左到右）、column（上到下）、row-reverse、column-reverse（reverse，反转）；（方向按照语言书写方向会有一个默认值，不同的语言下的网页主轴方向不同，例如中文网页左到右，阿拉伯语言网站右到左）；
-- justify-content：
+1. flex-direction：row（左到右）、column（上到下）、row-reverse、column-reverse（reverse，反转）；（方向按照语言书写方向会有一个默认值，不同的语言下的网页主轴方向不同，例如中文网页左到右，阿拉伯语言网站右到左）；
+2. justify-content：
   - flex-start、flex-end：紧靠主轴起边或终边；
   - center：把子元素当做整体居于主轴中点；
   - space-between：把第一个和最后一个都紧靠主轴起边或终边，剩余的等空白间隔排序占满剩余行空间；
   - space-around：减去子元素所占宽度，然后剩余的空间等分给各个元素两侧；（相当于等分为左右margin值）；
   - space-evenly：等分空间，分布子元素两侧，使得元素与元素、元素与起边或终边的间隔都是相同的；
-- flex-wrap：wrap（换行）、nowrap（不换行，默认值）；
-- aligin-items：影响的是垂轴上的对齐，flex-end（下上）、flex-start（上下）、center（垂直居中）、baseline（基线对齐）、stretch（默认，垂直拉伸）；
-- aligin-content：影响的是垂直方向上的，值比justify-content多一个stretch（垂直拉伸）；
-- flex-flow：row  wrap；
+3. flex-wrap：wrap（换行）、nowrap（不换行，默认值）；
+4. aligin-items：影响的是垂轴上的对齐，flex-end（下上）、flex-start（上下）、center（垂直居中）、baseline（基线对齐）、stretch（默认，垂直拉伸）；
+5. aligin-content：影响的是垂直方向上的，值比justify-content多一个stretch（垂直拉伸）；
+6. flex-flow：row  wrap；
 
 弹性盒元素：设置为display：flex/inline-flex的元素的子元素。
 
-- flex：定义当前弹性子元素分配剩余空白空间，值为数值或百分比，意为多少份；
-- aligin-self：定义**某个**弹性子元素对齐方式，侧轴（垂直）上的对齐方式，与aligin-items的值一致；
-- order：定义弹性元素排列顺序，数值越小越往前，数值越大离起边越远；
+1. flex：定义当前弹性子元素分配剩余空白空间，值为数值或百分比，意为多少份。
+2. aligin-self：定义**某个**弹性子元素对齐方式，侧轴（垂直）上的对齐方式，与aligin-items的值一致。
+3. order：定义弹性元素排列顺序，数值越小越往前，数值越大离起边越远。
+
+
 
 ### rem适配布局1
 
@@ -1310,7 +1395,7 @@ vscode的cssrem插件，可以自动将px值转为rem值（需要进入设置里
 
 ### 混合布局
 
-# ~~响应式页面~~
+# 响应式页面
 
 ## 媒体查询
 
@@ -1400,35 +1485,17 @@ bootstrap将页面划分为12列。
 
 # 实战
 
-## BFC
-
-## 概念
-
-BFC（Block Formatting Context），格式化上下文，指一个独立的渲染区域，或者说是一个隔离的独立容器。
-
-（一个独立的封闭空间，不会影响到其外面的内容。）
-
-## 条件
-
-可以形成BFC的元素有：
-
-1. 浮动元素，float；
-2. 绝对定位元素，position；
-3. 元素的display为（inline-block、table-cell、table-caption、flex）中的一个；
-4. 元素的overflow除visible以外的值（hidden、auto、scroll）；
-5. 根元素body。
-
-## 特性
-
-1. 内部的box会在垂直方向上一个接一个放置；
-2. 垂直方向上的距离由margin决定；
-3. BFC的区域不会和浮动（float）的元素的区域重叠；
-4. 计算BFC的高度，浮动元素也参与计算；
-5. BFC就是页面上的一个独立容器，容器里面的子元素不会影响外面的元素。
 
 
 
 
+# Emmet语法
+
+![](image/emmet.png)
+
+5. `div.xxx`，`div#xxx`
+6. `div.xxx$*5`
+7. `div{$*5}`
 
 
 
