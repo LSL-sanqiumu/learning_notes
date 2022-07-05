@@ -622,25 +622,237 @@ xhr2.send()
   </script>
   ```
 
+# 实现省市联动
+
+1. 什么是省市联动？
+
+   - 在网页上，选择对应的省份之后，动态的关联出该省份对应的市。选择对应的市之后，动态的关联出该市对应的区。（首先要清楚需求）
+
+2. 进行数据库表的设计
+
+   - ```
+     t_area （区域表）
+     id(PK-自增)	  code		name		pcode
+     ---------------------------------------------
+     1				001		 河北省		null
+     2				002		 河南省		null
+     3				003		 石家庄	    001
+     4				004		 邯郸			 001
+     5				005		 郑州			 002
+     6				006		 洛阳			 002
+     7				007		 丛台区	    004  
+     
+     将全国所有的省、市、区、县等信息都存储到一张表当中。
+     采用的存储方式实际上是code pcode形式。
+     ```
+
+3. 建表t_area，模拟好数据。
+
+   ```mysql
+   create table t_area(
+   id int auto_increment not null primary key,
+   `code` varchar(255),
+   `name` varchar(255),
+   `pcode` varchar(255)
+   )engine=innodb default charset=utf8;
+   ```
+
+   ```mysql
+   insert into t_area(`code`,`name`,pcode) values
+   ('001','河北省',null),('002','河南省',null),
+   ('003','石家庄','001'),('004','邯郸','001'),
+   ('005','郑州','002'),('006','洛阳','002'),
+   ('007','江苏省',null),('008','南京','007'),
+   ('009','武汉','007');
+   ```
+
+4. 页面加载完毕之后，先把省份全部展现出来，然后再实现城市的展现（当province发生改变就发起ajax请求来获取城市的数据）：
+
+   ```js
+   // 使用上面封装好的库——jQuery
+   $(function (){
+       // 1.省份展现
+       $.ajax({
+           type : "get",
+           url : "/ajax/listArea",
+           data : "t=" + new Date().getTime(),
+           async : true,
+           success : function (jsonArr){
+               for (let i = 0; i < jsonArr.length; i++) {
+                   let option = document.createElement('option');
+                   let area = jsonArr[i];
+                   option.value = area.code;
+                   option.innerHTML = area.name;
+                   document.getElementById('province').appendChild(option);
+               }
+           }
+       })
+       // 2.选择省份后显示城市
+       $("#province").change(function (){
+           $.ajax({
+               type : "get",
+               url : "/ajax/listArea",
+               data : "t=" + new Date().getTime() + "&pcode="+this.value,
+               async : true,
+               success : function (jsonArr){
+                   // 删除上一次请求插进去的标签
+                   let city = document.getElementById('city');
+                   if (city.children.length>1){
+                       for (let i = city.children.length - 1; i > 0; i--) {
+                           city.removeChild(city.children[i]);
+                       }
+                   }
+                   // 插入标签
+                   for (let i = 0; i < jsonArr.length; i++) {
+                       let option = document.createElement('option');
+                       let area = jsonArr[i];
+                       option.value = area.code;
+                       option.innerHTML = area.name;
+                       city.appendChild(option);
+                   }
+               }
+           })
+       })
+   })
+   ```
+
+   ```js
+   // 不封装
+   window.onload = function (){
+           let province = document.getElementById('province');
+           let xhr = new XMLHttpRequest();
+           xhr.open("GET",'/ajax/listArea');
+           xhr.send();
+           // 1.实现省份的
+           xhr.onreadystatechange = function (){
+               if (this.readyState === 4){
+                   if (this.status === 200){
+                       let list = JSON.parse(xhr.responseText);
+                       for (let i = 0; i < list.length; i++) {
+                           let option = document.createElement("option");
+                           option.value = list[i].code;
+                           option.innerText = list[i].name;
+                           province.appendChild(option);
+                       }
+                   }
+               }
+           }
+           // 2.实现城市的
+           province.onchange = function (){
+               // 清除option
+               let city = document.getElementById('city');
+               if (city.children.length > 1){
+                   for (let i = city.children.length - 1; i > 0; i--) {
+                       city.removeChild(city.children[i]);
+                   }
+               }
+               // 发起请求获取数据并插入option标签
+               let xhr = new XMLHttpRequest();
+               xhr.open("GET",'/ajax/listArea?pcode='+this.value);
+               xhr.send();
+               xhr.onreadystatechange = function (){
+                   if (this.readyState === 4){
+                       if (this.status === 200){
+                           let list = JSON.parse(this.responseText);
+                           for (let i = 0; i < list.length; i++) {
+                               let option = document.createElement("option");
+                               option.value = list[i].code;
+                               option.innerText = list[i].name;
+                               document.getElementById('city').appendChild(option);
+                           }
+                       }
+                   }
+               }
+           }
+       }
+   ```
+
+   ```java
+   // 后端响应
+   public class ListArea extends HttpServlet {
+       @Override
+       protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+           String pcode = request.getParameter("pcode");
+           // 连接数据库
+           String driver = "com.mysql.jdbc.Driver";
+           String user = "root";
+           String url = "jdbc:mysql://175.178.181.190:3306/test?characterEncoding=utf8&useUnicode=true&useSSL=false&serverTimeZone=UTC";
+           String passwd = "Lsl333...";
+           ArrayList<Area> areaList = new ArrayList<>();
+           Connection conn = null;
+           PreparedStatement ps = null;
+           ResultSet rs = null;
+           String sql;
+           try {
+               Class.forName(driver);
+               conn = DriverManager.getConnection(url,user,passwd);
+               if (pcode == null){
+                   sql = "select code,name from t_area where pcode is null";
+                   ps = conn.prepareStatement(sql);
+                   rs = ps.executeQuery();
+   
+               }else {
+                   sql = "select code,name from t_area where pcode=?";
+                   ps = conn.prepareStatement(sql);
+                   ps.setString(1,pcode);
+                   rs = ps.executeQuery();
+               }
+               while (rs.next()){
+                   String code = rs.getString("code");
+                   String name = rs.getString("name");
+                   Area area = new Area(code,name);
+                   areaList.add(area);
+               }
+   
+           } catch (Exception e) {
+               e.printStackTrace();
+           }finally {
+               // 第六步：释放资源
+               if (rs != null){
+                   try {
+                       rs.close();
+                   } catch (SQLException throwables) {
+                       throwables.printStackTrace();
+                   }
+               }
+               if (ps != null){
+                   try {
+                       ps.close();
+                   } catch (SQLException throwables) {
+                       throwables.printStackTrace();
+                   }
+               }
+               if (conn != null){
+                   try {
+                       conn.close();
+                   } catch (SQLException throwables) {
+                       throwables.printStackTrace();
+                   }
+               }
+           }
+           response.setContentType("text/html;charset=UTF-8");
+           PrintWriter w = response.getWriter();
+           String json = JSON.toJSONString(areaList);
+           w.print(json);
+       }
+   }
+   ```
+
+
+
 # Ajax跨域问题
 
 ## 跨域
 
-- 跨域是指从一个域名的网页去请求另一个域名的资源。比如从百度(https://baidu.com)页面去请求京东(https://www.jd.com)的资源。
-- 通过超链接或者form表单提交或者window.location.href的方式进行跨域是不存在问题的（**大家可以编写程序测试一下**）。但在一个域名的网页中的一段js代码发送ajax请求去访问另一个域名中的资源，由于同源策略的存在导致无法跨域访问，那么ajax就存在这种跨域问题。
-- 同源策略是指一段脚本只能读取来自同一来源的窗口和文档的属性，同源就是协议、域名和端口都相同。
+- 跨域：是指从一个域名的网页去请求另一个域名的资源。比如从百度(https://baidu.com)页面去请求京东(https://www.jd.com)的资源。
+- 同源策略（CORS）：浏览器的安全策略，是指一段脚本只能读取来自同一来源的窗口和文档的属性，同源就是协议、域名和端口都相同。（理解为限定了脚本的作用域范围；由于同源策略，跨域时同一个XMLHttpRequest对象不允许被共享）
 - 同源策略有什么用？如果你刚刚在网银输入账号密码，查看了自己还有1万块钱，紧接着访问一些不规矩的网站，这个网站可以访问刚刚的网银站点，并且获取账号密码，那后果可想而知。所以，从安全的角度来讲，同源策略是有利于保护网站信息的。
+- 通过超链接或者form表单提交或者window.location.href的方式进行跨域是不存在问题的（**大家可以编写程序测试一下**）。但在一个域名的网页中的一段js代码发送ajax请求去访问另一个域名中的资源，由于同源策略的存在导致无法跨域访问，那么ajax就存在这种跨域问题。
 - 有一些情况下，我们是需要使用ajax进行跨域访问的。比如某公司的A页面(a.bjpowernode.com)有可能需要获取B页面(b.bjpowernode.com)。
 
 ## 同源还是不同源
 
-- 区分同源和不同源的三要素
-
-- - 协议
-  - 域名
-  - 端口
-
-- 协议一致，域名一致，端口号一致，三个要素都一致，才是同源，其它一律都是不同源
+区分同源和不同源的三要素：协议、域名、端口；协议一致，域名一致，端口号一致，三个要素都一致，才是同源，其它一律都是不同源。
 
 | **URL1**                           | **URL2**                        | **是否同源** | 描述               |
 | ---------------------------------- | ------------------------------- | ------------ | ------------------ |
@@ -651,24 +863,26 @@ xhr2.send()
 | http://www.myweb.com/a.js          | http://www.myweb2.com/b.js      | 不同源       | 域名不同           |
 | http://www.myweb.com/a.js          | http://crm.myweb.com/b.js       | 不同源       | 子域名不同         |
 
-## 复现Ajax跨域问题
-
-
-
 
 
 ## AJAX跨域解决方案
 
 ### 方案1：设置响应头
 
-- 核心原理：跨域访问的资源允许你跨域访问。
+核心原理：跨域访问的资源允许你跨域访问。后端设置允许跨域访问当前资源，操作如下：
 
-- 实现：
-
-  - ```java
-    response.setHeader("Access-Control-Allow-Origin", "http://localhost:8080"); // 允许某个
-    response.setHeader("Access-Control-Allow-Origin", "*"); // 允许所有
-    ```
+```java
+@WebServlet("/ajax")
+public class Allow extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // 只允许 http://localhost:8080 这个源对当前前资源进行跨域访问
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:8080");
+        // 允许所有源对当前资源进行跨域访问
+        response.setHeader("Access-Control-Allow-Origin", "*");
+    }
+}
+```
 
 ### 方案2：jsonp
 
@@ -677,44 +891,257 @@ xhr2.send()
 - jsonp不是ajax请求，但是可以完成局部刷新的效果，并且可以解决跨域问题。
 - 注意：jsonp解决跨域的时候，只支持GET请求。不支持post请求。
 
+如下：（8080的资源访问8010里面的资源）
+
+```java
+// http://localhost:8010/ajax10/ajax1
+@WebServlet("/ajax1")
+public class JsonpServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        System.out.println("jsonp方式");
+        PrintWriter w = response.getWriter();
+        // 返回字符串，浏览器接收到后会以js代码运行
+        //w.print("alert('响应回Ajax代码')");
+        //w.print("sayHello();");
+        // 响应一段js代码，顺便传数据
+        w.print("sayHello({\"name\":\"jackson\"});");
+    }
+}
+```
+
+```html
+<!-- http://localhost:8080/ajax80/ -->
+<body>
+<script>
+    function sayHello(data){
+        alert("Hello!"+data.name);
+    }
+</script>
+<!-- 超链接不能局部刷新 -->
+<!-- script标签可以跨域，src为一个请求路径时会将返回的数据当作当前script标签的js代码并解析执行 -->
+<script type="text/javascript" src="http://localhost:8010/ajax10/ajax1">
+</script>
+</body>
+```
+
+更高级的写法：（将方法名当作参数传给另一个源的服务端，然后取得方法名再返回）
+
+```html
+<!-- http://localhost:8080/ajax80/ -->
+<body>
+<script>
+    function sayHello(data){
+        alert("Hello!"+data.name);
+    }
+</script>
+<!-- 超链接不能局部刷新 -->
+<!-- script标签可以跨域，src为一个请求路径时会将返回的数据当作当前script标签的js代码并解析执行 -->
+<script type="text/javascript" src="http://localhost:8010/ajax10/ajax1?method=sayHello">
+</script>
+</body>
+```
+
+```java
+// http://localhost:8010/ajax10/ajax1
+@WebServlet("/ajax1")
+public class JsonpServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        PrintWriter w = response.getWriter();
+        request
+        // 响应一段js代码，顺便传数据
+        w.print("sayHello({\"name\":\"jackson\"});");
+    }
+}
+```
+
+实现局部刷新：
+
+```html
+<!-- http://localhost:8080/ajax80/ -->
+<body>
+<div></div>
+<button id="btn">jsonp-点击触发</button>
+<script>
+    function sayHello(data){
+        alert("Hello!"+data.name);
+        document.querySelector('body div').innerHTML=data.name;
+    }
+    window.onload = function (){
+        let btn = document.getElementById('btn');
+        btn.onclick = function (){
+            let script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'http://localhost:8010/ajax10/ajax1?method=sayHello';
+            document.body.appendChild(script);
+        }
+    }
+</script>
+</body>
+```
+
+
+
 ### 方案3：jQuery封装的jsonp
 
-- 牛人们写的jQuery库，已经对jsonp进行了封装。大家可以直接拿来用。
+1. 牛人们写的jQuery库，已经对jsonp进行了封装。大家可以直接拿来用。
 
-- 用之前需要引入jQuery库的js文件。（这里的jQuery库咱们就不再封装了，咱们直接用jQuery写好的jsonp方式。）
+2. 用之前需要引入jQuery库的js文件。（这里的jQuery库咱们就不再封装了，咱们直接用jQuery写好的jsonp方式。）
 
-- jQuery中的jsonp其实就是我们方案2的高度封装，底层原理完全相同。
+3. jQuery中的jsonp其实就是我们方案2的高度封装，底层原理完全相同。
 
-- 核心代码
+4. 核心代码
 
-  - ```javascript
-    $.ajax({
-        type : "GET",
-        url : "跨域的url",
-        dataType : "jsonp", // 指定数据类型
-        jsonp : "fun", // 指定参数名（不设置的时候，默认是："callback"）
-        jsonpCallback : "sayHello" // 指定回调函数的名字
-    							   // （不设置的时候，jQuery会自动生成一个随机的回调函数，
-        						   //并且这个回调函数还会自动调用success的回调函数。）
-    })
-    ```
+  ```javascript
+  $.ajax({
+      type : "GET",
+      url : "跨域的url",
+      dataType : "jsonp", // 指定数据类型
+      jsonp : "fun", // 指定参数名（不设置的时候，默认是："callback"）
+      jsonpCallback : "sayHello" // 指定回调函数的名字
+  							   // （不设置的时候，jQuery会自动生成一个随机的回调函数，
+      						   //并且这个回调函数还会自动调用success的回调函数。）
+  })
+  ```
 
-    
+5. 测试：
+
+  ```html
+  <body>
+  <div></div>
+  <button id="btn">jsonp-点击触发</button>
+  <script type="text/javascript" src="jquery-3.6.0.min.js"></script>
+  <script type="text/javascript">
+      function sayHello(data){
+          alert("Hello!"+data.name);
+          document.querySelector('body div').innerHTML=data.name;
+      }
+      $(function (){
+          $('#btn').click(function (){
+              // 发送所谓的请求（实际并不是）
+              $.ajax({
+                  type : "GET",
+                  // http://localhost:8010/ajax10/ajax1?method=sayHello
+                  url : "http://localhost:8010/ajax10/ajax1",
+                  // 指定数据类型
+                  dataType : "jsonp",
+                  // 指定参数名（不设置的时候，默认是："callback"）
+                  jsonp : "method",
+                  // 指定回调函数的名字
+                  // （不设置的时候，jQuery会自动生成一个随机的回调函数，
+                  // 并且这个回调函数还会自动调用success的回调函数。）
+                  jsonpCallback : "sayHello"
+  
+              })
+          })
+      })
+  </script>
+  </body>
+  ```
 
 ### 方案4：代理机制（httpclient）
 
-- 使用Java程序怎么去发送get/post请求呢？【GET和POST请求就是HTTP请求。】
+从后端发起请求去访问其他源的资源，实现跨域。
+
+![](img/1.ajax.proxy.png)
+
+1. 使用Java程序怎么去发送get/post请求呢？（GET和POST请求就是HTTP请求。）
   - 第一种方案：使用JDK内置的API（java.net.URL.....），这些API是可以发送HTTP请求的。
   - 第二种方案：使用第三方的开源组件，比如：apache的httpclient组件。（httpclient组件是开源免费的，可以直接用）
-- 在java程序中，使用httpclient组件可以发送http请求。
+2. 在java程序中，使用httpclient组件可以发送http请求。
   - 对于httpclient组件的代码，大家目前可以不进行深入的研究，可以从网上直接搜。然后粘贴过来，改一改，看看能不能完成发送get和post请求。
   - 使用httpclient组件，需要先将这个组件相关的jar包引入到项目当中。
 
+```xml
+   <!--****** httpclient start ******-->
+   <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>4.4.10</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>4.5.6</version>
+    </dependency>
+    <!--****** httpclient end******-->
+ 
+    <!--LMGD-注：这个依赖可选-->
+    <dependency>
+		<groupId>org.apache.httpcomponents</groupId>
+		<artifactId>httpasyncclient</artifactId>
+		<version>4.0.1</version>
+	 </dependency>
+  <!-- fastjson json-->
+	<dependency>
+		<groupId>com.alibaba</groupId>
+		<artifactId>fastjson</artifactId>
+		<version>1.1.40</version>
+	</dependency>
+```
+
+```java
+public class HttpClientSendGet {
+    public static void main(String args[]) throws Exception {
+        // 目标地址
+        //String url = "https://www.baidu.com";
+        String url = "http://localhost:8010/ajax10/ajax1";
+        HttpGet httpGet = new HttpGet(url);
+        //HttpPost httpPost = new HttpPost();
+
+        // 设置请求头类型 "application/x-www-form-urlencoded" "application/json"
+        httpGet.setHeader("Content-Type", "application/x-www-form-urlencoded");
+        System.out.println("调用URL: " + httpGet.getURI());
+
+        // httpClient实例化
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        // 通过httpClient执行请求
+        HttpResponse response = httpClient.execute(httpGet);
+        // entity = ResponseEntityProxy{[Content-Length: 25,Chunked: false]}
+        // 获取返回的数据，封装进了一个HttpEntity类
+        HttpEntity entity = response.getEntity();
+        System.out.println("返回状态码：" + response.getStatusLine());
+        // 获取响应返回的数据
+        BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent(), "UTF-8"));
+        //
+        String line = null;
+        StringBuffer responseSB = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+            responseSB.append(line);
+        }
+        System.out.println("服务器响应的数据是：" + responseSB);
+        reader.close();
+        httpClient.close();
+    }
+}
+调用URL: http://localhost:8010/ajax10/ajax1
+返回状态码：HTTP/1.1 200 
+服务器响应的数据：{"name":"jackson"}
+```
+
+
+
 ### 方案5：nginx反向代理
 
-- nginx反向代理中也是使用了这种代理机制来完成AJAX的跨域，实现起来非常简单，只要修改一个nginx的配置即可。以后大家学习nginx之后再说吧。！！！！
+nginx反向代理中也是使用了代理机制来完成AJAX的跨域，实现起来非常简单，只要修改一个nginx的配置即可。以后大家学习nginx之后再说吧。！！！！
 
 
+
+## AJAX实现搜索联想 自动补全
+
+- 什么是搜索联想？自动补全？
+  - 百度是一个很典型的代表。在百度的搜索框中输入相关信息的时候，会有搜索联想以及自动补全。
+  - 搜索联想和自动补全：实际上是为了方便用户的使用。让用户的体验更好。
+  - 搜索联想：当用户输入一些单词之后，自动联想出用户要搜索的信息，给一个提示。
+  - 自动补全：当联想出一些内容之后，用户点击某个联想的单词，然后将这个单词自动补全到搜索框当中。
+  - 搜索联想和自动补全功能，因为是页面局部刷新效果，所以需要使用ajax请求来完成。
+- 搜索联想，自动补全功能的核心实现原理？
+  - 当键盘事件发生之后，比如：keyup：键弹起事件。
+  - 发送ajax请求，请求中提交用户输入的搜索内容，例如：北京（发送ajax请求，携带“北京”两个字）
+  - 后端接收到ajax请求，接收到“北京”两个字，执行select语句进行模糊查询。返回查询结果。
+  - 将查询结果封装成json格式的字符串，将json格式的字符串响应到前端。
+  - 前端接收到json格式的字符串之后，解析这个json字符串，动态展示页面。
 
 # 附录：HTTP状态信息
 
