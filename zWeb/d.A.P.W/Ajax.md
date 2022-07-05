@@ -441,7 +441,7 @@ xhr.onerror = function(){
 }
 ```
 
-## Ajax请求取消
+## 取消Ajax请求
 
 ```js
 const btns = document.querySelectorAll('button');
@@ -525,6 +525,7 @@ xhr2.send()
 
   ```javascript
   function jQuery(selector){
+      // 根据ID获取元素对象
       if (typeof selector == "string") {
           if (selector.charAt(0) == "#") {
               domObj = document.getElementById(selector.substring(1))
@@ -595,13 +596,13 @@ xhr2.send()
   
       }
   }
-  $ = jQuery;
-  // 这里有个细节，执行这个目的是为了让静态方法ajax生效。
+  $ = jQuery; // 将jQuery赋给$，就可以使用$代替jQuery这个名
+  // 这里有个细节，执行这个目的是为了让静态方法ajax生效，静态方法随类加载而
   new jQuery();
   ```
-
+  
   使用以上库，怎么用？
-
+  
   ```html
   <script type="text/javascript" src="/ajax/js/jQuery-1.0.0.js"></script>
   <script type="text/javascript">

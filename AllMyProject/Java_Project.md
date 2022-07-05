@@ -2,13 +2,13 @@
 
 自顶向下，从项目中去学习所用到的技术。
 
-## 1.分布式基础-全栈开发篇
+# 一.分布式基础-全栈开发篇
 
 基础篇，前端页面制作、前后端分离的后台管理系统的增删改查。
 
-### 环境配置
+## 0.环境配置
 
-#### 虚拟机
+### 虚拟机
 
 **虚拟机安装：**
 
@@ -54,7 +54,7 @@
 
 4. `systemctl restart sshd`，重启即可。
 
-#### Docker安装及MySQL等
+### Docker安装及MySQL等
 
 Docker安装见Docked.md。
 
@@ -96,7 +96,7 @@ skip-name-resolve
 
 4、`docker exec -it redis redis-cli`。
 
-#### 开发工具及环境
+### 开发工具及环境
 
 JDK：1.8版本及以上。
 
@@ -121,7 +121,7 @@ HTML Snippets
 
 Git仓库：gulimall。
 
-## 微服务搭建
+## 1.微服务搭建
 
 1、在gulimall主目录里创建这些Maven模块——包为com.learn.gulimall.xxx (ware、orderd、...)，模块名为——（gulimall-product（商品服务）、gulimall-order（订单服务）、gulimall-ware（仓储服务）、gulimall-coupon（优惠卷服务）、gulimall-member（会员服务）），然后通过SpringBoot的向导来创建，然后修改各项目的pom.xml文件：（需要修改artifactId、name、description）
 
@@ -232,7 +232,7 @@ Git仓库：gulimall。
 
 4、提交并push。
 
-## 数据库初始化
+## 2.数据2库初始化
 
 数据库：数据库使用utf8mb4
 
@@ -244,7 +244,7 @@ Git仓库：gulimall。
 
 
 
-## 人人开源后台管理系统搭建
+## 3.人人开源后台管理系统搭建
 
 ### renren-fast
 
@@ -293,6 +293,225 @@ registry = https://registry.npm.taobao.org/
 6、运行成功之后跳转到页面，然后可与renren-fast连调：![](java_imgs/4.renren.png)
 
 登录账户：admin；密码：admin。
+
+## 4.使用renren-generator代码生成器
+
+### 以生成gulimall-product模块的基本CRUD代码为例
+
+1、克隆：[renren-generator: 人人开源项目的代码生成器，可在线生成entity、xml、dao、service、vue、sql代码，减少70%以上的开发任务 (gitee.com)](https://gitee.com/renrenio/renren-generator)，然后删除里面的.git文件。
+
+2、将renren-generator项目聚合到gulimall项目里。
+
+3、application.xml——配置好数据库；generator.properties——配置好生成的代码所在的包、表前缀等信息。
+
+![](java_imgs/5.generator.png)
+
+4、运行RenrenApplication，默认在80端口，直接访问`http://localhost/`，打开后生成代码并下载：
+
+![](java_imgs/6.generator_code.png)
+
+然后把生成的代码放进gulimall-product里，controller、service、dao、entity以及mapper，如下：
+
+![](java_imgs/7.copyparse.png)
+
+5、创建gulimall-common项目模块，用于存放每一个微服务公共依赖、bean、工具类等，这个项目模块是每个微服务的一个依赖，其pom.xml文件如下：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>gulimall</artifactId>
+        <groupId>com.learn.gulimall</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>gulimall-common</artifactId>
+    <description>微服务公共依赖、bean、工具类等</description>
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.8</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.12</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.17</version>
+        </dependency>
+    </dependencies>
+</project>
+```
+
+6、将renren-fast模块里的common目录里的**xss目录**复制到gulimall-common项目模块的common目录下、将renren-fast模块里的common目录里的utils目录下的几个类复制到gulimall-common项目模块的common目录下的utils目录里：
+
+![](java_imgs/8.common.png)
+
+7、在renren-generator项目模块的src/main/resources/template目录里找到Controller.java.vm，并注释掉里面的所有的RequiresPermissions，如下：
+
+```
+##import org.apache.shiro.authz.annotation.RequiresPermissions;
+##@RequiresPermissions("${moduleName}:${pathName}:info")
+```
+
+8、启动renren-generator重新生成代码，并将生成代码里面的controller目录替换掉原来放进gulimall-product的controller目录。
+
+9、在gulimall-common模块的xss目录里删除Xss开头的两个类，然后在renren-fast模块的src/main/java/io/renren/common/exception目录里将RRException.java复制到gulimall-common模块的utils目录里，再在gulimall-common加多两个依赖：
+
+```xml
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.17</version>
+</dependency>
+<dependency>
+    <groupId>javax.servlet</groupId>
+    <artifactId>servlet-api</artifactId>
+    <version>2.5</version>
+    <scope>provided</scope>
+</dependency>
+```
+
+10、解决Constant的报红：将renren-fast模块的group目录复制到gulimall-common模块的common目录下，再添加以下依赖：
+
+```xml
+<dependency>
+    <groupId>jakarta.validation</groupId>
+    <artifactId>jakarta.validation-api</artifactId>
+    <version>2.0.2</version>
+</dependency>
+```
+
+11、基本完成。
+
+### 5.配置与测试CRUD
+
+以生成gulimall-product模块的基本CRUD代码为例。
+
+1、gulimall-product里加上gulimall-common的依赖：
+
+```xml
+<dependency>
+    <groupId>com.learn.gulimall</groupId>
+    <artifactId>gulimall-common</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+</dependency>
+```
+
+2、创建application.yml文件，为gulimall-product配置数据源和mybatis-plus：
+
+```yml
+spring:
+  datasource:
+    username: root
+    password: 
+    url: jdbc:mysql://175.178.181.190:3306/gulimall_pms?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+```
+
+3、测试：
+
+```java
+@SpringBootTest
+class GulimallProductApplicationTests {
+    @Autowired
+    BrandService brandService;
+    @Test
+    void contextLoads() {
+        BrandEntity entity = new BrandEntity();
+        entity.setName("华为");
+        brandService.save(entity);
+        System.out.println("保存成功");
+    }
+}
+```
+
+```java
+@SpringBootTest
+class GulimallProductApplicationTests {
+
+
+    @Autowired
+    BrandService brandService;
+
+    @Test
+    void contextLoads() {
+        BrandEntity entity = new BrandEntity();
+        // 添加
+        /*entity.setName("华为");
+        brandService.save(entity);
+        System.out.println("保存成功");*/
+        // 更改
+        /*entity.setBrandId(1L);
+        entity.setDescript("华为");
+        brandService.updateById(entity);
+        System.out.println("更新成功");*/
+        // 查询
+        List<BrandEntity> list = brandService.list(new QueryWrapper<BrandEntity>().eq("brand_id", 1L));
+        for (BrandEntity b:list) {
+            System.out.println(b);
+        }
+    }
+}
+```
+
+## 5.快速配置-代码生成
+
+1、renren-generator：修改application.yml，修改generator.properties的moduleName和tablePrefix；然后启动项目，访问`http:localhost:80/`并生成代码。
+
+3、为各个微服务导入gulimall-common的依赖，并将下载好的代码放到对应的各个微服务模块里。
+
+4、修改各个微服务的application.yml，各个微服务端口设置：coupon：7000；member：8000；order：9000；product：10000；ware：11000。配置模板如下：
+
+```yml
+server:
+  port: 7000
+spring:
+  datasource:
+    username: root
+    password: 
+    url: jdbc:mysql://175.178.181.190:3306/gulimall_sms?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+```
+
+5、启动项目访问：
+
+1. coupon：`http://localhost:7000/coupon/coupon/list`。
+2. member：`http://localhost:8000/member/member/list`。
+3. order：`http://localhost:9000/order/order/list`。
+4. product：`http://localhost:10000/product/attr/list`。
+5. ware：`http://localhost:11000/ware/purchase/list`。
 
 
 
