@@ -622,7 +622,7 @@ xhr2.send()
   </script>
   ```
 
-# 实现省市联动
+# 案例-实现省市联动
 
 1. 什么是省市联动？
 
@@ -1126,22 +1126,192 @@ public class HttpClientSendGet {
 
 nginx反向代理中也是使用了代理机制来完成AJAX的跨域，实现起来非常简单，只要修改一个nginx的配置即可。以后大家学习nginx之后再说吧。！！！！
 
+### 总结
 
+前端不能进行跨域访问，只能通过在服务器端来完成跨域资源访问并返回给前端。
 
-## AJAX实现搜索联想 自动补全
+# 案例-实现搜索联想自动补全
 
-- 什么是搜索联想？自动补全？
+1. 什么是搜索联想？自动补全？
   - 百度是一个很典型的代表。在百度的搜索框中输入相关信息的时候，会有搜索联想以及自动补全。
   - 搜索联想和自动补全：实际上是为了方便用户的使用。让用户的体验更好。
   - 搜索联想：当用户输入一些单词之后，自动联想出用户要搜索的信息，给一个提示。
   - 自动补全：当联想出一些内容之后，用户点击某个联想的单词，然后将这个单词自动补全到搜索框当中。
   - 搜索联想和自动补全功能，因为是页面局部刷新效果，所以需要使用ajax请求来完成。
-- 搜索联想，自动补全功能的核心实现原理？
+2. 搜索联想，自动补全功能的核心实现原理？
   - 当键盘事件发生之后，比如：keyup：键弹起事件。
   - 发送ajax请求，请求中提交用户输入的搜索内容，例如：北京（发送ajax请求，携带“北京”两个字）
   - 后端接收到ajax请求，接收到“北京”两个字，执行select语句进行模糊查询。返回查询结果。
   - 将查询结果封装成json格式的字符串，将json格式的字符串响应到前端。
   - 前端接收到json格式的字符串之后，解析这个json字符串，动态展示页面。
+
+数据库：
+
+```mysql
+create table ajaxauto(
+id int not null auto_increment primary key,
+content varchar(255)
+)engine=innodb default charset=utf8;
+insert into ajaxauto(content) values
+('JavaScript'),('JavaWeb'),('Java'),
+('MySQL'),('mybatis'),('springboot');
+```
+
+前端ajax请求获取数据并处理：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>自动补全</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        #box {
+            width: 300px;
+            margin: 100px auto;
+        }
+        .userInput {
+            width: 300px;
+            height: 25px;
+            font-size: 20px;
+            padding-left: 10px;
+        }
+        .show {
+            display: none;
+            width: 300px;
+            border: 2px solid #000;
+            margin-top: 2px;
+        }
+        .show p {
+            padding-left: 10px;
+            height: 20px;
+            line-height: 20px;
+            margin: 5px 0 5px 0;
+        }
+        .show p:hover {
+            cursor: pointer;
+            background-color: aqua;
+        }
+    </style>
+</head>
+<body>
+<div id="box">
+    <input type="text" class="userInput">
+    <div class="show">
+
+    </div>
+</div>
+<script>
+    window.onload = function (){
+        let userInput = document.querySelector('.userInput');
+        let showData = document.querySelector('.show');
+        userInput.onkeyup = function (){
+            showData.style.display = 'none';
+            if (showData.children.length > 0){
+                for (let j = showData.children.length-1; j >= 0; j--) {
+                    showData.removeChild(showData.children[j]);
+                }
+            }
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET','/ajax/ajaxAuto?time='+new Date().getTime()+'&keyword='+this.value,true);
+            xhr.send();
+            xhr.onreadystatechange = function (){
+                if (this.readyState === 4) {
+                    if (this.status >= 200 && this.status < 300){
+                        let data = JSON.parse(xhr.responseText);
+                        for (let i = 0; i < data.length; i++) {
+                            let p = document.createElement('p');
+                            p.innerText = data[i].content;
+                            showData.appendChild(p);
+                            showData.style.display = 'block';
+                            p.onclick = function (){
+                                userInput.value = p.innerText;
+                                showData.style.display = 'none';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+</script>
+</body>
+</html>
+```
+
+后端响应：
+
+```java
+@WebServlet("/ajaxAuto")
+public class QueryServlet extends HttpServlet {
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String keyword = request.getParameter("keyword");
+        String driver = "com.mysql.jdbc.Driver";
+        String url = "jdbc:mysql://175.178.181.190:3306/test?characterEncoding=utf8&useUnicode=true&useSSL=false";
+        String user = "root";
+        String passwd = "Lsl333...";
+        String sql = "";
+        Connection conn = null;
+        PreparedStatement ps =null;
+        ResultSet rs = null;
+        List<String> list = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        try {
+            Class.forName(driver);
+            conn = DriverManager.getConnection(url,user,passwd);
+            sql = "select content from ajaxauto where content like ?";
+            ps = conn.prepareStatement(sql);
+            ps.setString(1,keyword+"%");
+            if (!keyword.equals("")){
+                rs = ps.executeQuery();
+                while (rs.next()){
+                    String content = rs.getString("content");
+                    sb.append("{\"content\":\"" + content + "\"},");
+                }
+            }else {
+                sb.append("[");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if (rs != null){
+                try {
+                    rs.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+            if (ps != null){
+                try {
+                    ps.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+            if (conn != null){
+                try {
+                    conn.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+            }
+        }
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter w = response.getWriter();
+        w.println(sb.substring(0,sb.length()-1) + "]");
+        System.out.println(sb.subSequence(0,sb.length()-1) + "]");
+    }
+}
+```
+
+
 
 # 附录：HTTP状态信息
 
@@ -1373,8 +1543,6 @@ nginx反向代理中也是使用了代理机制来完成AJAX的跨域，实现�
 
 </script>
 ```
-
-
 
 
 
