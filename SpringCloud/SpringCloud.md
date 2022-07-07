@@ -20,9 +20,11 @@ SpringCloud与SpringBoot版本问题：官网查看对应版本：[Spring Cloud]
 
 ![](img/3.组件停更替换.png)
 
-# 父工程构建
+# 项目搭建
 
-## 1.创建父工程
+## 父工程构建
+
+### 1.创建父工程
 
 ![](img/4.父工程.png)
 
@@ -35,7 +37,9 @@ SpringCloud与SpringBoot版本问题：官网查看对应版本：[Spring Cloud]
 
 ![](img/5.注解生效激活.png)
 
-## 2.父工程pom.xml文件
+### 2.父工程pom.xml文件
+
+管理依赖文件。
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -135,11 +139,11 @@ SpringCloud与SpringBoot版本问题：官网查看对应版本：[Spring Cloud]
 </project>
 ```
 
-# 支付模块
+## 支付模块搭建
 
 ![](img/6.支付模块.png)
 
-## 1.环境构建
+### 1.项目骨架与依赖的构建
 
 1. 创建maven项目：cloud-provider-payment8001。
 2. 依赖导入，创建com.lsl.springcloud包和主配置类。
@@ -245,9 +249,9 @@ public class PaymentMain8001 {
 }
 ```
 
-## 2.业务开发
+### 2.业务开发
 
-### 1.建表
+#### 1.建表
 
 ```sql
 CREATE DATABASE `myspringcloud` CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -258,7 +262,7 @@ CREATE TABLE `payment`(
 )ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 ```
 
-### 2.构建实体类
+#### 2.构建实体类
 
 com.lsl.springcloud.entities.Payment：
 
@@ -289,7 +293,7 @@ public class CommonResult<T> {
 }
 ```
 
-### 3.DAO接口
+#### 3.DAO接口
 
 ```java
 @Mapper
@@ -299,7 +303,7 @@ public interface PaymentDao {
 }
 ```
 
-### 4.整合MyBatis
+#### 4.整合MyBatis
 
 application.yml：（上面的环境构建已经配置了，这里仅作记录）
 
@@ -403,17 +407,17 @@ public class PaymentController {
 }
 ```
 
-### 5.测试
+#### 5.测试
 
 1.先往数据库表中插入一条数据，如何启动服务，访问[localhost:8001/payment/get/1](http://localhost:8001/payment/get/1)，能显示json数据则成功。
 
 2.因为浏览器对post请求不友好，所以使用postman来发送post请求。
 
-# 热部署
+## 热部署
 
 热部署在**开发时使用，生产环境则要关闭**。
 
-## 1.Adding devtools to your project
+### 1.Adding devtools to your project
 
 支付模块添加以下依赖：
 
@@ -426,7 +430,7 @@ public class PaymentController {
 </dependency>
 ```
 
-## 2.Adding plugin to your pom.xml
+### 2.Adding plugin to your pom.xml
 
 下段配置复制到聚合父类总工程的pom.xml：
 
@@ -445,7 +449,7 @@ public class PaymentController {
 </build>
 ```
 
-## 3.Enabling automatic build
+### 3.Enabling automatic build
 
 File -> Settings -> Build -> Complier 下面项勾选以下四个选项：
 
@@ -454,14 +458,14 @@ File -> Settings -> Build -> Complier 下面项勾选以下四个选项：
 - Build project automatically。
 - Compile independent modules in parallel。
 
-## 4.Update the value of
+### 4.Update the value of
 
 键入`Ctrl + Shift + Alt + / `，打开Registry，找到并勾选以下两个选项：
 
 - actionSystem.assertFocusAccessFromEdt。
 - compiler.automake.allow.when.app.running。
 
-## 5.重启idea
+### 5.重启idea
 
 重启后启动支付项目，会发现一个error，如下：（不影响使用，忽略这个错误）
 
@@ -469,16 +473,16 @@ File -> Settings -> Build -> Complier 下面项勾选以下四个选项：
 
 重启后，修改程序，会发现修改后间隔一定时间项目会自动重新启动。
 
-# 消费者订单模块
+## 订单模块搭建
 
-1. 建Module
+1. 建Module：cloud-provider-order80。
 2. 加依赖
 3. 写YML：配置一个80端口
 4. 主启动
 5. 写业务
 6. 做测试
 
-## 2.加依赖
+### 2.加依赖
 
 ```xml
 <dependencies>
@@ -510,16 +514,25 @@ File -> Settings -> Build -> Complier 下面项勾选以下四个选项：
 </dependencies>
 ```
 
-## 3.写yml
+### 3.写yml
 
 ```yml
 server:
 	port: 80
 ```
 
+### 4.主启动类
 
+```java
+@SpringBootApplication
+public class OrderMain80 {
+    public static void main(String[] args) {
+        SpringApplication.run(OrderMain80.class,args);
+    }
+}
+```
 
-## 5.写业务
+### 5.写业务
 
 实体类和支付模块的两个一致。
 
@@ -562,7 +575,7 @@ public class OrderController {
 }
 ```
 
-## 6.测试
+### 6.测试
 
 打开支付模块和消费者模块，然后：
 
@@ -570,7 +583,7 @@ public class OrderController {
 
 访问：`http://localhost/consumer/payment/create?serial=222222`发现存储进数据库的值为null，这是因为支付模块的controller的create方法中参数接收处忘了加@RequestBody注解。
 
-## Run Dashboard窗口
+### Run Dashboard窗口
 
 我使用的当前版本出现的是service窗口，不用再配置，如果没出现，重启就出现了。
 
@@ -602,7 +615,7 @@ public class OrderController {
 
 3. 重启就好。
 
-## RestTemplate
+### RestTemplate
 
 RestTemplate提供了多种便捷访问远程Http服务的方法，是一种简单便捷的访问restful服务模板类，是Spring提供的用于访问Rest服务的客户端模板工具集
 
@@ -612,7 +625,7 @@ RestTemplate提供了多种便捷访问远程Http服务的方法，是一种简�
 
 - (url, requestMap, ResponseBean.class)这三个参数分别代表REST请求地址、请求参数、HTTP响应转换被转换成的对象类型。
 
-# 工程重构
+## 工程重构
 
 支付模块、消费者订单模块有重复的实体类代码，把他们抽取出来打包发布，再引入：
 
@@ -661,7 +674,7 @@ pom.xml：
 
 ## Eureka
 
-### 基础知识
+### 关于服务注册与发现
 
 什么是服务治理？
 
@@ -684,7 +697,7 @@ Eureka包含两个组件：Eureka Server和Eureka Client
 2. EurekaClient：通过注册中心进行访问
    - 它是一个Java客户端，用于简化Eureka Server的交互，客户端同时也具备一个内置的、使用轮询（round-robin）负载算法的负载均衡器。在应用启动后，将会向Eureka Server发送心跳（默认周期为30秒）。如果Eureka Server在多个心跳周期内没有接收到某个节点的心跳，EurekaServer将会从服务注册表中把这个服务节点移除（默认90秒)。
 
-### 1.Eureka Server安装
+### 1.搭建注册中心
 
 1. 建module：cloud-eureka-server7001。
 2. 改pom。
@@ -713,6 +726,7 @@ pom.xml：
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
+    <!-- 用于检测系统的健康情况、当前的Beans、系统的缓存等 -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-actuator</artifactId>
@@ -777,11 +791,11 @@ public class EurekaMain7001 {
 
 
 
-### 2.EurekaClient-支付服务入驻
 
-EurekaClient端`cloud-provider-payment8001`将注册进EurekaServer成为服务提供者provider（就像老师入驻学校提供教学服务）。
 
-在`cloud-provider-payment8001`进行入驻操作：
+### 2.服务注册-支付服务入驻
+
+EurekaClient端`cloud-provider-payment8001`将注册进EurekaServer成为服务提供者provider（就像老师入驻学校提供教学服务）。需要在`cloud-provider-payment8001`中进行入驻操作，入驻操作如下：
 
 1. 加入依赖。
 2. 写YML。
@@ -835,7 +849,7 @@ eureka:
 
 紧急情况！EUREKA可能错误地声称实例在没有启动的情况下启动了。续订小于阈值，因此实例不会为了安全而过期。
 
-### 3.EurekaClient-订单服务入驻
+### 3.服务注册-订单服务入驻
 
 在`cloud-provider-order80`进行入驻操作：
 
@@ -864,19 +878,88 @@ eureka:
       defaultZone: http://localhost:7001/eureka
 ```
 
-### Eureka集群原理说明
+### 3.1服务入驻注册操作总结
+
+哪个服务需要入驻到服务注册中心，就在哪个服务中进行操作。主要操作如下：
+
+1. 加入客户端依赖，以便使用注解将当前模块注册为一个`Eureka Client`客户端。
+
+   ```xml
+   <!--eureka-client-->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+   </dependency>
+   ```
+
+2. 配置好信息，告知要注册到哪个 Eureka Server —— 服务注册中心，在项目配置文件中配置（yml或properties配置文件）。
+
+   ```yml
+   eureka:
+     client:
+       # 表示是否将自己注册进EurekaServer 默认为true。
+       register-with-eureka: true
+       # 是否从EurekaServer抓取已有的注册信息，默认为true。单节点无所谓，集群必须设置为true才能配合ribbon使用负载均衡
+       fetchRegistry: true
+       # 注册中心地址
+       service-url:
+         defaultZone: http://localhost:7001/eureka
+   ```
+
+3. 主启动类加注解：`@EnableEurekaClient`，声明为一个`Eureka Client`客户端。
+
+4. 测试：启动 Eureka Server项目和Eureka Client项目，然后进入Spring Eureka服务主页：http://localhost:7001/ ，查看主页的`Instances currently registered with Eureka`：会显示`Eureka Client`客户端应用名（application.yml文件设置的`spring.application.name：`）。
+
+
+
+### 关于Eureka注册中心集群
 
 ![](img/12.集群原理说明.png)
 
-eureka集群：安装多个eureka，彼此之间相互注册、相互守望
+注册中心集群原理：安装多个eureka，彼此之间相互注册、相互守望
 
 ![](img/13.eureka集群.png)
 
-### 4.Eureka集群
+注册中心集群操作：
 
-**一：集群环境构建：**
+1. 搭建多个 Eureka Server。
 
-1.创建cloud-eureka-server7002工程，过程参考EurekaServer服务端安装。
+2. 修改各个注册中心配置：
+
+   ```yaml
+   server:
+     port: 7002      # 注册中心端口
+   
+   eureka:
+     instance:
+       hostname: eureka7002.com # eureka服务端的实例名称
+     client:
+       register-with-eureka: false     # false表示不向注册中心注册自己。
+       fetch-registry: false     # false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
+       service-url:
+         # 集群指向其它eureka
+         defaultZone: http://eureka7001.com:7001/eureka/
+         # 单机时就是7002自己
+         #defaultZone: http://eureka7002.com:7002/eureka/
+   ```
+
+3. Eureka Client 客户端的defaultZone指向注册中心，把全部注册中心的都加上去。
+
+   ```yaml
+   defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/ # 集群版
+   ```
+
+4. 如果某个微服务需要集群，就创建多个微服务再注册进去，不过它们的`spring.application.name:`要一致。
+
+
+
+### 4.服务注册中心的集群
+
+建立多个注册中心，注册中心的`spring.application.name`一致，为每个注册中心都注册自身及其他注册中心。
+
+**一：创建注册中心并实行相互注册：**
+
+1.创建cloud-eureka-server7002工程，过程参考第一步的EurekaServer服务端安装。
 
 2.找到`C:\Windows\System32\drivers\etc`路径下的hosts文件，把下面的配置添加进hosts文件：
 
@@ -898,9 +981,9 @@ eureka:
     register-with-eureka: false     #false表示不向注册中心注册自己。
     fetch-registry: false     #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
     service-url:
-      #集群指向其它eureka
+      # 集群指向其它eureka
       defaultZone: http://eureka7002.com:7002/eureka/
-      #单机时就是7001自己
+      # 单机时就是7001自己
       #defaultZone: http://eureka7001.com:7001/eureka/
 ```
 
@@ -917,9 +1000,9 @@ eureka:
     register-with-eureka: false     #false表示不向注册中心注册自己。
     fetch-registry: false     #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
     service-url:
-      #集群指向其它eureka
+      # 集群指向其它eureka
       defaultZone: http://eureka7001.com:7001/eureka/
-      #单机时就是7002自己
+      # 单机时就是7002自己
       #defaultZone: http://eureka7002.com:7002/eureka/
 ```
 
@@ -927,7 +1010,7 @@ eureka:
 
 ![](img/14.集群测试.png)
 
-**二：订单、支付两个微服务注册进Eureka集群：**
+**二：订单、支付两个微服务注册进全部的注册中心：**
 
 在application.xml更改defaultZone：
 
@@ -935,18 +1018,20 @@ eureka:
 defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/ # 集群版
 ```
 
-测试。
+测试（访问`http://eureka7001.com:7001/eureka/`）。
+
+### 4.1微服务的集群
 
 **三：新建微服务集群**
 
-支付服务提供者8001集群环境构建：（1、2、3、4、5和8001构建基本一致，再在yml修改一下端口）
+支付服务提供者`cloud-provider-payment8001`的集群：（创建一样的项目并修改一下端口）
 
 1. 新建module：cloud-provider-payment8002。
 2. 改POM。
 3. 写YML：端口8082。
 4. 主启动类。
 5. 业务类。
-6. 要修改一下8001和8002的Controller，添加serverPort，如下：
+6. 要修改一下8001和8002的Controller，添加serverPort，如下：（测试用）
 
 ```java
 @RestController
@@ -1014,32 +1099,32 @@ public class ApplicationContextConfig {
 ```yaml
 eureka:
 	instance:
-      instance-id: payment8001 # cloud-provider-payment8001
+      instance-id: payment8001 # cloud-provider-payment8001的实例名称
 ```
 
 ```yaml
 eureka:
     instance:
-      instance-id: payment8002  #cloud-provider-payment8002
+      instance-id: payment8002  #cloud-provider-payment8002的实例名称
 ```
 
 修改之后，Eureka的主页将显示使用payment8001、payment8002为主机IP地址，如下图，点击payment8002或payment8001会调转到http://localhost:8002/actuator/info，再访问http://localhost:8002/actuator/health或显示status。
 
 ![](img/15.paymentIP.png)
 
-再设置，使得访问信息有IP信息提示，（就是将鼠标指针移至payment8001、payment8002名下，会有IP地址提示），需要修改application.yml，在上面的基础上添加prefer-ip-address: true 就好：
+再设置，使得访问信息有IP信息提示，（就是将鼠标指针移至payment8001、payment8002名下，会有IP地址提示），需要修改application.yml，在上面的基础上添加`prefer-ip-address: true `就好：
 
 ```yaml
 instance:
   instance-id: payment8001 
-  prefer-ip-address: true 
+  prefer-ip-address: true # 显示ip
 ```
 
 添加上重启后，鼠标移动到payment8002就会在左下角显示：192.168.137.1:8002/acuator/info。
 
 ### 6.服务发现Discovery
 
-对于注册进eureka里面的微服务，可以通过服务发现来获得该服务的相关信息，操作如下：
+对于注册进Eureka服务注册中心里面的微服务，可以通过服务发现来获得该服务的相关信息，操作如下：
 
 1. 修改cloud-provider-payment8001的Controller，添加以下内容：
 
@@ -1070,7 +1155,7 @@ instance:
 
    1. 先要启动EurekaSeryer，再启动8001主启动类，浏览器输入http://localhost:8001/payment/discovery。
    2. 访问到的页面输出：`{"services":["cloud-payment-service","cloud-order-service"],"order":0}`。
-   3. 后台输出如下图：
+      1. 后台输出如下图：
 
 ![](img/17.show.png)
 
@@ -1159,6 +1244,537 @@ The existing open source work on eureka 2.0 is discontinued. The code base and a
 
 Eureka 1.x is a core part of Netflix’s service discovery system and is still an active project.
 ```
+
+## Zookeeper
+
+### 安装Zookeeper
+
+CentOS7下，使用docker安装Zookeeper：
+
+1. `docker pull zookeeper`。
+2. `docker run -p 2181:2181 --name my_zookeeper -d --restart always zookeeper:latest`。
+3. `docker exec -it my_zookeeper bash`，然后`cd bin`，再`zkCli.sh`开启客户端。
+   1. `ls /services`：可查看注册进zookeeper里的微服务名称。
+   2. ` ls /services/cloud-provider-payment`：查看当前的` cloud-provider-payment`的内部编码流水号。
+   3. `get /services/cloud-provider-payment/内部编码流水号`：查看注册进去的微服务节点的基本信息。（zookeeper中服务节点是临时节点还是持久节点）
+
+
+### 注册中心
+
+1. 新建Maven项目——cloud-provider-payment8004。
+
+2. pom.xml。（Zookeeper的依赖和其他依赖）
+
+   ```xml
+   <!-- SpringBoot整合Web组件 -->
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-web</artifactId>
+   </dependency>
+   <!-- 引入自己定义的api通用包，可以使用Payment支付Entity -->
+   <dependency>
+       <groupId>com.lsl.springcloud</groupId>
+       <artifactId>cloud-api-commons</artifactId>
+       <version>${project.version}</version>
+   </dependency>
+   
+   <!-- SpringBoot整合zookeeper客户端 -->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+   </dependency>
+   <!-- 其他的依赖 -->
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-devtools</artifactId>
+       <scope>runtime</scope>
+       <optional>true</optional>
+   </dependency>
+   <dependency>
+       <groupId>org.projectlombok</groupId>
+       <artifactId>lombok</artifactId>
+       <optional>true</optional>
+   </dependency>
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-test</artifactId>
+       <scope>test</scope>
+   </dependency>
+   ```
+
+3. yml配置文件。
+
+   ```yaml
+   # 8004表示注册到zookeeper服务器的支付服务提供者端口号
+   server:
+     port: 8004
+   # 服务别名----注册zookeeper到注册中心名称
+   spring:
+     application:
+       name: cloud-provider-payment
+     cloud:
+       zookeeper:
+         connect-string: 192.168.56.10:2181 # 安装了zookeeper的服务器的zookeeper访问地址
+   ```
+
+4. 主启动类。
+
+   ```java
+   @SpringBootApplication
+   @EnableDiscoveryClient // 启动注册发现功能
+   public class PaymentMain8004 {
+       public static void main(String[] args) {
+           SpringApplication.run(PaymentMain8004.class,args);
+       }
+   }
+   ```
+
+5. Controller编写（用于测试）。
+
+   ```java
+   @RestController
+   @Slf4j
+   public class PaymentController {
+       @Value("${server.port}")
+       private String serverPort;
+   
+       @RequestMapping(value = "/payment/zk")
+       public String paymentzk()
+       {
+           return "springcloud with zookeeper: "+serverPort+"\t"+ UUID.randomUUID().toString();
+       }
+   }
+   ```
+
+6. 启动微服务注册进zookeeper，出现jar包冲突，忽略当前zookeeper依赖的版本，更改为3.4.9版本，如下修改：
+
+   ```xml
+   <!-- SpringBoot整合zookeeper客户端 -->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+       <exclusions>
+           <exclusion>
+               <groupId>org.apache.zookeeper</groupId>
+               <artifactId>zookeeper</artifactId>
+           </exclusion>
+       </exclusions>
+   </dependency>
+   <dependency>
+       <groupId>org.apache.zookeeper</groupId>
+       <artifactId>zookeeper</artifactId>
+       <version>3.4.9</version>
+   </dependency>
+   ```
+
+7. 再次启动，在服务器中进入zookeeper，运行zookeeper客户端后执行`ls /services`：
+
+   ![](img/20.zookeeper.png)
+
+### 微服务注册
+
+1. 建立Maven项目
+
+2. 添加依赖。
+
+   ```xml
+   <dependencies>
+       <!-- SpringBoot整合Web组件 -->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-web</artifactId>
+       </dependency>
+       <!-- SpringBoot整合zookeeper客户端 -->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+           <!--先排除自带的zookeeper-->
+           <exclusions>
+               <exclusion>
+                   <groupId>org.apache.zookeeper</groupId>
+                   <artifactId>zookeeper</artifactId>
+               </exclusion>
+           </exclusions>
+       </dependency>
+       <!--添加zookeeper3.4.9版本-->
+       <dependency>
+           <groupId>org.apache.zookeeper</groupId>
+           <artifactId>zookeeper</artifactId>
+           <version>3.4.9</version>
+       </dependency>
+       <!-- 其他依赖 -->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-devtools</artifactId>
+           <scope>runtime</scope>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.projectlombok</groupId>
+           <artifactId>lombok</artifactId>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-test</artifactId>
+           <scope>test</scope>
+       </dependency>
+   </dependencies>
+   ```
+
+3. 项目配置。
+
+   ```yaml
+   server:
+     port: 80
+   spring:
+     application:
+       name: cloud-consumer-order
+     cloud:
+       # 要注册到的zookeeper的地址
+       zookeeper:
+         connect-string: 192.168.56.10:2181
+   ```
+
+4. 主启动类。
+
+   ```java
+   @SpringBootApplication
+   public class CloudConsumerzkOrder80Application {
+       public static void main(String[] args) {
+           SpringApplication.run(CloudConsumerzkOrder80Application.class, args);
+       }
+   }
+   ```
+
+5. 业务代码编写：
+
+   ```java
+   @Configuration
+   public class ApplicationContextBean
+   {
+       @Bean
+       @LoadBalanced
+       public RestTemplate getRestTemplate()
+       {
+           return new RestTemplate();
+       }
+   }
+   ```
+
+   ```java
+   @RestController
+   public class OrderZKController
+   {
+       public static final String INVOKE_URL = "http://cloud-provider-payment";
+   
+       @Autowired
+       private RestTemplate restTemplate;
+   
+       @RequestMapping(value = "/consumer/payment/zk")
+       public String paymentInfo()
+       {
+           String result = restTemplate.getForObject(INVOKE_URL+"/payment/zk", String.class);
+           System.out.println("消费者调用支付服务(zookeeper)--->result:" + result);
+           return result;
+       }
+   
+   }
+   ```
+
+6. 测试：服务器端进入zookeeper查询注册进的服务；访问`http://localhost:80/consumer/payment/zk`。
+
+
+
+## Consul
+
+Consul 是一套开源的分布式服务发现和配置管理系统，由 HashiCorp 公司用 Go 语言开发。其提供了微服务系统中的服务治理、配置中心、控制总线等功能。这些功能中的每一个都可以根据需要单独使用，也可以一起使用以构建全方位的服务网格，总之Consul提供了一种完整的服务网格解决方案。它具有很多优点。包括： 基于 raft 协议，比较简洁； 支持健康检查, 同时支持 HTTP 和 DNS 协议 支持跨数据中心的 WAN 集群 提供图形界面 跨平台，支持 Linux、Mac、Windows。
+
+主要功能：
+
+1. 服务发现：提供HTTP和DNS两种发现方式。
+2. 健康监测：支持多种方式，HTTP、TCP、Docker、Shell脚本定制化监控。
+3. KV存储：key、value存储方式。
+4. 支持多数据中心。
+5. 可视化Web界面。
+
+[下载：Downloads | Consul by HashiCorp](https://www.consul.io/downloads)        文档：[Spring Cloud Consul 中文文档 参考手册 中文版](https://www.springcloud.cc/spring-cloud-consul.html)。
+
+### 安装Consul
+
+Windows下安装：
+
+1. 官方网站下载consul，在下载的exe文件目录下打开cmd窗口，执行命令：
+   - `consul --version`：查看版本。
+   - `consul agent -dev`：使用开发模式启动。
+2. 启动后访问：`http:localhost:8500`。
+
+### 注册中心
+
+1. 建立Maven项目。
+
+2. 添加依赖。
+
+   ```xml
+   <dependencies>
+       <!--SpringCloud consul-server -->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-consul-discovery</artifactId>
+       </dependency>
+       <!-- SpringBoot整合Web组件 -->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-web</artifactId>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-actuator</artifactId>
+       </dependency>
+       <!--日常通用jar包配置-->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-devtools</artifactId>
+           <scope>runtime</scope>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.projectlombok</groupId>
+           <artifactId>lombok</artifactId>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-test</artifactId>
+           <scope>test</scope>
+       </dependency>
+   </dependencies>
+   ```
+
+3. 项目配置。
+
+   ```yaml
+   ###consul服务端口号
+   server:
+     port: 8006
+   
+   spring:
+     application:
+       name: consul-provider-payment
+     ####consul注册中心地址
+     cloud:
+       consul:
+         host: localhost
+         port: 8500
+         discovery:
+           #hostname: 127.0.0.1
+           service-name: ${spring.application.name}
+   ```
+
+4. 主启动类——需要添加@EnableDiscoveryClient注解。
+
+   ```java
+   @SpringBootApplication
+   @EnableDiscoveryClient
+   public class CloudProviderConsulPaymentApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(CloudProviderConsulPaymentApplication.class, args);
+       }
+   }
+   ```
+
+5. 业务类开发。
+
+   ```java
+   @RestController
+   public class PaymentController {
+       @Value("${server.port}")
+       private String serverPort;
+   
+       @GetMapping("/payment/consul")
+       public String paymentInfo()
+       {
+           return "springcloud with consul: "+serverPort+"\t\t"+ UUID.randomUUID().toString();
+       }
+   }
+   ```
+
+6. 测试：
+
+   - [localhost:8006/payment/consul](http://localhost:8006/payment/consul)。（页面返回`springcloud with consul: 8006 1782438c-a397-4f45-800a-7ea91bdc2348`）
+   - 访问`localhost:8550`。
+
+### 微服务注册
+
+1. 新建Maven项目——cloud-consumerconsul-order80。
+
+2. 添加依赖。
+
+   ```xml
+   <parent>
+       <artifactId>learning_springcloud</artifactId>
+       <groupId>com.lsl.springcloud</groupId>
+       <version>1.0-SNAPSHOT</version>
+   </parent>
+   <dependencies>
+       <!--SpringCloud consul-server -->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-consul-discovery</artifactId>
+       </dependency>
+   
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-actuator</artifactId>
+       </dependency>
+       <!-- SpringBoot整合Web组件 -->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-web</artifactId>
+       </dependency>
+   
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-actuator</artifactId>
+       </dependency>
+       <!--日常通用jar包配置-->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-devtools</artifactId>
+           <scope>runtime</scope>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.projectlombok</groupId>
+           <artifactId>lombok</artifactId>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-test</artifactId>
+           <scope>test</scope>
+       </dependency>
+   </dependencies>
+   ```
+
+3. 添加配置。
+
+   ```yaml
+   ###consul服务端口号
+   server:
+     port: 80
+   
+   spring:
+     application:
+       name: cloud-consumer-order
+     ####consul注册中心地址
+     cloud:
+       consul:
+         host: localhost
+         port: 8500
+         discovery:
+           #hostname: 127.0.0.1
+           service-name: ${spring.application.name}
+   ```
+
+4. 主启动类。
+
+   ```java
+   @SpringBootApplication
+   @EnableDiscoveryClient //该注解用于向使用consul或者zookeeper作为注册中心时注册服务
+   public class CloudConsumerConsulOrderApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(CloudConsumerConsulOrderApplication.class, args);
+       }
+   }
+   ```
+
+5. 业务：
+
+   ```java
+   @Configuration
+   public class ApplicationContextBean {
+       @Bean
+       @LoadBalanced
+       public RestTemplate getRestTemplate()
+       {
+           return new RestTemplate();
+       }
+   }
+   ```
+
+   ```java
+   @RestController
+   public class OrderConsulController
+   {
+       public static final String INVOKE_URL = "http://consul-provider-payment"; //consul-provider-payment
+   
+       @Autowired
+       private RestTemplate restTemplate;
+   
+       @GetMapping(value = "/consumer/payment/consul")
+       public String paymentInfo()
+       {
+           String result = restTemplate.getForObject(INVOKE_URL+"/payment/consul", String.class);
+           System.out.println("消费者调用支付服务(consul)--->result:" + result);
+           return result;
+       }
+   }
+   ```
+
+6. 测试：http://localhost:8500、[localhost/consumer/payment/consul](http://localhost/consumer/payment/consul)。
+
+## 三个注册中心的异同
+
+![](img/21.ccc.png)
+
+CAP：
+
+![](img/22.aCAP.png)
+
+AP：Eureka。
+
+CP：Zookeeper、Consul。
+
+# Ribbon负载均衡
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
