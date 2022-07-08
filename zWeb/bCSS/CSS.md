@@ -356,7 +356,7 @@ inline-block——行内块元素：img、input、td，同时具有块元素和�
 
 ```css
 /* 复合写法，位置没有限制 */
-background：背景颜色 背景图片地址 背景平铺 背景图像滚动 背景图片位置；
+background：背景颜色 背景图片地址 背景平铺 背景图像滚动 背景图片位置;
 ```
 
 css3，ie9+才支持：背景色半透明：`background-color：rgba(0, 0, 0, .8);`，a是alpha。
@@ -947,7 +947,7 @@ table标签的一个属性——**border-collapse**，其属性值作用如下�
     }
 ```
 
-# HTML5和CSS3简版
+# HTML5和CSS3入门
 
 ## 初始化css模板
 
