@@ -2084,6 +2084,204 @@ eign 提供了日志打印功能，我们可以通过配置来调整日志级别
            com.lsl.cloudconsumerfeignorder80.service.PaymentFeignService: debug
    ```
 
+# 服务降级
+
+复杂分布式体系结构中的应用程序有数十个依赖关系，每个依赖关系在某些时候将不可避免地失败。
+
+服务雪崩：
+
+1. 多个微服务之间调用的时候，假设微服务A调用微服务B和微服务C，微服务B和微服务C又调用其它的微服务，这就是所谓的“扇出”。如果扇出的链路上某个微服务的调用响应时间过长或者不可用，对微服务A的调用就会占用越来越多的系统资源，进而引起系统崩溃，所谓的“雪崩效应”。
+2. 对于高流量的应用来说，单一的后端依赖可能会导致所有服务器上的所有资源都在几秒钟内饱和。比失败更糟糕的是，这些应用程序还可能导致服务之间的延迟增加，备份队列，线程和其他系统资源紧张，导致整个系统发生更多的级联故障。这些都表示需要对故障和延迟进行隔离和管理，以便单个依赖关系的失败，不能取消整个应用程序或系统。所以，通常当你发现一个模块下的某个实例失败后，这时候这个模块依然还会接收流量，然后这个有问题的模块还调用了其他的模块，这样就会发生级联故障，或者叫雪崩。
+
+Hystrix是一个用于处理分布式系统的延迟和容错的开源库，在分布式系统里，许多依赖不可避免的会调用失败，比如超时、异常等，Hystrix能够**保证在一个依赖出问题的情况下，不会导致整体服务失败，避免级联故障，以提高分布式系统的弹性**。
+
+“断路器”本身是一种开关装置，当某个服务单元发生故障之后，通过断路器的故障监控（类似熔断保险丝），向调用方返回一个符合预期的、可处理的备选响应（FallBack），而不是长时间的等待或者抛出调用方无法处理的异常，这样就保证了服务调用方的线程不会被长时间、不必要地占用，从而避免了故障在分布式系统中的蔓延，乃至雪崩。
+
+Hystrix 主要功能：服务降级、服务熔断、接近实时的监控。
+
+官方使用文档：[How To Use · Netflix/Hystrix Wiki (github.com)](https://github.com/Netflix/Hystrix/wiki/How-To-Use)
+
+**重要概念：**
+
+1. 服务降级（fallback）：（服务器忙，请稍后再试）不让客户端等待并立刻返回友好提示；程序运行异常、连接超时、服务熔断、线程池或信号量打满都会服务降级。
+2. 服务熔断（break）：服务访问到达最大访问量后直接拒绝访问，然后调用服务降级的方法返回友好提示。
+3. 服务限流（flow limit）：高并发操作时（例如秒杀），每秒钟限制N个服务访问，有序进行。
+
+## Hystrix 的使用
+
+### 平台搭建
+
+1. 创建hystrix-payment8001项目模块。
+
+2. 添加依赖：
+
+   ```xml
+   <parent>
+       <artifactId>learning_springcloud</artifactId>
+       <groupId>com.lsl.springcloud</groupId>
+       <version>1.0-SNAPSHOT</version>
+   </parent>
+   <dependencies>
+       <!--hystrix-->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+       </dependency>
+       <!--eureka client-->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+       </dependency>
+       <!--web-->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-web</artifactId>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-actuator</artifactId>
+       </dependency>
+       <!-- 引入自己定义的api通用包，可以使用Payment支付Entity -->
+       <dependency>
+           <groupId>com.lsl.springcloud</groupId>
+           <artifactId>cloud-api-commons</artifactId>
+           <version>1.0-SNAPSHOT</version>
+       </dependency>
+       <!-- SpringBoot整合Web组件 -->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-web</artifactId>
+       </dependency>
+   
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-actuator</artifactId>
+       </dependency>
+       <!--日常通用jar包配置-->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-devtools</artifactId>
+           <scope>runtime</scope>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.projectlombok</groupId>
+           <artifactId>lombok</artifactId>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-test</artifactId>
+           <scope>test</scope>
+       </dependency>
+   </dependencies>
+   ```
+
+3. 配置：
+
+   ```yaml
+   server:
+     port: 8001
+   
+   spring:
+     application:
+       name: hystrix-payment
+   
+   eureka:
+     client:
+       register-with-eureka: true
+       fetch-registry: true
+       service-url:
+         #defaultZone: http://eureka7001.com:7001/eureka,http://eureka7002.com:7002/eureka
+         defaultZone: http://eureka7001.com:7001/eureka
+   ```
+
+4. 主启动：
+
+   ```java
+   @SpringBootApplication
+   @EnableEurekaClient //本服务启动后会自动注册进eureka服务中
+   public class HystrixPaymentApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(HystrixPaymentApplication.class, args);
+       }
+   }
+   ```
+
+5. 业务搭建：
+
+   ```java
+   @RestController
+   @Slf4j
+   public class PaymentController {
+       @Autowired
+       private PaymentService paymentService;
+   
+       @Value("${server.port}")
+       private String serverPort;
+   
+   
+       @GetMapping("/payment/hystrix/ok/{id}")
+       public String paymentInfo_OK(@PathVariable("id") Integer id)
+       {
+           String result = paymentService.paymentInfo_OK(id);
+           log.info("****result: "+result);
+           return result;
+       }
+   
+       @GetMapping("/payment/hystrix/timeout/{id}")
+       public String paymentInfo_TimeOut(@PathVariable("id") Integer id) throws InterruptedException
+       {
+           String result = paymentService.paymentInfo_TimeOut(id);
+           log.info("****result: "+result);
+           return result;
+       }
+   }
+   ```
+
+   ```java
+   @Service
+   public class PaymentService
+   {
+       /**
+        * 正常访问，一切OK
+        * @param id
+        * @return
+        */
+       public String paymentInfo_OK(Integer id)
+       {
+           return "线程池:"+Thread.currentThread().getName()+"paymentInfo_OK,id: "+id+"\t"+"O(∩_∩)O";
+       }
+   
+       /**
+        * 超时访问，演示降级
+        * @param id
+        * @return
+        */
+       public String paymentInfo_TimeOut(Integer id)
+       {
+           try { TimeUnit.SECONDS.sleep(3); } catch (InterruptedException e) { e.printStackTrace(); }
+           return "线程池:"+Thread.currentThread().getName()+"paymentInfo_TimeOut,id: "+id+"\t"+"O(∩_∩)O，耗费3秒";
+       }
+   }
+   ```
+
+6. 测试：[localhost:8001/payment/hystrix/ok/1](http://localhost:8001/payment/hystrix/ok/1)、[localhost:8001/payment/hystrix/timeout/1](http://localhost:8001/payment/hystrix/timeout/1)。
+
+### 高并发压测
+
+压测工具：JMeter
+
+
+
+
+
+
+
+
+
+
+
 
 
 
