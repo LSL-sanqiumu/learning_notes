@@ -8,7 +8,7 @@
 
 
 总起
-先放结论，根据实际问题去设计数据结构，在数据结构基础上进行[算法](https://www.zhihu.com/search?q=算法&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})设计。即，数据结构特点决定了算法的设计。
+先放结论，根据实际问题去设计数据结构，在数据结构基础上进行[算法](https://www.zhihu.com/search?q=算法&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})设计。即，**数据结构特点决定了算法的设计。**
 举一些简单的例子，如果数据结构是链式存储的[二叉树](https://www.zhihu.com/search?q=二叉树&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})，那么就可以在其上面使用深度优先搜索以及广度优先搜索。如果是图数据结构，需要根据图的特点来设计算法，在深度优先遍历或广度优先遍历的时候就需要考虑记录访问过的结点。
 
 数据结构
@@ -22,7 +22,7 @@
 
 算法
 设计了好的数据结构，只是成功了一半，因为数据结构是静态的，只是组织数据的一种方式，你不去操作它（如访问），它是无法发挥它的作用的。所以，我们需要在此基础上去根据我们的目的进行相应的操作，而操作的方式不同，耗费的时间也是不一样的，我们需要找到好的操作方案。这里所说的方案，就是算法。
-举一个简单的例子，你打算从家到学校，有多个[公交](https://www.zhihu.com/search?q=公交&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})可以坐，可以产生很多方案，每一种方案都是你对于达成目标的一种设计，我们称之为算法。人们往往会在众多方案中寻找最优的算法。我们这里的方案的数量是有限的，但是事实上，很多问题的方案是无限的，或者巨大的，我们无法一一去尝试这些方案。所以我们总结了一些优秀算法的准则，思想，比如说[贪心算法](https://www.zhihu.com/search?q=贪心算法&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})，动态规划等思想。
+举一个简单的例子，你打算从家到学校，有多个[公交](https://www.zhihu.com/search?q=公交&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})可以坐，可以产生很多方案，每一种方案都是你对于达成目标的一种设计，我们称之为算法。人们往往会在众多方案中寻找最优的算法。我们这里的方案的数量是有限的，但是事实上，很多问题的方案是无限的，或者巨大的，我们无法一一去尝试这些方案。所以我们总结了一些优秀算法的准则、思想，比如说[贪心算法](https://www.zhihu.com/search?q=贪心算法&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})，动态规划等思想。
 算法为何依赖于数据结构呢？为回答这个问题，举一个通俗的例子。你在学校捡到了一张[饭卡](https://www.zhihu.com/search?q=饭卡&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})，上面有姓名，学院，班级。然后你要去将饭卡还给失主。接下来，你会找到其学院，然后找到班级，然后在班级中通过询问同学找到[失主](https://www.zhihu.com/search?q=失主&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A"170477311"})。（姓名，学院，班级）在这里我们认为是数据结构，因其把这些数据组织到一张卡上了。接下来，想象另一种情形，假如说饭卡上只有姓名，而学院，班级在另一张信息卡上。那么你可能找遍全校也找不到失主。
 将一些数据组织在一起，能够为算法提供必要的基础信息，关联信息，使得算法在执行过程中能够快速找到相关信息（比如，上面例子中的学院，班级）。
 

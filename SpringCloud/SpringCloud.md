@@ -672,6 +672,8 @@ pom.xml：
 
 # 服务注册中心
 
+注册进注册中心的微服务之间，访问地址为`http://spring.application.name/`，可以不使用主机+端口的方式去访问。
+
 ## Eureka
 
 ### 关于服务注册与发现
@@ -1464,8 +1466,8 @@ CentOS7下，使用docker安装Zookeeper：
 
    ```java
    @RestController
-   public class OrderZKController
-   {
+   public class OrderZKController{
+       // 服务注册进了zookeeper  可通过 http://注册进zookeeper的服务名  来对注册进去的微服务进行访问
        public static final String INVOKE_URL = "http://cloud-provider-payment";
    
        @Autowired
@@ -1736,33 +1738,351 @@ AP：Eureka。
 
 CP：Zookeeper、Consul。
 
-# Ribbon负载均衡
+# 服务调用
 
+## Ribbon负载均衡服务调用
 
+### 概述
 
+Spring Cloud Ribbon是基于Netflix Ribbon实现的一套客户端负载均衡的工具。
 
+简单的说，Ribbon是Netflix发布的开源项目，主要功能是提供客户端的软件负载均衡算法和服务调用。Ribbon客户端组件提供一系列完善的配置项如连接超时，重试等。简单的说，就是在配置文件中列出Load Balancer（简称LB）后面所有的机器，Ribbon会自动的帮助你基于某种规则（如简单轮询，随机连接等）去连接这些机器。我们很容易使用Ribbon实现自定义的负载均衡算法。
 
+LB负载均衡(Load Balance)是什么？简单的说就是将用户的请求平摊的分配到多个服务上，从而达到系统的HA（高可用）。常见的负载均衡有软件Nginx，LVS，硬件 F5等。
 
+Ribbon本地负载均衡客户端 VS Nginx服务端负载均衡区别：Nginx是服务器负载均衡，客户端所有请求都会交给nginx，然后由nginx实现转发请求。即负载均衡是由服务端实现的。Ribbon本地负载均衡，在调用微服务接口时候，会在注册中心上获取注册信息服务列表之后缓存到JVM本地，从而在本地实现RPC远程服务调用技术。
 
+1. 集中式负载均衡：即在服务的消费方和提供方之间使用独立的LB设施(可以是硬件，如F5；也可以是软件，如nginx)，由该设施负责把访问请求通过某种策略转发至服务的提供方。
+2. 进程内负载均衡：将LB逻辑集成到消费方，消费方从服务注册中心获知有哪些地址可用，然后自己再从这些地址中选择出一个合适的服务器。Ribbon就属于进程内LB，它只是一个类库，集成于消费方进程，消费方通过它来获取到服务提供方的地址。
 
+**Ribbon：负载均衡 + RestTemplate调用服务。**
 
+Ribbon在工作时分成两步：
 
+1. 第一步先选择 EurekaServer ,它优先选择在同一个区域内负载较少的server.
+2. 第二步再根据用户指定的策略，在从server取到的服务注册列表中选择一个地址。（其中Ribbon提供了多种策略：比如轮询、随机和根据响应时间加权）
 
+spring-cloud-starter-netflix-eureka-client 中自带了spring-cloud-starter-ribbon引用，可以不再声明依赖添加：
 
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+</dependency>
+```
 
+### RestTemplate-服务调用
 
+同步客户端以执行HTTP请求，在基础HTTP客户端库中公开一个简单的模板方法API，例如JDK HTTPURLCONNECTION，APACHE HTTPCOMPONENTS等。
+RestTemplate除了支持较不频繁情况的广义交换和执行方法外，还提供了HTTP方法的常见方案模板。（简化了发起 HTTP 请求以及处理响应的过程，并且支持 REST ）
 
+使用：1、注册为bean。2、调用RestTemplate的方法。
 
+```java
+@Bean
+@LoadBalanced // 负载均衡
+public RestTemplate restTemplate() {
+  return new RestTemplate();
+}
+```
 
+```java
+@Autowired
+private RestTemplate restTemplate; // 注入并调用方法
+```
 
+**发起GET请求：**
 
+`restTemplate.getForEntity("http://HELLO-SERVICE/hello", String.class)`方法：
 
+1. 第一个参数为要调用的服务的地址，这里是通过服务名调用而不是服务地址，如果写成服务地址就没法实现客户端负载均衡了，如果写成地址了但还是要实现客户端负载均衡，那就需要`@LoadBalanced`注解，加到restTemplate的bean注册的地方。
 
+2. 第二个参数 指定返回的 body 类型，可以是自定义的类类型（前提是要和响应返回的对应上，如果响应返回一个自定义对象，那就可以使用）。
 
+3. 返回对象为 ResponseEntity  对象，包含了响应中的一些重要信息，比如响应头、响应状态码、响应体等。
 
+4. 第一个调用地址也可以是一个URI而不是字符串，这个时候我们构建一个URI即可，参数都包含在URI中了，如下：
 
+   ```java
+   @RequestMapping("/sayhello3")
+   public String sayHello3() {
+       UriComponents uriComponents = UriComponentsBuilder.fromUriString("http://HELLO-SERVICE/sayhello?name={name}").build().expand("王五").encode();	
+       URI uri = uriComponents.toUri();
+       ResponseEntity<String> responseEntity = restTemplate.getForEntity(uri, String.class);
+       return responseEntity.getBody();
+   }
+   ```
 
+`restTemplate.getForObject("http://HELLO-SERVICE/getbook1", Book.class)`方法：getForObject 函数实际上是对 getForEntity 函数的进一步封装，如果你只关注返回的消息体的内容，对其他信息都不关注，此时可以使用 getForObject：
 
+```java
+@RequestMapping(value = "/getbook1", method = RequestMethod.GET)
+public Book book1() {
+    return new Book("三国演义", 90, "罗贯中", "花城出版社");
+}
+@RequestMapping("/book2")
+public Book book2() {
+    // 该方法只关注响应回来的数据内容 返回对象为响应体中数据转化成的对象，基本上可以理解为Json
+    Book book = restTemplate.getForObject("http://HELLO-SERVICE/getbook1", Book.class);
+    return book;
+}
+```
+
+**发起POST请求：**
+
+`restTemplate.postForEntity("http://HELLO-SERVICE/getbook2", book, Book.class);`方法：（和get请求的类似）
+
+1. 方法的第一参数表示要调用的服务的地址。
+2. 方法的第二个参数表示上传的参数。
+3. 方法的第三个参数表示返回的消息体的数据类型。
+
+`restTemplate.postForObject("http://HELLO-SERVICE/getbook1", Book.class)`方法：只关注返回的消息体，可以直接使用postForObject。用法和getForObject一致。
+
+`restTemplate.postForLocation()`：提交新资源，提交成功之后返回新资源的 URI，postForLocation 的参数和前面两种的参数基本一致，只不过该方法的返回值为 URI ，这个只需要服务提供者返回一个 URI 即可，该 URI 表示新资源的位置。
+
+### IRule与负载规则变更
+
+根据特定算法从服务中选取一个要访问的服务，注意有以下七种：（默认使用轮询）
+
+![](img/23.irule.png)
+
+更改默认的轮询规则：
+
+1. 客户端自定义配置类，不过这个自定义配置类不能放在@ComponentScan所扫描的当前包下以及子包下，否则我们自定义的这个配置类就会被所有的Ribbon客户端所共享，达不到特殊化定制的目的了。
+
+   ```java
+   @Configuration
+   public class MySelfRule {
+       @Bean
+       public IRule myRule() {
+           return new RandomRule(); // 定义为随机
+       }
+   }
+   ```
+
+2. 使自定义的配置类生效：（主启动类加上@RibbonClient注解）
+
+   ```java
+   @SpringBootApplication
+   @EnableEurekaClient
+   @RibbonClient(name = "CLOUD-PAYMENT-SERVICE",configuration= MySelfRule.class)
+   public class OrderMain80 {
+       public static void main(String[] args) {
+           SpringApplication.run(OrderMain80.class,args);
+       }
+   }
+   ```
+
+3. 测试：在cloud-provider-order80修改后启动，然后开启7001、7002、8001、8002，再访问：[localhost/consumer/payment/get/1](http://localhost/consumer/payment/get/1)。
+
+### 轮询算法原理与源码分析
+
+轮询算法原理：`rest接口第几次请求数 % 服务器集群总数量 = 实际调用服务器位置下标` ，每次服务重启动后rest接口计数从1开始。
+
+RoundRobinRule源码：
+
+## OpenFeign服务接口调用
+
+### 概述
+
+Feign是一个声明式WebService客户端。使用Feign能让编写Web Service客户端更加简单。它的使用方法是定义一个服务接口然后在上面添加注解。Feign也支持可拔插式的编码器和解码器。Spring Cloud对Feign进行了封装，使其支持了Spring MVC标准注解和HttpMessageConverters。Feign可以与Eureka和Ribbon组合使用以支持负载均衡。
+
+**简而言之，Feign就是一个声明式的Web服务客户端（声明后用于发起请求访问微服务），使得编写Web服务客户端变得非常容易，只需创建一个接口并为接口添加上注解即可。**   更简单的说就是用来发起get、post等请求的，封装好了的，使得请求操作很简单。
+
+**Feign能干什么？** **（服务接口绑定器，定义的接口与微服务的服务接口绑定，通过该接口发起请求完成对微服务的服务调用）**
+
+1. Feign旨在使编写Java Http客户端变得更容易。
+2. 使用Ribbon+RestTemplate时，利用RestTemplate对http请求的封装处理形成了一套模版化的调用方法。但是在实际开发中，由于对微服务中服务的调用可能不止一处，往往一个服务接口会被多处调用，所以通常都会针对每个微服务自行封装一些客户端类来包装这些对服务的调用。所以，Feign在此基础上做了进一步封装，由他来帮助我们定义和实现依赖服务接口的定义。
+3. 在Feign的实现下，我们只需创建一个接口并使用注解的方式来配置它（以前是Dao接口上面标注Mapper注解，现在是一个微服务接口上面标注一个Feign注解即可)，即可完成对服务提供方的接口绑定，简化了使用Spring cloud Ribbon时，自动封装服务调用客户端（使用RestTemplate发起请求的一系列操作）的开发量。
+4. Feign集成了Ribbon：利用Ribbon维护了Payment的服务列表信息，并且通过轮询实现了客户端的负载均衡。而与Ribbon不同的是，通过feign只需要定义服务绑定接口且以声明式的方法，优雅而简单的实现了服务调用。
+5. 总结：**（Feign就是服务接口绑定器，定义的接口与微服务的服务接口绑定，通过该接口发起请求完成对微服务的服务调用）**
+
+**Feign与OpenFeign的区别：**
+
+Feign是Spring Cloud组件中的一个轻量级RESTful的HTTP服务客户端，Feign内置了Ribbon，用来做客户端负载均衡，去调用服务注册中心的服务。Feign的使用方式是：使用Feign的注解定义接口，调用这个接口，就可以调用服务注册中心的服务。
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-feign</artifactId>
+</dependency>
+```
+
+OpenFeign是Spring Cloud 在Feign的基础上支持了SpringMVC的注解，如@RequesMapping等等。OpenFeign的@FeignClient可以解析SpringMVC的@RequestMapping注解下的接口，并通过动态代理的方式产生实现类，实现类中做负载均衡并调用其他服务。
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+```
+
+### 实现服务调用
+
+使用OpenFeign来实现对微服务中服务的调用。
+
+1. 新建cloud-consumer-feign-order-80项目。
+
+2. 添加依赖：
+
+   ```xml
+   <parent>
+       <artifactId>learning_springcloud</artifactId>
+       <groupId>com.lsl.springcloud</groupId>
+       <version>1.0-SNAPSHOT</version>
+   </parent>
+   <dependencies>
+       <!-- OpenFeign -->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-openfeign</artifactId>
+       </dependency>
+       <!-- ribbon -->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-netflix-ribbon</artifactId>
+       </dependency>
+       <!--eureka-client-->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+       </dependency>
+       <!-- 引入自己定义的api通用包，可以使用Payment支付Entity -->
+       <dependency>
+           <groupId>com.lsl.springcloud</groupId>
+           <artifactId>cloud-api-commons</artifactId>
+           <version>1.0-SNAPSHOT</version>
+       </dependency>
+       <!-- SpringBoot整合Web组件 -->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-web</artifactId>
+       </dependency>
+   
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-actuator</artifactId>
+       </dependency>
+       <!--日常通用jar包配置-->
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-devtools</artifactId>
+           <scope>runtime</scope>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.projectlombok</groupId>
+           <artifactId>lombok</artifactId>
+           <optional>true</optional>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-test</artifactId>
+           <scope>test</scope>
+       </dependency>
+   </dependencies>
+   ```
+
+3. 项目配置：
+
+   ```yaml
+   server:
+       port: 80
+   eureka:
+       client:
+           register-with-eureka: false
+           service-url:
+               defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/
+   ```
+
+4. 主启动类：
+
+   ```java
+   @SpringBootApplication
+   @EnableFeignClients
+   public class CloudConsumerFeignOrderApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(CloudConsumerFeignOrderApplication.class, args);
+       }
+   }
+   ```
+
+5. FeignClient接口定义：
+
+   ```java
+   @Component
+   // 指定哪个微服务 cloud-payment-service 为微服务注册在eureka里的application 名字
+   @FeignClient(value="CLOUD-PAYMENT-SERVICE")
+   public interface PaymentFeignService {
+       // 会向 cloud-payment-service 这个微服务里的/payment/get/{id} 路径发起请求
+       @GetMapping(value = "/payment/get/{id}")
+       CommonResult<Payment> getPaymentById(@PathVariable("id") Long id);
+   }
+   ```
+
+6. controller：
+
+   ```java
+   @RestController
+   @Slf4j
+   public class OrderFeignController {
+       @Resource
+       private PaymentFeignService paymentFeignService;
+   	// 当访问当前项目下的/consumer/payment/get/{id}路径时，
+       // 就会访问到paymentFeignService.getPaymentById(id)所指定的 http://cloud-payment-service/payment/get/{id}
+       @GetMapping(value = "/consumer/payment/get/{id}")
+       public CommonResult<Payment> getPaymentById(@PathVariable("id") Long id)
+       {
+           return paymentFeignService.getPaymentById(id);
+       }
+   }
+   ```
+
+### 超时控制功能
+
+通过FeignClient去访问微服务的服务，默认是1秒就要取得返回结果，如果超过1秒就会 `Read timed out`。配置文件配置超时时间：
+
+```yaml
+feign:
+    client:
+        config:
+            default:
+                connect-timeout: 5000
+                read-timeout: 5000
+```
+
+### 日志打印功能
+
+eign 提供了日志打印功能，我们可以通过配置来调整日志级别，从而了解 Feign 中 Http 请求的细节。说白了就是对Feign接口的调用情况进行监控和输出。
+
+日志级别：
+
+1. NONE：默认的，不显示任何日志。
+2. BASIC：仅记录请求方法、URL、响应状态码及执行时间。
+3. HEADERS：除了 BASIC 中定义的信息之外，还有请求和响应的头信息。
+4. FULL：除了 HEADERS 中定义的信息之外，还有请求和响应的正文及元数据。
+
+如何配置？
+
+1. 建配置类：
+
+   ```java
+   @Configuration
+   public class FeignConfig{
+       @Bean
+       Logger.Level feignLoggerLevel(){
+           return Logger.Level.FULL;
+       }
+   }
+   ```
+
+2. 配置文件中添加配置：
+
+   ```yaml
+   logging:
+       level: # 为需要日志的那个接口添加
+           com.lsl.cloudconsumerfeignorder80.service.PaymentFeignService: debug
+   ```
 
 
 
