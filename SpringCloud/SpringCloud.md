@@ -672,7 +672,7 @@ pom.xml：
 
 # 服务注册中心
 
-注册进注册中心的微服务之间，访问地址为`http://spring.application.name/`，可以不使用主机+端口的方式去访问。
+注册进注册中心的微服务之间，各服务端之间内部发起访问，访问地址为`http://spring.application.name/`，可以不使用主机+端口的方式去访问。
 
 ## Eureka
 
@@ -1999,6 +1999,7 @@ OpenFeign是Spring Cloud 在Feign的基础上支持了SpringMVC的注解，如@R
 
    ```java
    @SpringBootApplication
+   @EnableEurekaClient
    @EnableFeignClients
    public class CloudConsumerFeignOrderApplication {
        public static void main(String[] args) {
@@ -2084,20 +2085,37 @@ eign 提供了日志打印功能，我们可以通过配置来调整日志级别
            com.lsl.cloudconsumerfeignorder80.service.PaymentFeignService: debug
    ```
 
+### 关于参数列表传参
+
+Feign 传参要确保消费者和提供者的参数列表一致，包括返回值、方法签名都要一致：
+
+1. 通过 URL 传参数，GET 请求，参数列表使用`@PathVariable("")`
+2. 如果是 GET 请求，每个基本参数必须加`@RequestParam("")`。
+3.  如果是 POST 请求，而且是对象集合等参数，必须加`@Requestbody` 或者`@RequestParam`。
+
+### 时间日期参数问题
+
+使用 feign 远程调用时，传递 Date 类型，接收方的时间会相差 14 个小时，是因为时区造成的。 解决方案： 
+
+1. 使用字符串传递参数，接收方转换成时间类型，不要单独传递时间 。**（推荐使用）**
+2. 使用 JDK8 的 LocalDate（日期） 或 LocalDateTime（日期和时间，接收方只有秒，没有毫 秒）。
+3. 自定义转换方法。
+
 # 服务降级
 
-复杂分布式体系结构中的应用程序有数十个依赖关系，每个依赖关系在某些时候将不可避免地失败。
+复杂分布式体系结构中的应用程序有数十个依赖关系，每个依赖关系在某些时候将不可避免地失败。Hystrix（熔断器（断路器））是一个用于处理分布式系统的延迟和容错的开源库，在分布式系统里，许多依赖不可避免的会调用失败，比如超时、异常等，Hystrix能够**保证在一个依赖出问题的情况下，不会导致整体服务失败，避免级联故障，以提高分布式系统的弹性**。
 
 服务雪崩：
 
 1. 多个微服务之间调用的时候，假设微服务A调用微服务B和微服务C，微服务B和微服务C又调用其它的微服务，这就是所谓的“扇出”。如果扇出的链路上某个微服务的调用响应时间过长或者不可用，对微服务A的调用就会占用越来越多的系统资源，进而引起系统崩溃，所谓的“雪崩效应”。
 2. 对于高流量的应用来说，单一的后端依赖可能会导致所有服务器上的所有资源都在几秒钟内饱和。比失败更糟糕的是，这些应用程序还可能导致服务之间的延迟增加，备份队列，线程和其他系统资源紧张，导致整个系统发生更多的级联故障。这些都表示需要对故障和延迟进行隔离和管理，以便单个依赖关系的失败，不能取消整个应用程序或系统。所以，通常当你发现一个模块下的某个实例失败后，这时候这个模块依然还会接收流量，然后这个有问题的模块还调用了其他的模块，这样就会发生级联故障，或者叫雪崩。
 
-Hystrix是一个用于处理分布式系统的延迟和容错的开源库，在分布式系统里，许多依赖不可避免的会调用失败，比如超时、异常等，Hystrix能够**保证在一个依赖出问题的情况下，不会导致整体服务失败，避免级联故障，以提高分布式系统的弹性**。
+**服务雪崩的本质：线程没有及时回收。 不管是调用成功还是失败，只要线程可以及时回收，就可以解决服务雪崩：**
 
-“断路器”本身是一种开关装置，当某个服务单元发生故障之后，通过断路器的故障监控（类似熔断保险丝），向调用方返回一个符合预期的、可处理的备选响应（FallBack），而不是长时间的等待或者抛出调用方无法处理的异常，这样就保证了服务调用方的线程不会被长时间、不必要地占用，从而避免了故障在分布式系统中的蔓延，乃至雪崩。
+- “断路器”本身是一种开关装置，当某个服务单元发生故障之后，通过断路器的故障监控（类似熔断保险丝），向调用方返回一个符合预期的、可处理的备选响应（FallBack），而不是长时间的等待或者抛出调用方无法处理的异常，这样就保证了服务调用方的线程不会被长时间、不必要地占用，从而避免了故障在分布式系统中的蔓延，乃至雪崩。
+- 解决雪崩：修改调用的超时时长、设置拦截器（使用拦截器判断调用的服务的状态，以便及时作出反应，这也是熔断器的思想）。
 
-Hystrix 主要功能：服务降级、服务熔断、接近实时的监控。
+Hystrix 主要功能：服务降级、服务熔断、接近实时的监控。当有服务调用的时候，才会出现服务雪崩，所以 Hystrix 常和 OpenFeign、Ribbon 一起出现。
 
 官方使用文档：[How To Use · Netflix/Hystrix Wiki (github.com)](https://github.com/Netflix/Hystrix/wiki/How-To-Use)
 
@@ -2107,7 +2125,7 @@ Hystrix 主要功能：服务降级、服务熔断、接近实时的监控。
 2. 服务熔断（break）：服务访问到达最大访问量后直接拒绝访问，然后调用服务降级的方法返回友好提示。
 3. 服务限流（flow limit）：高并发操作时（例如秒杀），每秒钟限制N个服务访问，有序进行。
 
-## Hystrix 的使用
+## ~~Hystrix 的使用~~
 
 ### 平台搭建
 
@@ -2274,25 +2292,653 @@ Hystrix 主要功能：服务降级、服务熔断、接近实时的监控。
 
 
 
+## 在OpenFeign 中使用 Hystrix
+
+1. 建立SpringBoot项目。
+
+2. 加入依赖。
+
+   ```xml
+   <parent>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-parent</artifactId>
+       <version>2.3.12.RELEASE</version>
+       <relativePath/> <!-- lookup parent from repository -->
+   </parent>
+   <properties>
+       <java.version>1.8</java.version>
+       <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
+   </properties>
+   <dependencies>
+       <!--hystrix-->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-openfeign</artifactId>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-web</artifactId>
+       </dependency>
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+       </dependency>
+   
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-test</artifactId>
+           <scope>test</scope>
+       </dependency>
+   </dependencies>
+   ```
+
+3. 项目配置。
+
+   ```yaml
+   server:
+     port: 8001
+   
+   spring:
+     application:
+       name: hystrix-payment
+   
+   eureka:
+     client:
+       register-with-eureka: true
+       fetch-registry: true
+       service-url:
+         defaultZone: http://peer1:8763/eureka
+   # 开启hystrix
+   feign:
+     hystrix:
+       enabled: true
+   ```
+
+4. 主启动类。
+
+   ```java
+   @SpringBootApplication
+   @EnableEurekaClient
+   @EnableFeignClients
+   public class HystrixTestApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(HystrixTestApplication.class, args);
+       }
+   }
+   ```
+
+5. 业务类。
+
+   ```java
+   @RestController
+   public class RentControllerTest {
+       @Autowired
+       @Qualifier("rentFeign")
+       RentFeign rentFeign;
+       @GetMapping("/rent")
+       public String rentService(){
+           System.out.println("");
+           return rentFeign.rentService();
+       }
+   }
+   ```
+
+6. 使用Fegin。（当访问`/rent`时就会通过Fegin向微服务发起访问，如果访问接口出现问题，那就会使用fallback里对应的方法）
+
+   ```java
+   @Component
+   // value用于指定注册中心里面的服务，将会对该访问的/rent发起访问，fallback是服务异常时调用的
+   @FeignClient(value = "rent-service",fallback = RentFeignHystrix.class)
+   public interface RentFeign {
+       @GetMapping("/rent")
+       public String rentService();
+   }
+   ```
+
+   ```java
+   @Component
+   public class RentFeignHystrix implements RentFeign{
+       public String rentService() {
+           return "服务繁忙";
+       }
+   }
+   ```
+
+## Hystrix常用配置
 
 
 
+# 网关
+
+## 概述
+
+网关：是微服务最边缘的服务，直接暴露给用户，用来做**用户和微服务的桥梁**。
+
+1. 没有网关：客户端直接访问我们的微服务，会需要在客户端配置很多的 `ip:port`，如果 user-service 并发比较大，则无法完成负载均衡 。
+2. 有网关：客户端访问网关，网关来访问微服务，（网关可以和注册中心整合，通过服务名称找到目标的 `ip:prot`）这样只需要使用服务名称即可访问微服务，也就可以实现负载均衡、可以实现 token 拦截、权限验证、限流等操作。
+
+Spring Cloud Gateway是是 Spring Cloud 官方提供的用来取代 zuul（netflix）的新一代网关。学习重点：网关能做啥、网关代码。
+
+Gateway 的核心逻辑也就是：路由转发 + 执行过滤器链。
+
+Spring Cloud Gateway 三大核心概念：
+
+1. Route（路由）：路由信息的组成： 由一个 ID、一个目的 URL、一组断言工厂、一组 Filter 组成。 如果路由断言为真，说明请求 URL 和配置路由匹配。
+2. Predicate（断言）：Spring Cloud Gateway 中 的 断 言 函 数 输 入 类 型 是 Spring 5.0 框 架 中 的 ServerWebExchange。Spring Cloud Gateway 的断言函数允许开发者去定义匹配来自于 Http Request 中的任何信息比如请求头和参数。（返回布尔值的表达式）
+3. Filter（过滤）：过滤器 Filter 将会对请求和响应进行修改处理，Spring Cloud Gateway 中的 Filter 分为 Gateway Filter 和 Global Filter， 一个是针对某一个路由（路径）的 filter，对某一个接口做限流；一个是针对全局的 filter（token ip 黑名单）。
+
+Nginx 和 Gateway 的区别：
+
+1. Nginx 在做路由、负载均衡、限流之前，都要修改好 nginx.conf 的配置文件，把需要负载均衡、 路由、限流的规则加在里面。
+2. 而gateway是自动的负载均衡和路由，gateway 和 eureka 高度集成，实现了自动的路由，和 Ribbon 结合，实现了负载均衡（lb），gateway 也能轻易的实现限流和权限验证。 （Nginx（c）比 gateway（java）的性能高一点。）
+3. 本质区别：Nginx是服务器级别的，GateWay是项目级别的。
+
+## Gateway-配置文件路由
+
+1. 创建SpringBoot项目。
+
+2. 导入依赖：
+
+   ```xml
+   <parent>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-parent</artifactId>
+       <version>2.3.12.RELEASE</version>
+       <relativePath/> <!-- lookup parent from repository -->
+   </parent>
+   <properties>
+       <java.version>1.8</java.version>
+       <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
+   </properties>
+   <dependencies>
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-gateway</artifactId>
+       </dependency>
+   
+       <dependency>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-test</artifactId>
+           <scope>test</scope>
+       </dependency>
+   </dependencies>
+   <dependencyManagement>
+       <dependencies>
+           <dependency>
+               <groupId>org.springframework.cloud</groupId>
+               <artifactId>spring-cloud-dependencies</artifactId>
+               <version>${spring-cloud.version}</version>
+               <type>pom</type>
+               <scope>import</scope>
+           </dependency>
+       </dependencies>
+   </dependencyManagement>
+   ```
+
+3. 主启动类：
+
+   ```java
+   @SpringBootApplication
+   public class GatewayServiceApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(GatewayServiceApplication.class, args);
+       }
+   }
+   ```
+
+4. 配置：
+
+   ```yaml
+   server:
+     port: 80 # 网关一般是80
+   spring:
+     application:
+       name: gateway-service
+     cloud:
+       gateway:
+         enabled: true # 加了网关的依赖就会默认开启了的
+         routes:
+           - id: login-service-route # 路由id，保持唯一性即可
+             uri: http://localhost:8081 #
+             predicates:
+               - Path=/login # 访问80时，路径和/login匹配上就往uri指定的转发并且将路径带上——http://localhost:8081/login
+           - id: login-service-route2 # 路由id，保持唯一性即可
+             uri: http://localhost:8081 #
+             predicates:
+               - Path=/login/** # 匹配到一个，就不会走第二个，匹配该路径下所有访问
+   ```
+
+5. 当访问http://localhost/login时由gateway完成路由转发到http://localhost:8081/login。
+
+   ```java
+   @RestController
+   public class LoginController {
+       @GetMapping("/login")
+       public String login(){
+           return "http://localhost/login ===> http://localhost:8081/login";
+       }
+   }
+   ```
 
 
 
+## Gateway集群
+
+1. 创建多个Gateway项目，部署到服务器。
+2. 修改Ngnix配置文件。
+
+## Gateway-代码方式路由
+
+按配置文件路由那里建好项目，再使用配置类：
+
+```java
+@Configuration
+public class RouteConfig {
+    @Bean
+    public RouteLocator customRouteLocator(RouteLocatorBuilder builder){
+        return builder
+            	// http://localhost/popular/all  ===>  https://www.bilibili.com/popular/all
+                .routes().route("route_id_1",r -> r.path("/popular/all")
+                        .uri("https://www.bilibili.com"))
+                .route("route_id_1",r -> r.path("/v/popular/history")
+                        .uri("https://www.bilibili.com"))
+                .build();
+    }
+}
+```
 
 
 
+## 动态路由与负载均衡
+
+修改配置文件：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true # 开启动态路由
+          lower-case-service-id: true # 动态路由小驼峰规则
+      routes: #设置路由，注意是数组，可以设置多个，按照 id 做隔离
+        - id: user-service-router # 路由 id，没有要求，保持唯一即可
+          uri: lb://provider # 使用 lb 协议，带微服务名称的请求做负均衡
+          predicates: # 断言匹配
+          	- Path=/info/** # 和服务中的路径匹配,是正则匹配的模式
+        - id: provider-service-router
+          uri: http://localhost:8082
+          predicates:
+          	- Path=/info/** # 如果匹配到第一个路由，则就不会走第二个了，注意这不是负载均衡
+```
+
+## 了解断言工厂
+
+在 gateway 启动时会去加载一些路由断言工厂（判断一句话是否正确 一个 boolean 表达）。
+
+断言就是路由添加一些条件(丰富路由功能的) 通俗的说，断言就是一些布尔表达式，满足条件的返回 true，不满足的返回 false。 Spring Cloud Gateway 将路由作为 Spring WebFlux HandlerMapping 基础架构的一部分 进行匹配。Spring Cloud Gateway 包括许多内置的路由断言工厂。所有这些断言都与 HTTP 请求的不同属性匹配。您可以将多个路由断言可以组合使用 Spring Cloud Gateway 创建对象时，使用 RoutePredicateFactory 创建 Predicate 对象， Predicate 对象可以赋值给 Rout。
+
+使用断言判断时，我们常用 yml 配置文件的方式进行配，**断言不作用于动态路由的路径访问**。
+
+```yaml
+spring:
+  application:
+    name: gateway-80
+  cloud:
+    gateway:
+      enabled: true #开启网关，默认是开启的
+      routes: #设置路由，注意是数组，可以设置多个，按照 id 做隔离
+        - id: user-service #路由 id，没有要求，保持唯一即可
+        uri: lb://provider #使用 lb 协议 微服务名称做负均衡
+        predicates: #断言匹配
+          - Path=/info/** #和服务中的路径匹配,是正则匹配的模式
+          #此断言匹配发生在指定日期时间之后的请求，ZonedDateTime dateTime=ZonedDateTime.now()获得
+          - After=2020-01-20T17:42:47.789-07:00[Asia/Shanghai] 
+          #此断言匹配发生在指定日期时间之前的请求
+          - Before=2020-06-18T21:26:26.711+08:00[Asia/Shanghai] 
+          #此断言匹配发生在指定日期时间之间的请求
+          - Between=2020-06-18T21:26:26.711+08:00[Asia/Shanghai],2020-06-18T21:32:26.711+08:00[Asia/Shanghai] 
+          #Cookie 路由断言工厂接受两个参数，Cookie 名称和 regexp(一个 Java 正则表达式)。此断言匹配具有给定名称且其值与正则表达式匹配的 cookie
+          - Cookie=name,xiaobai 
+          #头路由断言工厂接受两个参数，头名称和 regexp(一个 Java 正则表达式)。此断言与具有给定名称的头匹配，该头的值与正则表达式匹配。
+          - Header=token,123456 
+          #主机路由断言工厂接受一个参数:主机名模式列表。该模式是一个 ant 样式的模式。作为分隔符。此断言匹配与模式匹配的主机头
+          - Host=**.bai*.com:* 
+          #方法路由断言工厂接受一个方法参数，该参数是一个或多个参数:要匹配的 HTTP 方法
+          - Method=GET,POST 
+          #查询路由断言工厂接受两个参数:一个必需的 param 和一个可选的 regexp(一个 Java 正则表达式)。
+          - Query=username,cxs 
+          # RemoteAddr 路由断言工厂接受一个源列表(最小大小 1)，这些源是 cidr 符号(IPv4 或 IPv6)字符串，
+          #比如 192.168.1.1/24(其中 192.168.1.1 是 IP 地址，24 是子网掩码
+          - RemoteAddr=192.168.1.1/24 
+```
+
+还有一个访问权重的设置，意思是说： 80%的请求，由 https://weighthigh.org 这个 url 去处理 20%的请求由 https://weightlow.org 去处理：
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: weight_high
+        uri: https://weighthigh.org
+        predicates:
+        	- Weight=group1, 8
+        - id: weight_low
+        uri: https://weightlow.org
+        predicates:
+        	- Weight=group1, 2
+```
+
+总结：Predicate 就是为了实现一组匹配规则，让请求过来找到对应的 Route 进行处理。
+
+## 过滤器工厂
+
+gateway 里面的过滤器和 Servlet 里面的过滤器的功能差不多，路由过滤器可以用于修改进入的 Http 请求和返回 Http 响应。
+
+按生命周期分为两类：
+
+1. 前置过滤 pre：在业务逻辑之前。
+2. 后置过滤 post：在业务逻辑之后。
+
+按种类分类：
+
+1. GatewayFilter ：需要配置某个路由，才能过滤。（可用于记录接口访问次数、限流操作）
+2. GlobalFilter：全局过滤器，不需要配置路由，系统初始化作用到所有路由上。（可用于黑名单检验、全局的token校验、参数检验）
+
+### 自定义全局过滤器
+
+```java
+@Component
+public class MyGlobalFilter implements GlobalFilter, Ordered {
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+
+        ServerHttpRequest request = exchange.getRequest();
+        URI uri = request.getURI();
+        HttpHeaders headers = request.getHeaders();
+        HttpMethod method = request.getMethod();
+        String hostString = request.getHeaders().getHost().getHostString();
+        // 组装业务返回值
+        ServerHttpResponse response = exchange.getResponse();
+        response.getHeaders().set("content-type","application/json;charset=utf-8");
+        HashMap<String,Object> map = new HashMap<>();
+        map.put("code", HttpStatus.UNAUTHORIZED.value());
+        map.put("msg","你未授权");
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            byte[] bytes = objectMapper.writeValueAsBytes(map);
+            DataBuffer wrap = response.bufferFactory().wrap(bytes);
+            return response.writeWith(Mono.just(wrap));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+
+        // 放行，到下一个过滤器
+        return chain.filter(exchange);
+    }
+		// 越小越先执行
+  @Override
+    public int getOrder() {
+        return 0;
+    }
+}
+```
+
+### 禁黑名单IP
+
+```java
+@Component
+public class IPCheckFilter implements GlobalFilter {
+    public static final List<String> black_list = Arrays.asList("192.167.15.155","192.168.175.170","127.0.0.1");
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        ServerHttpRequest request = exchange.getRequest();
+        String ip = request.getHeaders().getHost().getHostString();
+        // 查询数据库-匹配黑名单IP- black_list  （白名单 white_list）
+        // 网关并发比较高就不要在网关里操作数据库
+        if (!black_list.contains(ip)){
+            return chain.filter(exchange);
+        }
+        ServerHttpResponse response = exchange.getResponse();
+        response.getHeaders().set("content-type","application/json;charset=utf-8");
+        HashMap<String,Object> map = new HashMap<>();
+        map.put("code",438);
+        map.put("msg","你已经进入黑名单");
+        ObjectMapper objectMapper = new ObjectMapper();
+        byte[] bytes = new byte[0];
+        try {
+            bytes = objectMapper.writeValueAsBytes(map);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        DataBuffer wrap = response.bufferFactory().wrap(bytes);
+        return response.writeWith(Mono.just(wrap));
+    }
+}
+```
 
 
 
+### 使用过滤器做token校验
+
+所谓的Token，其实就是服务端生成的一串加密字符串、以作客户端进行请求的一个“令牌”。当用户第一次使用账号密码成功进行登录后，服务器便生成一个Token及Token失效时间并将此返回给客户端，若成功登陆，以后客户端只需在有效时间内带上这个Token前来请求数据即可，无需再次带上用户名和密码。
+
+![](pnimg/3.gateway-token.png)
+
+代码示例：（token一般是 `Authorization` = `bearer 加密字符`，这样从客户端上传服务端去校验）
+
+```java
+@Component
+public class TokenCheckFilter implements GlobalFilter, Ordered {
+    public static final List<String> ARROW_PATH = Arrays.asList("/login/page","/login/adminpage");
+
+    @Override
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        ServerHttpRequest request = exchange.getRequest();
+        String path = request.getURI().getPath();
+        if (ARROW_PATH.contains(path)){
+            return chain.filter(exchange);
+        }
+        // 检验token
+        HttpHeaders headers = request.getHeaders();
+        List<String> authorization = headers.get("Authorization");
+        if (!CollectionUtils.isEmpty(authorization)){
+            String token = authorization.get(0);
+            if (StringUtils.hasText(token)){
+                // 约定好是有前缀的 bearer token，把前缀去掉拿到真实的
+                String realToken=token.replaceFirst("bearer ","");
+                // 去redis校验，校验成功就放行
+            }
+        }
+        // 校验不成功，拦截
+        ServerHttpResponse response = exchange.getResponse();
+        response.getHeaders().set("content-type","application/json;charset=utf-8");
+        HashMap<String,Object> map = new HashMap<>();
+        map.put("code",401);
+        map.put("msg","验证失败");
+        ObjectMapper objectMapper = new ObjectMapper();
+        byte[] bytes = new byte[0];
+        try {
+            bytes = objectMapper.writeValueAsBytes(map);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        DataBuffer wrap = response.bufferFactory().wrap(bytes);
+        return response.writeWith(Mono.just(wrap));
+    }
+    /**
+     * 指定该过滤器执行顺序
+    * */
+    @Override
+    public int getOrder() {
+        return 0;
+    }
+}
+```
 
 
 
+## GateWay集成Redis限流
+
+通俗的说，限流就是限制一段时间内，用户访问资源的次数，减轻服务器压力，限流大致分为两种：
+
+1. IP 限流：5s 内同一个 ip 访问超过 3 次，则限制不让访问，过一段时间才可继续访问。
+2. 请求量限流：只要在一段时间内（窗口期），请求次数达到阀值，就直接拒绝后面来的访问了， 过一段时间才可以继续访问。（粒度可以细化到一个 api（url）、一个服务）
+
+限流模型：漏斗算法 、令牌桶算法、窗口滑动算法、计数器算法。时间窗口算法结合Redis有序集合可以实现，漏桶（漏斗）算法可使用Redis-Cell来实现。
+
+Spring Cloud Gateway 已经内置了一个 RequestRateLimiterGatewayFilterFactory，我们 可以直接使用。 目前 RequestRateLimiterGatewayFilterFactory 的实现依赖于 Redis，所以还需要引入 `spring-boot-starter-data-redis-reactive`。
+
+1. 限流要引入依赖：
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+   </dependency>
+   ```
+
+2. 修改配置文件：
+
+   ```yaml
+   server:
+   	port: 80
+   spring:
+   	application:
+   	name: gateway-80
+   cloud:
+   	gateway:
+   		enabled: true
+   		routes:
+   			- id: user-service
+   			uri: lb://consumer-user-service
+   			predicates:
+   				- Path=/info/**
+   			filters:
+   				- name: RequestRateLimiter
+   					args:
+   						key-resolver: '#{@hostAddrKeyResolver}'
+   						redis-rate-limiter.replenishRate: 1
+   						redis-rate-limiter.burstCapacity: 3
+   	redis: #redis 的配置
+   		host: 192.168.226.128
+   		port: 6379
+   		database: 0
+   eureka:
+   	instance:
+   		instance-id: ${spring.application.name}:${server.port}
+   		prefer-ip-address: true
+   	client:
+   		service-url:
+   		defaultZone: http://localhost:8761/eureka/
+   ```
+
+3. 创建配置类：
+
+   ```java
+   @Configuration
+   public class RequestRateLimiterConfig {
+       /**
+        * IP 限流
+        * 把用户的 IP 作为限流的 Key
+        *
+        * @return
+        */
+       @Bean
+       @Primary
+       public KeyResolver hostAddrKeyResolver() {
+           return (exchange) -> Mono.just(exchange.getRequest().getRemoteAddress().getHostName());
+       }
+       /**
+        * 用户 id 限流
+        * 把用户 ID 作为限流的 key
+        *
+        * @return
+        */
+       @Bean
+       public KeyResolver userKeyResolver() {
+           return exchange -> Mono.just(exchange.getRequest().getQueryParams().getFirst("userId"));
+       }
+       /**
+        * 请求接口限流
+        * 把请求的路径作为限流 key
+        *
+        * @return
+        */
+       @Bean
+       public KeyResolver apiKeyResolver() {
+           return exchange -> Mono.just(exchange.getRequest().getPath().value());
+       }
+   }
+   ```
+
+在上面的配置文件，配置了 redis 的信息，并配置了 RequestRateLimiter 的限流过滤器， 该过滤器需要配置三个参数：
+
+1. burstCapacity：令牌桶总容量。 
+2. replenishRate：令牌桶每秒填充平均速率。
+3. key-resolver：用于限流的键的解析器的 Bean 对象的名字。它使用 SpEL 表达式根据`#{@beanName}`从 Spring 容器中获取 Bean 对象。
 
 
 
+## GateWay跨域
 
+因为网关是微服务的边缘所有的请求都要走网关 跨域的配置只需要写在网关即可。
+
+1、配置类：
+
+```java
+@Configuration
+public class CorsConfig {
+    @Bean
+    public CorsWebFilter corsFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedMethod("*");
+        config.addAllowedOrigin("*");
+        config.addAllowedHeader("*");
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource(new PathPatternParser());
+        source.registerCorsConfiguration("/**", config);
+        return new CorsWebFilter(source);
+    }
+}
+```
+
+2、配置：
+
+```yaml
+spring:
+	cloud:
+		gateway:
+			globalcors:
+			corsConfigurations:
+				'[/**]':  #针对哪些路径
+				allowCredentials: true # 这个是可以携带 cookie
+				allowedHeaders: '*'
+				allowedMethods: '*'
+				allowedOrigins: '*'
+```
+
+## 面试
+
+你们网关用的什么 ? （Gateway zuul ）你们网关里面写什么代码？ 
+
+跨域、路由（动态路由，负载均衡）、ip 黑名单拦截、Token 的校验、对请求进行过滤（请求 参数校验）、对响应做处理（状态码，响应头）、熔断、限流。
+
+微服务的网关，可以很好地将具体的服务和浏览器隔离开，只暴露网关的地址给到浏览器，在微服务网关中可以很好地实现校验认证、负载均衡（lb）、黑名单拦截、限流等。 
+
+Gateway 和 zuul 的区别？（ZuulFilter ）
+
+Zuul 也是 web 网关，本质上就是一组过滤器，按照定义的顺序，来执行过滤操作。二者的区别：
+
+1. 两者均是 web 网关，处理的是 http 请求 。
+2. Gateway 是 springcloud 官方的组件，zuul 则是 netflix 的产品 springcloud，netflix ，alibaba（nacos，sentinel，dubbo zk，seata，rocketmq） 。
+3. gateway 在 spring 的支持下，内部实现了限流、负载均衡等，扩展性也更强，但同时也 限制了仅适合于 Spring Cloud 套件。而 zuul 则可以扩展至其他微服务框架中，其内部没有 实现限流、负载均衡等。
+4. Gateway（Netty NIO）很好的支持异步（spring5.x ,webFlux 响应式编程默认是异步的）， 而 zuul1.0 仅支持同步 BIO zuul2.0 以后也支持异步。
 
 
 
