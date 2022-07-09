@@ -2940,6 +2940,155 @@ Zuul 也是 web 网关，本质上就是一组过滤器，按照定义的顺序�
 3. gateway 在 spring 的支持下，内部实现了限流、负载均衡等，扩展性也更强，但同时也 限制了仅适合于 Spring Cloud 套件。而 zuul 则可以扩展至其他微服务框架中，其内部没有 实现限流、负载均衡等。
 4. Gateway（Netty NIO）很好的支持异步（spring5.x ,webFlux 响应式编程默认是异步的）， 而 zuul1.0 仅支持同步 BIO zuul2.0 以后也支持异步。
 
+# SpringCloudAlibaba
+
+Spring Cloud Alibaba 致力于提供微服务开发的一站式解决方案。此项目包含开发分布式 应用微服务的必需组件，方便开发者通过 Spring Cloud 编程模型轻松使用这些组件来开发分布式应用服务。 依托 Spring Cloud Alibaba，您只需要添加一些注解和少量配置，就可以将 Spring Cloud 应用接入阿里微服务解决方案，通过阿里中间件来迅速搭建分布式应用系统。
+
+组件：
+
+1. 服务治理：Nacos。（注册中心）
+2. 服务保护：Sentinal。（熔断）
+3. 远程调用：Dubbo。
+4. 分布式事务：Seata。
+5. 消息驱动：RocketMQ。
+
+[版本说明 · alibaba/spring-cloud-alibaba Wiki (github.com)](https://github.com/alibaba/spring-cloud-alibaba/wiki/版本说明)
+
+## Nacos
+
+Nacos 致力于发现、配置和管理微服务。Nacos 提供了一组简单易用的特性集，帮助您快速实现动态服务发现、服务配置、服务元数据及流量管理。 Nacos 帮助您更敏捷和容易地构建、交付和管理微服务平台。 Nacos 是构建以“服务”为中心 的现代应用架构 （例如微服务范式、云原生范式）的服务基础设施。
+
+Nacos核心概念：
+
+1. 服务（Service）：服务是指一个或一组软件功能（例如特定信息的检索或一组操作的执行），其目的是不同的客 户端可以为不同的目的重用（例如通过跨进程的网络调用）。Nacos 支持主流的服务生态， 如 Kubernetes Service 、 gRPC|Dubbo RPC Service 或 者 Spring Cloud RESTful Service。
+2. 服务注册中心（Service Registry）：服务注册中心，它是服务实例及元数据的数据库。服务实例在启动时注册到服务注册表，并在 关闭时注销。服务和路由器的客户端查询服务注册表以查找服务的可用实例。服务注册中心可 能会调用服务实例的健康检查 API 来验证它是否能够处理请求。
+3. 服务元数据 (Service Metadata)：服务元数据是指包括服务端点(endpoints)、服务标签、服务版本号、服务实例权重、路由规 则、安全策略等描述服务的数据。
+4. 服务提供方 (Service Provider)：是指提供可复用和可调用服务的应用方。
+5. 服务消费方 (Service Consumer)：是指会发起对某个服务调用的应用方。
+6. 配置 (Configuration)——配置文件中心：在系统开发过程中通常会将一些需要变更的参数、变量等从代码中分离出来独立管理，以独立 的配置文件的形式存在。目的是让静态的系统工件或者交付物（如 WAR，JAR 包等）更好地 和实际的物理运行环境进行适配。配置管理一般包含在系统部署的过程中，由系统管理员或者 运维人员完成这个步骤。配置变更是调整系统运行时的行为的有效手段之一。
+7. 配置管理 (Configuration Management)：在数据中心中，系统中所有配置的编辑、存储、分发、变更管理、历史版本管理、变更审计等 所有与配置相关的活动统称为配置管理。
+8. 名字服务（Naming Service）：提供分布式系统中所有对象(Object)、实体(Entity)的“名字”到关联的元数据之间的映射管 理服务，例如 ServiceName -> Endpoints Info, Distributed Lock Name -> Lock Owner/Status Info, DNS Domain Name -> IP List, 服务发现和 DNS 就是名字服务的 2 大场景。
+9. 配置服务（Configuration Service）：在服务或者应用运行过程中，提供动态配置或者元数据以及配置管理的服务提供者。
+
+文档：[Nacos 快速开始](https://nacos.io/zh-cn/docs/quick-start.html)
+
+### 安装与启动
+
+下载：[Release 2.0.3 (July 28, 2021) · alibaba/nacos (github.com)](https://github.com/alibaba/nacos/releases/tag/2.0.3)
+
+1. 下载解压，目录说明：
+
+   - bin：可执行文件夹目录，包含：启动、停止命令等等 。
+   - conf：配置文件目录 。
+   - target：存放 naocs-server.jar 。
+   - LICENSE：授权信息，Nacos 使用 Apache License Version 2.0 授权。
+   -  NOTICE：公告信息。
+
+2. 修改配置文件：（conf 目录里的 application.properties 文件）
+
+   - Nacos 默认使用嵌入式数据库实现数据的存储，并不方便观察数据存储的基本情况，这里面修改为使用 Mysql 数据库做数据的存储，方便我们观察数据的结构。 在配置文件中添加如下配置：
+
+     ```properties
+     spring.datasource.platform=mysql
+     db.num=1
+     db.url.0=jdbc:mysql://localhost:3306/nacos?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC
+     000&socketTimeout=3000&autoReconnect=true
+     db.user=root
+     db.password=123456
+     ```
+
+3. Mysql 表的导入：在 conf 目录下找到对应的 sql 脚本（Nacos 建议使用 5.7 的 Mysql 数据库，版本较低或者较高可能存储兼容性问题），创建好nacos数据库好运行该sql脚本的SQL语句。
+
+   ```mysql
+   create database nacos character set utf8mb4 collate utf8mb4_unicode_ci;
+   -- 复制nacos-mysql.sql中语句并在nacos数据库下运行
+   ```
+
+4. 可以直接 `startup.cmd -m standalone` 启动单击版本。
+
+5. 启动后访问`http://localhost:8848/nacos`，默认用户名和密码都是nacos。（如果想修改密码，可以直接修改数据库的 user 表，密码可以使用 BcryptPasswordEncoder 加密）
+
+
+
+### 服务注册
+
+1. 创建项目。
+
+2. 加入依赖：
+
+   ```xml
+       <parent>
+           <groupId>org.springframework.boot</groupId>
+           <artifactId>spring-boot-starter-parent</artifactId>
+           <version>2.3.12.RELEASE</version>
+       </parent>
+       <dependencies>
+           <dependency>
+               <groupId>com.alibaba.cloud</groupId>
+               <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+   <!--            <version>2.0.3.RELEASE</version>-->
+           </dependency>
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-web</artifactId>
+           </dependency>
+       </dependencies>
+       <dependencyManagement>
+           <dependencies>
+               <dependency>
+                   <groupId>com.alibaba.cloud</groupId>
+                   <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                   <version>${spring-cloud-alibaba.version}</version>
+                   <type>pom</type>
+                   <scope>import</scope>
+               </dependency>
+           </dependencies>
+       </dependencyManagement>
+   ```
+
+3. 配置：
+
+   ```yaml
+   server:
+     port: 8888
+   spring:
+       application:
+         name: nacos-service
+       cloud:
+         nacos:
+           server-addr: localhost:8848 # 如果不指定命名空间和分组，会默认注册到public、DEFAULT_GROUP
+           username: nacos
+           password: nacos
+           discovery: # 注册相关配置
+             namespace: da51ea07-30a3-465c-a555-ce56f3139485 # 需要在nacos注册好命名空间，然后就得到这个命名空间ID
+             group: A_GROUP
+             username: user-service # 默认为spring.application.name
+   ```
+
+4. 主启动：
+
+   ```java
+   @SpringBootApplication
+   @EnableDiscoveryClient // 开启
+   public class NacosServiceApplication {
+       public static void main(String[] args) {
+           SpringApplication.run(NacosServiceApplication.class, args);
+       }
+   }
+   ```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
