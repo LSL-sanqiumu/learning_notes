@@ -505,7 +505,7 @@ mybatis-plus:
       id-type: auto
 ```
 
-5、启动项目访问：
+5、测试，启动项目访问：
 
 1. coupon：`http://localhost:7000/coupon/coupon/list`。
 2. member：`http://localhost:8000/member/member/list`。
