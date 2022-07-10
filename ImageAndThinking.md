@@ -182,6 +182,248 @@
 
 
 
+# 病态学习
+
+## 发现自己什么都不懂，什么都想学，又什么都学不精，是不是一种病态？
+
+作者：孙文亮
+链接：https://www.zhihu.com/question/19778858/answer/12943046
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+
+
+这种面对无穷选择的无力感，我觉得是因为欲望，因为想学会一切的欲望。社会中学习和学校中学习是完全不一样的。没有人帮你选课程，也没有人帮你打分。同样也不要妄想拿到100分。有舍才有得！
+
+《海上钢琴师》有一段经典台词：
+
+”一部钢琴，从琴键开始，结束。你知道钢琴只有88个键。它们不是无限的。你才是无限的，在琴键上制作出的音乐是无限的。我喜欢这样，我活的惯。 你把我推到舷梯上然后扔给我一架有百万琴键的钢琴，百万千万的没有尽头的琴键，那是事实，max，它们没有尽头。那键盘是无限延伸的。然而如果琴键是无限的，那么在那架琴上就没有你能弹奏的音乐，你坐错了地方，那是上帝的钢琴。“
+
+大千世界，知识无止境。面对无尽的知识不知从何学起，这种状态，与1900面对陆地生活的恐惧，是何其相似。因为生于陆地，才觉得陆地生活是何其正常又轻松；因为长于陆地，才学会如何摒弃、选择、归纳、遗忘。1900对陆地生活的恐惧感，是因为他终身生活在同一艘船上。
+
+**当你发现什么都不懂，什么都想学的时候，最先做的应该不是迷惘，而是庆幸。因为你的目光终于不再局限于船上，因为你发现了一片新大陆。**
+
+学校的教育，就像一艘封闭的大船。再大也是有限的，用不了多久就能看清。这种桎梏可能会深深的影响一生。大船停航，学习也就终结了。**从船到陆地，从有限到无限，选择和遗忘是很珍贵的技能。有舍才有得！**
+
+“所罗门•舍雷舍夫斯基出生于1886年，俄国记者，记得发生过的所有事情。” 在一个实验中，研究人员给[舍雷舍夫斯基](https://www.zhihu.com/search?q=舍雷舍夫斯基&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A12943046})出示了一张纸，上面写着一个拥有三十个字母和数字组成的复杂公式。然后他们把纸放在盒子里，将它封存十五年。当他们取出之后，舍雷舍夫斯基能够精确地回忆起来…舍雷舍夫斯基能够记起来，但他不能提取精髓。他记住了大量随机事实，但他不能将它们组织成重复性样式。最终他不能搞清隐喻、明喻、诗歌，甚至于复杂的句子。【1】
+
+不能遗忘，是一件可怕的事。不会选择，是一件失败的事。因为1900不会选择，所以惧怕，所以止步。他已经习惯了88个钢琴键的有限世界，可以完全的掌握，然后在任意组合。然而面对陆地生活，他仍然沿用了有限世界的学习方法：全部掌握、任意组合。结果必然是不可能。
+
+因此面对海量的知识，首先应当意识到学是学不完的，学了也会忘的。**不知道如何选择的时候，付诸行动比选择更重要。**不能一直犹豫，一直不迈出第一步，最终困死在船上。
+
+总结一下：
+
+1. 有取舍之心，不能什么都学会，也就没必要什么都想学。这是一种心态，可以让你面对无穷选择的时候不会有犹豫、迷惘、恐惧这些负面情绪。
+2. 有时候付诸行动比选择更重要。学习尤为如此，作为新的开端，学习的状态比学什么更重要。很多知识要学一段时间才能发现兴趣，才知道是否有用。
+
+什么都不懂，很正常，因为这是新的开始；什么都想学，是缺少取舍的心态，先开始学一个再说；什么都不精，学过几年才见分晓，一万小时才算精通。
+
+有人会因为无法作出决定就推迟决定，然而实际上推迟决定是最差的决定 ，在推迟决定期间，时间悄悄流逝，你却没有任何一条路上的积累，白白浪费了时间。
+
+**如果你有一些钱不知道花在 A 还是 B 上，你先不作决定，没问题，因为钱还是你的，但如果你有一些时间，不知道花在 A 上还是 B  上，不行，因为过了这段时间，这段时间就不是你的了。**【2】
+
+最后推荐一文《学习的艺术》【3】，不要让学习停滞，坚持下去，这些焦虑将不复存在。
+
+【1】 摘自《中国的创造力是如何被扼杀的》：[译言网 | 中国的创造力是如何被扼杀的？](https://link.zhihu.com/?target=http%3A//article.yeeyan.org/view/190382/205086)
+
+【2】 摘自[刘未鹏](https://www.zhihu.com/search?q=刘未鹏&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A12943046})的博客《不是书评 ：「我是一只IT小小鸟」》：[不是书评 ：《我是一只IT小小鸟》](https://link.zhihu.com/?target=http%3A//mindhacks.cn/2009/10/05/im-a-tiny-bird-book-review/)
+
+【3】 《学习的艺术》:[学习的艺术 - 左岸读书_blog](https://link.zhihu.com/?target=http%3A//www.zreading.cn/archives/2397.html)
+
+## 中国的创造力是如何被扼杀的？
+
+Nowadays people may admire China’s economy, but not Chinese creativity. Chinese architecture art, music and movies are derivative, and many a Chinese enterprise is merely a carbon copy of an American one. China’s best schools may produce the world’s best test-takers, but the United States’ best schools produce the world’s most creative talent.
+
+当今人们可能会赞叹中国的经济发展，但却没有人欣赏中国人的创新能力。中国的建筑、艺术、音乐和电影大多缺乏创意，很多中国企业更是直接照搬美国。中国的顶级学府能培养出全球最优秀的应试人才，而美国的顶级学府却能缔造出世上最具创新能力的天才。
+
+David Brooks outlines the four-step learning process that teaches students to be creative: knowledge acquisition (research), internalization (familiarity with material), self-questioning and examination (review and discussion), and the ordering and mastery of this knowledge (thesis formulation and essay writing).
+
+David Brooks总结出启发学生创造力的“四段式”学习方法：获取知识（研究）、消化（熟悉材料）、反思和检查（复习和讨论）、整理和掌握知识（论文和笔记）。
+
+However, this isn’t a linear process, Brooks points out, which means that the learner ‘(surfs) in and out of his unconscious, getting the conscious and unconscious processes to work together – first mastering core knowledge, then letting that knowledge marinate playfully in his mind, then wilfully trying to impose order on it, then allowing the mind to consolidate and merge the data, then returning and returning until some magical insight popped into his consciousness, and then riding that insight to a finished product.’
+
+然而，布鲁克斯指出，这并不是一个线性过程，这意味着学习者需要在他的潜意识中来回穿梭，将意识与潜意识融为一体——首先掌握其精髓，再让这些精髓一直活跃在他的大脑中，进行各种排列组合、巩固加强、合并重组，如此循环反复直到灵光乍现，然后趁势付诸实践、创造出成果。
+
+‘The process was not easy, but each ounce of effort and each moment of frustration and struggle pushed the internal construction project another little step,’ David Brooks continues. ‘By the end, (the learner) was seeing the world around him in a new way.’
+
+布鲁克斯继续写道：“整个过程并非一蹴而就，每一分努力、每一次挫折和拼搏，都使内在理念更趋于完善。最后，学习者会以全新的视角看待他的周遭世界。”
+
+But what permits our brains to turn a chaotic sea of random facts and knowledge into an island of calm understanding? Believe it or not, it’s our emotions that permit us ultimately to become creative thinkers. In his book The Accidental Mind, the neuroscientist David J. Linden explains how emotions organize our memories:
+
+但是，究竟是什么，让我们的大脑将一团充满随机事件与知识碎片的混沌意识，变成冷静而理智的认识？信不信由你，事实上正是我们的情感最终让我们变成具有创造力的思考者。神经科学家David J. Linden在*The Accidental Mind*一书中解释了情感是怎么组织我们的记忆的。
+
+‘In our lives, we have a lot of experiences and many of these we will remember until we die. We have many mechanisms for determining which experiences are stored (where were you on 9/11?) and which are discarded (what did you have for dinner exactly 1 month ago?). Some memories will fade with time and some will be distorted by generalization (can you distinctly remember your seventeenth haircut?). We need a signal to say, “This is an important memory. Write this down and underline it.” That signal is emotion. When you have feelings of fear or joy or love or anger or sadness, these mark your experiences as being particularly meaningful…These are the memories that confer your individuality. And that function, memory indexed by emotion, more than anything else, is what a brain is good for.’
+
+“我们一生中会经历很多事情，其中许多我们致死都将铭记在心。我们脑中有许多机制，来决定记住哪些经历（9.11事件发生时你在哪里？（注，作者是美国人）），遗忘哪些经历（一个月之前你吃的晚餐是什么？）一些记忆随时间流逝而褪色，还有一些记忆会因过于平常而被混淆（你能清楚记起你17岁时的发型么？）。我们需要有一个信号给予提示：“这是一条重要的记忆。记下来并且加上重点标记。”那个信号就是情感。当你感觉到喜怒哀乐时，这些情感会给你的经历刻上“意义非凡”的标记。这些记忆赋予你独特性。大脑唯一能提供的就是用情感索引的记忆。”
+
+What this means is that memories are ultimately emotional experiences, and that effectively learning must involve the learner emotionally. The very best US schools are seen as such because they inspire their students to be curious, interested, and excited; China’s very best schools gain their reputation by doing the opposite.
+
+这就意味着记忆最终都是情感经历，并且有效的学习是需要学习者全“情”投入的。美国的顶级学府都是如此，因为他们赋予学生求知欲、兴趣和激情；而中国的顶级学府恰恰相反，因压抑学生而著称。
+
+Thinking is the conscious effort of applying our memories to understand a new external stimulus, and creativity is asserting individual control over this process to create a synthesis between memory and stimuli. In other words, thinking is really about applying previous emotional experiences to understand a new emotional experience, whilst creativity is the mixing of old and new emotional experiences to a create an entirely new and original emotional experience. 
+
+思考是运用我们已有的记忆来理解新的外界刺激的意识活动，而创造力则控制这个过程而创造出旧记忆与新刺激的复合物。换句话说，思考就是通过往昔的情感经历来理解一个新的情感经历，而创造力则是通过混合新旧情感经历，进而去创造一种全新的独创的情感经历。
+
+The best US education institutions endow students with creativity by providing a relaxed and secure learning environment in which students share in the refined emotional experiences of humanity by reading books and developing the logic necessary to share in collective emotional experiences through debate and essay writing. A dynamic learning environment allows students at many US schools to feel joy and despair, frustration and triumph, and it’s these ups and downs that encode the creative learning process into our neural infrastructure and make it so transformative. 
+
+美国最棒的教育机构，给学生提供轻松自在、无忧无虑的学习环境，在这里，他们通过阅读可以分享人类思想的精华，并通过辩论、撰写论文来提供共同的情感经历，以培养他们接受分享所必需的逻辑推理能力。许多美国学校通过丰富多彩的学习环境，让学生体验到兴奋与绝望、挫败与成功，正是这些跌宕起伏将有创造力的学习方法编入我们的神经网络，而且能活学活用。
+
+A Chinese school is both a stressful and stale place, forcing students to remember facts in order to excel in tests. Neuroscientists know that stress hampers the ability of the brain to convert experience into memory, and psychologists know that rewarding students solely for test performance leads to stress, cheating, and disinterest in learning. But ultimately, the most harmful thing that a Chinese school does, from a creativity perspective, is the way in which it separates emotion from memory by making learning *an unemotional experience*.
+
+中国的学校则是一个压抑、没有生气的地方，为了考试成绩，强迫学生死记硬背。神经科学家都知道压力会妨碍大脑将经历转化为记忆的能力，心理学家都知道仅仅用考试成绩来考查学生会导致压力、作弊、厌学。但是最终在创新能力方面，中国的学校做出的最有害的一件事是在教育过程中分割情感与记忆，使学习变成“无情感的经历”。
+
+Whatever individual emotions Chinese students try to bring into the classroom, they are quickly stamped out. As I have[previously written](http://the-diplomat.com/china-power/2011/06/14/resistance-futile-in-chinese-class/#respond), from the first day of school, students who ask questions are silenced and those who try to exert any individuality are punished. What they learn is irrelevant and de-personalized, abstract and distant, further removing emotion from learning. If any emotion is involved, it's pain. But the pain is so constant and monotonous (scolding teachers, demanding parents, mindless memorization, long hours of sitting in a cramped classroom) that it eventually ceases to be an emotion.
+
+无论中国学生尝试将什么个人情感带入教室，都无一例外地会被抹杀掉。正如同我之前写到的，自从开学的第一天起，爱提问的学生发现沉默是金，尝试展现个性的学生受到处罚。进一步让情感远离学习之后，他们所学的知识的显得无关紧要、单调乏味、抽象而晦涩。如果说还有什么情感的话，那也是痛苦。但是这种痛苦却是始终如一、单调乏味的（老师的斥责、家长的苛求、机械的记忆、长时间地坐在拥挤的教室里），这唯一的情感也将失去“感情色彩”。
+
+To understand the consequences of Chinese pedagogy, consider the example of ‘Solomon Shereshevskii, a Russian journalist born in 1886, who could remember everything,’ whom David Brooks writes about in*The Social Animal*:
+
+为了更好地理解中国教育的后果，让我们看看Solomon Shereshevskii的例子，“他是一个生于1886年的俄罗斯记者”，David Brooks在*The Social Animal*中写道：
+
+‘In one experiment, researchers showed Shereshevskii a complex formula of thirty letters and numbers on a piece of paper. Then they put the paper in a box and sealed it for fifteen years. When they took the paper out, Shereshevskii could remember it exactly…Shereshevskii could remember, but he couldn’t distil. He lived in a random blizzard of facts, but could not organize them into repeating patterns. Eventually he couldn’t make sense of metaphors, similes, poems, or even complex sentences.’
+
+“在一次实验中，研究人员给Shereshevskii出示了一张纸，上面写了一个由三十个字母和数字组成的很复杂的式子，然后他们把这张纸放进盒子里封存起来。十五年后，他们取出这张纸，Shereshevskii能够一字不差地背出来……Shereshevskii能记起来，但他不能提炼加工。他的脑海里充满了各种孤立的事实，但他不能归纳出一些共同的模式，将它们组织起来。最终他不能理解隐喻、明喻、诗歌，甚至于复杂一点的句子。”
+
+Shereshevskii had a neural defect that prohibited his brain from prioritizing, synthesizing, and controlling his memories to permit him to formulate an understanding of self and the world. Like many a Chinese student today, he could experience, but he could not *feel*.
+
+Shereshevskiis的神经有缺陷，他的大脑不能对记忆进行排序、合成等加工，也就无法形成对自我和世界的理解。他同许多今天的中国学生一样，只能经历，不能体验。
+
+Chinese schools are producing a nation of Shereshevskiis, students with photographic memory and instant recall, but who can never be creative.
+
+中国的学校正在制造Shereshevskiis之国，这些学生跟Shereshevskiis一样，只有快照记忆和短时记忆，绝不可能拥有创新能力。
+
+## 不是书评 ：《我是一只IT小小鸟》
+
+——摘自[刘未鹏的博客](https://www.zhihu.com/search?q=刘未鹏&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A12943046})
+
+**设计你自己的进度条**
+
+进度条的设计是一个很多人都知道的故事：同样的耗时，如果不给任何进度提示，只是在完成之后才弹出一个完成消息，中间没有任何动态变化，那么整个过程就会让人等得非常焦急，导致一些人干脆把程序关了了事。如果有进度不断更新，那么对整个过程耗时的心理感受就会远低于实际值，用户也不会郁闷到把程序关了。（你有多少次在银行处理手续的时候，看着工作人员把一堆材料不停地倒腾来去，心里多希望他们可以在柜台小窗口上投影一个进度条？）
+
+这里的原因在于，没有进度提示的话，我们无法判断这个等待什么时候才是个尽头。如果有不断增长的进度条，那么我们对于什么时候会达到100%就会有一个粗略的估计，这个估计是一剂定心丸，让我们知道这事情总会并且会在不久的将来完成。
+
+做事情也是同样的道理，善于规划的人，会将目标分割成一个个的里程碑，再将里程碑分割成TODO列表。前阵子流行的GTD方法学，核心的理念就在于，如果你把任务分割了，你就有了进度条，你就知道，事情在不断的进展，你总会完成任务或到达你的目标，你会有一个时间估计。反之如果没有这个分割，整个的任务或目标对你来说就只有两种状态——“完成”和“未完成”，如果不幸是一个比较漫长的目标，那么你会发现你的进度条总是“未完成”，一次又一次的等待未果会耗尽你的耐心，让你下意识的产生“这事什么时候才能完呢？”的疑惑，没有分而治之，你就不知道未来还需要付出多少努力才能达到目的，这就会让你心生怯意，不敢进一步投入时间，免得血本无归。在这样的心理下，不少人就会选择保守策略——退出，以免到头来花了时间还一事无成。
+
+而所谓的规划其实就是针对这种心理弱点的做事方法。如果你对整个目标的几个重大步骤有清晰的界定，能够对每个步骤的耗时作出靠谱的上界估计，你就不会被不确定的未来，不确定的时间投入感到恐惧，就不会被这种不确定感压迫到过早退出。
+
+**不要过早退出循环**
+
+我们在尝试新的事物的时候，总是会遇到各种各样的困难，不同的人会在碰壁不同的次数之后退出。用程序员喜欢的话来说就是，我们都在for循环，区别在于你是什么情况下break;的。有的人退出阈值高，这是能坚持的一类人，有的人退出阈值低，这类人很可能遇到一些障碍就退出了。
+
+过早退出的原因往往在于对于未来的不确定性，对于投资时间最终无法收到回报的恐惧，感受到的困难越大，这种恐惧越大，因为越大的困难往往暗示着这个任务需要投资的时间越大。所以其实我们都是直觉经济学家，当我们说“畏难”的时候，其实我们畏惧的不是困难本身，而是困难所暗示的时间经济学意义。
+
+然而，我们的情绪大脑毕竟比较原始，仅根据碰壁的次数或硬度来判断事情的难易并不一定靠谱，如果你遇到困难，不妨用一用互联网，用一用群体的智慧，看看别人当时是怎么想怎么办的，绝大多数情况下你并不孤单，你遇到的问题早就有人遇到过，你踩过的坑里面尽是前人的脚印，不要仅仅因为一时摸不着头绪，找不着出路就退出，这不是informed decision，问一问自己作出退出的决策是否基于足够的信息，我是否进行了足够的调查，至少，是否去简单用了用搜索引擎。
+
+模仿高德纳先生的名言：**过早退出是一切失败的根源**。
+
+
+
+**兴趣遍地都是，专注和持之以恒才是真正稀缺的。**
+
+很多人看了书中的故事之后得出这样的结论：兴趣最重要。然而，我觉得区别他们和其他人的，并不是他们拥有超过常人的兴趣，而是他们拥有超过常人的毅力。
+
+其实人天生就对新事物怀有好奇心，难以找出谁没有对任何事物或领域产生过兴趣，然而不同的是，有些人的兴趣只能持续几天，当遇到第一个困难，第一道坎的时候，他们就熄灭了，然而另一些人的兴趣火花会变成火苗，火苗会变成火种，一直稳定的燃烧很多年。**区别他们的并不是兴趣的有无，而是他们的性格里面有没有维持兴趣的火种一直燃烧下去的燃料**。
+
+一个人有专注和持之以恒的性格，即便在一个没有多大兴趣的领域也能成为专家（更何况，兴趣的很大一类来源就是“我擅长做这件事情”）；反之就算有兴趣也很快会被一些冷水泼灭。
+
+**生活中的选择远比我们想象得要多，细微的选择差异造就了不同的人生**
+
+唐雅薇同学的故事中，有这么一个细节吸引了我的注意：当时她正在找工作阶段，对女生在IT行业的发展很迷茫，恰逢微软的郭蓓菁女士到他们学校演讲，演讲完了之后她立即就奔上讲台拦住郭女士询问女生与IT的问题。
+
+这是一个细节，但我相信不是所有人都有勇气上去拦住名人问普通问题的，我们会给自己找很多很多的理由和接口，我想最常见的应该是两个原因：1. 如果被批评了自尊心会受到打击。2.认为问了也问不出特别的信息。然而事实却是相反：1. 自尊心受到打击算不上实质性的损失。2. 你想不出能问出什么特别的信息并不代表就真的问不到重要的信息。**别把不知道当成没有**。
+
+一个小小的思维差异，可能导致很多人在遇到困惑的时候原地打转，冲突不出，而另一些人则取经得到宝贵的经验，站在别人的肩膀上越过了障碍。唐雅薇从郭女士那儿得到了最宝贵的信息：女生在IT行业也能有很好的发展。信心，是这样一种奇怪的东西，就算你没有确切的证明未来会更好，你也会坚持下去，你不会过早退出循环；而来源于过来人的信息则是信心最靠谱的保障。
+
+你是不是意识到，在平常的生活中，你所作出的选择比你想象的要多得多呢？有没有想过有一些看似细小的选择可能会产生巨大的影响？
+
+想想看，试一下，是不是真的没什么损失，还有可能得到巨大的回报呢？
+
+**靠专业技能的成功是最具可复制性的**
+
+它需要的只是你在一个领域坚持不懈地专注下去，只需要选择一个不算太不靠谱的方向，然后专心致志的专下去，最后必然能成为高手或者绝顶高手。世上有很多成功带有偶然因素和运气成分或出身环境，但至少这一样，被无数人复制了无数遍，否则就不会存在学校和教育了。
+
+**反思是让人得以改进自己的最重要的思维品质**
+
+很多人在成年之后甚至未及成年，性格就难以再发生大的变化。性格是这样一种自我实现和强化的陷阱：如果你是不容易专注的人，你会发现生活中处处都是分散你注意力的东西，你的思维难以在一个事情上停留半小时，于是你的时间变得琐碎，你很难在一个领域有长久的积累和深入的思考，这样的现实可能会让你感到沮丧，后者让你更加无法专心，这样的现实可能会让你感到焦虑，为了避开焦虑你又会去寻求其他的刺激，结果是恶性循环。
+
+反思是改变自己的第一步，我们常常容易发现别人的问题，别人的错误，却难以发现自己思维中的问题，因为我们很少会把自己的思维当成目标去思考。
+
+作为程序员，相信没有人不知道能修改自身的程序，而能修改自身的程序的前提就是，首先这个程序必须有法子能够指向自身。
+
+**饿死在干草堆之间的驴子**
+
+有很多在迷茫期的同学，迷茫都是相似的：面前有两条路，到底选哪一条？“转行还是不转行？”“学C++还是学Java。？“做管理还是做程序员？”有些问题其实不是问题：比如“学C++还是学Java。”答案是都学而且还不仅学两个。有些问题不是一个泛泛的答案能够适合的，比如转行还是不转行，需要考虑很多自身因素。
+
+但更重要的是，有人会因为无法作出决定就推迟决定，然而实际上推迟决定是最差的决定，在推迟决定期间，时间悄悄流逝，你却没有任何一条路上的积累，白白浪费了时间。
+
+如果你有一些钱不知道花在A还是B上，你先不作决定，没问题，因为钱还是你的，但如果你有一些时间，不知道花在A上还是B上，不行，因为过了这段时间，这段时间就不是你的了。
+
+所以，不管有多纠结，也不要从纠结中逃离，试图推延决定，既然终究是个痛苦的决定，就痛一回，好好思考和调查之后作出一个决定并坚持下去，只要不是太不靠谱的行业（相信也没谁会在纠结了之后却选了一个不靠谱的行业的），经过你的积累总会成为高手。
+
+**一生的知识积累，自学的起码占****90%**
+
+你会在这本书当中看到的一个重复出现的现象就是自学，大规模的自学，逃课自学，上网找书自学，程序员行业是最适合自学的行业，网络是程序员的天堂，需要的资源、工具，比课堂上的多出何止百倍，如果说还有一个学科，并不需要传统的教育就可以成才，估计非程序员莫属了。作为程序员如果没有查过wikipedia，没有看过几本原版电子书，没有在国内外主要邮件列表里面提过问题吵过架，没有用技术博客记录学习的独特体会，没有订阅技术牛人们的博客，怎么好意思说身在这个行业呢？
+
+最后，看完了书还是说“说起来容易做起来难”的，**怪自己，不怪书**。
+
+
+
+
+
+## 学习的艺术
+
+**[LiuSerina](mailto:serina11@live.cn)**分享的文章。
+
+有看过非诚勿扰不？我有看过一期是这样的：一个男嘉宾刚从后面的背景门后走出来，一个女嘉宾就以迅雷不及掩耳盗铃响叮当之势把灯按掉。主持人问她：姑娘，你怎么这么快就把灯按了呀。姑娘：“第一，我不喜欢个子矮的。第二，我不喜欢穿西装的。第三，我不喜欢个子矮还穿西装的。”搞笑了，是不是？也太武断了，是不是？我脑中马上想出一个画面：如果这位姑娘看到敬爱的小平同志的尊荣不知是何反应。嗯，应该很有趣吧。
+
+
+
+八卦了半天，可以扯到正题了。
+
+当我们初见一个人、初学一门技艺、初尝试一样新的菜式、或者初到一个陌生的地方、、、、、、，我们究竟是以一种什么态度来看待这些？我们可以以一种非常武断的方式早早下了结论：这个男生太糟了， 他个子低还穿西装。（上面的那个姑娘）为什么要学英语，我是中国人，为什么学鸟语，英语有什么好的？我们国家这么富强了，我不需要走出中国，因为世界已经走进中国了。我不要学英语，还是老外学汉语吧。（或者刚学游泳的人，为什么要学游泳，游泳池里的水一点都不好喝、我又不是鱼，离开水就不能活，而且，我是“伟大”的脊椎直立行走的动物——人，为什么要像只青蛙一样在水里扑腾？）这个菜怎么这么难吃？这里的人怎么就吃这个？他们怎么活过来的？还是我们家乡（我妈妈）的菜好吃。这个地方怎么这个样子？（如果是北方人到了南方，会说：这里的人怎么这么精明小气？这里的人怎么这么势利？这里的人怎么只懂得赚钱完全不搭理国家大事？如果是南方人到了北方，会说：这地方怎么这么破，这里的人怎么这么虚伪，这里的人怎么天天谈论国家大事自己的事却不干？）......
+
+
+
+发现上面的人都有一个共同特点了吧。
+
+他们（她们）都在以先入为主的方式粗鲁的把自己的观点加到新看到的人、新看到的地方上。他们采用各种办法拒绝学习、 拒绝看到新的东西新的方面，他们拒绝进步。所以，他们（她们）的结果是：他们可能一辈子独身。后来终于结了婚，但是矛盾重重。（因为，你懂的，找出别人的优点不容易，找人的毛病多容易啊：除了个子矮、穿西装难看外，还可以说：肩膀不够宽、声音不动听、不会哄人开心......，我可以写三天三夜也写不完）
+
+他们可能一辈子都没学会英语、没学会游泳、......、没学会一切新的东西。或者即使学了也是不情不愿，怨天怨地，他们是——怨妇或怨夫，他们真是般配。他们可能一辈子只吃那几道菜。他们可能一辈子只呆在一个地方，或者即使去了其他地方，回来之后的评论是：还是我的家乡好。他们处于停滞状态，他们看不到别人、别处的好，他们拒绝进步，他们生活在陈式之中，他们虽生犹死。
+
+这种人就是马斯洛所说的这种人：他们以一种大吵大嚷、横冲直撞、目的明确的利用方式来了解、塑造事物，迫切要求分类、陈规化、分级、归档、贴标签。他们永远生活在过去。马斯洛用了一个很直接的很不客气的比喻来形容这种思维方式：屠夫割肉。
+
+
+
+他举了一个例子非常搞笑：一位拙劣的医生哪怕已经有100年的临床经验，也只会反复验证他在治疗之初学到的那套理论。正是从这个意义上说，一个医生可以在同一个错误上重犯40年，而且还大言不惭，把这称为“丰富的临床经验”。在积累错误的经验方面，他的却很有一套。随之，马斯洛问了一个非常尖锐的问题：我们看到的究竟是真实的、具体的世界还是我们自身投射的真实世界中的陈规系统？我们看到的是世界的本来面目吗？艾默生说：如果夜晚的繁星是一万年才会出现一次的奇观，我们会惊叹不已造物者的伟大，但在现实中我们却对眼前的奇迹视而不见。我们何其幸运，我们又何其不幸？我们究竟是目明还是眼瞎？
+
+
+
+请问：当我们初见一个人、初学一门技艺、初到一个地方、......，我们能否采用一种轻柔的方式、耐心的了解他们（她们、它们）？我们能否像水渗入石缝一样，随地而安。不会急于以明确的形状将对方定形，贴上标签？我们能否允许对方展现本来的面目并且接受？我们能否欣然接受甚至欣赏对方的样子？我们能否主动卸下心防、以一种不抵抗的姿态应对这些新的东西？就像一艘小船在大海中乘着波浪、随风而动，而不是凭着一己之力逆流而动？我们能否主动的被动？
+
+
+
+我们的回答是：我们可以。而且，通过这种以退为进的方式，我们不仅可以得到我们想要的，我们还会得到我们没有想到却更好的东西。
+
+通过这种以退为进的方式，我们不仅可以获得和谐的两性关系，学会更多的更好的技能，尝到更多好吃的菜式，看到更多美丽的风景。我们还会：
+
+收获人与人之间的真诚、善良和美丽。会体验到只可意会不可言传的学习的乐趣。对大自然、对人类生出一种深深的感恩之情：他们是如此慷慨、赋予我们如此丰硕的礼物。会真切的感受到与古今、天地之精神相往来的快乐。会真切地体验到天地有大美而无言，会明了为什么相视而笑、莫逆于心，为什么会心有灵犀一点通......
+
+
+
+多么美好，这绝对是值得我们去追求的，这绝对是需要我们去努力的。这绝对不是一朝一夕可以到达的。马斯洛说，他还没有遇到45岁之前就达到自我实现的人。这需要时间、需要努力。但是确实可以到达的。
+
+
+
+所以，我们要学习，要永远学习，向小孩学习。永远保有一颗赤子之心。我们可不可以像小孩子那样以明净的眼睛将一切看成好像初次见到一样，能够满怀惊奇的注视着一切事物，领会一切特征，因为对于他来说，所有的特征都同样重要、同等新奇。在他们的眼里，毛毛虫和蝴蝶一样令人着迷。泥土沙石充满魅力。天空中飘起的细雨让人遐想痴迷。
+
+
+
+同时，我们要面对的挑战是：在经历挫折、伤痛等之后，是否仍然保持纯真的热情去接纳、去学习，而不会把以防御或躲避的姿态来保护自己？
+
+我们能不能放下再前进？有时只是需要捅破一层薄如蝉翼的借口。
+
+
+
 # 学习误区
 
 作者：铁木君
@@ -440,246 +682,6 @@
 如果他很努力，仍坚持学习，那么，即使他勉强进入“思考状态”，若他的学习能力中的另外一个重要因素“凝聚能力”又差，那么，他思考时就会很容易分心，“凝聚不起来”啊。如果他的学习能力中的“执行力”差一些，“学习耐久性”又差一些，他就很快就会放弃了。如果他的“执行力”比较强，“学习耐久性”比较强，那么，如果他的“学习抗焦躁能力和学习耐久力”差一些，那么，思考简单的问题时，或许还行。但思考难的问题时，他又不行了，因为他“抵抗不住焦躁”啊，于是，他又放弃了。
 
 因此，从“学习能力”的角度，一个学生要能深入思考，是多么的不容易啊！
-
-# 病态学习
-
-## 发现自己什么都不懂，什么都想学，又什么都学不精，是不是一种病态？
-
-作者：孙文亮
-链接：https://www.zhihu.com/question/19778858/answer/12943046
-来源：知乎
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
-
-
-
-这种面对无穷选择的无力感，我觉得是因为欲望，因为想学会一切的欲望。社会中学习和学校中学习是完全不一样的。没有人帮你选课程，也没有人帮你打分。同样也不要妄想拿到100分。有舍才有得！
-
-《海上钢琴师》有一段经典台词：
-
-”一部钢琴，从琴键开始，结束。你知道钢琴只有88个键。它们不是无限的。你才是无限的，在琴键上制作出的音乐是无限的。我喜欢这样，我活的惯。 你把我推到舷梯上然后扔给我一架有百万琴键的钢琴，百万千万的没有尽头的琴键，那是事实，max，它们没有尽头。那键盘是无限延伸的。然而如果琴键是无限的，那么在那架琴上就没有你能弹奏的音乐，你坐错了地方，那是上帝的钢琴。“
-
-大千世界，知识无止境。面对无尽的知识不知从何学起，这种状态，与1900面对陆地生活的恐惧，是何其相似。因为生于陆地，才觉得陆地生活是何其正常又轻松；因为长于陆地，才学会如何摒弃、选择、归纳、遗忘。1900对陆地生活的恐惧感，是因为他终身生活在同一艘船上。
-
-**当你发现什么都不懂，什么都想学的时候，最先做的应该不是迷惘，而是庆幸。因为你的目光终于不再局限于船上，因为你发现了一片新大陆。**
-
-学校的教育，就像一艘封闭的大船。再大也是有限的，用不了多久就能看清。这种桎梏可能会深深的影响一生。大船停航，学习也就终结了。**从船到陆地，从有限到无限，选择和遗忘是很珍贵的技能。有舍才有得！**
-
-“所罗门•舍雷舍夫斯基出生于1886年，俄国记者，记得发生过的所有事情。” 在一个实验中，研究人员给[舍雷舍夫斯基](https://www.zhihu.com/search?q=舍雷舍夫斯基&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A12943046})出示了一张纸，上面写着一个拥有三十个字母和数字组成的复杂公式。然后他们把纸放在盒子里，将它封存十五年。当他们取出之后，舍雷舍夫斯基能够精确地回忆起来…舍雷舍夫斯基能够记起来，但他不能提取精髓。他记住了大量随机事实，但他不能将它们组织成重复性样式。最终他不能搞清隐喻、明喻、诗歌，甚至于复杂的句子。【1】
-
-不能遗忘，是一件可怕的事。不会选择，是一件失败的事。因为1900不会选择，所以惧怕，所以止步。他已经习惯了88个钢琴键的有限世界，可以完全的掌握，然后在任意组合。然而面对陆地生活，他仍然沿用了有限世界的学习方法：全部掌握、任意组合。结果必然是不可能。
-
-因此面对海量的知识，首先应当意识到学是学不完的，学了也会忘的。**不知道如何选择的时候，付诸行动比选择更重要。**不能一直犹豫，一直不迈出第一步，最终困死在船上。
-
-总结一下：
-
-1. 有取舍之心，不能什么都学会，也就没必要什么都想学。这是一种心态，可以让你面对无穷选择的时候不会有犹豫、迷惘、恐惧这些负面情绪。
-2. 有时候付诸行动比选择更重要。学习尤为如此，作为新的开端，学习的状态比学什么更重要。很多知识要学一段时间才能发现兴趣，才知道是否有用。
-
-什么都不懂，很正常，因为这是新的开始；什么都想学，是缺少取舍的心态，先开始学一个再说；什么都不精，学过几年才见分晓，一万小时才算精通。
-
-有人会因为无法作出决定就推迟决定，然而实际上推迟决定是最差的决定 ，在推迟决定期间，时间悄悄流逝，你却没有任何一条路上的积累，白白浪费了时间。
-
-**如果你有一些钱不知道花在 A 还是 B 上，你先不作决定，没问题，因为钱还是你的，但如果你有一些时间，不知道花在 A 上还是 B  上，不行，因为过了这段时间，这段时间就不是你的了。**【2】
-
-最后推荐一文《学习的艺术》【3】，不要让学习停滞，坚持下去，这些焦虑将不复存在。
-
-【1】 摘自《中国的创造力是如何被扼杀的》：[译言网 | 中国的创造力是如何被扼杀的？](https://link.zhihu.com/?target=http%3A//article.yeeyan.org/view/190382/205086)
-
-【2】 摘自[刘未鹏](https://www.zhihu.com/search?q=刘未鹏&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A12943046})的博客《不是书评 ：「我是一只IT小小鸟」》：[不是书评 ：《我是一只IT小小鸟》](https://link.zhihu.com/?target=http%3A//mindhacks.cn/2009/10/05/im-a-tiny-bird-book-review/)
-
-【3】 《学习的艺术》:[学习的艺术 - 左岸读书_blog](https://link.zhihu.com/?target=http%3A//www.zreading.cn/archives/2397.html)
-
-## 中国的创造力是如何被扼杀的？
-
-Nowadays people may admire China’s economy, but not Chinese creativity. Chinese architecture art, music and movies are derivative, and many a Chinese enterprise is merely a carbon copy of an American one. China’s best schools may produce the world’s best test-takers, but the United States’ best schools produce the world’s most creative talent.
-
-当今人们可能会赞叹中国的经济发展，但却没有人欣赏中国人的创新能力。中国的建筑、艺术、音乐和电影大多缺乏创意，很多中国企业更是直接照搬美国。中国的顶级学府能培养出全球最优秀的应试人才，而美国的顶级学府却能缔造出世上最具创新能力的天才。
-
-David Brooks outlines the four-step learning process that teaches students to be creative: knowledge acquisition (research), internalization (familiarity with material), self-questioning and examination (review and discussion), and the ordering and mastery of this knowledge (thesis formulation and essay writing).
-
-David Brooks总结出启发学生创造力的“四段式”学习方法：获取知识（研究）、消化（熟悉材料）、反思和检查（复习和讨论）、整理和掌握知识（论文和笔记）。
-
-However, this isn’t a linear process, Brooks points out, which means that the learner ‘(surfs) in and out of his unconscious, getting the conscious and unconscious processes to work together – first mastering core knowledge, then letting that knowledge marinate playfully in his mind, then wilfully trying to impose order on it, then allowing the mind to consolidate and merge the data, then returning and returning until some magical insight popped into his consciousness, and then riding that insight to a finished product.’
-
-然而，布鲁克斯指出，这并不是一个线性过程，这意味着学习者需要在他的潜意识中来回穿梭，将意识与潜意识融为一体——首先掌握其精髓，再让这些精髓一直活跃在他的大脑中，进行各种排列组合、巩固加强、合并重组，如此循环反复直到灵光乍现，然后趁势付诸实践、创造出成果。
-
-‘The process was not easy, but each ounce of effort and each moment of frustration and struggle pushed the internal construction project another little step,’ David Brooks continues. ‘By the end, (the learner) was seeing the world around him in a new way.’
-
-布鲁克斯继续写道：“整个过程并非一蹴而就，每一分努力、每一次挫折和拼搏，都使内在理念更趋于完善。最后，学习者会以全新的视角看待他的周遭世界。”
-
-But what permits our brains to turn a chaotic sea of random facts and knowledge into an island of calm understanding? Believe it or not, it’s our emotions that permit us ultimately to become creative thinkers. In his book The Accidental Mind, the neuroscientist David J. Linden explains how emotions organize our memories:
-
-但是，究竟是什么，让我们的大脑将一团充满随机事件与知识碎片的混沌意识，变成冷静而理智的认识？信不信由你，事实上正是我们的情感最终让我们变成具有创造力的思考者。神经科学家David J. Linden在*The Accidental Mind*一书中解释了情感是怎么组织我们的记忆的。
-
-‘In our lives, we have a lot of experiences and many of these we will remember until we die. We have many mechanisms for determining which experiences are stored (where were you on 9/11?) and which are discarded (what did you have for dinner exactly 1 month ago?). Some memories will fade with time and some will be distorted by generalization (can you distinctly remember your seventeenth haircut?). We need a signal to say, “This is an important memory. Write this down and underline it.” That signal is emotion. When you have feelings of fear or joy or love or anger or sadness, these mark your experiences as being particularly meaningful…These are the memories that confer your individuality. And that function, memory indexed by emotion, more than anything else, is what a brain is good for.’
-
-“我们一生中会经历很多事情，其中许多我们致死都将铭记在心。我们脑中有许多机制，来决定记住哪些经历（9.11事件发生时你在哪里？（注，作者是美国人）），遗忘哪些经历（一个月之前你吃的晚餐是什么？）一些记忆随时间流逝而褪色，还有一些记忆会因过于平常而被混淆（你能清楚记起你17岁时的发型么？）。我们需要有一个信号给予提示：“这是一条重要的记忆。记下来并且加上重点标记。”那个信号就是情感。当你感觉到喜怒哀乐时，这些情感会给你的经历刻上“意义非凡”的标记。这些记忆赋予你独特性。大脑唯一能提供的就是用情感索引的记忆。”
-
-What this means is that memories are ultimately emotional experiences, and that effectively learning must involve the learner emotionally. The very best US schools are seen as such because they inspire their students to be curious, interested, and excited; China’s very best schools gain their reputation by doing the opposite.
-
-这就意味着记忆最终都是情感经历，并且有效的学习是需要学习者全“情”投入的。美国的顶级学府都是如此，因为他们赋予学生求知欲、兴趣和激情；而中国的顶级学府恰恰相反，因压抑学生而著称。
-
-Thinking is the conscious effort of applying our memories to understand a new external stimulus, and creativity is asserting individual control over this process to create a synthesis between memory and stimuli. In other words, thinking is really about applying previous emotional experiences to understand a new emotional experience, whilst creativity is the mixing of old and new emotional experiences to a create an entirely new and original emotional experience. 
-
-思考是运用我们已有的记忆来理解新的外界刺激的意识活动，而创造力则控制这个过程而创造出旧记忆与新刺激的复合物。换句话说，思考就是通过往昔的情感经历来理解一个新的情感经历，而创造力则是通过混合新旧情感经历，进而去创造一种全新的独创的情感经历。
-
-The best US education institutions endow students with creativity by providing a relaxed and secure learning environment in which students share in the refined emotional experiences of humanity by reading books and developing the logic necessary to share in collective emotional experiences through debate and essay writing. A dynamic learning environment allows students at many US schools to feel joy and despair, frustration and triumph, and it’s these ups and downs that encode the creative learning process into our neural infrastructure and make it so transformative. 
-
-美国最棒的教育机构，给学生提供轻松自在、无忧无虑的学习环境，在这里，他们通过阅读可以分享人类思想的精华，并通过辩论、撰写论文来提供共同的情感经历，以培养他们接受分享所必需的逻辑推理能力。许多美国学校通过丰富多彩的学习环境，让学生体验到兴奋与绝望、挫败与成功，正是这些跌宕起伏将有创造力的学习方法编入我们的神经网络，而且能活学活用。
-
-A Chinese school is both a stressful and stale place, forcing students to remember facts in order to excel in tests. Neuroscientists know that stress hampers the ability of the brain to convert experience into memory, and psychologists know that rewarding students solely for test performance leads to stress, cheating, and disinterest in learning. But ultimately, the most harmful thing that a Chinese school does, from a creativity perspective, is the way in which it separates emotion from memory by making learning *an unemotional experience*.
-
-中国的学校则是一个压抑、没有生气的地方，为了考试成绩，强迫学生死记硬背。神经科学家都知道压力会妨碍大脑将经历转化为记忆的能力，心理学家都知道仅仅用考试成绩来考查学生会导致压力、作弊、厌学。但是最终在创新能力方面，中国的学校做出的最有害的一件事是在教育过程中分割情感与记忆，使学习变成“无情感的经历”。
-
-Whatever individual emotions Chinese students try to bring into the classroom, they are quickly stamped out. As I have[previously written](http://the-diplomat.com/china-power/2011/06/14/resistance-futile-in-chinese-class/#respond), from the first day of school, students who ask questions are silenced and those who try to exert any individuality are punished. What they learn is irrelevant and de-personalized, abstract and distant, further removing emotion from learning. If any emotion is involved, it's pain. But the pain is so constant and monotonous (scolding teachers, demanding parents, mindless memorization, long hours of sitting in a cramped classroom) that it eventually ceases to be an emotion.
-
-无论中国学生尝试将什么个人情感带入教室，都无一例外地会被抹杀掉。正如同我之前写到的，自从开学的第一天起，爱提问的学生发现沉默是金，尝试展现个性的学生受到处罚。进一步让情感远离学习之后，他们所学的知识的显得无关紧要、单调乏味、抽象而晦涩。如果说还有什么情感的话，那也是痛苦。但是这种痛苦却是始终如一、单调乏味的（老师的斥责、家长的苛求、机械的记忆、长时间地坐在拥挤的教室里），这唯一的情感也将失去“感情色彩”。
-
-To understand the consequences of Chinese pedagogy, consider the example of ‘Solomon Shereshevskii, a Russian journalist born in 1886, who could remember everything,’ whom David Brooks writes about in*The Social Animal*:
-
-为了更好地理解中国教育的后果，让我们看看Solomon Shereshevskii的例子，“他是一个生于1886年的俄罗斯记者”，David Brooks在*The Social Animal*中写道：
-
-‘In one experiment, researchers showed Shereshevskii a complex formula of thirty letters and numbers on a piece of paper. Then they put the paper in a box and sealed it for fifteen years. When they took the paper out, Shereshevskii could remember it exactly…Shereshevskii could remember, but he couldn’t distil. He lived in a random blizzard of facts, but could not organize them into repeating patterns. Eventually he couldn’t make sense of metaphors, similes, poems, or even complex sentences.’
-
-“在一次实验中，研究人员给Shereshevskii出示了一张纸，上面写了一个由三十个字母和数字组成的很复杂的式子，然后他们把这张纸放进盒子里封存起来。十五年后，他们取出这张纸，Shereshevskii能够一字不差地背出来……Shereshevskii能记起来，但他不能提炼加工。他的脑海里充满了各种孤立的事实，但他不能归纳出一些共同的模式，将它们组织起来。最终他不能理解隐喻、明喻、诗歌，甚至于复杂一点的句子。”
-
-Shereshevskii had a neural defect that prohibited his brain from prioritizing, synthesizing, and controlling his memories to permit him to formulate an understanding of self and the world. Like many a Chinese student today, he could experience, but he could not *feel*.
-
-Shereshevskiis的神经有缺陷，他的大脑不能对记忆进行排序、合成等加工，也就无法形成对自我和世界的理解。他同许多今天的中国学生一样，只能经历，不能体验。
-
-Chinese schools are producing a nation of Shereshevskiis, students with photographic memory and instant recall, but who can never be creative.
-
-中国的学校正在制造Shereshevskiis之国，这些学生跟Shereshevskiis一样，只有快照记忆和短时记忆，绝不可能拥有创新能力。
-
-## 不是书评 ：《我是一只IT小小鸟》
-
-——摘自[刘未鹏的博客](https://www.zhihu.com/search?q=刘未鹏&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A12943046})
-
-**设计你自己的进度条**
-
-进度条的设计是一个很多人都知道的故事：同样的耗时，如果不给任何进度提示，只是在完成之后才弹出一个完成消息，中间没有任何动态变化，那么整个过程就会让人等得非常焦急，导致一些人干脆把程序关了了事。如果有进度不断更新，那么对整个过程耗时的心理感受就会远低于实际值，用户也不会郁闷到把程序关了。（你有多少次在银行处理手续的时候，看着工作人员把一堆材料不停地倒腾来去，心里多希望他们可以在柜台小窗口上投影一个进度条？）
-
-这里的原因在于，没有进度提示的话，我们无法判断这个等待什么时候才是个尽头。如果有不断增长的进度条，那么我们对于什么时候会达到100%就会有一个粗略的估计，这个估计是一剂定心丸，让我们知道这事情总会并且会在不久的将来完成。
-
-做事情也是同样的道理，善于规划的人，会将目标分割成一个个的里程碑，再将里程碑分割成TODO列表。前阵子流行的GTD方法学，核心的理念就在于，如果你把任务分割了，你就有了进度条，你就知道，事情在不断的进展，你总会完成任务或到达你的目标，你会有一个时间估计。反之如果没有这个分割，整个的任务或目标对你来说就只有两种状态——“完成”和“未完成”，如果不幸是一个比较漫长的目标，那么你会发现你的进度条总是“未完成”，一次又一次的等待未果会耗尽你的耐心，让你下意识的产生“这事什么时候才能完呢？”的疑惑，没有分而治之，你就不知道未来还需要付出多少努力才能达到目的，这就会让你心生怯意，不敢进一步投入时间，免得血本无归。在这样的心理下，不少人就会选择保守策略——退出，以免到头来花了时间还一事无成。
-
-而所谓的规划其实就是针对这种心理弱点的做事方法。如果你对整个目标的几个重大步骤有清晰的界定，能够对每个步骤的耗时作出靠谱的上界估计，你就不会被不确定的未来，不确定的时间投入感到恐惧，就不会被这种不确定感压迫到过早退出。
-
-**不要过早退出循环**
-
-我们在尝试新的事物的时候，总是会遇到各种各样的困难，不同的人会在碰壁不同的次数之后退出。用程序员喜欢的话来说就是，我们都在for循环，区别在于你是什么情况下break;的。有的人退出阈值高，这是能坚持的一类人，有的人退出阈值低，这类人很可能遇到一些障碍就退出了。
-
-过早退出的原因往往在于对于未来的不确定性，对于投资时间最终无法收到回报的恐惧，感受到的困难越大，这种恐惧越大，因为越大的困难往往暗示着这个任务需要投资的时间越大。所以其实我们都是直觉经济学家，当我们说“畏难”的时候，其实我们畏惧的不是困难本身，而是困难所暗示的时间经济学意义。
-
-然而，我们的情绪大脑毕竟比较原始，仅根据碰壁的次数或硬度来判断事情的难易并不一定靠谱，如果你遇到困难，不妨用一用互联网，用一用群体的智慧，看看别人当时是怎么想怎么办的，绝大多数情况下你并不孤单，你遇到的问题早就有人遇到过，你踩过的坑里面尽是前人的脚印，不要仅仅因为一时摸不着头绪，找不着出路就退出，这不是informed decision，问一问自己作出退出的决策是否基于足够的信息，我是否进行了足够的调查，至少，是否去简单用了用搜索引擎。
-
-模仿高德纳先生的名言：**过早退出是一切失败的根源**。
-
-
-
-**兴趣遍地都是，专注和持之以恒才是真正稀缺的。**
-
-很多人看了书中的故事之后得出这样的结论：兴趣最重要。然而，我觉得区别他们和其他人的，并不是他们拥有超过常人的兴趣，而是他们拥有超过常人的毅力。
-
-其实人天生就对新事物怀有好奇心，难以找出谁没有对任何事物或领域产生过兴趣，然而不同的是，有些人的兴趣只能持续几天，当遇到第一个困难，第一道坎的时候，他们就熄灭了，然而另一些人的兴趣火花会变成火苗，火苗会变成火种，一直稳定的燃烧很多年。**区别他们的并不是兴趣的有无，而是他们的性格里面有没有维持兴趣的火种一直燃烧下去的燃料**。
-
-一个人有专注和持之以恒的性格，即便在一个没有多大兴趣的领域也能成为专家（更何况，兴趣的很大一类来源就是“我擅长做这件事情”）；反之就算有兴趣也很快会被一些冷水泼灭。
-
-**生活中的选择远比我们想象得要多，细微的选择差异造就了不同的人生**
-
-唐雅薇同学的故事中，有这么一个细节吸引了我的注意：当时她正在找工作阶段，对女生在IT行业的发展很迷茫，恰逢微软的郭蓓菁女士到他们学校演讲，演讲完了之后她立即就奔上讲台拦住郭女士询问女生与IT的问题。
-
-这是一个细节，但我相信不是所有人都有勇气上去拦住名人问普通问题的，我们会给自己找很多很多的理由和接口，我想最常见的应该是两个原因：1. 如果被批评了自尊心会受到打击。2.认为问了也问不出特别的信息。然而事实却是相反：1. 自尊心受到打击算不上实质性的损失。2. 你想不出能问出什么特别的信息并不代表就真的问不到重要的信息。**别把不知道当成没有**。
-
-一个小小的思维差异，可能导致很多人在遇到困惑的时候原地打转，冲突不出，而另一些人则取经得到宝贵的经验，站在别人的肩膀上越过了障碍。唐雅薇从郭女士那儿得到了最宝贵的信息：女生在IT行业也能有很好的发展。信心，是这样一种奇怪的东西，就算你没有确切的证明未来会更好，你也会坚持下去，你不会过早退出循环；而来源于过来人的信息则是信心最靠谱的保障。
-
-你是不是意识到，在平常的生活中，你所作出的选择比你想象的要多得多呢？有没有想过有一些看似细小的选择可能会产生巨大的影响？
-
-想想看，试一下，是不是真的没什么损失，还有可能得到巨大的回报呢？
-
-**靠专业技能的成功是最具可复制性的**
-
-它需要的只是你在一个领域坚持不懈地专注下去，只需要选择一个不算太不靠谱的方向，然后专心致志的专下去，最后必然能成为高手或者绝顶高手。世上有很多成功带有偶然因素和运气成分或出身环境，但至少这一样，被无数人复制了无数遍，否则就不会存在学校和教育了。
-
-**反思是让人得以改进自己的最重要的思维品质**
-
-很多人在成年之后甚至未及成年，性格就难以再发生大的变化。性格是这样一种自我实现和强化的陷阱：如果你是不容易专注的人，你会发现生活中处处都是分散你注意力的东西，你的思维难以在一个事情上停留半小时，于是你的时间变得琐碎，你很难在一个领域有长久的积累和深入的思考，这样的现实可能会让你感到沮丧，后者让你更加无法专心，这样的现实可能会让你感到焦虑，为了避开焦虑你又会去寻求其他的刺激，结果是恶性循环。
-
-反思是改变自己的第一步，我们常常容易发现别人的问题，别人的错误，却难以发现自己思维中的问题，因为我们很少会把自己的思维当成目标去思考。
-
-作为程序员，相信没有人不知道能修改自身的程序，而能修改自身的程序的前提就是，首先这个程序必须有法子能够指向自身。
-
-**饿死在干草堆之间的驴子**
-
-有很多在迷茫期的同学，迷茫都是相似的：面前有两条路，到底选哪一条？“转行还是不转行？”“学C++还是学Java。？“做管理还是做程序员？”有些问题其实不是问题：比如“学C++还是学Java。”答案是都学而且还不仅学两个。有些问题不是一个泛泛的答案能够适合的，比如转行还是不转行，需要考虑很多自身因素。
-
-但更重要的是，有人会因为无法作出决定就推迟决定，然而实际上推迟决定是最差的决定，在推迟决定期间，时间悄悄流逝，你却没有任何一条路上的积累，白白浪费了时间。
-
-如果你有一些钱不知道花在A还是B上，你先不作决定，没问题，因为钱还是你的，但如果你有一些时间，不知道花在A上还是B上，不行，因为过了这段时间，这段时间就不是你的了。
-
-所以，不管有多纠结，也不要从纠结中逃离，试图推延决定，既然终究是个痛苦的决定，就痛一回，好好思考和调查之后作出一个决定并坚持下去，只要不是太不靠谱的行业（相信也没谁会在纠结了之后却选了一个不靠谱的行业的），经过你的积累总会成为高手。
-
-**一生的知识积累，自学的起码占****90%**
-
-你会在这本书当中看到的一个重复出现的现象就是自学，大规模的自学，逃课自学，上网找书自学，程序员行业是最适合自学的行业，网络是程序员的天堂，需要的资源、工具，比课堂上的多出何止百倍，如果说还有一个学科，并不需要传统的教育就可以成才，估计非程序员莫属了。作为程序员如果没有查过wikipedia，没有看过几本原版电子书，没有在国内外主要邮件列表里面提过问题吵过架，没有用技术博客记录学习的独特体会，没有订阅技术牛人们的博客，怎么好意思说身在这个行业呢？
-
-最后，看完了书还是说“说起来容易做起来难”的，**怪自己，不怪书**。
-
-
-
-
-
-## 学习的艺术
-
-**[LiuSerina](mailto:serina11@live.cn)**分享的文章。
-
-有看过非诚勿扰不？我有看过一期是这样的：一个男嘉宾刚从后面的背景门后走出来，一个女嘉宾就以迅雷不及掩耳盗铃响叮当之势把灯按掉。主持人问她：姑娘，你怎么这么快就把灯按了呀。姑娘：“第一，我不喜欢个子矮的。第二，我不喜欢穿西装的。第三，我不喜欢个子矮还穿西装的。”搞笑了，是不是？也太武断了，是不是？我脑中马上想出一个画面：如果这位姑娘看到敬爱的小平同志的尊荣不知是何反应。嗯，应该很有趣吧。
-
-
-
-八卦了半天，可以扯到正题了。
-
-当我们初见一个人、初学一门技艺、初尝试一样新的菜式、或者初到一个陌生的地方、、、、、、，我们究竟是以一种什么态度来看待这些？我们可以以一种非常武断的方式早早下了结论：这个男生太糟了， 他个子低还穿西装。（上面的那个姑娘）为什么要学英语，我是中国人，为什么学鸟语，英语有什么好的？我们国家这么富强了，我不需要走出中国，因为世界已经走进中国了。我不要学英语，还是老外学汉语吧。（或者刚学游泳的人，为什么要学游泳，游泳池里的水一点都不好喝、我又不是鱼，离开水就不能活，而且，我是“伟大”的脊椎直立行走的动物——人，为什么要像只青蛙一样在水里扑腾？）这个菜怎么这么难吃？这里的人怎么就吃这个？他们怎么活过来的？还是我们家乡（我妈妈）的菜好吃。这个地方怎么这个样子？（如果是北方人到了南方，会说：这里的人怎么这么精明小气？这里的人怎么这么势利？这里的人怎么只懂得赚钱完全不搭理国家大事？如果是南方人到了北方，会说：这地方怎么这么破，这里的人怎么这么虚伪，这里的人怎么天天谈论国家大事自己的事却不干？）......
-
-
-
-发现上面的人都有一个共同特点了吧。
-
-他们（她们）都在以先入为主的方式粗鲁的把自己的观点加到新看到的人、新看到的地方上。他们采用各种办法拒绝学习、 拒绝看到新的东西新的方面，他们拒绝进步。所以，他们（她们）的结果是：他们可能一辈子独身。后来终于结了婚，但是矛盾重重。（因为，你懂的，找出别人的优点不容易，找人的毛病多容易啊：除了个子矮、穿西装难看外，还可以说：肩膀不够宽、声音不动听、不会哄人开心......，我可以写三天三夜也写不完）
-
-他们可能一辈子都没学会英语、没学会游泳、......、没学会一切新的东西。或者即使学了也是不情不愿，怨天怨地，他们是——怨妇或怨夫，他们真是般配。他们可能一辈子只吃那几道菜。他们可能一辈子只呆在一个地方，或者即使去了其他地方，回来之后的评论是：还是我的家乡好。他们处于停滞状态，他们看不到别人、别处的好，他们拒绝进步，他们生活在陈式之中，他们虽生犹死。
-
-这种人就是马斯洛所说的这种人：他们以一种大吵大嚷、横冲直撞、目的明确的利用方式来了解、塑造事物，迫切要求分类、陈规化、分级、归档、贴标签。他们永远生活在过去。马斯洛用了一个很直接的很不客气的比喻来形容这种思维方式：屠夫割肉。
-
-
-
-他举了一个例子非常搞笑：一位拙劣的医生哪怕已经有100年的临床经验，也只会反复验证他在治疗之初学到的那套理论。正是从这个意义上说，一个医生可以在同一个错误上重犯40年，而且还大言不惭，把这称为“丰富的临床经验”。在积累错误的经验方面，他的却很有一套。随之，马斯洛问了一个非常尖锐的问题：我们看到的究竟是真实的、具体的世界还是我们自身投射的真实世界中的陈规系统？我们看到的是世界的本来面目吗？艾默生说：如果夜晚的繁星是一万年才会出现一次的奇观，我们会惊叹不已造物者的伟大，但在现实中我们却对眼前的奇迹视而不见。我们何其幸运，我们又何其不幸？我们究竟是目明还是眼瞎？
-
-
-
-请问：当我们初见一个人、初学一门技艺、初到一个地方、......，我们能否采用一种轻柔的方式、耐心的了解他们（她们、它们）？我们能否像水渗入石缝一样，随地而安。不会急于以明确的形状将对方定形，贴上标签？我们能否允许对方展现本来的面目并且接受？我们能否欣然接受甚至欣赏对方的样子？我们能否主动卸下心防、以一种不抵抗的姿态应对这些新的东西？就像一艘小船在大海中乘着波浪、随风而动，而不是凭着一己之力逆流而动？我们能否主动的被动？
-
-
-
-我们的回答是：我们可以。而且，通过这种以退为进的方式，我们不仅可以得到我们想要的，我们还会得到我们没有想到却更好的东西。
-
-通过这种以退为进的方式，我们不仅可以获得和谐的两性关系，学会更多的更好的技能，尝到更多好吃的菜式，看到更多美丽的风景。我们还会：
-
-收获人与人之间的真诚、善良和美丽。会体验到只可意会不可言传的学习的乐趣。对大自然、对人类生出一种深深的感恩之情：他们是如此慷慨、赋予我们如此丰硕的礼物。会真切的感受到与古今、天地之精神相往来的快乐。会真切地体验到天地有大美而无言，会明了为什么相视而笑、莫逆于心，为什么会心有灵犀一点通......
-
-
-
-多么美好，这绝对是值得我们去追求的，这绝对是需要我们去努力的。这绝对不是一朝一夕可以到达的。马斯洛说，他还没有遇到45岁之前就达到自我实现的人。这需要时间、需要努力。但是确实可以到达的。
-
-
-
-所以，我们要学习，要永远学习，向小孩学习。永远保有一颗赤子之心。我们可不可以像小孩子那样以明净的眼睛将一切看成好像初次见到一样，能够满怀惊奇的注视着一切事物，领会一切特征，因为对于他来说，所有的特征都同样重要、同等新奇。在他们的眼里，毛毛虫和蝴蝶一样令人着迷。泥土沙石充满魅力。天空中飘起的细雨让人遐想痴迷。
-
-
-
-同时，我们要面对的挑战是：在经历挫折、伤痛等之后，是否仍然保持纯真的热情去接纳、去学习，而不会把以防御或躲避的姿态来保护自己？
-
-我们能不能放下再前进？有时只是需要捅破一层薄如蝉翼的借口。
 
 # 假装学习
 
@@ -1215,6 +1217,358 @@ Chinese schools are producing a nation of Shereshevskiis, students with photogra
 　　你也许和我一样，正在完成每天的小目标。也许，正在寻找你的那个“大目标”。但只要你开始思考、开始行动，你就已经走上了一条必然不易，但也充满希望的路途了。**放弃和认命是一条没有尽头的“下坡路”。**请记住，在任何一个你没有察觉的时刻，包括现在，通过行动去改变命运的机会，一直都存在。
 
 
+
+# 时间规划局的过往——前进，再前进
+
+作者：时间规划局
+ 链接：https://www.zhihu.com/question/366627317/answer/1151278214
+ 来源：知乎
+ 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+用讲道理的方式去说服一个人接受你的观点，通常是很难的，那我就讲讲自己的故事吧，很长，要表达的，都在里面了。
+
+时间拉回到十六年前，2004年的第一场雪，比以往来的更早一些。我和师兄、师姐蹲在冷呵呵的实验室里，看着面前那台崭新的机器，嘎吱嘎吱向外喷涂着被融化后的ABS树脂。对于研一的我来说，一切是那么新奇和高端。我们的研究方向是导师的一个教育部课题，基于RE(reverse engineering，逆向工程)和RP(rapid prototyping，快速成型)的机械零部件快速设计制造。
+
+让我万万没想到的是，十二年后，也就是2016年左右，这项技术突然火了起来，换了一个叫“3D打印”的名字，变成了可以改变世界的技术，做一份PPT能很快拿到千万级的投资。但这一切都和我无缘了，因为在2005年夏天，师兄带领师姐成功发表了4篇核心期刊论文，而我还没来得及动手，导师的项目就成功结题了。然后他和其他导师合作，拿到了一个牛轰轰的863项目，两千万经费，我的“3D打印”之梦就此破灭，被迫转行。我可是给杨叔子院士写过邮件，和他探讨过RE/RP技术前景，他还鼓励我好好干呢，呜呜，拜拜了。
+
+导师拍着我的肩膀，告诉我不要气馁，能力更大的人要承担更大的科研任务。我感觉他是在忽悠，但我没有证据，只是很惋惜费了我1年时间、足够发表2篇论文的实验数据。那也是我的心血呀，最后我忍痛把数据都送给学院里另一位工程硕士，保障他顺利毕业了，他非常感激我，请我在学校后门吃了一顿酸菜鱼。那个酸菜鱼馆再向北走200米，是宽阔的长江，江里的鱼都很美味，值得我们每个从这里毕业的人，毕生怀念。
+
+日子还要继续，我收拾心情，转向863项目的研究工作。只是当时我还不知道，这个项目，它深刻的改变了我后来的人生。
+
+在2005年，我参与的这个863项目可以说相当前沿和新潮，我负责的那部分研究内容，需要制备高性能、低表面粗糙度、纳米级的磁性薄膜(NiFe、CoFeB之类的)、搭建一套稳定的飞秒激光泵浦-探测(pump-probe)实验平台、编写数据采集软件并借助Matlab进行数据处理和运算，通过研究软磁薄膜与飞秒激光相互作用的超快瞬态动力学效应，为研发面向未来的太赫兹器件奠定坚实的理论与实验基础。这对机械制造及自动化专业的我来说，简直一脸懵，就像刘姥姥进了大观园，太高端太刺激了，又因为自己啥也不懂而感到深深的自卑。在这种自卑感的驱动下，我的苦逼日子开始了，连续一年半的时间，我没有在晚上11点前回过宿舍，一直做的事情只有三件：查文献，做实验，编写Matlab。
+
+有那么3个月的时间，我一直处于抑郁状态，因为辛苦做出来的实验数据，波形上总是有异常的震荡和杂波，我一遍遍的用磁控溅射方法制作薄膜、一遍遍的检查pump-probe平台、一遍遍的检查数据采集软件，最后我崩溃了，因为根本发现不出什么问题，每个环节都好像是正常的。3个多月过去了，我差不多也得上抑郁症了，和女朋友也时不时的吵架，一切都是灰暗的，看不到希望。
+
+那是一个极其偶然的下午，我继续穿着净化服，在洁净室里的激光平台上重复着实验，妄图优化并查找出问题根源。洁净室有一扇封闭的玻璃窗，有个师弟坐在窗外的电脑前勤奋的工作着。我神经兮兮的盯着数据采集界面，祈祷不要悲剧重现，可是震荡和杂波还是如约而至，盘踞在实验数据界面。压抑的实验室里，我分明听到响亮的打脸声，啪啪啪啪，令人头晕目眩，眼冒金星，孤独而绝望，那一刻，我想死的心都有。突然，有人在实验室外大喊师弟的名字，说他女朋友在外面等他，这个有点莽撞的家伙，猛地站起来往外跑，然后悲剧发生了，他一脚踢掉了他那个台式电脑的机箱电源，笨重的CRT显示屏一下熄灭了。师弟大喊一声卧槽，因为他那台电脑是实验室的顶配，里面每天都在不停的运行模拟程序，机箱和显示器都贴了纸条不准关闭，这一关机，跑了7~8天的模拟进程，大部分都毁掉了。我两步走到窗边敲了敲，看着师弟灰白的脸色，他勉强挤出一丝笑容，隔着玻璃大声说“导师估计要砍我了，好几个人都等着我的模拟结果呢”，我满是同情但也不知道怎么安慰他， 目送他慢慢走出去了。我两步走回去，又开始观察实验结果，我发现竟然出现了奇迹，从2分钟前，也就是我走过去看师弟意外关掉电脑的那一刻，数据波形上的震荡和杂波消失了，光滑平顺接近完美，阶跃突变的信号响应也如高台跳水下落般的完美曲线，这就是我苦苦追寻了一年想要的实验结果啊，我激动的要哭了好吗？看着被师弟熄灭的显示器，我恍然大悟，这种CRT的垃圾显示器，后方会产生大量的电磁辐射，一般情况下也没什么影响，但是我的pump-probe实验，需要良好的电磁屏蔽，激光锁相放大、震荡、弱信号采集都受不了CRT显示器的干扰。很快导师把CRT显示器都换成了液晶，把所有的电脑都搬离净化实验室，还给实验室的墙上加装了电磁屏蔽网，同时也给师弟的顶配电脑装了不间断备用电源，防止他再把电脑关掉。
+
+后来的硕士阶段，没有了悬念，我得到了大量完美数据支撑研究结果，科研之路如开挂一般，发了好几篇论文，还在毕业前收到了SCI期刊Physica B的录用通知。尽管当时影响因子只有1不到，但是硕士就发SCI期刊论文，在只会发中文核心期刊和EI会议论文的机械学院，还是引起了很大轰动，导师也觉得挺有面子。
+
+我闭着眼睛就能毕业了，心态轻松惬意，和女朋友也不吵架了。但很快我又遇到了新的困惑，我虽然用实验验证了飞秒激光和磁性薄膜相互作用的超快动力学现象的确存在，但背后存在的物理机制以及它能够应用到哪些具体的方向，我完全想不明白，我也不知道实验结果的理论基础在哪里。我和导师去探讨，他觉得我想太多了，他说这是和基础学科相关的，我只是看到了表面，并没有深入进去。但当时的我，内心经历了科研过程中哥伦布发现新大陆的狂喜，我已经爱上了这种感觉，我想把这背后一切搞明白啊。我想继续纠缠着导师，他又拿到了新的课题，没空理我了，给我丢下一句话，想把理论搞明白，就去读博士吧。
+
+研三的十月份，大家纷纷开始找工作了，那些研究模具、精密加工、电气控制的同学，很快都拿到好几个offer，我唯一的一次面试，是上汽到学校招聘，有个师兄是上汽的中层领导，回来面试我们。轮到面试我的时候，他拿一罐可乐，说“师弟你几分钟可以把这个造型做出来？”，我苦笑了一下，我说Pro/E和CATIA都没学啊，我研究磁性薄膜和飞秒激光去了。师兄笑着说你这个太高端了，我们不需要这么深奥的，然后我就被刷掉了。
+
+这么高端的研究方向，工作肯定是不好找的，面试过这一次，我再也没去面试过了，因为我之前已经查好了，国内有个课题组研究磁性薄膜和MEMS芯片方向，我也和那边打过几次电话交流了，我想要的答案，那些潜在的电磁学机理，在那里可以找到答案。
+
+手机端打字好累，歇一歇，晚上转到电脑上继续写。硕士阶段告一段落，博士阶段的故事更精彩。
+
+考试，复试，收到录取通知书，告别硕士的导师，告别硕士生涯，博士阶段就开始了。令我感到很满意的是，这里真的是可以找到答案的地方，课题组的几个牛人，有精通电磁学理论计算的，有精通薄膜制备工艺的，有精通基于薄膜制作MEMS芯片的，真是太爽了，学院里还有一条3英寸的芯片流片线，这下从理论到实验再到具体的芯片产品制造，都齐全了。反正不知道别人是什么感觉，我觉得自己就像进入了阿里巴巴的宝库，我延续了硕士时期的风格，一头扎进实验室里，就不怎么想出来了，像海绵一样吸取养分，向别人不断的请教。在硕士阶段的基础上，我基于NiFe和CoFeB材料的软磁薄膜性能越做越好，我不但会用磁控溅射机，我还学会了用气相沉积设备、外延设备、硅刻蚀设备、离子束溅射与刻蚀设备、光刻机、电镀设备、烧结炉、离子注入掺杂设备、SEM(扫描电子显微镜)、XRD(x射线衍射仪)、VSM(振动样品磁强计)等一系列设备。管理实验室设备的老师，都把我收为关门弟子了， 晚上如果他有事，下班时都把钥匙给我，让我关净化间的水电气，早上再老早过去开实验室。实验室的设备加起来上亿，对我也是真的信任了，这也让我比别人有了更多的时间和自由度去做实验，加速了我的科研进程。
+
+而且我跟着师兄学会了手撕麦克斯韦方程组，我有个100多页的演草纸，上面全是手写的求解麦克斯韦方程的计算过程，我把麦克斯韦方程应用于求解软磁薄膜的高频磁阻变化以及随外界磁场和电场变化的响应曲线，得到的结果可以直接拟合实验结果，相似度非常高，然后就可以用理论计算得出的优化参数去指导实验工作。当时有个磁阻变化率的指标，我可以和全球几个主要的相同研究方向的课题组一决高下，经常是他们做到30%，没多久我40%的结果就发论文了，然后看到他们刊出的65%的论文，我已经做到80%了，后来根据理论模型得到的参数，我不用制备薄膜的方式了，换成磁导率更高的薄带材料，指标竟然可以做到200%以上，导致国外的几个竞争对手很眼红，就赶紧跟着换材料、发论文，和我们进行比赛。我超级享受这样的过程，中间还会和他们互通邮件聊一聊，就好像两个拳手打擂台赛，休息的间隙还在交流你用什么牌子的蛋白粉啊，你平时吃牛肉还是猪肉啊之类的，感觉既好玩又好笑。
+
+2008年暑期，是我论文最高产的时段。我的实验工作进展顺利，手里的数据很丰富，我首先想到的是Physica B，毕竟我是老客户了，我翻出了之前发论文时给主编写过的邮件，追加了一封邮件，大意是我换了新的研究环境，有了新的研究进展，希望能把一些重要的结果在他们论文上分享给全球的同行们，然后我还说，你应该知道，现在北京正在开奥运会，希望你多关注这场盛会并享受体育带来的快乐，然后我把投稿的论文编号也发给他，希望他能关注并处理。没想到，过了不到1天，主编给我回复了一封热情洋溢的邮件，感谢我对他们期刊的关心，并说自己最喜欢看跳水和体操类比赛，讲了几个我不知道的名字的运动员，最关键的是，他说收到我的投稿了，会尽快让同事处理。然后，我的这篇SCI论文从投稿到修改到接受，只用了26天的时间，你说老外不讲私人感情吗？我觉得他们肯定是讲的，毕竟都是人嘛，和你聊的很好，而且你的论文做的工作又不错，加急给你发表了，也就是他们举手之劳的事情。老外也都讲感情，这个发现对我产生了很大影响，我每次投稿都要找个主编或副主编邮件聊聊天，结果2008年的暑假，我搞定了3篇SCI论文。有时正在看中国队的比赛，夺冠热血沸腾的时候，一封邮件提醒弹出来，是SCI核心期刊的论文录用通知，那种美妙的、刺激的、眩晕的愉悦感觉，不做科研的人永远体会不到，也许像吸毒后的感觉。但吸毒是短暂的、要命的，而科研成就带来的愉悦是永恒的、健康的。
+
+这样的日子过了1年多，有一次和导师聊天，他说一直在思索除了单纯的做器件追求性能，他更想把器件具体的应用到某个方向，开拓出一个应用领域，但这几年下来，他一直没找到合适的方向，如果找到了这样的方向，他很想发一篇Applied physics letter的论文，这是他年轻时候的一个小心愿，不过到现在还没实现。我听了心里一哆嗦，这怎么和我最近几个月在实验室里没事瞎琢磨的想法那么一致呢？我也想干这个事啊，我都琢磨了很多具体方案了啊，你不问我都不知道怎么说啊，我努力帮你发个APL圆梦好了啊。再加上我平时也关注娱乐新闻，当时张国荣自杀还没几年，梅艳芳也患了宫颈癌去世了，我因为《胭脂扣》喜欢这两位明星，心里惆怅了很长一段时间。我看了一篇国外的报道，梅艳芳的去世是因为当时对宫颈癌的HPV病毒没法做到早期筛查和分型检测，HPV病毒有很多个亚型，最致命的有6种，每一种对应的治疗手段和用药都要有所区别的，所以不能做到早期筛查会出人命(因为早期的病毒在体液中的浓度含量很低很低)，筛查出来之后，无法做到精确分型，也会因为治疗手段的不太对症而延误治疗。这些事情，我都考虑过很多天了，我一直在想怎么去解决这个问题，今天导师既然主动提起，我立刻满怀激动的和导师谈了2个小时，并把我的具体实验方案和如何检测讲了一遍。
+
+导师听完以后一直笑，可能他也觉得我讲的不错，问我这些想法怎么来的，我说我天天都在考虑这些东西啊，其实他不知道的是，我这2月和搞生物检测的另一个同学谈过几十次了，他说针对HPV每个亚型目前已经有特定的标记物了，每种标记物只认识对应的其中一个亚型，对其他的都熟视无睹，标记物就像触手一样，会紧紧的抓住它认识的那一个亚型的病毒。我内心里喊了一句卧槽，思路来了：我用纳米磁性粒子修饰到病毒样本表面、用微流体芯片分成不同检测区域、每个区域修饰不同的标记物、每个区域的标记物对应抓取不同的HPV亚型病毒、哪个或哪几个区域抓的多、哪几个区域的纳米磁性粒子就多、我的传感器去检测哪几个区域的磁型号更强，不就可以检测出体液样本中包含哪种或哪几种HPV病毒了吗？而成熟的PCR扩增技术又可以解决早期病毒浓度极低而检测不到的问题，从而解决早期筛查的困扰。怎么做高性能传感器、怎么刻蚀微流体芯片、怎么制作纳米磁性粒子、怎么在微流体芯片检测区域表面修饰标记物、怎么在病毒样本表面修饰纳米粒子、怎么PCR扩增、怎么处理弱磁检测信号，我和同学两个人一合作，全部都搞定了啊。兴奋，激动，我一下子又找到了硕士阶段哥伦布发现新大陆的感觉，我仔细查过文献，全球的科研圈，压根没有人用我们这种传感器做过这样的研究，这次导师主动找我聊，正好我把想法全盘托出。导师继续微笑着看我，当场批了10万块的预算，让我买各种耗材就开始整了。
+
+2009年，整个一年我都很忙碌，按照之前的思路，各项试验进行的很顺利，我们一气呵成，在APL上刊出了研究成果，主编对我们还美言了一番，感谢选择他的期刊之类的话。反正也不重要了，我已经和导师举杯相庆了，我帮导师完成了课题组发表APL的心愿。导师问我接下来的想法，我说我们的高性能传感器，除了检测HPV，还能检测胃癌、肺癌、前列腺癌等各种标记物能识别的癌症细胞，能早期筛查和分型检测，我要像开挂一样的发表论文了。说干就干，2010年我们又转向胃癌细胞的检测，改进了微流体芯片和传感器结构，顺利发表了两篇更高水平的论文，其中一篇在Biosensor & Bioelectronics上也是快速发表，这个杂志当年影响因子6.5，那时还没现在这么多灌水的，现在影响因子都要破10了，JACS感觉到了压力。其实按照正常的发展路径，我接下来会成为一个科研能手，手握大把高质量论文，顺便申请一堆专利，承担各种国家的研究项目。但人生总是充满了变化，谁又能说的清楚呢，有两件事情的发生，对我接下来的人生方向产生了深远影响。
+
+2010年，发生了两件对我很重要的事，第一件事是学校基本不再留博士毕业生任教了，这让我的导师很遗憾，原本我们计划好让我留校，然后在新领域大干一番，因为3年时间里，我已经以一作身份发了8篇SCI核心期刊，加上和别人合作的，共计14篇论文，影响因子累计40多了，而且手里正在做的实验和相关结果，已经够再发7~8篇高水平论文了，甚至冲一冲Nature materials子刊(材料应用领域的终极神刊，影响因子接近40)，都是有可能的。用导师的话讲，我一个人可以顶别人一个课题组加起来的成果了，但现在政策变了，我没法留校了，他感觉非常遗憾。他建议我去国外读博后，然后再回来学校，有了国外的经历，就可以满足留校资格了。因为当时那几个和我是竞争对手的课题组，一直追我的进度，而且也在跟着我转向传感器进行生物检测的方向，这三个课题组的负责人都给我写邮件，法国、美国还有西班牙，邀请去做个博士后研究，然后可以考虑留下任教。面对导师的建议和国外几个课题组的邀请，我最终选择了放弃，原因是我不想继续做科研了，我要换个人生方向。
+
+让我产生这种想法的原因，是源于2010年初我参加的一次在线会议，那是一个传感器国际论坛，在新加坡，我因为没有争取到经费支持，没能到现场参加。通过视频，我观看了日本那个叫Mohri的学者，做了关于磁传感器芯片的演讲，这个演讲简直给我留下了巨大的阴影，让我明白了天外有天、人外有人。本来这个叫Mohri的学者，之前也一直在做和我们类似的器件研究，后来我们转向生物检测应用，他们就没有声音了。我因为做了一点生物检测的工作，发了几篇论文，就开始琢磨这个东西应该可以产业化的，但我们搭建的实验平台粗大笨重，信号处理都是PCB板级的电路，高频信号激励是买了一台笨重的阻抗分析仪还有一台信号发生器，整个实验系统满满当当占了半个实验室。但是，这个Mohri教授，沉寂的几年，他竟然找到日本爱知钢铁投资了他，把传感器的敏感单元、信号处理、阻抗匹配、高频信号激励、电磁屏蔽等模块，全部集成化做进了一个2mm*2mm的封装芯片里面，然后给日本的手机厂商供货，开始做手机里面的电子罗盘和地磁方位检测了。这个讲座让我整个人是崩溃的，2mm*2mm的面积是我的传感器敏感单元的尺寸，而其他的环节，我用了半间实验室的面积，人家却都集成都芯片里面了，而且已经过了研发的阶段，而且已经给手机厂商供货了，而且都申请了很多专利了。虽然单片的性能比我的差一大截，但在手机领域的应用，人家Mohri的产品是够用的，我只能用一大堆笨重的仪器，去做各种生物检测然后刷论文，离实际变成集成化的产品，还差了十万光年距离。我开始怀疑我的研究方向的意义，我从事应用科学研究，就是应该像Mohri一样，把成果变成实实在在的产品，去推动某一个产业的进步，但看着我那一大堆笨重的仪器，又有种深深的无力感，就算再牛，我一个人也搞定不了这件事，这是个系统工程啊。爱知钢铁给Mohri配置了50人的研发团队，涵盖电子、半导体、传感器、芯片封装各个领域的工程师，而我有什么，我就是一个孤单的螳螂，高高举起手臂，却推动不了事业的车轮。
+
+但机会总是留给有准备的人，我08年无意间做的一件事情，在2010年我面临人生抉择时，开始发挥作用了。我之前讲过了，和管实验室的老师关系处的很好，实验室的设备我基本都会使用，机缘巧合下，我认识了一个已经毕业的师兄，他回来学校想做一些实验，关于陶瓷材料掺杂和烧结的东西，那两个破设备几乎都没人用，像垃圾一样丢在那里。听说我会使用，已经毕业的师兄找到我，给了我一些样品，让我帮他做实验，我有实验室的钥匙，晚上10点后，其他人都走了，我一个人留下来，一边制作我的薄膜传感器，一边帮师兄做样品。2008年9~12月，4个月的时间，我做了6个批次的样品，师兄很感激我，请我吃了一顿酸菜鱼(还记得工程硕士的同学也请我吃的酸菜鱼吗？)，然后给我讲了一个非常精彩的故事，他希望我可以沿着这个方向做下去。我看到命运之神向我招手，他手指一个充满挑战的方向，让我冲上去，挑战未知的困难。
+
+师兄给我的样品是一种陶瓷芯片，是非常好的产品方向，07年国家要对机动车实施排放管制，所有汽车都要出厂强制安装，但是当时，全球只有德国、美国、日本三家公司有相关技术储备，中国这一块市场注定被别人垄断。师兄给的样品正是这个方向，他委托我做的样品，经过几家机构的检测，性能相当不错，接下来，要找到一个合适的代工厂伙伴，把这种陶瓷芯片批量化生产，然后在经过集成化的产品封装设计，把信号传输、热保护、抗振动、机械固定等装置与芯片集成起来，做成终端产品，与发动机匹配使用。国外几家公司的技术严密封锁，核心的芯片工艺没有人能够接触得到，也不会对外销售，只能靠自己做出来。我和师兄只做出了初版的芯片产品，还需要优化才能量产，而且后续还牵涉到封装设计和匹配使用，我们对这些一无所知。想了解全套的东西，只有到一家国外一线的汽车公司的发动机部门去工作，还要正好负责这一块产品的开发，那就可以以客户的身份，了解这些东西。但是说起来容易，哪里有那么正好的机会，一个大牌的汽车公司，正好发动机部门有这个新产品开发的职位空缺？
+
+机缘巧合，天赐良机，2010年12月，某一线国际品牌汽车公司，发动机研发部招聘，有个职位专门负责这个新产品的开发，和师兄商量之后，我毫不犹豫的投了简历，干脆利落的被录用了，工资对于刚毕业的博士来说也算不错。不能让我留校，导师为了补偿我，就让我提前毕业了，还帮我争取到了校级优秀毕业生和校级优秀毕业论文，我很感谢他，从他身上学到了很多科学方法和科研精神，让我终生感激。临走时，导师单独和我长谈了一次，他说的一番话，我觉得很好的诠释了博士学位的意义：得到博士学位不是终点，不代表你以后能比别人成功，但博士学位能代表的是，只要你愿意，你可以做好这个世界上几乎所有的、有技术含量的事情。就这样，我告别了博士导师，告别了科研之路，踏上一场未知之旅，但我没有任何犹豫，我要追寻的东西，已经不在校园里了。
+
+不知不觉已经8000字了，博士阶段告一段落，但博士毕业后的经历会更刺激。看一个凡人如何在人生路上步步修炼，所有内容都是真人真事，和大家一起分享。
+
+2011年开始工作了，工作的前2年，我和刚进入博士阶段一样，每天都在接触和吸收新的东西，由于核心芯片已经做出来了，我很快能理解总成产品的各种技术细节，而且我每天在琢磨的是，如果让我来研发和生产这个产品，我应该如何改进，可以做的更好。工作2年之后，每次到供应商那里，他们都有点怕我了，因为我提出的问题他们已经开始回答不了，他们不敢在我面前有任何的隐瞒和虚假数据，我对产品了解的深度已经超过了他们。到第3年结束，我觉得差不多了，这个职位已经没有更多可以让我学习的东西了，我和师兄商量了一下，计划第4年离开汽车公司，开启属于自己的事业，但在离开之前，还有两件事必须完成：1 和代工厂一起努力，把我们核心的芯片产品批量生产的一致性和稳定性的问题解决，成品率提升到90%以上；2 我必须自己组建创业团队，然后去找投资机构，拿到天使轮融资。
+
+第1件是技术上的事，总归是能解决的，我们加班加点、多多搬砖，逐渐能达到量产的标准了，但是第2件事，我又开始懵了，刘姥姥又一次进大观园，完全不知道怎么去做，只有查资料慢慢学着准备。我印象深刻的是有一本电子书，叫《给你一个亿，你能干什么》，里面有一个章节叫商业计划书 (BP) 的21条军规，特别感谢作者查立先生，我按着他讲的内容，一步步操作，最终做出了一份当时自认为很满意、但现在看起来比较垃圾的第一版BP。然后我准备各种资料，学着展示产品和性能测试报告，组建技术/质量/采购/生产管理的团队，向别人描绘市场前景，做财务分析，做盈利预测，做现金流量预算，做SWOT，用了1年的时间，在朋友的介绍下，有两个天使投资人的资金到位了，感谢金主爸爸，可以放开手脚干了。2015年我从公司正式离职，最后的一年感觉挺对不起主管，我经常迟到早退，去筹备自己的事情，但主管还是宽容的忍受了我一年，大概也是因为其他人没法专业而深刻的管理这么多传感器产品吧。临别时，请主管和同事们一起吃了一顿酸菜鱼 (第三顿了)，主管祝我前程似锦，我祝他以后别再有我这么不听话的下属。然后他好像受到了我的启发，在我走后的3个月，也麻溜的离职，跳槽到杭州湾南岸去了，据说工资翻了一倍还多。
+
+2015年，我和师兄的芯片已经可以稳定量产了，我基于前面4年的工作经验并融入很多改进优化，在2016年终于有了完全自己制造出来的总成产品，并趁热打铁申请了一系列专利。2016年又发生了两件影响重大的事情，可能是我在做天使轮融资的时候，讲了太多次BP，导致我的演讲技能大幅提升，讲起项目口才就好的不行。我参加了一个领军人才项目评比，滔滔不绝的向很多专家评委进行介绍，由于产品有独创性，芯片是自主产权，而且市场前景巨大，公司成立一年就开始有销售收入了，项目答辩取得很好的名次，拿了300万政府资助，对创业初期起到了很好的资金补充。当地政府看我这么能讲，产品又好，就怂恿我去参加省里的创新创业大赛，我去了又是一顿讲，拿到了第二名，领导很开心，然后省里市里都给公司奖励，省市的领导接见我，还不停到公司走访，给了很多支持。他们的态度都很诚恳，能看得出对核心技术、对踏踏实实的创业者那种发自内心的尊重和鼓励，以至于我和他们都成了很好的朋友。我们的目标是一致的，都是希望尽快把产业做大，打破垄断格局，我可以收获成功，他们能得到一家成功的企业，带动就业、带动税收、带动人才的聚集。这种良性互动的局面在中国沿海省份已成普遍现象，让更多的技术型企业成长起来，是中国产业结构转型成功必须要做的事。
+
+2016年的第二件大事来了，我记得那天是科技局的一位局长和我约了时间，他说每年科技部都会举办一次全国创新创业大赛，我在省里取得了好名次，他们决定推荐我参加全国创新创业大赛。局长一脸严肃的和我说，已经四年了，他推荐的本地企业，没有一家通过预赛并进入半决赛的，我问大概多少家进行比赛，局长说各省推荐能进入国家赛的，基本是按照每个大的行业1000名，到国家赛的预赛里从1000家企业选出100家进入半决赛，然后半决赛从100家选出10家进入决赛，两轮10进1之后，基本剩下的10家都是非常厉害的企业了，大家再争冠亚军和第三名。我说领导啊，你是不是觉得我比较能吹，才推荐我去参加的，这么残酷的淘汰赛，我也没底啊。领导笑了，说你这样的博士真不多见，技术专家，口才又滔滔不绝，也不紧张，我看好你啊。
+
+说不紧张是假的，当我一个人背着包，坐上去参加大赛的高铁时，心里是惊恐不安的。1000名来自全国各地的人才们，把我丢进去都找不到在哪里，完全不起眼。但我在准备PPT的时候，一直回响着博士导师说的话，一篇论文、一份报告、一个项目，最核心的灵魂在于你把创新性讲清楚，最好的创新性不是你比别人做的好，而是你做了别人根本没做过的事情，开创了一个领域。我的产品，放到世界范围肯定不是原创的东西，因为有3家国外巨头公司已经做出来了，但是放到中国范围内，除了我根本没有人做过啊，我决定从这个角度开始讲。比赛时是10个企业分为一组，PPT讲完第一遍，我以小组第一从1000个企业里杀出来，进入到半决赛；PPT讲完第二遍，我再次以小组第一从100个企业里杀出来，进入到总决赛，这时，只剩下10家企业了。
+
+出人意料的，是总决赛的前一天晚上，在酒店的会议室里，大赛的带队老师，把我们10家企业都召集在一起，说了一些恭喜的话，让我们加油之类的。然后又很严肃的说，你们10位入选者，都是博士学位，国家想在未来的10年内，从本土选拔近万名专家人才，入选“万 人计划专家”，这也是没办法的事，国家要转型升级，要科技强国，没有专家人才，都是空谈，而这一万多名“万 人计划专家”，就是科技强国的领军者，国家迫切需要你们。这次请你们来开会，就是想告诉大家，你们都是博士，如果明天能进入前三名，科技部有一个大赛通道，把你们推荐到中组部，再经过一轮答辩和评选，就可以入选“万 人计划专家”，希望你们把握这个弥足珍贵的机会。老师的一番话讲完，我看了看其余9个家伙，好像眼睛都发红了，身上已经散发出隐隐的杀气，看起来明天要拼命了。不由得心中一寒，也赶紧假装很有杀气的样子，不能在气势上先输给他们。
+
+回想起大家的杀气，我吓得夜里一直睡不着，我总觉得按照之前预赛和半决赛的套路，只讲创新性是不行的，要有一些更打动人的东西。我翻出来几只芯片样品，小小的，拿在手里，那样的不起眼，但又充满了科技感和铜臭味，我盯着它们看了一个小时，我决定，我不再只是强调创新性了，我要讲一个关于芯片的煽情故事。12个小时后，我排在第6顺位出场，听完主持人的转场介绍，我从位置上站起来，伴着场下的掌声上台了，PPT投放在巨大的屏幕上，镁光灯在眼前聚焦，我看不到台下的任何人，我仿佛回到了学校夜晚12点的实验室里，静悄悄的只有我一个人不停的奋斗着。我从口袋里掏出芯片，举在手上，今天，我要给大家讲一个芯片的故事，这个记载了我8年青春回忆的小物件，就这样被我举着，竟然感觉沉甸甸的，我想起了这些年的辛劳、奋斗、挫折、彷徨、希望、喜悦、兴奋、刺激，就在这个时刻，浓缩为8分钟的演讲，与大家分享吧。我已经不记得当时的细节了，只记得自己讲完后，鞠躬致谢，恍惚中看到台下有很多人站了起来，连绵不断的在鼓掌，持续了半分钟还没有停下来。时间定格在10位参赛者都结束了演讲，计分屏上我的名字排在第二位，我揉了揉眼睛，没错，我是总决赛第二名了。
+
+科技部信守了他们的承诺，2年半之后，通过新一轮的答辩和选拔，我入选了中组部国家万 人 计划专家，我会和另外一万多名专家一起，成为国家科技强国、升级转型的领军者，在这个古老的国家伟大复兴的道路上，与国外的竞争对手展开厮杀，最终杀出一条血路，加冕为王。
+
+我和师兄创办的公司，从16年开始到现在，每年的销售额都以2~3倍的速度增长，后续还会增长的更快，公司的估值今年也到了5亿(是估值，不是个人资产)。但我们依然买不起大别墅，不舍得换保时捷，依然加班到夜里12点以后，依然把公司利润的大部分都投入到研发中去，依然出差的时候不舍得住超过400元的酒店，依然像守财奴一样守着投资人新投入的几千万现金不敢乱花，但我们从学院里那个阿里巴巴宝库学到的东西，还有我们可以手撕麦克斯韦方程组的功底，可以让我们再开发出几款市场容量过千亿的科技产品，可以再组建几个团队，再创办几家估值超过5亿的公司，再开拓几个无人涉及的研究领域。
+
+在美丽的丽江古镇，有一座雪山，终年云雾缭绕，即使在最晴朗的日子，阳光也无法穿透云层。传说只有本领非凡、与山齐高者，才能看到云朵以上的风景。世间虽少有非凡之人，但看过者，无不终生称道绝世美景。
+
+不工作的时候，我喜欢叫朋友们一起打王者，一起吃鸡；
+
+我喜欢没事就去逗逗狗，撸撸猫，和小朋友一起到处玩；
+
+我喜欢所有Alan Walker的歌，不开心的时候就一直听；
+
+我和朋友到迪厅蹦迪，吃火锅撸串喝酒，K歌到深夜；
+
+情人节还有结婚纪念日，我给老婆买花买钻戒买LV包；
+
+我到菜场买菜经常被坑，去小区扔垃圾没分好类会被骂；
+
+身边的人，几乎很少知道我上面讲的那些硕士、博士还有创业的事情，我平时展示的，只是我想展示的，那云朵以下、接连地气、炊烟袅袅的风景。而云朵以上的风景，只有与山齐高者才能看到，你没看见，不代表没有。就像你不会手撕麦克斯韦方程组，没看过杨-米尔斯理论的推导过程，你就不知道杨振宁的伟大紧随麦克斯韦之后，薛定谔和霍金与他相比，都是弟弟。你所看到的，只是他82岁那年，与28岁年轻妻子的传闻。
+
+疫情还没爆发的1月初，我去了一位朋友的公司，他是很早就归国的行业专家，在贝尔实验室和西门子待了十几年，办了一家纳斯达克上市的公司，然后回国创业。到公司的时候，他开发的机器人正在惟妙惟肖的讲课，对着摄像头给孩子们网络直播，脸上的表情还可以各种变换，憨态可掬。坐在他的办公室喝茶，桌子上也有个机器人，这位朋友和我聊他在美国的经历，聊自己的最新产品。然后他扶着桌上的机器人，打开一个开关说：“我经常喜欢把机器人比作我们的国家，你看头部的这个处理器代表政治中心，胸部的电池包代表驱动发展的工业动力，双腿是支撑国家的农业基础，手臂代表执法机构，嘴巴代表外交和宣传部门，体内的各种电线电缆代表交通网络，漂亮的衣服、面容和发型代表娱乐业和服务业。”然后他顿了一下，打开机器人的后背开关，里面露出两个像液压挺杆的支撑柱，牢牢支撑着机器人沉重的金属躯体，他指着两根支撑柱说，“搞技术和研发的都在这里了，有了我们，国家可以顶天立地的站着，不用卑躬屈膝，也不需要下跪乞求，我们是脊梁。”
+
+如果让我选出人生中最幸福的两件事，那么第一件，是在大学的图书馆里遇见我孩子的妈妈，而第二件，就是选择读博。
+
+仅以此文，纪念过往。
+
+# 去行动，去改变
+
+摘自MADYong的评论：
+
+**在知乎上看到一个大佬说的，我觉得很有道理。他说支撑你第二天早起的不是你的闹钟也不是你的梦想，而是早睡！学习从来不是热血的事情，你热的快，凉的也快，中高考誓师大会就是最好的例子，所以我觉得这种视频看完之后你可以有感触和想法，但是千万不要认为学习是件热血的事情，学习就是学习，要以平静的心去对待然后就是自律，我们古人说的宁静致远不是没有道理的。** 
+
+摘自诗怡小姐的老父亲的评论       
+
+**学生党最可悲的身份,是那种既不是学霸又不全是学渣的人.他们听不懂课,不努力,作业不会做,以抄作业为生,不逃课,不捣乱纪律,自作多情,为考试成绩着急而又无奈于现状.三分钟热度,然后又恨自己不争气,一点一点混着日子就这样过了一天,他们以最普通的身份埋没在人群中,却过着那个年纪最最煎熬的日子。**
+
+摘自贪嗔痴念为情所困的评论    ：
+
+**b站里的大多数都还上着中学、大学吧，作为一个过来人我劝君一句一定要多看书，多社交，珍惜时间，多积累知识。真的，时间过得太快了，你想毕业之后只会玩手机电脑找工作吗？成功不是一蹴而就，哪怕你偶然中了彩票得了巨款也不会长久，很简单，你没有与之匹配的内涵与深度。还有热评那个，什么二八理论，你怎么不说那20%的少数人花费了自己80%的时间在努力，所以成为了少数的精英人士。这个时代是个很浮躁的时代，智能手机功能越来越让人迷醉，买最高端的手机，天天吃鸡王者抖音，每天这样你的生活真的不空虚吗？**
+
+Vtuber警察Official的评论：
+
+**如果你只是因为一个视频就充满动力，那恭喜你，你也很快会因为现实而失去动力。少喝点毒鸡汤，把自己摆在正确的位置上，不要因为我想获得什么，我想成为什么而努力，而是我想现在就做点什么而去做，别做个等待别人给自己打鸡血的人。**
+
+你太累了吗？
+ 没有足够的睡眠吗？
+ 没有足够的精力吗？
+ 没有足够的时间吗？
+ 是这些东西现在阻止了你吗？
+ 没有足够的钱吗？
+ 这些真的很重要吗？
+ 或者说真正阻止你的
+ 是你自己？
+ 借口 对于编造他的人来说
+ 是十分完美的
+ 不要自怨自艾
+ 不要再遗憾过去
+ 然后告诉大家 你很悲伤
+ 你的委屈，然后让人们
+ 对你感到遗憾
+ 感到怜悯
+ 如果你看见我坐在劳斯莱斯里
+ 住在六星或者七星酒店里
+ 过着我圆满的生活
+ 不要嫉妒我
+ 因为这都是我全力以赴拼命换来的
+ 没有任何人帮助我
+ 醒醒吧
+ 唤醒内心沉睡的野兽
+ 游戏已经开始了
+ 赛季已经到来
+ 在你的国家 你的圈子 你拥有的资源和渠道
+ 是时候发挥它们的作用了
+ 你对生活好存在有疑问吗？
+ 你对所在的环境下心怀不满吗？
+ 做些什么去改变吧
+ 既然心有所想
+ 那就放手一搏
+ 你要明白
+ 借口
+ 没有意义
+ 它们都是虚假的存在
+ 它们是编造出来的
+ 它们是谎言
+ 你要怎样停止编造谎言呢？
+ 你只能用真相去打败它
+ 真相就是
+ 你还得有时间去改变
+ 你身怀技能
+ 你满腹学识
+ 还有支持
+ 以及信念
+ 自律
+ 帮助你改变一切
+ 生活中 所有的美好的事情
+ 都始于挑战
+ 困难的事情 就是值得的事情
+ 成功不会主动找你
+ 更不会无故降于你身上
+ 它不会难于登天
+ 其实就那么简单
+ 成功本就不易
+ 如果你想要，那就拼命争取
+ 这就是你的机会
+ 这就是你的舞台
+ 这是你的时刻
+ 这是你的时代
+ 这是你的地盘
+ 这是你的机遇
+ 这是我的时刻
+ 明天后天 以及未来的每一天
+ 根本没有明天这样的东西
+ 我们只有今天
+ 这是你的梦想
+ 如果你想拥有它
+ 行动起来 让梦想照进现实
+ 如果你想拥有
+ 坚持不懈 让努力有所回报
+ 你还有未完成的事
+ 这是磨炼你的时刻
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+打字不易，复制前点个赞吧[微笑]
+ Are you too tired?
+ Didn&apos;t have enough sleep?
+ Don&apos;t have enough energy?
+ Don&apos;t have enough time?
+ Is that what&apos;s stopping you right now?
+ Don&apos;t have enough money?
+ Is that the thing?
+ Or is the thing that&apos;s stopping you?
+ you？
+ Excuse sound best to the person who&apos;s making them up.
+ Stop feeling sorry for yourself.
+ Get off the pity potty 
+ telling everybody you are sad
+ and sod stories,trying to get people
+ to show up to your pity parties
+ and pity parades.
+ If you ever see me in a rolls Royce
+ a six or seven star hotel
+ living my life to the fullest.
+
+Don&apos;t be jealous of me.
+ Because I worked my ass off to get it
+ Nobody handed me nothing.
+ Wake you ass up.
+ Awaken the beast inside.
+ Is game on,
+ Is go season.
+ It&apos;s time for you to take advantage of the access
+ and the resourcces that you have
+ in you country and community.
+ You got a problem with your life?
+ You got a problem with your environment?
+ Do something about it
+ If you want it
+ go get it.
+ Recognise
+ the excuse are not
+ valid.
+ They are conjured up.
+ They are fabricated
+ They are lies.
+ And how do you stop the lies?
+ You stop the lies with the truth.
+ And the truth is
+ You have time
+ You have the skills
+ You have the knowledge
+ and to support
+ and the willpower
+ and the discipline
+ to get it done.
+
+The fruit of everything good in life
+ begins with a challenge.
+ Everything is uphill that&apos;s worthwhile.
+ And it&apos;s not going to come to you
+ and it&apos;s not going to fall in your lap
+ and it&apos;s not going to be something that,oh my gosh
+ it just so simple
+ it&apos;s always going to be difficult.
+ If you want it, you gotta go get it.
+ This is your chance.
+ This is your shot.
+ This is your moment.
+ This is your time.
+ This is your place.
+ This is your opportunity.
+ This is my time,
+ this is my moment.
+ Tomorrow, tomorrow, tomorrow
+ ain&apos;t no such thing as tomorrow
+ we only got today.
+ It&apos;s is your dream
+ If you are going to have it
+ Take action to make your dreams come true
+ get your butt up and make it happen.
+ If you are going to have it
+ rase and grind
+ you still got work to do.
+ Stay on that baskerball count
+ stay on that football field
+ it&apos;s grind season homie.
+
+# 读书
+
+《 人民日报 》（ 2018年12月27日 24 版）
+
+http://www.81.cn/jsdj/2018-12/28/content_9390961.htm
+
+把书本读活，是很多人的追求。所谓读“活”，就是把书本知识转化为认识，把认识转化为智慧，把智慧转化为能力，把能力转化为实践，进而在实践中有所创造。概括地说，就是读有所得，得而能用，用而生巧。
+
+从掌握知识到实践创造，体现了从主观到客观，从认识世界到改造世界的实现逻辑。贯不通这根逻辑链条，很可能就是教条主义。因为书本知识不能代替人们在实践活动中的复杂判断和困难选择。同一部兵书，马谡的用法是背本本，诸葛亮的用法就不是。王明和毛泽东都读马列著作，王明读的甚至更多，但他是教条主义，毛泽东则强调实事求是。可见，读书效果的好坏，关键在于读法和用法，在于是不是拥有从书本到实践，从主观到客观进出自如、出神入化的本事。
+
+毛泽东拥有这样一种大本事。他能够把书读活，得益于他别具一格的读书方法。他的读书方法，概括起来有以下几点值得体会。
+
+**把读书学习当作一种调查研究**
+
+人们的知识来自三个方面：向实践学习，向群众学习，向书本学习。这三个学习有交叉，有贯通。这当中，书本是前人或别人的思考成果，终究来自实践，来自对人民群众创造的各种经验的概括和提升。毛泽东读《徐霞客游记》和郦道元的《水经注》，就关注两位作者通过大量的调查研究，才能写出有所发现的“科学作品”；读蒲松龄的《聊斋志异》，也说蒲松龄“很注意调查研究”，否则他哪有那么多稀奇古怪的故事。
+
+书本知识来自于调查研究，阅读者读书，自然也成为一种调查研究的途径了。调查研究有多种形式，如蹲点察看，座谈了解，也包括阅看相关报告、材料和书籍。毛泽东1961年3月23日在广州中央工作会议上举例说：“马克思、恩格斯提出的那些原理原则是经过调查得出的结论。如果没有伦敦图书馆，马克思就写不出《资本论》。列宁的《帝国主义论》，现在印出来是一个薄薄的本子，他研究的原始材料，比这本书不知厚多少倍。列宁的哲学著作《唯物主义和经验批判主义》，是他用好几年时间研究哲学史才写出来的。”
+
+毛泽东爱读书，同时又提出“反对本本主义”，看起来矛盾，实则反映出他提倡的读书理念，不是为读而读，而是向前人或别人的实践经验作调查研究。怀着调查研究之心来读，就是要“本本”，不要“本本主义”。有了此心，翻开书页，才会觉得是在与一种生动丰富而又未知的世界打交道，由此才会有所收获。
+
+**读书要到****“****底****”****，经典的和重要的书反复读**
+
+毛泽东把读书学习叫作“攻书”。要“攻”，就不能半途而废、浅尝辄止，必须到“底”。所以他1939年5月20日在中央干部教育部召开的学习运动动员大会上说，“学习一定要学到底，学习的最大敌人是不到‘底’。自己懂了一点，就以为满足了”。1945年5月31日，毛泽东在中共七大总结讲话中向大家推荐五本马列著作，形象地说明了何谓读书到“底”：“我们可以把这五本书装在干粮袋里，打完仗后，就读他一遍或者看他一两句，没有味道就放起来，有味道就多看几句，七看八看就看出味道来了。一年看不通看两年，如果两年看一遍，十年就可以看五遍，每看一遍在后面记上日子，某年某月某日看的。”
+
+这是毛泽东的经验之谈，他也是这样做的。在他留存的一些书籍上，便写有某年某月“起读”“再读”这样的字迹。在延安，他对曾志说到自己读《共产党宣言》的情况：“我看了不下一百遍，遇到问题，我就翻阅马克思的《共产党宣言》，有时只阅读一两段，有时全篇都读，每阅读一次，我都有新的启发。我写《新民主主义论》时，《共产党宣言》就翻阅过多次。读马克思主义理论在于应用，要应用就要经常读，重点读，读些马列主义经典著作。”对喜欢的文史哲经典，毛泽东同样经常读。上世纪50年代，他对人说自己已经读了5遍《红楼梦》，此后，他又15次索要过《红楼梦》，这在工作人员的记录中有明确记载。
+
+反复阅读经典书籍，因每次阅读背景不同、需求不同、心境不同、年龄不同，总是会有新的理解和发现，这样，书中的价值内容也就得到最大限度的发掘。
+
+**相同主题的书，要把观点不同的著述对照起来读**
+
+毛泽东读美国历史的书，就让人到北京图书馆、北大图书馆去借，专门写条子说，不光是马克思主义学者写的，也要有资产阶级学者写的。关于研究拿破仑的书，他同时找来苏联、法国和英国学者写的《拿破仑传》和有关著述，对照起来读。关于《楚辞》，1957年12月一次就要了50余种古今对《楚辞》有价值的注释和研究书籍。关于研究《老子》的著作，在1959年10月23日外出时带走的书籍中，就有“关于《老子》的书十几种”。
+
+另外，毛泽东还一直强调，要阅读一些和自己的观点相反的书，包括反面的书。1957年，他对领导干部讲，要读蒋介石的书这些反面的东西，“我们有些共产党员、共产党的知识分子的缺点，恰恰是对于反面的东西知道得太少。读了几本马克思的书，就那么照着讲，比较单调。讲话，写文章，缺乏说服力。”1965年初，他让中宣部编辑出版蒋介石的全集，中宣部根据这个意见编辑了《蒋介石言论集》系列，准备每本印5000册。毛泽东批示：“五千册太少，应出一万册。”60年代，毛泽东多次讲，不读唯心主义和形而上学的书，就不能真正懂得唯物主义和辩证法，并说“这是我的经验，也是列宁的经验，也是马克思的经验”。
+
+**读书不仅要有传统的****“****四到****”****，还要注重讨论**
+
+古人强调读书要“眼到”“口到”“手到”“心到”。“眼到”好理解。毛泽东的“口到”，不光是自己吟诵，还经常在一些场合，给人讲书，直接宣达自己的阅读体会。所谓“手到”，就是动手写笔记，写批注，由此体现“心到”。目前编辑出版的毛泽东读书批注，就有《毛泽东哲学批注集》，收了他读10本哲学书的批注和一篇读书摘录；《毛泽东读文史古籍批语集》，收了他读39部文史古籍和范仲淹两首词的批语；《毛泽东评点二十四史》（评文全本），共5卷，收了他在“二十四史”中的一些书里作的圈画和批注；《毛泽东手书古诗词选》《毛泽东手书历代诗词曲赋典藏》等，则反映了他读古代文学作品时随手书录的情况；13册《建国以来毛泽东文稿》，收了他读各种书刊和文章的批示、批注和批语，数量很多。
+
+毛泽东读书，还有一个“耳到”，即组织读书小组由人念，大家听，再一起讨论，由此相互启发，碰撞出思维的火花。比如，青年时代，他组织过读书小组；延安时他组织过关于克劳塞维茨《战争论》的读书小组；1959年底又组织读书小组到杭州等地研读苏联的《政治经济学教科书》。晚年眼睛不好，就请人读给他听，边听边议。
+
+**读书的时候要善于当****“****联系员****”**
+
+读书要当“联系员”，是毛泽东1958年11月同山西省委书记陶鲁笳等人谈话时提出来的。只有当“联系员”，才能对所读之书有所比较和分析，进而见人之未见。
+
+所谓“联系员”，有两层含义。
+
+一是把书中写到的观点主张、人物事件，同与这些观点主张、人物事件有关的或对立的另一个侧面，联系起来思考。例如，毛泽东读《史记·高祖本纪》，不仅关注刘邦的内容，还联系书中有关刘邦的对立面项羽的描写，来作比较，进而得出“项王非政治家，汉王则为一位高明的政治家”的结论。再如，读日本学者坂田昌一谈基本粒子还可以再往下分的《关于量子力学理论的解释问题》，毛泽东就联系《庄子》里说的“一尺之棰，日取其半，万世不竭”的观点来理解，认为坂田昌一说的“是对的”。
+
+“联系员”的第二层含义，就是善于跳出书本，联系现实来理解和发挥。毛泽东在1958年读斯大林《苏联社会主义经济问题》的批语中说，把书中的“‘我国’（指苏联——引注）两字改为‘中国’来读，就十分有味道”。他针对现实工作中存在分散主义、本位主义和有禁不止的情况，要求党的领导干部读《史记》时，要体会秦始皇在统一六国的战争中，善于调动各方面的力量集中到主攻方向上来的领导方法。读苏联的《简明哲学辞典》，毛泽东就抓住其“同一性”条目只强调矛盾的对立、否定矛盾转化这个形而上学观点，把它同斯大林时期苏联不善于处理人民内部矛盾、不做敌我矛盾转化的情况联系起来理解，进而认为，这个条目反映了斯大林晚年政治上犯错误在思想方法上的根源。
+
+**读书的时候要善于当****“****评论员****”**
+
+这也是毛泽东1958年11月同陶鲁笳等人谈话时提出来的观点。所谓“评论员”，就是对书中内容要有自己的看法，要有所评论，不是跟在书本后面亦步亦趋，而是从自己的知识背景和实践需要出发，对书本知识进行创造性的发挥，进而达到学以致用的目的。
+
+毛泽东的读书笔记和谈话，常常体现政治家的敏锐和见识。《通鉴纪事本末·石勒寇河朔》叙述石勒拿不定主意是否攻取幽州，问计于谋士张宾，张宾分析了王浚、刘琨和乌桓几方面的情况，帮助他下决心攻取幽州，毛泽东从中读到的是“分析方法是极重要的”。毛泽东读《汉书·赵充国传》，认为赵充国建议汉宣帝实行屯田的奏章，由于分析得当，才取得了对公卿们“说服力强之效”；读《老子》，说其中的“祸兮福所倚，福兮祸所伏”一句是告诫人们分析问题“不但要看到事物的正面，也要看到它的反面”；读《不怕鬼的故事》，认为《宋定伯捉鬼》一篇对“新鬼大，旧鬼小”的描述，说明对具体事物“要具体分析”。从这些评论，可以看出毛泽东是如何注重并善于从书本中读出认识和改造客观世界的方法论的。
+
+当“评论员”的读书方法，使毛泽东常常在书中见识到一般读书人所难见到的精妙，发一般读书人所难发的评论。诸如，他认为过去被看作荒淫无度的商纣王，其实是一个很有本事、能文能武的人；宋玉的《登徒子好色赋》有辩证法，歌颂了一个模范丈夫；枚乘的大赋《七发》，是批判保守主义的；贾谊的《治安策》是最好的政论；《水浒传》里的“三打祝家庄”，反映了搞统一战线的重要性；《红楼梦》写的是封建社会历史等等。这些评论，往往成为前人和今人所未曾言到的一家之言。
+
+以上读书之法，彰显了理论联系实际的学风，反映了毛泽东的读书活动同客观实践的深刻关联。这种关联，激活了书本，让一些“闲”书有用，“死”书变活；也激活了毛泽东的思考，使他常有新的思想收获，进而在实践中有新的运用和发挥。
+
+习近平同志号召“领导干部要爱读书读好书善读书”。党的十九大报告提出要增强“八个本领”，其中第一个本领就是“增强学习本领”。善读书，就是一种学习本领。毛泽东善于把书读活，对我们增强学习的本领，不无启发。
 
 # 碎片一隅
 
