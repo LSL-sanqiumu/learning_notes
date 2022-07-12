@@ -307,7 +307,20 @@ format的值有：
 - text-indent：文本缩进，通常是将段落的首行缩进，数值，单位px或em等，em是相对单位，相对当前元素（font-size）的1个文字的大小，如果当前元素没有设置font-size，则相对父元素。
 - text-transform：文本大小写转换。
 - line-height：行高（行间距），行间距由上间距、文本高度、下间距组成，值、像素，行高不加单位时指当前元素的多少倍。
-- text-shadow：文字阴影，只有四个值（和盒子阴影的前四个值是一样的，`text-shadow: rag(x,x,x) 横向偏移量 纵向偏移量 模糊半径;`）。
+- text-shadow：文字阴影，只有四个值，`text-shadow: rgb(x,x,x) 水平偏移量 垂直偏移量 模糊半径;`（和盒子阴影的前四个值是一样的）。
+
+
+
+## 鼠标光标形状
+
+`cursor`样式，用于设置鼠标光标在元素上时显示的样式，其值如下：
+
+1. `default`：默认值，通常是箭头。
+2. `pointer`：小手。
+3. `text`：工字型，就像字母i的大写形式。
+4. `move`：十字箭头光标，提示用户此处可移动。
+
+
 
 ## 元素显示模式
 
@@ -337,6 +350,10 @@ inline-block——行内块元素：img、input、td，同时具有块元素和�
 
 不同模式间的转换：display。
 
+## 元素透明度
+
+`opacity`：值为0-1之间的数字，1表示不透明，其会使元素整体透明，包括里面的内容（文字、图片等）。
+
 ## 背景
 
 背景颜色：background-color：transparent（透明的）或颜色值。
@@ -357,6 +374,9 @@ inline-block——行内块元素：img、input、td，同时具有块元素和�
 ```css
 /* 复合写法，位置没有限制 */
 background：背景颜色 背景图片地址 背景平铺 背景图像滚动 背景图片位置;
+background：背景颜色 背景图片地址 背景平铺 背景图像滚动 背景图片位置/图片大小;
+/* 示例：background: color image repeat position/size */
+background：red url() no-repeat scroll center center/400px 400px;
 ```
 
 css3，ie9+才支持：背景色半透明：`background-color：rgba(0, 0, 0, .8);`，a是alpha。
@@ -365,7 +385,7 @@ css3，ie9+才支持：背景色半透明：`background-color：rgba(0, 0, 0, .8
 
 ### 优先级/特指度
 
-解决使用不同选择符选择了相同的元素下的样式冲突问题。
+解决使用不同选择符选择了相同的元素下的样式冲突问题。（选择器的优先性）
 
 如果选择器相同（特指度相同），那就是层叠；选择器不同时则根据权重判断，各选择器权重如下：
 
@@ -420,7 +440,7 @@ border、大多数盒模型属性不会被继承；text-、font-、line-这些�
 
 ---
 
-**css样式优先级是：**浏览器缺省 < 外部样式表（引入的css文件） < 内部样式表（`<style>`标签内的样式） < 内联样式（标签中style属性声明的样式）。
+**css样式优先级是：**浏览器缺省 < 外部样式表（引入的css文件） < 内部样式表（`<style>`标签内的样式） < 内联（行内）样式（标签中style属性声明的样式）。
 
 完整的优先级：浏览器缺省 < 外部样式表(css文件) < 外部样式表类选择器 < 外部样式表类派生选择器 < 外部样式表ID选择器 < 外部样式表ID派生选择器 < 内部样式表(`<style>`标签内的样式) < 内部样式表类选择器 < 内部样式表类派生选择器 < 内部样式表ID选择器 < 内部样式表ID派生选择器 < 内联样式(style=”)；共12个优先级。
 
@@ -448,9 +468,9 @@ border-style：solid(实线) dashed(虚线) dotted(点线)。
 
 border-top：宽 样式 颜色。
 
-border-collapse: collapse；把相邻边框合并在一起。
+border-collapse：collapse；把相邻边框合并在一起。
 
-圆角边框：`border-radius：半径;`；(椭)圆与边框的交集形成圆角效果，值为半径或百分比。
+圆角边框：`border-radius：半径;`；(椭)圆与边框的交集形成圆角效果，值为半径或百分比（百分比时表示的是以各边的百分之多少来取值作为椭圆的长轴、短轴的一半，然后得到的椭圆再与边框交集，从而得到圆弧）。
 
 ![](image/radius.png)
 
@@ -499,7 +519,14 @@ margin：0 auto；块级元素必须设置了宽度才能实现水平居中。�
 
 CSS3新增盒子阴影：`box-shadow：h-shadow v-shadow blur spread color inset;`
 
-![](image/box-shadow.png)
+| 值       | 描述                                                         |
+| -------- | ------------------------------------------------------------ |
+| h-shadow | 必须，水平偏移量，允许负值                                   |
+| v-shadow | 必须，垂直偏移量，允许负值                                   |
+| blur     | 可选，模糊半径                                               |
+| spread   | 可选，阴影扩大（在原来盒子大小之上扩大多少）<br>默认的阴影大小为盒子大小 |
+| color    | 可选，阴影颜色                                               |
+| inset    | 可选，将阴影改为内部阴影<br>（outset-外部阴影、inset-内部）  |
 
 盒子阴影不占用空间，不会影响其他的盒子。
 
@@ -622,7 +649,7 @@ CSS3新增盒子阴影：`box-shadow：h-shadow v-shadow blur spread color inset
 
 叠放顺序：`z-index`：正、负、0、auto（默认），数值越大在越位于前面。
 
-定位的特殊性：
+绝对定位与固定定位的特殊性：
 
 - 行内元素添加了绝对定位或固定定位，可直接设置宽高。（这两个都脱离了标准流，相当于行内块）
 - 块级元素添加了绝对定位或固定定位，如果不设置宽高，则默认是内容大小。
@@ -705,6 +732,13 @@ vertical-align属性经常用于设置图片或者表单（行内块元素）和
 
 1. 给图片添加vertical-align：middle或top或bottom。（提倡使用）
 2. 把图片转为块元素。
+
+vertical-align属性的应用：
+
+1. 文本框与表单按钮无法对齐（按钮都是默认是基线对齐）。
+2. 图片也是默认基线对齐，如果遇到图片与某些元素没对齐那可以考虑调整对齐方式。
+3. 使用图片撑开div等，底部会有空隙，可设置vertical-align来去掉。（也是因为图片是基于基线对齐，而如果使用图片撑开盒子，那么底部就会预留出一点位置，此时图片的底部对齐的就是基线，预留的位置是给可能存在的文字的）
+4. 结合line-heigh使img垂直居中。
 
 ### 省略号显示溢出文本
 
@@ -887,10 +921,18 @@ display: -webkit-box;
 ### SEO优化标签
 
 ```html
-<title>Title</title>
-<meta name="description" content="">
-<meta name="keywords" content="">
+<title>Title</title> <!-- 网页标题 -->
+<meta name="description" content=""> <!-- 网页描述标签 -->
+<meta name="keywords" content=""> <!-- 网页关键字标签 -->
 ```
+
+### ico图标
+
+```html
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+```
+
+
 
 ## 表格
 
@@ -997,7 +1039,7 @@ body{
 
 新增特性都有兼容性问题，IE9+才支持。HTML5新增语义化标签：header——头部标签、nav——导航标签、article——内容标签、section——定义文档某个区域、aside——侧边栏标签、footer——尾部标签。
 
-![](image/newhtml5.png)
+![](image/html5-tag.png)
 
 ### 新增的多媒体标签
 
