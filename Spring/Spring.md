@@ -55,9 +55,9 @@ resources文件夹需要beans.xml等文件，xml约束如下：
         https://www.springframework.org/schema/beans/spring-beans.xsd">
     
     <!--p命名空间注入：可直接注入属性；p：property-->
-    <bean id="user" class="com.lsl.pojo.User" p:name="梁胜林" p:id="10010"/>
+    <bean id="user" class="com.lsl.pojo.User" p:name="啦啦啦" p:id="10010"/>
     <!--c命名空间注入：通过有参构造器注入；c：constructor-arg-->
-    <bean id="user2" class="com.lsl.pojo.User" c:id="12" c:name="lsl" scope="prototype"/>
+    <bean id="user2" class="com.lsl.pojo.User" c:id="12" c:name="来来来" scope="prototype"/>
 </beans>
 ```
 
