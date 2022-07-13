@@ -83,7 +83,7 @@ public void makeForRunnable() {
 
 开发中优先选择通过Runable接口创建线程：
 
-- 继承局限：通过接口来实现没有继承的单继承局限。
+- 继承局限：通过接口来实现，就不会存在继承的单继承局限问题。
 - 共享数据：实现接口的方式更适合来处理有共享数据的情况，属性就可以成为共享数据（通过一个Runnable实例来创建多个线程，Runnable的属性就被多个线程共享了）。
 - 从内存开销分析：实现接口的方式只用创建一个Runnable实现类对象。
 
@@ -91,11 +91,11 @@ public void makeForRunnable() {
 
 **JDK5.0新增线程创建方式：Callable接口和线程池**
 
-### 通过实现Callable接口:
+### 通过实现Callable接口：
 
  与使用Runnable相比， Callable功能更强大些 ：
 
-- 相比run()方法，call()方法可以有返回值、可以抛出异常 ，支持泛型的返回值 ，需要借助FutureTask类，比如获取返回结果。
+- 相比run()方法，call()方法可以有返回值、可以抛出异常 ，支持泛型的返回值 ，不过需要借助FutureTask类，比如获取返回结果。
 
 ```java
 public class MyCallable implements Callable {
@@ -129,7 +129,7 @@ public void makeForCallable() throws ExecutionException, InterruptedException {
 java.util.concurrent.Executors // Executors，工具类，用于创建线程池
 ```
 
-通过工具类方法创建的四种线程池：
+通过Executors工具类方法可创建的四种线程池：
 
 1.  `newFixedThreadPool()`：固定大小的线程池，满足了资源管理的需求，可以限制当前线程数量。适用于负载较重的服务器环境。
 
@@ -160,7 +160,7 @@ service.submit(new Callable线程);  // 适合用于Callable
 
 ## 线程的方法
 
-Thread类的常用静态方法，操作的线程是"**正在执行静态方法所在的代码块的线程**"：
+Thread类的常用静态方法，操作的线程是"**正在执行Thread静态方法所在的代码块的线程**"：
 
 ```java
 // Thread.currentThread()：返回执行当前代码的线程信息 
@@ -179,7 +179,7 @@ getName()        // 获取当前线程名称
 setName()        // 设置当前线程名称（设置线程名称还可以通过在创建Thread的子类时，通过super("线程名")）
 yield()          // 释放当前CPU执行权(释放后CPU又开始重新分配)
 join()           // 在当前线程里调用其他线程的join()方法，执行到这个方法时，当前线程停滞，从而执行调用join()方法的线程
-stop()    	     // (stop方法已过时，其作用是强制结束进程)
+~~stop()    	     // (stop方法已过时，其作用是强制结束进程)
 sleep()          // 让当前线程“睡眠“指定的时间(ms),停滞完时长后再执行下去
 isAlive()        // 判断当前线程是否存活，true or false
     

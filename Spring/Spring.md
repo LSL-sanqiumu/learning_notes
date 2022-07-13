@@ -336,16 +336,14 @@ spring提供的容器也称为ioc容器。
 ## 概述
 
 1. 类的依赖关系：`use-a`，一个类的实现需要另一个类的协助。
-1. 依赖注入（DI）：是实现IoC的一种方式，依赖注入的本质就是装配，装配是依赖注入的具体行为；依赖注入有两种形式：构造器注入、setter注入。
-2. 装配：创建**应用对象之间协作关系的行为**称为装配，即向bean中注入依赖的过程，而自动注入依赖的过程就是自动装配。
+2. 依赖注入（DI）：是实现IoC的一种方式，依赖注入有两种形式：构造器注入、setter注入。（依赖注入的本质就是装配，装配是依赖注入的一种具体行为）
+3. 自动装配：创建**应用对象之间协作关系的行为**称为装配，即向bean中注入依赖的过程，而自动注入依赖的过程就是自动装配。（建议显示配置越少越好，尽可能地使用自动配置，当必须要显式配置时尽可能使用JavaConfig；其实装配与自动装配是一回事，不必纠结）。
 
-装配机制：（建议显示配置越少越好，尽可能地使用自动配置，当必须要显式配置时尽可能使用JavaConfig）
+**自动装配的几种方式：**（byName（通过名字匹配）、byType（通过全限类名匹配）、constructor（通过构造器参数去匹配）、autodetect（自动检索-自动装配））
 
-**装配的几种方式：**
-
-1. 基于XML配置文件。
-2. 基于注解。（其实JavaConfig也是使用的注解）
-3. bean发现机制与自动装配。
+1. 基于XML配置文件。（在XML中声明装配方式）
+2. 基于注解。（使用注解来声明装配方式）
+3. bean发现机制与自动装配。（）
 
 ## 第一个spring程序
 
@@ -416,7 +414,7 @@ spring提供的容器也称为ioc容器。
 public static void main(String[] args){
     // 容器的获取：使用beans.xml配置文件初始化IoC容器——context1
     ApplicationContext context1 = new ClassPathXmlApplicationContext("beans.xml"); 
-    
+
     // 获取对象的方式一：通过get方法和bean的id从容器中获取bean
     User userTest = (User)context1.getBean("user1"); 
     System.out.println(userTest.show());
@@ -444,9 +442,7 @@ public static void main(String[] args){
 
 **关于beans.xml文件：**
 
-beans.xml文件是应用上下文的一个配置文件（文件名自定义），应用上下文可以根据这个配置文件来初始化IoC容器。
-
-beans.xml文件，一般放于resources目录下，头文件在一定条件下需要追加其他的约束：
+beans.xml文件是应用上下文的一个配置文件（文件名自定义），应用上下文可以根据这个配置文件来初始化IoC容器。其一般放于resources目录下，头文件在一定条件下需要追加其他的约束：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -456,14 +452,16 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
                            https://www.springframework.org/schema/beans/spring-beans.xsd">
     <!-- 整合其他的配置文件 -->
     <import resource="beans1.xml"/>
-    <bean id = "" class = "" name = "" scope="">
-    </bean>  
-    <alias name = "user" alias = "xxx"/>   <!-- alias就是别名的意思，为指定的bean对象取一个别名 -->
+    <!-- 声明将要创建的对象的配置信息 -->
+    <bean id = "" class= "" name ="" scope="">
+    </bean>
+    <!-- alias就是别名的意思，为指定的bean对象取一个别名 -->
+    <alias name="user" alias="xxx"/>
     <!--
  		id: 定义对象名
  		class: 创建对象的类型所在的全限路径（包名+类名）
- 		name: 别名，可以命名多个，逗号隔开
- 		scope：作用域，默认为单例模式
+ 		name: 创建别名，可以命名多个，逗号隔开
+ 		scope：声明作用域，默认为单例模式
 	--> 
 </beans>
 ```
@@ -479,15 +477,11 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
   ......
   ```
 
+## 基于XML的依赖注入
 
+Spring提供了常用的两种依赖注入方式：setter注入（Setter Injection）和构造器注入（Constructor Injection）。（其实还有一种不常用的注入方式，那就是工厂方法注入）。
 
-## 三种装配实现方式
-
-### 基于XML的显式装配
-
-基于XML的装配，Spring提供了两种装配方式：setter注入（Setter Injection）和构造器注入（Constructor Injection）
-
-#### 通过有参构造器注入
+### 通过有参构造器注入
 
 为实例对象注入属性，可以通过有参构造器来进行属性注入；在配置文件加载的时候，ioc容器管理的对象就已经开始创建并初始化。
 
@@ -526,7 +520,7 @@ beans.xml文件，一般放于resources目录下，头文件在一定条件下�
 </bean>
 ```
 
-#### **通过setter方式注入**
+### **通过setter方式注入**
 
 setter方式注入就是利用set方法来进行注入的，注意通过set方法进行注入的都需要先利用类中的无参构造器来构建好对象，然后才通过set方法注入。（无参构造器必须存在）
 
@@ -644,12 +638,12 @@ setter方式注入就是利用set方法来进行注入的，注意通过set方�
 
 
 
-#### 拓展方式注入
+### 拓展方式-命名空间
 
-命名空间：
+利用命名空间简化注入信息：
 
-- p命名空间：`xmlns:p="http://www.springframework.org/schema/p"`
-- c命名空间：`xmlns:c="http://www.springframework.org/schema/c"`
+- p命名空间：`xmlns:p="http://www.springframework.org/schema/p"`（getter、setter）
+- c命名空间：`xmlns:c="http://www.springframework.org/schema/c"`（构造器）
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -667,7 +661,13 @@ setter方式注入就是利用set方法来进行注入的，注意通过set方�
 </beans>
 ```
 
-### JavaConfig
+### 工厂方法注入
+
+Spring IoC容器以框架的形式提供工厂方法的功能，因此很少
+
+
+
+## JavaConfig
 
 JavaConfig就是**使用注解来描述Bean配置**的组件；JavaConfig是Spring的一个子项目，Spring4之后成为一个核心功能，在SpringBoot中常见。可将JavaConfig（Java配置类）看做是和bean.xml一样的配置文件，用来配置bean、装配等。配置类基本使用流程如下：
 
@@ -706,20 +706,22 @@ JavaConfig就是**使用注解来描述Bean配置**的组件；JavaConfig是Spri
    User user1 = (User) context1.getBean("getUser");  // 相当于content1.getbean("xxx",Xxx.class);
    ```
 
+## 自动装配
 
+依赖注入与自动装配，就像是一个手动来声明好注入的东西，一个则自动注入东西（自动注入的是对象，需要声明对象的发现机制以便确定使用哪些bean来进行注入，自动装配最终的注入还是得依赖getter、setter、构造器这些注入方式）。
 
-### 基于注解的装配（自动）
+### 使用注解的自动装配
 
 spring从两个角度实现自动化装配：
 
 - 组件扫描（component scanning）：spring自动发现应用上下文中所创建的bean，注解扫描可通过配置类或是xml配置文件开启。
-- 自动装配（autowiring）：spring会自动满足bean之间的依赖。
+- 自动装配（autowiring）：spring会自动满足bean之间的依赖，只需要指定通过何种方式发现bean。
 
-基于注解的装配的实现流程：（其实就是自动装配）
+基于注解的装配的实现流程：
 
 1. 开启注解支持。
 2. 组件声明。（即使用@Componet等标记类）
-3. 依赖注入。（即使用@Autowired、@Value等标记属性）
+3. 依赖注入（装配）。（即使用@Autowired、@Value等标记属性）
 
 #### 开启注解扫描
 
@@ -770,24 +772,23 @@ spring从两个角度实现自动化装配：
 ```
 
 ```xml
-<!-- 像@Resource 、@PostConstruct、@Antowired，spring给我们提供<context:annotation-config/>这个简化配置方式，自动帮你完成声明，来提供这几个注解的支持，但不能提供@Componet等注解的支持 -->
+<!-- 像@Resource 、@PostConstruct、@Antowired，spring给我们提供<context:annotation-config/>这个简化配置方式来提供这几个注解的支持，但没有能提供@Componet等注解的支持 -->
 <context:annotation-config/> 
 
-<!-- component-scan，除了具有annotation-config的功能之外，还具有自动将带有@component,@service,@Repository等注解的对象注册到spring容器中的功能 -->
+<!-- component-scan，除了具有annotation-config的功能之外，还具有自动将带有@component,@service,@Repository等注解的对象注册到spring容器中的功能，因此一般使用这个就可以了 -->
 <context:component-scan base-package="com.lsl.useanno"/>
 ```
 
 #### 组件声明
 
-**使用注解标记要在IoC容器中创建对象的类：**
+组件声明可以在xml文件声明、使用JavaConfig来声明、使用注解来声明。
 
-Spring中将某个类注册进IoC容器的注解：
+使用注解标记要在IoC容器中创建对象的类：（这几个注解的功能是一样的——表明这个类被spring管理了）
 
 1. @Componet：常用于普通的类，说明这个类被spring管理了。
 2. @Service：常用于service层。
 3. @Controller：常用于web层，前端控制器。
 4. @Repository：常用于业务层。
-5. **这几个注解的功能是一样的——表明这个类被spring管理了。**
 
 ```java
 // 将该类对象注册进IoC容器，value可省略，省略时默认值是首字母小写的类名称——annoTest
@@ -806,9 +807,9 @@ public class ATest {
 }
 ```
 
-#### 属性注入
+#### 装配
 
-**基于注解方式实现属性注入：**
+如果是注入一些具体的值，可通过`@Value`注解来标记注入。	
 
 ```java
 @Component
@@ -824,7 +825,13 @@ public class Cat {
 }
 ```
 
+使用以下注解来标记装配方式：
+
 1. @Autowired：默认根据属性的类型进行自动装配，如果根据类型找不到则再通过名称匹配注入。
+
+   - 使用`@Autowired(required = false)`表示当容器中找不到符合的对象时，仍然可以编译通过；如果为true，则要求容器中必须有符合的对象来供注入。
+   - 该注解在属性上或setter方法上都能使用。
+   - **注意**：通过注解（@Component等）注入到IOC容器的对象的id值默认是其类名（首字母小写）。
 
    ```java
    @Component
@@ -853,6 +860,9 @@ public class Cat {
 
 3. @Resource：可以根据类型注入，也可以根据名称匹配注入。
 
+   - 如果有指定name值则先通过该指定的name的值去匹配，然后才是通过byName默认方式去查找匹配；如果找不到才会再通过byType查找匹配（这时查找对象必须唯一，如果有同一类的多个对象则也会报错），当两种方式都找不到时，就会报错。
+   - `@Resource(name = "")`——通过指定beanID来匹配到相应对象）
+
    ```java
    @Component
    public class MyAnnoTest {
@@ -864,15 +874,9 @@ public class Cat {
    }
    ```
 
-1. 关于@Autowired：
+4. @Nullable：标记了这个注解的字段可以为null，任何类型的属性都可以加上。
 
-   - 使用@Autowired(required = false)，则当在容器中找不到符合的对象时，仍然可以编译通过；如果为true，则要求容器中必须有符合的对象来供注入。
-   - 在属性上或set方法上都能使用，前提是自动装配的属性在spring容器中存在，且符合xml中byName时的名字要求。
-   - **注意**：通过注解注入到IOC容器的对象的id值默认是其类名（首字母小写）。
-
-2. @Nullable：标记了这个注解的字段可以为null，任何类型的属性都可以加上。
-
-6. @Autowired和@Qualifier配合：
+5. @Autowired和@Qualifier配合：
 
    ```java
    @Autowired
@@ -881,8 +885,6 @@ public class Cat {
    // 使用@Qualifier(value = "cat2")从多个对象中指定一个对象配合@Autowired来注入
    ```
 
-7. @Resource：java的注解，如果有指定name值则先通过该指定的name的值去匹配，然后才是通过byName默认方式查找匹配，如果找不到才会再通过byType查找匹配（这时查找对象必须唯一，如果有同一类的多个对象则也会报错），当两种方式都找不到时，才会报错。（`@Resource(name = "")`——通过指定beanID来匹配到相应对象）
-
 @Autowired和@Resource的区别：
 
 1. 都是用来自动装配，都可以放在属性字段上或写在setter方法上。
@@ -890,17 +892,21 @@ public class Cat {
 3. @Resource默认通过byName方式实现，找不到则通过byType；如果两个都找不到则会报错。
 4. 执行顺序不同：@Autowired先通过byType的方式实现，@Resource先过byName方式实现。
 
-### xml中配置自动装配
+### 在xml中配置的自动装配
 
 自动装配：（三个过程：1.spring容器中有相应的bean，2.找到要注入的bean，3.spring自动寻找并为指定bean注入bean）
 
-1. 使用bean的自动装配属性：autowire，用来指定spring寻找bean的方式；
-2. `autowire：byName;`：在容器上下文中寻找和**setXxx方法**后面的值(xxx)对应的beanID（为声明了autowire的bean装配）；
-3. `autowire：byType;`：在容器上下文中寻找和自己对象**属性类型**相同的bean（为声明了autowire的bean装配）。
+使用bean的自动装配属性：（autowire，用来指定spring寻找bean的方式）
+
+1. `autowire="byName";`：在容器上下文中寻找和**setXxx方法**后面的值(xxx)对应的beanID（为声明了autowire的bean装配）。
+2. `autowire="byType";`：在容器上下文中寻找和自己对象**属性类型**相同的bean（为声明了autowire的bean装配）。
+3. `autowire="constructor"`：spring会找到当前bean所在类中所有的构造方法，然后将这些构造方法进行排序（先按修饰符进行排序，public的在前面，其他的在后面，如果修饰符一样的，会按照构造函数参数数量倒叙，也就是采用贪婪的模式进行匹配，spring容器会尽量多注入一些需要的对象）得到一个构造函数列表，会轮询这个构造器列表，判断当前构造器所有参数是否在容器中都可以找到匹配的bean对象，如果可以找到就使用这个构造器进行注入，如果不能找到，那么就会跳过这个构造器，继续采用同样的方式匹配下一个构造器，直到找到一个合适的为止。
 
 ```xml
-<bean id="person" class="com.lsl.pojo.People" autowire="byType">-->
-	<property name="name" ref=""/>
+<!-- 声明了autowire，就会为没有注入有数据的引用数据类型的属性自动装配数据 -->
+<bean id="person" class="com.lsl.pojo.People" autowire="byType">
+    <!-- 声明了自动装配，但仍然可以继续声明依赖注入 -->
+	<property name="name" val=""/>
 	......
 </bean>
 ```
@@ -936,18 +942,16 @@ sppring4.0之后，必须导入spring的aop的包；配置的约束、开启组�
 
 **几个主要注解：**
 
-1. @Component：组件，放于类上，说明这个类被spring管理了；相当于 `<bean id = "类名小写。。。" class = "com.lsl.pojo.类">`。
-2. @Value("")：相当于`<property name = "" value = ""/>`，放在属性字段上或写在setter方法上。
-3. @Component有几个衍生注解，我们在Web开发中会按照mvc三层架构。
-
+1. @Component：组件，放于类上，说明这个类被spring管理了；相当于 `<bean id = "类名小写。。。" class = "com.lsl.pojo.类">`。@Component有几个衍生注解，我们在Web开发中会按照mvc三层架构：
    - dao：@Repository；service：@Service；controller：@Controller。
    - @Component及其衍生的注解功能一样，都代表某个类注册到Spring中，装配Bean。
-4. 自动装配属性，自动依赖注入：
+2. @Value("")：相当于`<property name = "" value = ""/>`，放在属性字段上或写在setter方法上。
+3. 自动装配属性，自动依赖注入：
 
    - @Autowired：先通过类型匹配，匹配不成就使用名称来匹配，两种方式匹配不成功就会报错；使用@Autowired(required = false)，表示可以忽略当前要注入的bean，如果有就直接注入，没有就跳过，不会报错（如果有且按类型会名称都匹配不成功，无法注入，那就还是会报错）。
-   - @Nullable 注解可以使用在方法、属性、参数上，分别表示方法返回值可以为空、属性值可以为空、参数值可以为空。
+   - @Nullable：注解可以使用在方法、属性、参数上，分别表示方法返回值可以为空、属性值可以为空、参数值可以为空。
    - @Autowired和@Qualifier配合，使用@Qualifier(value="")来指定要注入的bean的名称。
-5. 作用域：@Scope("")，指定单例或其他。
+4. 作用域：@Scope("")，指定单例或其他。
 
 **小结，xml与注解：**
 
