@@ -917,6 +917,8 @@ public class Cat {
 2. 使用byType时，要保证所有声明了的bean的class唯一，并且这个bean需要和被注入的bean的属性的类型一致。
 3. 注入的是对象。
 
+
+
 ## xml与注解整合总结
 
 sppring4.0之后，必须导入spring的aop的包；配置的约束、开启组件扫描，如下：

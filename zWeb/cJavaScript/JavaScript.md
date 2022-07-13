@@ -218,7 +218,7 @@ console.log(typeof flag);
 console.log(typeof Boolean(flag));
 ```
 
-- NaN和数组相加为NaN，null和数字相加为数字本身。
+- NaN和数字相加为NaN，null和数字相加为数字本身。
 
 ![](img/转换为布尔.png)
 
@@ -325,7 +325,7 @@ JavaScript中switch语句可以使用所有的类型。
 for-in语句——用于枚举对象中非符号键属性：
 
 1. ```js
-   // 显示BOM对象window的所有属性  不能保证返回的对象属性的顺序
+   // 显示BOM对象window的所有属性名  不能保证返回的对象属性的顺序
    for (const objAttrName in window){ // const不是必须的，但是建议加上
        document.write(objAttrName);
    }
@@ -1054,9 +1054,9 @@ Node接口是所有节点都必须实现的，因此所有节点都共享相同�
 
 1. 每个节点都有nodeType属性，其值由Node接口定义的12个数值常量表示，常用的三个如下：
 
-   - 元素节点：Node.ELEMENT.NODE = 1。
-   - 属性节点：Node.ATTRIBUTE.NODE = 2。
-   - 文本节点：Node.TEXT.NODE = 3。
+   - 元素节点：Node.ELEMENT_NODE = 1。
+   - 属性节点：Node.ATTRIBUTE_NODE = 2。
+   - 文本节点：Node.TEXT_NODE = 3。
 
    ```js
    // 判断是否是元素节点

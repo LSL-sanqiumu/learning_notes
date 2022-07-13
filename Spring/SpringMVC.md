@@ -2003,7 +2003,7 @@ DispatcherServlet 本质上是一个 Servlet，所以天然的遵循 Servlet 的
 2. DispatcherServlet对请求URL进行解析，得到请求资源标识符（URI），判断请求URI对应的映射：
    1. 映射不存在：
       - 再判断是否配置了`mvc:default-servlet-handler`，如果没配置，则控制台报映射查找不到，客户端展示404错误。
-      - 如果有配置，则访问目标资源（一般为静态资源，如：JS,CSS,HTML），找不到客户端也会展示404错误。
+      - 如果有配置，则访问目标资源（一般为静态资源，如：JS、CSS、HTML），找不到客户端也会展示404错误。
    2. 映射存在， 存在则执行下面的流程：
       1. 根据该URI，调用HandlerMapping获得该Handler配置的所有相关的对象（包括Handler对象以及Handler对象对应的拦截器），最后以HandlerExecutionChain执行链对象的形式返回。
       2. DispatcherServlet 根据获得的Handler，选择一个合适的HandlerAdapter。
