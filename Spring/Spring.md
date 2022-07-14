@@ -663,7 +663,50 @@ setter方式注入就是利用set方法来进行注入的，注意通过set方�
 
 ### 工厂方法注入
 
-Spring IoC容器以框架的形式提供工厂方法的功能，因此很少
+Spring IoC容器以框架的形式提供工厂方法的功能，因此很少需要手动编写基于工厂方法的类。
+
+```java
+public class Cat {
+    private String name;
+    public void shout() {
+        System.out.println("我是一只猫，快乐的"+ this.name);
+    }
+    // get set
+}
+```
+
+工厂方法之静态方法注入：
+
+```java
+public class CatFactory {
+    public static Cat createCat() {
+        Cat cat = new Cat();
+        cat.setName("星猫");
+        return cat;
+    }
+}
+```
+
+```xml
+<bean id="cat" class="com.lsl.test.CatFactory" factory-method="createCat"/>
+```
+
+工厂方法之非静态方法注入：
+
+```java
+public class CatFactory {
+    public Cat createCat() {
+        Cat cat = new Cat();
+        cat.setName("星猫");
+        return cat;
+    }
+}
+```
+
+```xml
+<bean id="catFactory" class="com.lsl.test.CatFactory"/>
+<bean id="cat" factory-bean="catFactory" factory-method="createCat"/>
+```
 
 
 
@@ -710,7 +753,68 @@ JavaConfig就是**使用注解来描述Bean配置**的组件；JavaConfig是Spri
 
 依赖注入与自动装配，就像是一个手动来声明好注入的东西，一个则自动注入东西（自动注入的是对象，需要声明对象的发现机制以便确定使用哪些bean来进行注入，自动装配最终的注入还是得依赖getter、setter、构造器这些注入方式）。
 
-### 使用注解的自动装配
+### 纯xml配置自动装配
+
+自动装配：（三个过程：1.spring容器中有相应的bean，2.找到要注入的bean，3.spring自动寻找并为指定bean注入bean）
+
+使用bean的自动装配属性：（autowire，用来指定spring寻找bean的方式）
+
+1. `autowire="byName";`：在容器上下文中寻找到和**setXxx方法**后面的值(xxx)对应的beanID后进行装配。
+2. `autowire="byType";`：在容器上下文中寻找到和自己对象**属性类型**相同的bean后进行装配。
+3. `autowire="constructor"`：spring会找到当前bean所在类中所有的构造方法，然后将这些构造方法进行排序（先按修饰符进行排序，public的在前面，其他的在后面，如果修饰符一样的，会按照构造函数参数数量倒叙，也就是采用贪婪的模式进行匹配，spring容器会尽量多注入一些需要的对象）得到一个构造函数列表，会轮询这个构造器列表，判断当前构造器所有参数是否在容器中都可以找到匹配的bean对象，如果可以找到就使用这个构造器进行注入，如果不能找到，那么就会跳过这个构造器，继续采用同样的方式匹配下一个构造器，直到找到一个合适的为止。
+
+```xml
+<!-- 声明了autowire，就会为没有注入有数据的引用数据类型的属性自动装配数据 -->
+<bean id="person" class="com.lsl.pojo.People" autowire="byType">
+    <!-- 声明了自动装配，但仍然可以继续声明依赖注入 -->
+	<property name="name" val=""/>
+	......
+</bean>
+```
+
+总结：
+
+1. 使用byName时，要保证beanID唯一，并且这个bean需要和自动注入的属性的`setXxx()`方法的方法名后半部分一致（也就是说不包括set）。
+2. 使用byType时，要保证同一类别的bean唯一（不能存在多个同一类的bean对象），并且这个bean需要和被注入的bean的属性的类型一致。
+3. 注入的是对象。
+
+
+
+### JavaConfig+注解配置自动装配
+
+1、配置类开启注解扫描并注册好bean
+
+```java
+@Configuration
+@ComponentScan("com.lsl.test")
+public class SConfig {
+    @Bean
+    public Cat cat() {
+        Cat cat = new Cat();
+        cat.setName("熊猫");
+        return cat;
+    }
+}
+```
+
+2、装配：
+
+```java
+@Component
+public class MainTest {
+    @Autowired
+    Cat cat;
+    public static void main(String[] args) {
+        ApplicationContext app = new AnnotationConfigApplicationContext(SConfig.class);
+        MainTest mainTest = app.getBean("mainTest", MainTest.class);
+        mainTest.cat.shout();
+    }
+}
+```
+
+
+
+### 注解+XML配置自动装配
 
 spring从两个角度实现自动化装配：
 
@@ -779,13 +883,13 @@ spring从两个角度实现自动化装配：
 <context:component-scan base-package="com.lsl.useanno"/>
 ```
 
-#### 组件声明
+#### bean-组件声明
 
 组件声明可以在xml文件声明、使用JavaConfig来声明、使用注解来声明。
 
 使用注解标记要在IoC容器中创建对象的类：（这几个注解的功能是一样的——表明这个类被spring管理了）
 
-1. @Componet：常用于普通的类，说明这个类被spring管理了。
+1. @Component：常用于普通的类，说明这个类被spring管理了。
 2. @Service：常用于service层。
 3. @Controller：常用于web层，前端控制器。
 4. @Repository：常用于业务层。
@@ -807,7 +911,7 @@ public class ATest {
 }
 ```
 
-#### 装配
+#### 装配-自动注入
 
 如果是注入一些具体的值，可通过`@Value`注解来标记注入。	
 
@@ -891,31 +995,6 @@ public class Cat {
 2. @Autowired默认通过byType的方式实现，如果找不到再通过byName，如果两个都找不到则会报错。
 3. @Resource默认通过byName方式实现，找不到则通过byType；如果两个都找不到则会报错。
 4. 执行顺序不同：@Autowired先通过byType的方式实现，@Resource先过byName方式实现。
-
-### 在xml中配置的自动装配
-
-自动装配：（三个过程：1.spring容器中有相应的bean，2.找到要注入的bean，3.spring自动寻找并为指定bean注入bean）
-
-使用bean的自动装配属性：（autowire，用来指定spring寻找bean的方式）
-
-1. `autowire="byName";`：在容器上下文中寻找和**setXxx方法**后面的值(xxx)对应的beanID（为声明了autowire的bean装配）。
-2. `autowire="byType";`：在容器上下文中寻找和自己对象**属性类型**相同的bean（为声明了autowire的bean装配）。
-3. `autowire="constructor"`：spring会找到当前bean所在类中所有的构造方法，然后将这些构造方法进行排序（先按修饰符进行排序，public的在前面，其他的在后面，如果修饰符一样的，会按照构造函数参数数量倒叙，也就是采用贪婪的模式进行匹配，spring容器会尽量多注入一些需要的对象）得到一个构造函数列表，会轮询这个构造器列表，判断当前构造器所有参数是否在容器中都可以找到匹配的bean对象，如果可以找到就使用这个构造器进行注入，如果不能找到，那么就会跳过这个构造器，继续采用同样的方式匹配下一个构造器，直到找到一个合适的为止。
-
-```xml
-<!-- 声明了autowire，就会为没有注入有数据的引用数据类型的属性自动装配数据 -->
-<bean id="person" class="com.lsl.pojo.People" autowire="byType">
-    <!-- 声明了自动装配，但仍然可以继续声明依赖注入 -->
-	<property name="name" val=""/>
-	......
-</bean>
-```
-
-总结：
-
-1. 使用byName时，要保证beanID唯一，并且这个bean需要和自动注入的属性的set方法的方法名一致。
-2. 使用byType时，要保证所有声明了的bean的class唯一，并且这个bean需要和被注入的bean的属性的类型一致。
-3. 注入的是对象。
 
 
 

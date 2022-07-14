@@ -32,7 +32,7 @@ web.xml里配置中央调度器（也就是相当配置了一个servlet）：
     <servlet>
         <servlet-name>myspringmvc</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-        <!-- 初始化SpringMVC容器或Spring容器 -->
+        <!-- 初始化SpringMVC -->
         <init-param>
             <param-name>contextConfigLocation</param-name>
             <param-value>classpath:springmvc.xml</param-value> 
@@ -55,11 +55,14 @@ resources目录里的springmvc.xml配置，用来配置视图解析器和注解�
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-        https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+   http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
+   http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd">
+
     <!-- 组件扫描器，使注解生效 -->
     <context:component-scan base-package="com.lsl.controller"/>
     <!-- 视图器的配置，为了简化控制器的视图路径 -->
@@ -71,6 +74,8 @@ resources目录里的springmvc.xml配置，用来配置视图解析器和注解�
     </bean>
 </beans>
 ```
+
+
 
 ## 4、进行开发
 
@@ -95,7 +100,7 @@ springmvc的使用步骤：
 
 ## 中央调度器
 
-中央调度器DispatcherServlet，负责接收用户的对资源的请求，接收到请求后会调用控制器对象的处理器方法并返回请求处理结果（返回的是视图或其它）给前端来进行展示。DispatcherServlet是一个Servlet，其父类继承了HttpServlet，DispatcherServlet也叫做前端控制器（front controller）。通过中央调度器可以访问webapp下所有可访问的资源，访问WEB-INF目录下的资源则必须经中央调度器。
+中央调度器DispatcherServlet（Dispatcher——调度员），负责接收用户的对资源的请求，接收到请求后会调用控制器对象的处理器方法并返回请求处理结果（返回的是视图或其它）给前端来进行展示。DispatcherServlet是一个Servlet，其父类继承了HttpServlet，DispatcherServlet也叫做前端控制器（front controller）。通过中央调度器可以访问webapp下所有可访问的资源，访问WEB-INF目录下的资源则必须经中央调度器。
 
 **配置中央调度器如下：**
 
@@ -111,6 +116,7 @@ springmvc的使用步骤：
         <servlet-name>myspringmvc</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <!-- 上下文的配置（resource里的资源在导出后会加载进classpath），用于初始化SpringMVC容器 -->
+        <!-- mvc容器是spring容器的一个子容器 -->
         <init-param>
             <param-name>contextConfigLocation</param-name>
             <param-value>classpath:springmvc.xml</param-value> 
@@ -128,7 +134,7 @@ springmvc的使用步骤：
 **关于中央调度器的url-pattern：**
 
 1. 在没有特殊要求的情况下，常使用后缀匹配的方式，如设置为`*.do`用于匹配请求路径尾部带.do后缀的请求。
-2. 如果写成`/*`，所有的`.jsp`资源将失效，报404。
+2. 如果写成`/*`，只是所有的`.jsp`资源将失效，报404。
 3. 如果写成`/`（RESTful风格下会这样做），那么webapp根目录下的HTML、css、js、图片等静态资源将会失效，无法直接访问到并且也不能通过前端控制器访问到，此时必须要对静态资源进行处理才能访问（见目录：静态资源处理）。
 
 **关于init-param：**
@@ -181,17 +187,20 @@ init(){
 </bean>
 ```
 
-配置好上述的视图解析器后，`mv.setViewName("show")`  ===>  return mv后相当于转发到 `/WEB-INF/view/show.jsp`页面，返回的都将被加上视图解析器配置好的前后缀。
+配置好上述的视图解析器后，`mv.setViewName("show")`  ===>  return mv后相当于转发到 `/WEB-INF/view/show.html`页面，返回的都将被加上视图解析器配置好的前后缀。
 
 也可以使用thymeleaf的视图解析器（需要导入themeleaf的依赖），使用thymeleaf的模板引擎来渲染页面，配置如下：
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans
-        https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+   http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.1.xsd
+   http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.1.xsd
+   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
+   http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.1.xsd">
+
     <context:component-scan base-package="com.lsl.controller"/>
     <!-- 视图器的配置，为了简化控制器的视图路径 -->
     <!-- thymeleaf的视图解析器会与ContentNegotiatingViewResolver冲突 -->
@@ -212,7 +221,6 @@ init(){
         <property name="cacheable" value="false"/>
         <property name="characterEncoding" value="UTF-8"/>
     </bean>
-
 </beans>
 ```
 
@@ -366,7 +374,7 @@ public String test(@PathVariable("id") Long id) {
 }
 ```
 
-@PathVariable只支持一个属性value，类型是为String，代表绑定的路径变量。可不指定value，但此时接收形参的名称必须和接收的路径变量的变量名一致。 
+@PathVariable只支持一个属性value，类型是为String，代表绑定的路径变量。不指定value时，接收形参的名称必须和接收的路径变量的变量名一致。 
 
 ### @RequestParam
 
@@ -865,20 +873,40 @@ http(s)://server.com/app-name/{version}/{domain}/{rest-convention}
 
 # 静态资源处理
 
-Tomcat有一个默认的servlet（在conf目录的web.xml中）会在服务器启动时被创建，是用于处理HTML、css、js、图片等静态资源的，也可以处理未映射到其他servlet的请求。该默认的servlet的映射路径使用的是斜杠 `/`，如果在我们在配置servlet时也使用了这个斜杠，那么所有的请求将被中央调度器来处理，而此时中央调度器就没有了servlet对象来处理静态资源，这时会导致HTML、css、js、图片等静态资源无法加载，如果使用的是路径`/xxx`则静态资源可以访问到（当控制器对象只能处理请求，但是静态资源仍然无法访问，这时就需要配置静态资源处理。）
+静态资源失效：Tomcat有一个默认的servlet（在conf目录的web.xml中）会在服务器启动时被创建，是用于处理HTML、css、js、图片等静态资源的，也可以处理未映射到其他servlet的请求。该默认的servlet的映射路径使用的是斜杠 `/`，如果在我们在配置servlet时也使用了这个斜杠，那么所有的请求将被中央调度器来处理，而此时中央调度器就没有了servlet对象来处理静态资源，这时会导致HTML、css、js、图片等静态资源无法加载，如果使用的是路径`/xxx`则静态资源可以访问到（当控制器对象只能处理请求，但是静态资源仍然无法访问，这时就需要配置静态资源处理。）
 
-**处理静态资源的方法一：**在springmvc.xml中加入`<mvc:default-servlet-handler/>`
+默认首页跳转失效：
+
+```xml
+<!-- Tomcat的web.xml配置中配置有如下，该配置是由Tomcat默认的servlet来处理的，默认的servlet失效，该配置也就失效了 -->
+<welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+</welcome-file-list>
+```
+
+
+
+**处理静态资源失效的方法一：**在springmvc.xml中加入`<mvc:default-servlet-handler/>`
 
 1. 加入这个标签，会由框架创建控制器对象`DefaultHttpServletRequestHandler`，通过这个对象可实现把接收的请求转发给Tomcat中默认的servlet，从而实现对静态资源的访问。
 2. `<mvc:default-servlet-handler/>`和@RequestMapping注解会存在冲突，需要加上`<mvc:annotation-driven/>`来解决冲突。
 
-**处理静态资源的方法二：**springmvc.xml中加入`<mvc:resources mapping="" location=""/>`： 
+   ```xml
+   <mvc:default-servlet-handler/>
+   <mvc:annotation-driven/>
+   ```
+
+   
+
+**处理静态资源失效的方法二：**springmvc.xml中加入`<mvc:resources mapping="" location=""/>`： 
 
 1. mapping：访问静态资源的URI地址，使用通配符`**`， `mapping="images/**"`。
 
 2. location：静态资源在你的项目中的位置，`location="/images/"`。
 
-3. 加入此配置后框架会自动创建一个处理器对象（`ResourceHttpServletRequestHandler`），这个处理器对象用来处理静态资源的访问，这样就不用再依赖tomcat服务器的默认的servlet。该方法的`<mvc:resources mapping="" location=""/>`和@RequestMapping注解存在冲突，也需要加上`<mvc:annotation-driven/>`来开启mvc注解驱动、解决冲突。
+3. 加入此配置后框架会自动创建一个处理器对象（`ResourceHttpServletRequestHandler`），这个处理器对象用来处理静态资源的访问，这样就不用再依赖tomcat服务器的默认的servlet。该方法的`<mvc:resources mapping="" location=""/>`和`@RequestMapping`解存在冲突，也需要加上`<mvc:annotation-driven/>`来开启mvc注解驱动、解决冲突。
 
    ```xml
    <mvc:resources mapping="/html/**" location="/html/"/>
