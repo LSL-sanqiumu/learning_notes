@@ -10,12 +10,14 @@ JSON(JavaScript Object Notation, JS 对象简谱) 是一种轻量级的数据交
 
 JSON语法格式：
 
-- 花括号用来包裹对象，对象则表示为键值对，数据由逗号分隔；
-- 方括号保存数组。
+- 括号 **{}** 保存的对象是一个无序的**名称/值**对集合。
+- 中括号 **[]** 保存的数组是值（value）的有序集合。
 
 ```js
 var obj = {a: 'Hello', b: 'World'}; //这是一个JavaScript对象，注意键名也是可以使用引号包裹的
-var json = '{"a": "Hello", "b": "World"}'; //这是一个 JSON 字符串，本质是一个字符串
+// JSON 字符串，本质就是一个字符串（对象结构可含数组结构，数组结构可含对象结构）
+var json = '{"a": "Hello", "b": "World"}'; // 对象结构
+var jsonArray = '[1,2,3]';  //  数组结构
 ```
 
 ## 对象转换
@@ -89,7 +91,7 @@ web项目使用的到spring、servlet、springmvc、mybatis等配置好。
       <artifactId>jackson-databind</artifactId>
       <version>2.12.4</version>
     </dependency>
-	<!-- lombok是？ -->
+	<!-- lombok是用于通过注解标记来生成get、set、构造器 -->
     <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>

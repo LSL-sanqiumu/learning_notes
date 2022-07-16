@@ -650,22 +650,25 @@ class Customer extends Thread {
 10. **int compareTo(String anotherString)**：比较两个字符串的大小 
 11. **String substring(int beginIndex)**：返回一个新的从 beginIndex 开始截取到最后一个的子字符串
 12. **String substring(int beginIndex, int endIndex)** ：返回一个从beginIndex开始截取到endIndex(不包含)的一个子字符串
-13. **boolean endsWith(String suffix)**：测试此字符串是否以指定的后缀结束 
-14. **boolean startsWith(String prefix)**：测试此字符串是否以指定的前缀开始 
-15. **boolean startsWith(String prefix, int toffset)**：测试此字符串从指定索引开始的子字符串是否以指定前缀开始
-16. **boolean contains(CharSequence s)**：当且仅当此字符串包含指定的 char 值序列时，返回 true （判断某字符是否含某个子串）
-17. **int indexOf(String str)**：返回指定子字符串在此字符串中第一次出现处的索引 
-18. **int indexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中第一次出现处的索引，从指定的索引开始 
-19. **int lastIndexOf(String str)**：返回指定子字符串在此字符串中最右边出现处的索引 
-20. **int lastIndexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中最后 一次出现处的索引，从指定的索引开始反向搜索
-21. 【注】：indexOf()和lastIndexOf()方法如果未找到都是返回-1
-22. **String replace(char oldChar, char newChar)**：把某个字符串中的单个字符oldChar替换为newChar，返回的是新的字符串，它是通过用newChar替换此字符串中出现的所有oldChar 得到的。 
-23. **String replace(CharSequence target, CharSequence replacement)**：（字符序列的替换，只能是字面量）使用指定的字面值替换序列替换此字符串所有匹配字面值目标序列的子字符串。 
-24. **String replaceAll(String regex, String replacement)** ： 使用给定的replacement替换此字符串所有匹配给定的正则表达式的子字符串。 
-25. **String replaceFirst(String regex, String replacement)** ： 使用给定的replacement替换此字符串匹配给定的正则表达式的第一个子字符串。
-26. **boolean matches(String regex)**：告知此字符串是否匹配给定的正则表达式
-27. **String[] split(String regex)**：根据给定正则表达式的匹配拆分此字符串
-28. **String[] split(String regex, int limit)**：根据匹配给定的正则表达式来拆分此字符串，最多不超过limit个，如果超过了，剩下的全部都放到最后一个元素中
+
+
+
+1. **boolean endsWith(String suffix)**：测试此字符串是否以指定的后缀结束 
+2. **boolean startsWith(String prefix)**：测试此字符串是否以指定的前缀开始 
+3. **boolean startsWith(String prefix, int toffset)**：测试此字符串从指定索引开始的子字符串是否以指定前缀开始
+4. **boolean contains(CharSequence s)**：当且仅当此字符串包含指定的 char 值序列时，返回 true （判断某字符是否含某个子串）
+5. **int indexOf(String str)**：返回指定子字符串在此字符串中第一次出现处的索引 
+6. **int indexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中第一次出现处的索引，从指定的索引开始 
+7. **int lastIndexOf(String str)**：返回指定子字符串在此字符串中最右边出现处的索引 
+8. **int lastIndexOf(String str, int fromIndex)**：返回指定子字符串在此字符串中最后 一次出现处的索引，从指定的索引开始反向搜索
+9. 【注】：indexOf()和lastIndexOf()方法如果未找到都是返回-1
+10. **String replace(char oldChar, char newChar)**：把某个字符串中的单个字符oldChar替换为newChar，返回的是新的字符串，它是通过用newChar替换此字符串中出现的所有oldChar 得到的。 
+11. **String replace(CharSequence target, CharSequence replacement)**：（字符序列的替换，只能是字面量）使用指定的字面值替换序列替换此字符串所有匹配字面值目标序列的子字符串。 
+12. **String replaceAll(String regex, String replacement)** ： 使用给定的replacement替换此字符串所有匹配给定的正则表达式的子字符串。 
+13. **String replaceFirst(String regex, String replacement)** ： 使用给定的replacement替换此字符串匹配给定的正则表达式的第一个子字符串。
+14. **boolean matches(String regex)**：告知此字符串是否匹配给定的正则表达式
+15. **String[] split(String regex)**：根据给定正则表达式的匹配拆分此字符串
+16. **String[] split(String regex, int limit)**：根据匹配给定的正则表达式来拆分此字符串，最多不超过limit个，如果超过了，剩下的全部都放到最后一个元素中
 
 
 

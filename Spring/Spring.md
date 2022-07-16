@@ -1350,7 +1350,7 @@ JDK动态代理，使用到java.lang.reflext包下的几个类：
 
 对于装饰者模式没有对其装饰者的控制权的意思是，装饰者永远是对其被装饰者的功能进行提升的，就是被装饰着原有的东西在装饰者中不可以舍弃。例如你有一个刚刚买了的房子，在装修之后，人把厨房的门砌死了，装修完后少了个厨房，那就亏了，装饰者模式就是这个意思，它只是对被装饰者进行一层修饰，原有的东西不会改变。
 
-# AOP的实现与使用
+# AOP的使用
 
 ## 概述与术语
 
@@ -1410,7 +1410,7 @@ AOP全称Aspect Oriented Programming，意为面向切面编程，也叫做面�
 
 
 
-## 基于注解实现
+## 基于注解使用
 
 ### 注解说明
 
@@ -1499,7 +1499,7 @@ after切面在invoke()中用try finally 包裹业务代码。业务代码执行�
            try{
                System.out.println("演出前：手机静音");
                System.out.println("演出前：找座位坐下");
-               // 将控制权交给被通知的方法，如果不调用，就是阻塞被通知方法的访问
+               // joinPoint.proceed()-将控制权交给被通知的方法，如果不调用，就是阻塞被通知方法的访问
                //Signature signature = joinPoint.getSignature();//只是用来获取签名
                //System.out.println("signature:" + signature);
                joinPoint.proceed();
@@ -1542,9 +1542,9 @@ after切面在invoke()中用try finally 包裹业务代码。业务代码执行�
    2. **使用XML方式使切面生效：要在约束处声明好spring的aop命名空间** 
 
      ```xml
-     <!-- 启用AspectJ自动代理，会为使用@Aspect注解的类的bean创建一个代理 -->
-     <!-- 这个代理会围绕所有该切面的`切点所匹配的bean` -->
+     <!-- 注解驱动，启用AspectJ自动代理，会为使用@Aspect注解的类的bean创建一个代理（因此切面需要注册进IoC容器） -->
      <aop:aspectj-autoproxy /> 
+     <!-- 注册切面进IoC容器 -->
      <bean class="com.lsl.annotation.Audience"/> 
      <!-- 要创建接口实现类的对象，用于调用方法来观测结果 -->
      <bean id="p" class="com.lsl.pojo.PerformanceImpl"/>
@@ -1571,19 +1571,20 @@ after切面在invoke()中用try finally 包裹业务代码。业务代码执行�
 如果切面所要通知的目标方法（切入点）是有形参的方法，如何将传入的形参值传递给通知方法呢？可利用切点表达式来传参：
 
 ```java
-// 以@AfterReturning例，（其它的通知方法都可使用该方法）
-// .. 表示0到n个参数(也可以指定形参类型：performance(String,int,...))
-// args用来接收参数，接收的数量根据performance()的形参量而定，里面的变量名自定义
+/* 以@AfterReturning例，（其它的通知方法都可使用该方法）
+   .. 表示0到n个参数(也可以指定形参类型：performance(String,int))
+   args用来接收参数，接收的数量根据performance()的形参量而定，里面的变量名自定义 */
 @AfterReturning("execution(* com.lsl.pojo.PerformanceImpl.performance(..)) && args(num,age)")
-// 该方法的形参名必须和args里面的一致，而且类型也要匹配得上
+// 方法的形参名必须和args里面的一致，而且类型也要能匹配得上，否则接收失败
 public void afterReturning(String num,int age){
     System.out.println("afterReturning" + num + age);
 }
+// 注意：此时不能结合@Point来简化
 ```
 
 
 
-## 基于XML配置实现
+## 基于XML配置使用
 
 ### 命名空间
 
@@ -1609,7 +1610,7 @@ XML的aop命名空间：
 
 以上面使用注解实现的代码为例，去掉Audience类的注解，然后在XML文件里根据以下操作进行配置：
 
-1. 使用除Around外的通知：
+1. 使用除Around外的通知：（在配置文件中注册切面、切点以及通知方法）
 
    ```xml
    <!-- 需要把用到的类注册到IoC容器中 -->
@@ -1640,7 +1641,7 @@ XML的aop命名空间：
    需要实现接口MethodBeforeAdvice、AfterAdvice、AfterReturningAdvice -->
    ```
 
-2. 使用环绕通知：
+   使用环绕通知：
 
    ```xml
    <bean id="p" class="com.lsl.pojo.PerformanceImpl"/>
@@ -1648,13 +1649,12 @@ XML的aop命名空间：
    <aop:config>
        <aop:aspect ref="as">
            <aop:pointcut id="performance" expression="execution(* com.lsl.pojo.Performance.perform(..))"/>
-           <!-- 环绕通知的方法声明不变 -->		
            <aop:around method="watchPro" pointcut-ref="performance"/>
        </aop:aspect>
    </aop:config>
    ```
 
-3. 测试：
+2. 测试：
 
    ```java
    ApplicationContext app = new ClassPathXmlApplicationContext("beans.xml");
@@ -1666,7 +1666,7 @@ XML的aop命名空间：
 
 ## 基于Spring的API接口和XML
 
-1. 定义切面类实现spring的MethodBeforeAdvice或AfterReturningAdvice接口，并重写方法；
+1. 定义切面类实现spring的MethodBeforeAdvice或AfterReturningAdvice接口，并重写方法：
 
   ```java
   public class BeforeLog implements MethodBeforeAdvice {
@@ -1685,7 +1685,7 @@ XML的aop命名空间：
   // afterReturning()方法参数说明：第一个Object类型的是被通知方法的返回值，其他的和before()的一致
   ```
 
-2. XML配置
+2. XML配置：
 
   ```xml
   <bean id="afterLog" class="com.lsl.pojo.AfterLog"/>

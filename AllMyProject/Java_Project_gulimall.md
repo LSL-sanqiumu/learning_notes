@@ -104,9 +104,9 @@ Maven：3.6.1。
 
 IDEA插件：MyBatisX、Lombok。
 
-VScode插件：Auto CloseTag、Auto Rename Tag、ESLint、HTMLCSS Support、HTML Snippets、JavaScript(ES6)、LiverServer、OpenInBrowser、Vetur。
+VScode插件：Auto CloseTag、Auto Rename Tag、ESLint、HTMLCSS Support、HTML Snippets、JavaScript(ES6)、LiverServer、OpenInBrowser、Vetur、
 
-HTML Snippets
+HTML Snippets：
 
 1. Vetur —— 语法高亮、智能感知、Emmet 等 包含格式化功能， Alt+Shift+F （格式化全文），Ctrl+K Ctrl+F（格式化选中代码，两个 Ctrl 需要同时按着）
 2. EsLint —— 语法纠错 
@@ -123,70 +123,61 @@ Git仓库：gulimall。
 
 ## 1.微服务搭建
 
-1、在gulimall主目录里创建这些Maven模块——包为com.learn.gulimall.xxx (ware、orderd、...)，模块名为——（gulimall-product（商品服务）、gulimall-order（订单服务）、gulimall-ware（仓储服务）、gulimall-coupon（优惠卷服务）、gulimall-member（会员服务）），然后通过SpringBoot的向导来创建，然后修改各项目的pom.xml文件：（需要修改artifactId、name、description）
+1、在gulimall主目录里创建这些Maven模块——包为com.learn.gulimall.xxx (ware、orderd、...)，模块名为——（gulimall-product（商品服务）、gulimall-order（订单服务）、gulimall-ware（仓储服务）、gulimall-coupon（优惠卷服务）、gulimall-member（会员服务）），然后通过SpringBoot的向导来创建，然后修改各项目的pom.xml文件：（需要修改artifactId、name、description，模板如下）
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
+
+<modelVersion>4.0.0</modelVersion>
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.2.13.RELEASE</version>
+    <relativePath/> <!-- lookup parent from repository -->
+</parent>
+<description>谷粒商城-商品服务</description>
+<properties>
+    <java.version>1.8</java.version>
+    <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
+</properties>
+<dependencies>
+    <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.13.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
-    <groupId>com.learn.gulimall</groupId>
-    <artifactId>gulimall-product</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <name>gulimall-product</name>
-    <description>谷粒商城-商品服务</description>
-    <properties>
-        <java.version>1.8</java.version>
-        <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
-    </properties>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-openfeign -->
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-openfeign</artifactId>
+        <version>2.2.10.RELEASE</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+
+</dependencies>
+<dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-openfeign -->
-        <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-openfeign</artifactId>
-            <version>2.2.10.RELEASE</version>
+            <artifactId>spring-cloud-dependencies</artifactId>
+            <version>${spring-cloud.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
     </dependencies>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.cloud</groupId>
-                <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>2.2.13.RELEASE</version>
-            </plugin>
-        </plugins>
-    </build>
-
-</project>
+</dependencyManagement>
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>2.2.13.RELEASE</version>
+        </plugin>
+    </plugins>
+</build>
 ```
 
 2、将gulimall设置为总项目——添加一个pom.xml，如下：
@@ -209,13 +200,6 @@ Git仓库：gulimall。
         <module>gulimall-order</module>
         <module>gulimall-ware</module>
     </modules>
-
-    <properties>
-        <java.version>1.8</java.version>
-        <spring-cloud.version>Greenwich.SR3</spring-cloud.version>
-    </properties>
-
-
 </project>
 ```
 
@@ -230,9 +214,9 @@ Git仓库：gulimall。
 **/.gitignore
 ```
 
-4、提交并push。
+4、提交并push到Gitee。
 
-## 2.数据2库初始化
+## 2.数据库初始化
 
 数据库：数据库使用utf8mb4
 
@@ -242,11 +226,11 @@ Git仓库：gulimall。
 
 ![](java_imgs/2.db.png)
 
+## 3-4第三方组件的使用
 
+### 3.人人开源后台管理系统搭建
 
-## 3.人人开源后台管理系统搭建
-
-### renren-fast
+#### renren-fast
 
 [renren-fast: renren-fast是一个轻量级的Spring Boot2.1快速开发平台，其设计目标是开发迅速、学习简单、轻量级、易扩展；使用Spring Boot、Shiro、MyBatis、Redis、Bootstrap、Vue2.x等框架，包含：管理员列表、角色管理、菜单管理、定时任务、参数管理、代码生成器、日志管理、云存储、API模块(APP接口开发利器)、前后端分离等。 (gitee.com)](https://gitee.com/renrenio/renren-fast)
 
@@ -271,7 +255,7 @@ Git仓库：gulimall。
 
 启动并访问`localhost:8080/renren-fast/`测试，返回json字符串即可。
 
-### renren-vue
+#### renren-vue
 
 1、拉取项目到本地
 
@@ -294,9 +278,9 @@ registry = https://registry.npm.taobao.org/
 
 登录账户：admin；密码：admin。
 
-## 4.使用renren-generator代码生成器
+### 4.使用renren-generator代码生成器
 
-### 以生成gulimall-product模块的基本CRUD代码为例
+以生成gulimall-product模块的基本CRUD代码为例
 
 1、克隆：[renren-generator: 人人开源项目的代码生成器，可在线生成entity、xml、dao、service、vue、sql代码，减少70%以上的开发任务 (gitee.com)](https://gitee.com/renrenio/renren-generator)，然后删除里面的.git文件。
 
@@ -310,7 +294,7 @@ registry = https://registry.npm.taobao.org/
 
 ![](java_imgs/6.generator_code.png)
 
-然后把生成的代码放进gulimall-product里，controller、service、dao、entity以及mapper，如下：
+然后把生成的代码（controller、service、dao、entity以及mapper）放进gulimall-product里，如下：
 
 ![](java_imgs/7.copyparse.png)
 
@@ -512,6 +496,247 @@ mybatis-plus:
 3. order：`http://localhost:9000/order/order/list`。
 4. product：`http://localhost:10000/product/attr/list`。
 5. ware：`http://localhost:11000/ware/purchase/list`。
+
+## 6.微服务
+
+| Spring Cloud Aalibaba | Spring Cloud                | Spring Boot   |
+| --------------------- | --------------------------- | ------------- |
+| 2.2.0.RELEASE         | Spring Cloud Hoxton.RELEASE | 2.2.X.RELEASE |
+
+spring-cloud-alibaba-dependencies包含了它所使用的所有依赖的版本，这将允许您省略任何 Maven 依赖项的版本：（Spring Cloud 同理）
+
+```xml
+<dependencyManagement> 
+	<dependencies> 
+		<dependency>
+			<groupId>com.alibaba.cloud</groupId>
+			<artifactId>spring-cloud-alibaba-dependencies</artifactId>
+			<version>2.2.0.RELEASE</version>
+			<type>pom</type>
+			<scope>import</scope>
+		</dependency>
+	</dependencies>
+</dependencyManagement>
+```
+
+### Nacos-服务注册
+
+1、安装好Nacos 1.1.4版本，并配置好数据库、修改好配置文件。
+
+2、依赖
+
+```xml
+<dependency>
+    <groupId>com.alibaba.cloud</groupId>
+    <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+</dependency>
+```
+
+3、服务注册
+
+```yaml
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+  application:
+    name: gulimall-coupon
+```
+
+### Open-Feign-服务调用
+
+1、依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-openfeign -->
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+</dependency>
+```
+
+2、启动类加上@EnableFeignClients注解。
+
+3、创建接口（用于声明调用注册中心中哪个微服务的哪个方法；接口内抽象方法——直接将所要调用的微服务中的controller方法的声明复制过来即可）：
+
+```java
+@Component
+// 指定哪个微服务 cloud-payment-service 为微服务注册在eureka里的application 名字
+@FeignClient(value="gulimall-coupon")
+public interface TestInter {
+    @RequestMapping("coupon/coupon/list")
+    public R list(@RequestParam Map<String, Object> params);
+}
+```
+
+4、创建controller方法，将接口实现的bean注册进去使用就好，就可以调用其方法来实现访问另一个服务的目的。
+
+```java
+@RestController
+@RequestMapping("member/member/")
+public class TestController {
+    @Resource
+    TestInter testInter;
+
+}
+```
+
+### Nacos-配置中心
+
+集中管理配置，实现动态更新配置。
+
+1、引入Nacos Config Starter：
+
+```xml
+ <dependency>
+     <groupId>com.alibaba.cloud</groupId>
+     <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+ </dependency>
+```
+
+2、在应用的 /src/main/resources/创建一个 bootstrap.properties 配置文件并配置 Nacos Config 元数据，用来指定需要为当前微服务加入哪些注册中心的哪些配置：
+
+```properties
+ # 项目名称
+ spring.application.name=gulimall-member
+ # 配置中心地址
+ spring.cloud.nacos.config.server-addr=127.0.0.1:8848
+ # 加载该命名空间下所有的配置（命名空间的值只能填生成的命名空间ID）
+ #spring.cloud.nacos.config.namespace=da51ea07-30a3-465c-a555-ce56f3139485 
+ # 只加载分组为dev的配置
+ spring.cloud.nacos.config.group=dev
+```
+
+3、在Nacos配置中心前端页面上的配置管理加上配置集（data ID），默认设置为 应用名.properties，添加上配置信息。
+
+![](java_imgs/9.config.png)
+
+4、**如果配置中心和当前应用的配置文件中有相同的配置，优先使用配置中心的**。（测试：使用注解`@RefreshScope、@Value("${配置项名称}")`动态获取配置）
+
+概念与细节：
+
+1. 命名空间：配置隔离，默认的是public命名空间
+   - 开发、测试、生产，利用命名空间来做环境管理。
+   - 每一个微服务之间相互隔离配置，每一个微服务都创建自己的命名空间，这样只加载自己的命名空间。
+2. 配置集（Data ID）：配置集合，类似于文件夹名。
+3. 配置分组（Group）：默认所有的配置集都属于DEFAULT_GROUP。
+   - （每个微服务创建自己的命名空间，配置分组用于区分环境：dev、test、prod）
+
+**多配置集的加载：**（配置中心中创建好命名空间、分组、配置文件）
+
+```properties
+spring.application.name=gulimall-member
+spring.cloud.nacos.config.server-addr=127.0.0.1:8848
+spring.cloud.nacos.config.namespace=da51ea07-30a3-465c-a555-ce56f3139485 
+# 使用配置中心中该名称的配置
+spring.application.ext-config[0].data-id=mybatis.yml
+# 这个分组的配置
+spring.application.ext-config[0].group=dev
+# 自动更新
+spring.application.ext-config[0].refresh=true
+# 加载更多
+spring.application.ext-config[1].data-id=datasource.yml
+spring.application.ext-config[1].group=dev
+spring.application.ext-config[1].refresh=true
+
+spring.application.ext-config[2].data-id=other.yml
+spring.application.ext-config[2].group=dev
+spring.application.ext-config[2].refresh=true
+```
+
+**微服务的任和配置信息，都可以放在配置中心中，只需要 bootstrap.properties 说明加载配置中心中哪些配置文件。**SpringBoot中任何获取配置文件信息的注解也可以使用，可以获取到动态的配置信息。
+
+### Gateway网关
+
+网关，流量的入口，常用功能——路由转发、权限校验、限流控制。
+
+1、创建SpringBoot项目：gulimall-gateway。
+
+2、依赖：
+
+```xml
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.2.13.RELEASE</version>
+    <relativePath/> <!-- lookup parent from repository -->
+</parent>
+<properties>
+    <java.version>1.8</java.version>
+    <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
+</properties>
+<dependencies>
+    <dependency>
+        <groupId>com.learn.gulimall</groupId>
+        <artifactId>gulimall-common</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-gateway</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-dependencies</artifactId>
+            <version>${spring-cloud.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+3、开启服务注册发现
+
+```java
+// exclude：排除数据源的自动配置，网关不需要连接数据库
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+@EnableDiscoveryClient
+public class GulimallGatewayApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(GulimallGatewayApplication.class, args);
+    }
+
+}
+```
+
+4、配置、测试：（访问：`localhost/?url=baidu`）
+
+```yaml
+server:
+  port: 80
+spring:
+  application:
+    name: gulimall-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+    gateway:
+      enabled: true
+      routes:
+        - id: test_route
+          uri: https://www.baidu.com
+          predicates:
+            - Query=url,baidu
+```
+
+
 
 
 
