@@ -160,7 +160,7 @@ docker三件套：
 
 常用OPTION说明：
 
-- `--name="容器新名字"`：为容器指定一个名称；`-d`:：后台运行容器并返回容器ID，也即启动守护式容器(后台运行)。
+- `--name="容器新名字"`：为容器指定一个名称；`-d`：后台运行容器并返回容器ID，也即启动守护式容器(后台运行)。
 
 - `-i`：以交互模式运行容器，通常与 -t 同时使用；`-t`：为容器重新分配一个伪输入终端；通常与 -i 同时使用，也就是启动交互式容器（前台有伪终端，等待交互）。`docker run -it centos /bin/bash`：使用镜像`centos:latest`以交互模式启动一个容器，在容器内执行`/bin/bash`命令。
 
@@ -186,7 +186,7 @@ OPTIONS说明（常用）：
 **3.退出容器的两种方式：**
 
 1. `exit`：run容器后，执行exit退出时容器会停止，容器停止并不代表容器被删除。
-2. `ctrl + p + q`：run容器后，同时执行这三个键退出容器时容器不会停止。
+2. `ctrl + p + q`：run容器后，快速执行这三个键退出容器时容器不会停止。
 
 **4.启动已经停止的容器：**`docker start 容器ID或容器名称`。
 
@@ -222,7 +222,7 @@ OPTIONS说明（常用）：
    2. `docker attach 容器ID或容器名称`。
    3. 两个命令的区别：attach直接进入容器启动命令的终端，不会启动新的线程，使用exit退出时会导致容器停止；exec是在容器中打开新的终端，并且可以启动新的线程，使用exit退出不会导致容器停止。
 
-**10：从容器内拷贝文件到主机：**`docker cp 容器ID:容器内文件路径 目的主机路径`。
+**10：将容器内文件拷贝到主机：**`docker cp 容器ID:容器内文件决对路径 目的主机绝对路径`。
 
 **11：导入和导出容器：**
 
@@ -411,23 +411,23 @@ tomcat8-jdk8：
 
    - `cd  /backupdata/mysql/conf`，`vi my.cnf`。 
 
-     ```
+     ```properties
      [client]
      default_character_set=utf8mb4
      [mysqld]
      character_set_server=utf8mb4
      ```
      
-     ```
+     ```properties
      # 其他配置文件示例-配置utf8mb4_unicode_ci
      [client]
      default-character-set=utf8mb4
      [mysql]
      default-character-set=utf8mb4
      [mysqld]
-     collation-server = utf8mb4_unicode_ci
+     collation-server=utf8mb4_unicode_ci
      init-connect='SET NAMES utf8mb4'
-     character-set-server = utf8mb4
+     character-set-server=utf8mb4
      ```
 
 4. `docker exec -ti mysql bash`。

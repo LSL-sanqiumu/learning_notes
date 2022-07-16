@@ -54,19 +54,22 @@ XMLHttpRequest对象的方法：
 | `getResponseHeader()`                | 获取响应的特定的头部信息                                     |
 | `open(method, url, async, user psw)` | 打开通道，规定请求<br>method：请求类型 GET 或 POST ；url：文件位置async：true（异步）或 false（同步）；user：可选的用户名称；psw：可选的密码 |
 | `send()`                             | 将请求发送到服务器，用于 GET 请求                            |
-| `send(string)`                       | 将请求发送到服务器，用于 POST 请求                           |
+| `send(string)`                       | 将请求发送到服务器，用于 POST 请求<br>string是要提交的参数   |
 | `setRequestHeader()`                 | 向要发送的报头添加标签/值对                                  |
 
 XMLHttpRequest对象的属性：
 
 | 属性                 | 描述                                                         |
 | :------------------- | :----------------------------------------------------------- |
-| `onreadystatechange` | 定义当 readyState 属性发生变化时被调用的函数                 |
+| `onreadystatechange` | 一个事件——当 readyState 属性发生变化时                       |
+| `onerror`            | 事件——连接错误                                               |
+| `ontimeout`          | 事件——连接超时                                               |
 | `readyState`         | 记录保存了 XMLHttpRequest 的状态。0：请求未初始化     1：服务器连接已建立     2：请求已收到    3：正在处理请求    4：请求已完成且响应已就绪 |
 | `responseText`       | 将服务器响应的数据以 字符串 返回                             |
 | `responseXML`        | 将服务器响应的数据以 XML数据 返回                            |
 | `status`             | 返回请求的状态号；200: "OK"    403: "Forbidden"   404: "Not Found" |
 | `statusText`         | 返回状态文本（比如 "OK" 或 "Not Found"）                     |
+| `timeout`            | 超时时间毫秒数，用来设置连接允许的最长响应时间，然后超过这个时间不响应则是连接超时 |
 
 # 发起Ajax请求
 
@@ -416,7 +419,7 @@ public class AjaxRequest6Servlet extends HttpServlet {
    - 响应返回中文的时候，会出现乱码，怎么解决？
 
      ```java
-     // 设置响应内容类型
+     // 设置响应内容类型和编码
      response.setContentType("text/html;charset=UTF-8");
      ```
 
@@ -430,7 +433,7 @@ public class AjaxRequest6Servlet extends HttpServlet {
 ## 超时与网络异常
 
 ```js
-xhr.timeout = 2000; // ms数，如果超过这个时间会取消请求
+xhr.timeout = 2000; // 毫秒数，如果连接超过这个时间就会取消请求
 // 连接超时事件
 xhr.ontimeout = function(){
     alert("网络异常，请稍后重试！！！");
