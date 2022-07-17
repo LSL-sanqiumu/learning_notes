@@ -1,3 +1,30 @@
+# SpringCloud
+
+Martin Fowler：**简而言之，微服务架构的风格，就是将单一程序开发成一个微服务， 每个微服务运行在自己的进程中，并使用轻量级通信机制，通常是 HTTP RESTFUL API 。这些服务围绕业务能力来划分构建的，并通 过完全自动化部署机制来独立部署这些服务可以使用不同的编程语 言，以及不同数据存储技术，以保证最低限度的集中式管理。**
+
+SpringCloud、SpringBoot、SpringCloud Alibaba版本对应关系，看官方文档。
+
+SpringCloud 常用组件：
+
+1. 服务的注册和发现。（eureka（netflix）、nacos（Alibaba）、consul（Spring官方）） 
+2. 服务的负载均衡。(ribbon（netflix）、dubbo（Alibaba）) 
+3. 服务的相互调用。（openFeign、dubbo） 
+4. 服务的容错。（hystrix（netflix），sentinel（Alibaba）） 
+5. 服务网关。（gateway（官方的），zuul（netflix）） 
+6. 服务配置的统一管理。（config-server、nacos、apollo） 
+7. 服务消息总线。(bus) 
+8. 服务安全组件。(security、Oauth2.0) 
+9. 服务监控。（admin）（jvm） 
+10. 链路追踪。（sleuth+zipkin）
+
+SpringCloud 就是微服务理念的一种具体落地实现方式，帮助微服务架构提供了必备的功能，目前开发中常用的落地实现有三种： 
+
+1. Dubbo+Zookeeper——半自动化的微服务实现架构 (别的管理没有) 。
+2. SpringCloud Netflix——一站式微服务架构 。
+3. SpringCloud Alibaba——新的一站式微服务架构。
+
+三大公司——Spring、Netflix、Alibaba。
+
 # 概述
 
 微服务架构是一种架构模式，它提倡将单一的应用程序划分为一组小的服务-也就是微服务，服务之间互相协调、互相配合，为用户提供最终价值。每个微服务运行在其独立的进程中，服务与服务间采用轻量级的通信机制互相协作（通常是基于HTTP协议的RESTfulAPI）。每个服务都围绕着具体的业务进行构建，并且能够被独立地部署到生产环境、类生产环境等。另外，为了避免统一的、集中式的服务管理机制，对具体一个服务而言，应该根据业务上下文，选择合适的语言、工具对其进行构建。
@@ -90,13 +117,13 @@ File -> Settings -> Build -> Complier 下面项勾选以下四个选项：
 
 ### 关于服务注册与发现
 
-什么是服务治理？
+**什么是服务治理？**
 
 Spring Cloud封装了Netflix 公司开发的Eureka模块来实现服务治理。
 
 在传统的RPC远程调用框架中，管理每个服务与服务之间依赖关系比较复杂，管理比较复杂，所以需要使用服务治理，**管理服务与服务之间依赖关系**，可以实现服务调用、负载均衡、容错等，实现服务发现与注册。
 
-什么是服务注册与发现？
+**什么是服务注册与发现？**
 
 Eureka采用了C/S的设计架构，Eureka Sever作为服务注册功能的服务器，它是服务注册中心。而系统中的其他微服务，使用Eureka的客户端连接到 Eureka Server并维持心跳连接。这样系统的维护人员就可以通过Eureka Server来监控系统中各个微服务是否正常运行。
 
@@ -104,182 +131,142 @@ Eureka采用了C/S的设计架构，Eureka Sever作为服务注册功能的服�
 
 ![](img/9.eurekaserver.png)
 
-Eureka包含两个组件：Eureka Server和Eureka Client
+**Eureka包含两个组件：Eureka Server和Eureka Client**
 
 1. Eureka Server：提供服务注册服务
    - 各个微服务节点通过配置启动后，会在EurekaServer中进行注册，这样EurekaServer中的服务注册表中将会存储所有可用服务节点的信息，服务节点的信息可以在界面中直观看到。
 2. EurekaClient：通过注册中心进行访问
    - 它是一个Java客户端，用于简化Eureka Server的交互，客户端同时也具备一个内置的、使用轮询（round-robin）负载算法的负载均衡器。在应用启动后，将会向Eureka Server发送心跳（默认周期为30秒）。如果Eureka Server在多个心跳周期内没有接收到某个节点的心跳，EurekaServer将会从服务注册表中把这个服务节点移除（默认90秒)。
 
-### 1.搭建注册中心
+**Spring Cloud Eureka 和 Zookeeper 的区别？问：为什么 zookeeper 不适合做注册中心？**
 
-1. 建module：cloud-eureka-server7001。
-2. 改pom。
+![](img/5.集群.png)
+
+在分布式微服务集群里面 CAP 定理 （CAP 原则又称 CAP 定理）， CAP 原则指的是，这三个要素最多只能同时实现两点（CP或AP），不可能三者兼顾：
+
+1.  一致性（Consistency）：同一功能的各个微服务的数据一致。
+2.  可用性（Availability）：某一个节点宕机了，但整个集群仍可以对外提供服务。
+3.  分区容错性（Partition tolerance）：这个特性是不可避免的，原因是由网络或分区等原因造成的数据同步不能同时完成，从而出现的同一功能的各个服务间数据会出现一定时刻内数据不完全一致。
+
+zookeeper 遵循CP原则：注重数据的一致性，但某个节点挂了，整个服务在几分钟的时间内不能提供服务。（注册中心，配置文件中心，协调中心）
+
+Eureka注重AP原则：数据可能不一致、注重服务的可用性。（注册中心）
+
+
+
+### Eureka-Server注册中心
+
+1. 项目创建。
+2. 添加依赖。
+
+   ```xml
+   <parent>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-parent</artifactId>
+       <version>2.3.12.RELEASE</version>
+       <relativePath/> <!-- lookup parent from repository -->
+   </parent>
+   <properties>
+       <java.version>1.8</java.version>
+       <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
+   </properties>
+   <dependencies>
+       <!-- eureka-server的依赖 -->
+       <dependency>
+           <groupId>org.springframework.cloud</groupId>
+           <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+       </dependency>
+   </dependencies>
+   <dependencyManagement>
+       <dependencies>
+           <dependency>
+               <groupId>org.springframework.cloud</groupId>
+               <artifactId>spring-cloud-dependencies</artifactId>
+               <version>${spring-cloud.version}</version>
+               <type>pom</type>
+               <scope>import</scope>
+           </dependency>
+       </dependencies>
+   </dependencyManagement>
+   ```
 3. 写YML。
+
+   ```yaml
+   server:
+     port: 7001
+   
+   eureka:
+     instance:
+       hostname: localhost # eureka服务端的实例名称
+     client:
+       # false表示不向注册中心注册自己。
+       register-with-eureka: false
+       # false表示自己就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
+       fetch-registry: false
+       service-url:
+         # 设置与Eureka server交互的地址查询服务和注册服务都需要依赖这个地址。
+         defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+   ```
 4. 主启动。
-5. 测试运行`EurekaMain7001`，浏览器输入`http://localhost:7001/`并回车，会查看到Spring Eureka服务主页。
+
+   ```java
+   @SpringBootApplication
+   @EnableEurekaServer
+   public class EurekaMain7001 {
+       public static void main(String[] args) {
+           SpringApplication.run(EurekaMain7001.class,args);
+       }
+   }
+   ```
+5. 测试：运行项目，浏览器访问`http://localhost:7001/`，会查看到Spring Eureka服务主页。
 6. 业务类。
-
-pom.xml：
-
-```xml
-<dependencies>
-    <!--eureka-server 2020.2-->
-    <dependency>
-        <groupId>org.springframework.cloud</groupId>
-        <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
-    </dependency>
-    <!-- 引入自己定义的api通用包，可以使用Payment支付Entity -->
-    <dependency>
-        <groupId>com.lsl.springcloud</groupId>
-        <artifactId>cloud-api-commons</artifactId>
-        <version>${project.version}</version>
-    </dependency>
-    <!--boot web actuator-->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-    <!-- 用于检测系统的健康情况、当前的Beans、系统的缓存等 -->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-actuator</artifactId>
-    </dependency>
-</dependencies>
-```
-
-application.xml：
-
-```yaml
-server:
-  port: 7001
-
-eureka:
-  instance:
-    hostname: localhost #eureka服务端的实例名称
-  client:
-    #false表示不向注册中心注册自己。
-    register-with-eureka: false
-    #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
-    fetch-registry: false
-    service-url:
-      #设置与Eureka server交互的地址查询服务和注册服务都需要依赖这个地址。
-      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
-```
-
-主启动：
-
-```java
-@SpringBootApplication
-@EnableEurekaServer
-public class EurekaMain7001 {
-    public static void main(String[] args) {
-        SpringApplication.run(EurekaMain7001.class,args);
-    }
-}
-```
 
 浏览器输入`http://localhost:7001/`并回车，会查看到Spring Eureka服务主页：
 
-<img src="img/10.eurekaPage.png" style="zoom: 67%;" />
+![](img/4.eurekaPage.png)
 
+### Eureka-Server配置说明
 
-
-
-
-### 2.服务注册-支付服务入驻
-
-EurekaClient端`cloud-provider-payment8001`将注册进EurekaServer成为服务提供者provider（就像老师入驻学校提供教学服务）。需要在`cloud-provider-payment8001`中进行入驻操作，入驻操作如下：
-
-1. 加入依赖。
-2. 写YML。
-3. 主启动类加注解：`@EnableEurekaClient`。
-4. 测试。
-
-依赖：
-
-```xml
-<!--eureka-client-->
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-</dependency>
-```
-
-application.yml新加：
-
-```yaml
-eureka:
-  client:
-    #表示是否将自己注册进Eurekaserver默认为true。
-    register-with-eureka: true
-    #是否从EurekaServer抓取已有的注册信息，默认为true。单节点无所谓，集群必须设置为true才能配合ribbon使用负载均衡
-    fetchRegistry: true
-    service-url:
-      defaultZone: http://localhost:7001/eureka
-```
-
-测试：
-
-1. 启动`cloud-provider-payment8001`和`cloud-eureka-server7001`工程。
-
-2. 进入Spring Eureka服务主页：http://localhost:7001/ 。
-
-3. 查看主页的`Instances currently registered with Eureka`：会显示`cloud-provider-payment8001`应用名（`cloud-provider-payment8001`的application.yml文件设置的spring.application.name：
-
-   ```yaml
-   spring:
-     application:
-       name: cloud-payment-service
-   ```
-
-![](img/11.payment-eureka.png)
-
-**自我保护机制：**（后面会详细说）
-
-测试时eureka首页可能会出现如下的情况：
-
-![](img/16.自我保护机制.png)
-
-紧急情况！EUREKA可能错误地声称实例在没有启动的情况下启动了。续订小于阈值，因此实例不会为了安全而过期。
-
-### 3.服务注册-订单服务入驻
-
-在`cloud-provider-order80`进行入驻操作：
-
-1. 加入依赖，与上个服务入驻的一致。
-2. 修改YML。
-3. 主启动添加注解：`@EnableEurekaClient`。
-4. 测试，与上个服务入驻的一致。
-
-application.yml：
+Eureka-Server既是服务端，也可以是客户端。
 
 ```yaml
 server:
-  port: 80
-
+	port: 8761
 spring:
-  application:
-    name: cloud-order-service
-
+	application:
+		name: eureka-server
 eureka:
-  client:
-    # 表示是否将自己注册进Eurekaserver 默认为true。
-    register-with-eureka: true
-    # 是否从EurekaServer抓取已有的注册信息，默认为true。单节点无所谓，集群必须设置为true才能配合ribbon使用负载均衡
-    fetchRegistry: true
-    service-url:
-      defaultZone: http://localhost:7001/eureka
+	client:
+		service-url: # eureka 服务端和客户端的交互地址,集群用`,`隔开
+			defaultZone: http://localhost:8761/eureka
+		fetch-registry: true # 是否拉取服务列表到本地
+		register-with-eureka: true # 是否注册自己（单机 eureka 一般关闭注册自己,集群注意打开，默认打开）
+	server:
+		eviction-interval-timer-in-ms: 30000 # 清除无效节点的频率(毫秒)--定期删除
+		enable-self-preservation: true # server 的自我保护机制，避免因为网络原因造成误剔除,生产环境建议打开
+		renewal-percent-threshold: 0.85 # 85%，如果在一个机房的 client 端，15 分钟内有 85%的 client 没有续约，那么则可能是网络原因，认为服务实例没有问题，不会剔除他们，宁可放过一万，不可错杀一个，确保高可用
+	instance:
+		hostname: localhost # 服务主机名称
+		instance-id: ${eureka.instance.hostname}:${spring.application.name}:${server.port} # 实例 id
+		prefer-ip-address: true # 服务列表以 ip 的形式展示
+		lease-renewal-interval-in-seconds: 10 # 表示 eureka client 发送心跳给 server 端的频率
+		lease-expiration-duration-in-seconds: 20 # 表示 eureka server 至上一次收到 client 的心跳之后，等待下一次心跳的超时时间，在这个时间内若没收到下一次心跳，则将移除该实例
 ```
 
-### 3.1服务入驻注册操作总结
+
+
+
+
+
+
+### Eureka-Client服务注册
 
 哪个服务需要入驻到服务注册中心，就在哪个服务中进行操作。主要操作如下：
 
 1. 加入客户端依赖，以便使用注解将当前模块注册为一个`Eureka Client`客户端。
 
    ```xml
-   <!--eureka-client-->
+   <!-- eureka-client -->
    <dependency>
        <groupId>org.springframework.cloud</groupId>
        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
@@ -300,13 +287,46 @@ eureka:
          defaultZone: http://localhost:7001/eureka
    ```
 
-3. 主启动类加注解：`@EnableEurekaClient`，声明为一个`Eureka Client`客户端。
+3. 主启动类加注解：`@EnableEurekaClient`，声明该服务为一个`Eureka Client`客户端。
 
 4. 测试：启动 Eureka Server项目和Eureka Client项目，然后进入Spring Eureka服务主页：http://localhost:7001/ ，查看主页的`Instances currently registered with Eureka`：会显示`Eureka Client`客户端应用名（application.yml文件设置的`spring.application.name：`）。
 
+![](img/11.payment-eureka.png)
+
+**自我保护机制：**（后面会详细说）
+
+测试时eureka首页可能会出现如下的情况：
+
+![](img/16.自我保护机制.png)
+
+紧急情况！EUREKA可能错误地声称实例在没有启动的情况下启动了。续订小于阈值，因此实例不会为了安全而过期。
+
+### Eureka-Client配置说明
+
+```yaml
+server:
+	port: 8080
+spring:
+	application:
+		name: eureka-client
+eureka:
+	client:
+		service-url:
+			defaultZone: http://localhost:8761/eureka # 指定注册地址
+		register-with-eureka: true # 注册自己
+		fetch-registry: true # 拉取服务列表到本地
+		registry-fetch-interval-seconds: 5 # 表示 eureka-client 间隔多少秒去拉取服务注册信息
+	instance:
+		hostname: localhost # 服务主机名称，最好写IP
+		instance-id: ${eureka.instance.hostname}:${spring.application.name}:${server.port} # 实例 id
+		prefer-ip-address: true # 服务列表以 ip 的形式展示
+		lease-renewal-interval-in-seconds: 10 # 表示 eureka client 发送心跳给 server 端的频率，多少秒每次，为了缓解服务列表脏读问题
+		lease-expiration-duration-in-seconds: 20 #表示 eureka server 至上一次收到 client 的心跳之后，等待下一次心跳的超时时间，在这个时间内若没收到下一次心跳，则该实例将从服务中心移除
+```
 
 
-### 关于Eureka注册中心集群
+
+### 注册中心集群
 
 ![](img/12.集群原理说明.png)
 
@@ -314,244 +334,92 @@ eureka:
 
 ![](img/13.eureka集群.png)
 
-注册中心集群操作：
-
-1. 搭建多个 Eureka Server。
-
-2. 修改各个注册中心配置：
-
-   ```yaml
-   server:
-     port: 7002      # 注册中心端口
-   
-   eureka:
-     instance:
-       hostname: eureka7002.com # eureka服务端的实例名称
-     client:
-       register-with-eureka: false     # false表示不向注册中心注册自己。
-       fetch-registry: false     # false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
-       service-url:
-         # 集群指向其它eureka
-         defaultZone: http://eureka7001.com:7001/eureka/
-         # 单机时就是7002自己
-         #defaultZone: http://eureka7002.com:7002/eureka/
-   ```
-
-3. Eureka Client 客户端的defaultZone指向注册中心，把全部注册中心的都加上去。
-
-   ```yaml
-   defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/ # 集群版
-   ```
-
-4. 如果某个微服务需要集群，就创建多个微服务再注册进去，不过它们的`spring.application.name:`要一致。
-
-
-
-### 4.服务注册中心的集群
-
-建立多个注册中心，注册中心的`spring.application.name`一致，为每个注册中心都注册自身及其他注册中心。
-
-**一：创建注册中心并实行相互注册：**
-
-1.创建cloud-eureka-server7002工程，过程参考第一步的EurekaServer服务端安装。
-
-2.找到`C:\Windows\System32\drivers\etc`路径下的hosts文件，把下面的配置添加进hosts文件：
-
-```txt
-127.0.0.1 eureka7001.com
-127.0.0.1 eureka7002.com
-```
-
-3.修改cloud-eureka-server7001的主配置文件：
+**注册中心集群**——建立好各个 Eureka-Server，它们的`spring.application.name`得要一致，然后再在配置中将各自都注册到所有的服务中心即可，配置示范如下：
 
 ```yaml
 server:
-  port: 7001
-
+  port: 8761
+spring:
+  application:
+    name: eureka-server # 集群时都要一致
 eureka:
-  instance:
-    hostname: eureka7001.com #eureka服务端的实例名称
+  server:
+    eviction-interval-timer-in-ms: 30000
+    enable-self-preservation: true
+    renewal-percent-threshold: 0.85
   client:
-    register-with-eureka: false     #false表示不向注册中心注册自己。
-    fetch-registry: false     #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
     service-url:
-      # 集群指向其它eureka
-      defaultZone: http://eureka7002.com:7002/eureka/
-      # 单机时就是7001自己
-      #defaultZone: http://eureka7001.com:7001/eureka/
+      defaultZone: http://localhost:8762/eureka,http://localhost:8763/eureka
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    hostname: localhost
+    instance-id: ${eureka.instance.hostname}:${spring.application.name}:${server.port}
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 20
 ```
 
-4.修改cloud-eureka-server7002主配置文件：
+如果在同一台集群开启了这些服务，只是同一个服务 server 启动了多台，没有数据交互，不是真正意义上的集群原因是因为`http://localhost:8761/eureka/,http://localhost:8762/eureka/ `这样写，eureka 认为只有一个机器，就是 localhost 所以这里面不能写成一样。
+
+管理员模式修改 `hosts` 文件（`C:\Windows\System32\drivers\etc`目录下），然后再在cmd执行`ipconfig /flushdns`刷新：
+
+```host
+# 添加以下
+127.0.0.1 peer1
+127.0.0.1 peer2
+127.0.0.1 peer3
+```
+
+然后再将localhost改为peer1、peer2、peer3即可，重启服务：
+
+```
+defaultZone: http://peer2:8762/eureka,http://peer3:8763/eureka
+```
+
+**最终优化配置文件：**（写好模板，修改一下端口即可，不再需要每个配置都指定不同的defaultZone）
 
 ```yaml
 server:
-  port: 7002
-
+	port: 8761
+spring:
+	application:
+		name: eureka-server #服务名称
 eureka:
-  instance:
-    hostname: eureka7002.com #eureka服务端的实例名称
-  client:
-    register-with-eureka: false     #false表示不向注册中心注册自己。
-    fetch-registry: false     #false表示自己端就是注册中心，我的职责就是维护服务实例，并不需要去检索服务
-    service-url:
-      # 集群指向其它eureka
-      defaultZone: http://eureka7001.com:7001/eureka/
-      # 单机时就是7002自己
-      #defaultZone: http://eureka7002.com:7002/eureka/
-```
-
-5.启动7001、7002，如下：
-
-![](img/14.集群测试.png)
-
-**二：订单、支付两个微服务注册进全部的注册中心：**
-
-在application.xml更改defaultZone：
-
-```yaml
-defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/ # 集群版
-```
-
-测试（访问`http://eureka7001.com:7001/eureka/`）。
-
-### 4.1微服务的集群
-
-**三：新建微服务集群**
-
-支付服务提供者`cloud-provider-payment8001`的集群：（创建一样的项目并修改一下端口）
-
-1. 新建module：cloud-provider-payment8002。
-2. 改POM。
-3. 写YML：端口8082。
-4. 主启动类。
-5. 业务类。
-6. 要修改一下8001和8002的Controller，添加serverPort，如下：（测试用）
-
-```java
-@RestController
-@Slf4j
-public class PaymentController {
-
-    @Value("${server.port}")
-    private String serverPort;//添加serverPort
-    @Resource
-    private PaymentService paymentService;
-    @PostMapping(value = "/payment/create")
-    public CommonResult create(@RequestBody Payment payment){
-        int result = paymentService.create(payment);
-        log.info("*****插入结果：" + result);
-        if(result > 0) {
-            return new CommonResult(200,"插入数据库成功,serverPort: " + serverPort, result);
-        }else{
-            return new CommonResult(444,"插入数据库失败serverPort: " + serverPort,null);
-        }
-    }
-	@GetMapping(value = "/payment/get/{id}")
-    public CommonResult<Payment> getPaymentById(@PathVariable("id") Long id) {
-        Payment payment = paymentService.getPaymentById(id);
-        if(payment != null)
-        {
-            return new CommonResult(200,"查询成功: 哈哈O(∩_∩)O哈哈~，serverPort: " + serverPort,payment);
-        }else{
-            return new CommonResult(444,"没有对应记录,查询ID: "+id + "serverPort: " + serverPort,null);
-        }
-    }
-}
-```
-
-打开全部服务，测试。
-
-**四：负载均衡**
-
-1.修改`cloud-provider-order80`的controller中的PAYMENT_URL为：
-
-```java
-public static final String PAYMENT_URL = "http://CLOUD-PAYMENT-SERVICE";
-```
-
-2.使用`@LoadBalanced`注解赋予`cloud-provider-order80`中的RestTemplate负载均衡的能力：
-
-```java
-@Configuration
-public class ApplicationContextConfig {
-    @Bean
-    @LoadBalanced
-    public RestTemplate getRestTemplate(){
-        return new RestTemplate();
-    }
-}
-```
-
-开启服务，访问http://localhost/consumer/payment/get/1，刷新就能看的端口的变化。
-
-### 5.actuator-微服务信息完善
-
-修改主机名称：服务名称修改（也就是将IP地址，换成可读性高的名字）。
-
-在cloud-provider-payment8001，cloud-provider-payment8002中修改YML，需要在eureka下添加：（要注意instance从属eureka的下一级，注意缩进）
-
-```yaml
-eureka:
+	client:
+		fetch-registry: true #是否拉取服务列表
+		register-with-eureka: true #是否注册自己（集群需要注册自己和拉取服务）
+		service-url:
+			defaultZone: http://peer1:8761/eureka/,http://peer2:8762/eureka/,http://peer3:8763/eureka/
+	server:
+		eviction-interval-timer-in-ms: 90000 #清除无效节点的评率(毫秒)
 	instance:
-      instance-id: payment8001 # cloud-provider-payment8001的实例名称
+		instance-id: ${spring.application.name}:${server.port}
+		prefer-ip-address: true
+		lease-expiration-duration-in-seconds: 5 #server 在等待下一个客户端发送的心跳时间，若在指定时间不能收到客户端心跳，则剔除此实例并且禁止流量
 ```
 
+改造 eureka-client-a 的配置文件：
+
 ```yaml
+server:
+	port: 8761
+spring:
+	application:
+		name: eureka-server #服务名称
 eureka:
-    instance:
-      instance-id: payment8002  #cloud-provider-payment8002的实例名称
+	client:
+		fetch-registry: true #是否拉取服务列表
+		register-with-eureka: true #是否注册自己（集群需要注册自己和拉取服务）
+		service-url:
+			defaultZone: http://peer1:8761/eureka/,http://peer2:8762/eureka/,http://peer3:8763/eureka/
+	instance:
+		instance-id: ${spring.application.name}:${server.port}
+		prefer-ip-address: true
+		lease-renewal-interval-in-seconds: 30 # 发送心跳间隔
 ```
 
-修改之后，Eureka的主页将显示使用payment8001、payment8002为主机IP地址，如下图，点击payment8002或payment8001会调转到http://localhost:8002/actuator/info，再访问http://localhost:8002/actuator/health或显示status。
 
-![](img/15.paymentIP.png)
-
-再设置，使得访问信息有IP信息提示，（就是将鼠标指针移至payment8001、payment8002名下，会有IP地址提示），需要修改application.yml，在上面的基础上添加`prefer-ip-address: true `就好：
-
-```yaml
-instance:
-  instance-id: payment8001 
-  prefer-ip-address: true # 显示ip
-```
-
-添加上重启后，鼠标移动到payment8002就会在左下角显示：192.168.137.1:8002/acuator/info。
-
-### 6.服务发现Discovery
-
-对于注册进Eureka服务注册中心里面的微服务，可以通过服务发现来获得该服务的相关信息，操作如下：
-
-1. 修改cloud-provider-payment8001的Controller，添加以下内容：
-
-   ```java
-   @Resource
-   private DiscoveryClient discoveryClient;
-   // 服务发现
-   @GetMapping(value = "/payment/discovery")
-   public Object discovery()
-   {
-       List<String> services = discoveryClient.getServices();
-       for (String element : services) {
-           log.info("*****element: "+element);
-       }
-   
-       List<ServiceInstance> instances = discoveryClient.getInstances("CLOUD-PAYMENT-SERVICE");
-       for (ServiceInstance instance : instances) {
-           log.info(instance.getServiceId()+"\t"+instance.getHost()+"\t"+instance.getPort()+"\t"+instance.getUri());
-       }
-   
-       return this.discoveryClient;
-   }
-   ```
-
-2. 8001的主启动类添加一个注解：`@EnableDiscoveryClient`。
-
-3. 测试：
-
-   1. 先要启动EurekaSeryer，再启动8001主启动类，浏览器输入http://localhost:8001/payment/discovery。
-   2. 访问到的页面输出：`{"services":["cloud-payment-service","cloud-order-service"],"order":0}`。
-      1. 后台输出如下图：
-
-![](img/17.show.png)
 
 ### Eureka自我保护机制
 
@@ -655,47 +523,18 @@ CentOS7下，使用docker安装Zookeeper：
 
 ### 注册中心
 
-1. 新建Maven项目——cloud-provider-payment8004。
+1. 新建项目。
 
-2. pom.xml。（Zookeeper的依赖和其他依赖）
+2. 添加依赖。
 
    ```xml
-   <!-- SpringBoot整合Web组件 -->
-   <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-web</artifactId>
-   </dependency>
-   <!-- 引入自己定义的api通用包，可以使用Payment支付Entity -->
-   <dependency>
-       <groupId>com.lsl.springcloud</groupId>
-       <artifactId>cloud-api-commons</artifactId>
-       <version>${project.version}</version>
-   </dependency>
-   
    <!-- SpringBoot整合zookeeper客户端 -->
    <dependency>
        <groupId>org.springframework.cloud</groupId>
        <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
    </dependency>
-   <!-- 其他的依赖 -->
-   <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-devtools</artifactId>
-       <scope>runtime</scope>
-       <optional>true</optional>
-   </dependency>
-   <dependency>
-       <groupId>org.projectlombok</groupId>
-       <artifactId>lombok</artifactId>
-       <optional>true</optional>
-   </dependency>
-   <dependency>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-test</artifactId>
-       <scope>test</scope>
-   </dependency>
    ```
-
+   
 3. yml配置文件。
 
    ```yaml
@@ -740,28 +579,7 @@ CentOS7下，使用docker安装Zookeeper：
    }
    ```
 
-6. 启动微服务注册进zookeeper，出现jar包冲突，忽略当前zookeeper依赖的版本，更改为3.4.9版本，如下修改：
-
-   ```xml
-   <!-- SpringBoot整合zookeeper客户端 -->
-   <dependency>
-       <groupId>org.springframework.cloud</groupId>
-       <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
-       <exclusions>
-           <exclusion>
-               <groupId>org.apache.zookeeper</groupId>
-               <artifactId>zookeeper</artifactId>
-           </exclusion>
-       </exclusions>
-   </dependency>
-   <dependency>
-       <groupId>org.apache.zookeeper</groupId>
-       <artifactId>zookeeper</artifactId>
-       <version>3.4.9</version>
-   </dependency>
-   ```
-
-7. 再次启动，在服务器中进入zookeeper，运行zookeeper客户端后执行`ls /services`：
+7. 启动，在服务器中进入zookeeper，运行zookeeper客户端后执行`ls /services`：
 
    ![](img/20.zookeeper.png)
 
@@ -773,16 +591,11 @@ CentOS7下，使用docker安装Zookeeper：
 
    ```xml
    <dependencies>
-       <!-- SpringBoot整合Web组件 -->
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-web</artifactId>
-       </dependency>
        <!-- SpringBoot整合zookeeper客户端 -->
        <dependency>
            <groupId>org.springframework.cloud</groupId>
            <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
-           <!--先排除自带的zookeeper-->
+           <!-- 如果jar冲突，先排除自带的zookeeper-->
            <exclusions>
                <exclusion>
                    <groupId>org.apache.zookeeper</groupId>
@@ -790,32 +603,15 @@ CentOS7下，使用docker安装Zookeeper：
                </exclusion>
            </exclusions>
        </dependency>
-       <!--添加zookeeper3.4.9版本-->
+       <!-- 添加zookeeper3.4.9版本-->
        <dependency>
            <groupId>org.apache.zookeeper</groupId>
            <artifactId>zookeeper</artifactId>
            <version>3.4.9</version>
        </dependency>
-       <!-- 其他依赖 -->
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-devtools</artifactId>
-           <scope>runtime</scope>
-           <optional>true</optional>
-       </dependency>
-       <dependency>
-           <groupId>org.projectlombok</groupId>
-           <artifactId>lombok</artifactId>
-           <optional>true</optional>
-       </dependency>
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-test</artifactId>
-           <scope>test</scope>
-       </dependency>
    </dependencies>
    ```
-
+   
 3. 项目配置。
 
    ```yaml
@@ -916,35 +712,13 @@ Windows下安装：
            <groupId>org.springframework.cloud</groupId>
            <artifactId>spring-cloud-starter-consul-discovery</artifactId>
        </dependency>
-       <!-- SpringBoot整合Web组件 -->
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-web</artifactId>
-       </dependency>
        <dependency>
            <groupId>org.springframework.boot</groupId>
            <artifactId>spring-boot-starter-actuator</artifactId>
        </dependency>
-       <!--日常通用jar包配置-->
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-devtools</artifactId>
-           <scope>runtime</scope>
-           <optional>true</optional>
-       </dependency>
-       <dependency>
-           <groupId>org.projectlombok</groupId>
-           <artifactId>lombok</artifactId>
-           <optional>true</optional>
-       </dependency>
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-test</artifactId>
-           <scope>test</scope>
-       </dependency>
    </dependencies>
    ```
-
+   
 3. 项目配置。
 
    ```yaml
@@ -1005,52 +779,20 @@ Windows下安装：
 2. 添加依赖。
 
    ```xml
-   <parent>
-       <artifactId>learning_springcloud</artifactId>
-       <groupId>com.lsl.springcloud</groupId>
-       <version>1.0-SNAPSHOT</version>
-   </parent>
-   <dependencies>
-       <!--SpringCloud consul-server -->
-       <dependency>
-           <groupId>org.springframework.cloud</groupId>
-           <artifactId>spring-cloud-starter-consul-discovery</artifactId>
-       </dependency>
    
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-actuator</artifactId>
-       </dependency>
-       <!-- SpringBoot整合Web组件 -->
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-web</artifactId>
-       </dependency>
+   <!--SpringCloud consul-server -->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-consul-discovery</artifactId>
+   </dependency>
    
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-actuator</artifactId>
-       </dependency>
-       <!--日常通用jar包配置-->
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-devtools</artifactId>
-           <scope>runtime</scope>
-           <optional>true</optional>
-       </dependency>
-       <dependency>
-           <groupId>org.projectlombok</groupId>
-           <artifactId>lombok</artifactId>
-           <optional>true</optional>
-       </dependency>
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-test</artifactId>
-           <scope>test</scope>
-       </dependency>
-   </dependencies>
+   <!-- 可以用于检测系统的健康情况、当前的Beans、系统的缓存等 -->
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-actuator</artifactId>
+   </dependency>
    ```
-
+   
 3. 添加配置。
 
    ```yaml
@@ -1238,7 +980,7 @@ public Book book2() {
 
 ![](img/23.irule.png)
 
-更改默认的轮询规则：
+**更改默认的轮询规则的操作：**
 
 1. 客户端自定义配置类，不过这个自定义配置类不能放在@ComponentScan所扫描的当前包下以及子包下，否则我们自定义的这个配置类就会被所有的Ribbon客户端所共享，达不到特殊化定制的目的了。
 
@@ -1252,7 +994,7 @@ public Book book2() {
    }
    ```
 
-2. 使自定义的配置类生效：（主启动类加上@RibbonClient注解）
+2. 使自定义的配置类生效：（主启动类加上@RibbonClient注解，如下）
 
    ```java
    @SpringBootApplication
@@ -1272,6 +1014,8 @@ public Book book2() {
 轮询算法原理：`rest接口第几次请求数 % 服务器集群总数量 = 实际调用服务器位置下标` ，每次服务重启动后rest接口计数从1开始。
 
 RoundRobinRule源码：
+
+
 
 ## OpenFeign服务接口调用
 
@@ -1491,35 +1235,21 @@ Hystrix 主要功能：服务降级、服务熔断、接近实时的监控。当
 2. 加入依赖。
 
    ```xml
-   <parent>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-parent</artifactId>
-       <version>2.3.12.RELEASE</version>
-       <relativePath/> <!-- lookup parent from repository -->
-   </parent>
-   <properties>
-       <java.version>1.8</java.version>
-       <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
-   </properties>
-   <dependencies>
-       <!--hystrix-->
-       <dependency>
-           <groupId>org.springframework.cloud</groupId>
-           <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.springframework.cloud</groupId>
-           <artifactId>spring-cloud-starter-openfeign</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-web</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.springframework.cloud</groupId>
-           <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-       </dependency>
-   </dependencies>
+   <!-- hystrix -->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
+   </dependency>
+   <!-- openfeign -->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-openfeign</artifactId>
+   </dependency>
+   <!-- eureka-client -->
+   <dependency>
+       <groupId>org.springframework.cloud</groupId>
+       <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+   </dependency>
    ```
    
 3. 项目配置。
@@ -1598,6 +1328,8 @@ Hystrix 主要功能：服务降级、服务熔断、接近实时的监控。当
 
 
 
+
+
 # 网关
 
 ## 概述
@@ -1632,26 +1364,10 @@ Nginx 和 Gateway 的区别：
 2. 导入依赖：
 
    ```xml
-   <parent>
-       <groupId>org.springframework.boot</groupId>
-       <artifactId>spring-boot-starter-parent</artifactId>
-       <version>2.3.12.RELEASE</version>
-       <relativePath/> <!-- lookup parent from repository -->
-   </parent>
-   <properties>
-       <java.version>1.8</java.version>
-       <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
-   </properties>
    <dependencies>
        <dependency>
            <groupId>org.springframework.cloud</groupId>
            <artifactId>spring-cloud-starter-gateway</artifactId>
-       </dependency>
-   
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter-test</artifactId>
-           <scope>test</scope>
        </dependency>
    </dependencies>
    <dependencyManagement>
@@ -1666,8 +1382,8 @@ Nginx 和 Gateway 的区别：
        </dependencies>
    </dependencyManagement>
    ```
-
-3. 主启动类：
+   
+3. 主启动类，不需要添加什么注解：
 
    ```java
    @SpringBootApplication
@@ -1763,6 +1479,8 @@ spring:
           predicates:
           	- Path=/info/** # 如果匹配到第一个路由，则就不会走第二个了，注意这不是负载均衡
 ```
+
+
 
 ## 了解断言工厂
 
@@ -2111,6 +1829,8 @@ spring:
 				allowedOrigins: '*'
 ```
 
+
+
 ## 面试
 
 你们网关用的什么 ? （Gateway zuul ）你们网关里面写什么代码？ 
@@ -2142,9 +1862,11 @@ Spring Cloud Alibaba 致力于提供微服务开发的一站式解决方案。�
 
 [版本说明 · alibaba/spring-cloud-alibaba Wiki (github.com)](https://github.com/alibaba/spring-cloud-alibaba/wiki/版本说明)
 
-## Nacos-注册、配置中心
+## Nacos-注册中心
 
 Nacos 致力于发现、配置和管理微服务。Nacos 提供了一组简单易用的特性集，帮助您快速实现**动态服务发现、服务配置、服务元数据及流量管理**。 Nacos 帮助您更敏捷和容易地构建、交付和管理微服务平台。 Nacos 是构建以“服务”为中心 的现代应用架构 （例如微服务范式、云原生范式）的服务基础设施。
+
+Nacos 支持AP、CP。（切换到CP：`curl -X PUT '$NACOS_SERVER:8848/nacos/v1/ns/operator/switches?entry=serverMode&value=CP'`）
 
 Nacos核心概念：
 
@@ -2227,7 +1949,7 @@ Nacos核心概念：
                <dependency>
                    <groupId>com.alibaba.cloud</groupId>
                    <artifactId>spring-cloud-alibaba-dependencies</artifactId>
-                   <version>${spring-cloud-alibaba.version}</version>
+                   <version>2.2.7.RELEASE</version>
                    <type>pom</type>
                    <scope>import</scope>
                </dependency>
@@ -2266,7 +1988,204 @@ Nacos核心概念：
    }
    ```
 
-### 配置中心
+## Nacos-配置中心
+
+SpringBoot中的配置文件，bootstrap优先级高于application。配置好后，项目配置文件相当于`配置中心的配置文件 + application + bootstrap`的总和。
+
+要使配置中心文件起作用，配置文件的dataId有要求，dataId完整格式：`${prefix}-${spring.profile.active}.${file-extension}`
+
+1. prefix：默认为`spring.application.name`的值，可通过配置项`spring.cloud.nacos.config.prefix`来配置。
+2. spring.profile.active：当前环境对应的profile，profile不存在时，dataId的拼接格式变为`${prefix}.${file-extension}`。
+3. file.extension：配置内容的数据格式，可通过配置项`spring.cloud.nacos.config.file-extension`来配置。目前只支持yaml和properties。
+
+### 快速开始
+
+1. 安装好Nacos。
+
+2. 建立项目。
+
+3. 项目依赖。
+
+4. 主启动类加上服务发现的注解——@EnableDiscoveryClient。
+
+5. 项目配置。
+
+6. 业务类——测试。
+
+7. Nacos客户端上建立配置文件：
+
+   ![](img/24.Nacos-config.png)
+
+pom.xml——所需依赖：
+
+```xml
+<parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.3.12.RELEASE</version>
+    <relativePath/> <!-- lookup parent from repository -->
+</parent>
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <!-- 注册发现 -->
+    <dependency>
+        <groupId>com.alibaba.cloud</groupId>
+        <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+    </dependency>
+    <!-- 配置中心 -->
+    <dependency>
+        <groupId>com.alibaba.cloud</groupId>
+        <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+    </dependency>
+</dependencies>
+<!-- 依赖版本管理 -->
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+            <version>2.2.7.RELEASE</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+application.yml：
+
+```yaml
+spring:
+  profiles:
+    active: dev
+```
+
+bootstrap.yml：
+
+```yaml
+server:
+  port: 8888
+spring:
+  application:
+    name: nacos-config-test
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+      config:
+        server-addr: 127.0.0.1:8848
+        file-extension: yaml
+# 由application.yml和bootstrap.yml得出应该配置中心的配置文件的dataId应该为 nacos-config-test-dev.yaml
+# 注意：配置文件后缀应该写全，而不是写yml
+```
+
+业务类——用于测试：（@RefreshScope——动态刷新配置）
+
+```java
+@RestController
+@RefreshScope
+public class TestController {
+    @Value("${config.info}")
+    private String configInfo;
+
+    @GetMapping("/config/info")
+    public String getConfigInfo(){
+        return configInfo;
+    }
+}
+```
+
+
+
+### 分类配置
+
+分类配置由NameSpace、Group、dataId三者共同构建。（使用哪一个命名空间的哪一个分组的dataId的配置）
+
+1. 命名空间：配置隔离，默认的是public命名空间
+   - 开发、测试、生产，利用命名空间来做环境管理。
+   - 每一个微服务之间相互隔离配置，每一个微服务都创建自己的命名空间，这样只加载自己的命名空间所对应的配置。
+2. 配置集（Data ID）：配置集合，类似于文件夹名。（如果使用dataId来区分配置，那就更改`spring.profiles.active`）
+3. 配置分组（Group）：默认所有的配置集都属于DEFAULT_GROUP。
+   - （每个微服务创建自己的命名空间，配置分组用于区分环境：dev、test、prod）
+
+```yaml
+spring:
+  application:
+    name: nacos-config-test
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+      config:
+        server-addr: 127.0.0.1:8848
+        file-extension: yaml
+        group: TEST_GROUP
+        namespace: namespaceId # namespaceId在创建命名空间时自动创建
+```
+
+
+
+**多配置集的加载：**（配置中心中创建好命名空间、分组、配置文件）
+
+```properties
+spring.application.name=gulimall-member
+spring.cloud.nacos.config.server-addr=127.0.0.1:8848
+# namespace
+spring.cloud.nacos.config.namespace=da51ea07-30a3-465c-a555-ce56f3139485 
+# dataId
+spring.application.ext-config[0].data-id=mybatis.yml
+# group
+spring.application.ext-config[0].group=dev
+# 自动更新
+spring.application.ext-config[0].refresh=true
+# 加载更多
+spring.application.ext-config[1].data-id=datasource.yml
+spring.application.ext-config[1].group=dev
+spring.application.ext-config[1].refresh=true
+
+spring.application.ext-config[2].data-id=other.yml
+spring.application.ext-config[2].group=dev
+spring.application.ext-config[2].refresh=true
+```
+
+
+
+### Nacos集群和持久化（最重要）
+
+**以1.1.4版本为例——持久化切换：**（Nacos默认是使用Derby内嵌数据库）
+
+- 执行nacos-mysql.sql（在Nacos程序包下的conf目录下获得），初始化MySQL数据库。
+
+- 修改`conf/application.properties`文件，增加支持MySQL数据源配置，添加（目前只支持mysql）数据源的url、用户名和密码。配置样例如下：
+
+  ```mysql
+  spring.datasource.platform=mysql
+  db.num=1
+  db.url.0=jdbc:mysql://localhost:3306/nacos?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC
+  db.user=root
+  db.password=123456
+  ```
+
+**Linux系统下安装Nacos：**
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

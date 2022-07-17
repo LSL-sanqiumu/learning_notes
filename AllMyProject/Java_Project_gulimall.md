@@ -629,7 +629,7 @@ public class TestController {
 spring.application.name=gulimall-member
 spring.cloud.nacos.config.server-addr=127.0.0.1:8848
 spring.cloud.nacos.config.namespace=da51ea07-30a3-465c-a555-ce56f3139485 
-# 使用配置中心中该名称的配置
+# dataId
 spring.application.ext-config[0].data-id=mybatis.yml
 # 这个分组的配置
 spring.application.ext-config[0].group=dev
