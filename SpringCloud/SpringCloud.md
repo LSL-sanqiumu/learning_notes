@@ -2172,6 +2172,8 @@ spring.application.ext-config[2].refresh=true
   db.user=root
   db.password=123456
   ```
+  
+- 持久化切换在安装Nginx客户端时便配置好了的。
 
 **Linux系统下安装Nacos：**
 

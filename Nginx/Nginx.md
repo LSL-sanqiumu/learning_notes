@@ -40,9 +40,9 @@ Nginx发行版本：（除商业版其他都开源）
 
    2. 再执行`make && make install`编译安装。
 
-5. 上面将临时目录设为`/var/temp/nginx`，需要创建`mkdir -p /var/temp/nginx`，然后启动Nginx：
+5. 上面将临时目录设为`/var/temp/nginx`，需要创建`mkdir -p /var/temp/nginx`，然后才能启动Nginx：
 
-   进入安装好的目录 `cd /usr/local/nginx/sbin`  （查看是否启动——`ps -aux | grep nginx`）
+   进入安装好的目录 `cd /usr/local/nginx/sbin`  
 
    ```properties
    # 启动
@@ -51,15 +51,19 @@ Nginx发行版本：（除商业版其他都开源）
    ./nginx -s stop
    # 优雅关闭，在退出前完成已经接受的连接请求
    ./nginx -s quit 
+   # 检查配置文件是否有语法错误   /usr/local/nginx/sbin/nginx -t
+   ./sbin/nginx -t
    # 重新加载配置
    ./nginx -s reload 
+   # 查看是否启动
+   ps -aux | grep nginx
    ```
 
 6. 防火墙的配置与放行80端口。
 
 7. 将Nginx安装成系统服务：
 
-   1. 创建服务脚本：`vi /usr/lib/systemd/system/nginx.service`（注意文件与执行`./configure`时配置的要一致）
+   1. 创建服务脚本：`vi /usr/lib/systemd/system/nginx.service`（注意相关文件路径与执行`./configure`时配置的要一致）
 
       ```shell
       [Unit]
@@ -93,21 +97,17 @@ Nginx发行版本：（除商业版其他都开源）
 
 9. 卸载Nginx：关闭Nginx的开机启动，关闭Nginx，`find / -name nginx` 找出nginx相关文件，然后删除文件。
 
-
-
 # Nginx基本使用
 
 ## 目录结构与运行原理
 
 **目录结构：**
 
-1. client_body_temp、fastcgi_temp、proxy_temp scgi_temp：这几个文件夹在刚安装后是没有的，主要用来存放运行过程中的临时文件。
+1. client_body_temp、fastcgi_temp、proxy_temp、scgi_temp、uwsgi_temp：这几个文件目录默认会生成在nginx根目录，在刚安装后是没有的，主要用来存放运行过程中的临时文件。（在执行`./configure`时已经将这些路径以及日志路径都设置为其他路径了，因此不会在根目录下出现）
 2. conf：用来存放配置文件相关。
 3. html：用来存放静态文件的默认目录 html、css等。
 4. logs：日志。
 5. sbin：nginx的主程序。
-6. scgi_temp
-7. uwsgi_temp
 
 运行原理：Nginx接收到请求，主进程master读取并校验文件后开启多个子进程来去处理请求并响应，主进程负责协调子进程，完成了任务的Worker会被kill掉。
 
@@ -139,15 +139,102 @@ nginx.conf中的最小配置项（默认配置项）：
    		listen 80;                      监听端口号
    		server_name localhost;          域名，主机名
    		location / {                    匹配路径
-   			root html;                      文件根目录
-   			index index.html index.htm;     默认页名称
+   			root html;                      文件根目录，此时是相对路径，相对于当前文件夹-conf
+   			index index.html index.htm;     默认页，只访问根目录时就从conf/html目录下找到并返回此页面
    		}
    		error_page 500 502 503 504 /50x.html;     报错编码对应页面
-   		location = /50x.html {                    找不到50x.html，就从nginx的html目录去找 
+   		location = /50x.html {                    
    			root html;
    		}
    }
    ```
+
+## location
+
+`location`是Nginx中的块级指令(block directive)，location指令的功能是用来匹配不同的url请求，进而对请求做不同的处理和响应，这其中较难理解的是多个location的匹配顺序。我们输入的网址叫做`请求URI`，nginx用请求URI与`location中配置的URI`做匹配。
+
+**两种匹配规则：**
+
+1. 匹配URL类型，有四种参数可选，当然也可以不带参数。
+
+   ```properties
+   # 中括号内的参数为可选参数
+   location [ = | ~ | ~* | ^~ ] uri {
+   	
+   }
+   ```
+
+   1. `=`：精确匹配，请求内容和后面的URI一致才能匹配成功。
+
+   2. `~`：执行正则匹配，区分大小写。
+
+   3. `~*`：忽略大小写的正则匹配。
+
+   4. `^~`：如果普通字符已经能匹配上了，就不会进行正则匹配。
+
+   5. 不使用参数则是相当于加了“~”与“^~”的匹配方式。
+
+   6. `“@”`，nginx内部跳转：
+
+      ```properties
+      location /index/ {
+        error_page 404 @index_error;
+      }
+      location @index_error {
+        .....
+      }
+      # 以 /index/ 开头的请求，如果链接的状态为 404。则会匹配到 @index_error 这条规则上。
+      ```
+
+2. 命名location，用@标识，类似于定于goto语句块。（`location @name { … }`）
+
+   ```properties
+   location /index/ {
+     error_page 404 @index_error;
+   }
+   location @index_error {
+     .....
+   }
+   # 以 /index/ 开头的请求，如果链接的状态为 404。则会匹配到 @index_error 这条规则上。
+   ```
+
+**location匹配顺序：**
+
+```
+`=` > `^~` > `~` | `~*` > `最长前缀匹配` > `/`
+```
+
+**location URI结尾带不带：**
+
+1. 如果 URI 结构是 https://domain.com/ 的形式，尾部有没有 / 都不会造成重定向。因为浏览器在发起请求的时候，默认加上了 / 。虽然很多浏览器在地址栏里也不会显示 / 。这一点，可以访问百度验证一下。
+2. 如果 URI 的结构是 https://domain.com/some-dir/。尾部如果缺少 / 将导致重定向。因为根据**约定，URL 尾部的 / 表示目录，没有 / 表示文件**。所以访问 /some-dir/ 时，服务器会自动去该目录下找对应的默认文件。如果访问 /some-dir 的话，服务器会先去找 some-dir 文件，找不到的话会将 some-dir 当成目录，重定向到 /some-dir/ ，去该目录下找默认文件。
+
+**location内设置文件的寻找路径：**
+
+1. ```properties
+   # 访问http://xxx.xxx.xxx/img/xxx.xxx文件时，就会去/var/www/image/目录寻找
+   location /img/ {
+   	alias /var/www/image/;
+   }
+   ```
+
+2. ```properties
+   # 访问http://xxx.xxx.xxx/img/xxx.xxx文件时，nginx会去/var/www/image/img/目录下找文件
+   location /img/ {
+   	root /var/www/image;
+   }
+   ```
+
+3. **alias 指定的目录是准确的，给location指定一个目录，root 指定目录的上级目录，并且该上级目录要含有locatoin指定名称的同名目录**。
+
+4. ```
+   1.使用alias时，目录名后面一定要加“/”。
+   2.使用alias标签的目录块中不能使用rewrite的break。
+   3.alias在使用正则匹配时，必须捕捉要匹配的内容并在指定的内容处使用。
+   4.alias只能位于location块中
+   ```
+
+
 
 ## 虚拟主机与域名解析
 
@@ -169,15 +256,15 @@ nginx.conf中的最小配置项（默认配置项）：
 
 ```properties
 server {
-		listen 88;                      监听端口号
+		listen 80;                      监听端口号
 		server_name localhost;          填域名，主机名
-		location / {                    匹配路径
+		location / {                   
 			root html;                      
 			index index.html index.htm;    
 		}
 		error_page 500 502 503 504 /50x.html;     报错编码对应页面
-		location = /50x.html {                    找不到50x.html，就从nginx的html目录去找 
-			root html;									nginx里的html目录
+		location = /50x.html {                   
+			root html;									
 		}
 }
 ```
@@ -200,16 +287,17 @@ servername匹配分先后顺序，写在前面的匹配上就不会继续往下�
 
 ```properties
 server {
-		listen 88;                      监听端口号
-		server_name localhost;          填域名，主机名
+		listen 88;                      
+		server_name localhost;          
 		location / {
-			proxy_pass http://xxx.com/;  配置反射代理，注意要有分号结尾，不支持https的反向代理
+			# 配置反射代理，注意要有分号结尾，请求都会转给此主机
+			proxy_pass http://xxx.com/;
 			#root html;                      
 			#index index.html index.htm;    
 		}
-		error_page 500 502 503 504 /50x.html;     报错编码对应页面
-			location = /50x.html {                    找不到50x.html，就从nginx的html目录去找 
-			root html;									nginx里的html目录
+		error_page 500 502 503 504 /50x.html;    
+			location = /50x.html {                    
+			root html;									
 		}
 }	
 ```
@@ -259,6 +347,7 @@ http {
 server {
 		listen 80;                      
 		server_name localhost;        
+		# 反向代理
 		location / {
 			proxy_pass http://xxx.com/;
 		}
@@ -273,22 +362,24 @@ server {
 			root html;
 		}
 		error_page 500 502 503 504 /50x.html;     
-			location = /50x.html {                    
+		location = /50x.html {                    
 			root html;								
 		}
 }	
 ```
 
 ```properties
-# 到/usr/local/nginx/static目录下寻找请求的文件
+# 到/usr/local/nginx/static/css目录下寻找请求的文件
 location /css {
 	root /usr/local/nginx/static;
 	index index.html index.htm;
 }
+# 到/usr/local/nginx/static/images目录下寻找请求的文件
 location /images {
 	root /usr/local/nginx/static;
 	index index.html index.htm;
 }
+# 到/usr/local/nginx/static/js目录下寻找请求的文件
 location /js {
 	root /usr/local/nginx/static;
 	index index.html index.htm;
@@ -298,7 +389,7 @@ location /js {
 location使用正则表达式：
 
 ```properties
-# 访问js、css、img都会匹配到/usr/local/nginx/static来找到文件
+# 访问js、css、img内文件都会匹配到/usr/local/nginx/static目录下来去匹配文件
 location ~*/(js|css|img) {
 	root /usr/local/nginx/static;
 	index index.html index.htm;
@@ -452,7 +543,7 @@ Keepalived的安装：
 
 Keepalived的配置：（两台机器都得安装Keepalived）
 
-第一台机器：
+第一台机器：（配置文件在 `/etc/keepalived/keepalived.conf`）
 
 ```properties
 ! Configuration File for keepalived
@@ -480,7 +571,7 @@ vrrp_instance atguigu {
 }
 ```
 
-第二台机器：
+第二台机器：（配置文件在 `/etc/keepalived/keepalived.conf`）
 
 ```properties
 ! Configuration File for keepalived

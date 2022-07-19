@@ -1,6 +1,6 @@
-# 队列
+# 队列概述
 
-# 基本概念
+## 基本概念
 
 **MQ（message queue）：**
 
@@ -20,9 +20,9 @@ MQ(Message Quene) :  翻译为消息队列，通过典型的生产者和消费�
 
 同步和异步？
 
-# MQ分类
+## MQ分类
 
-## ActiveMQ
+**ActiveMQ：**
 
 优点：单机吞吐量万级，时效性 ms 级，可用性高，基于主从架构实现高可用性，消息可靠性较低的概率丢失数据。
 
@@ -30,9 +30,7 @@ MQ(Message Quene) :  翻译为消息队列，通过典型的生产者和消费�
 
 使用场景：
 
-
-
-## Kafka
+**Kafka：**
 
 为大数据而生的消息中间件，以其百万级 TPS 的吞吐量名声大噪，迅速成为大数据领域的宠儿，在数据采集、传输、存储的过程中发挥
 着举足轻重的作用。
@@ -43,7 +41,7 @@ MQ(Message Quene) :  翻译为消息队列，通过典型的生产者和消费�
 
 适用场景：一开始的目的就是用于日志收集和传输，适合产生大量数据的互联网服务的数据收集业务。
 
-## RocketMQ
+**RocketMQ：**
 
  RocketMQ 出自阿里巴巴的开源产品，用 Java 语言实现，在设计时参考了 Kafka，并做出了自己的一些改进。被阿里巴巴广泛应用在订单，交易，充值，流计算，消息推送，日志流式处理，binglog 分发等场景。
 
@@ -53,7 +51,7 @@ MQ(Message Quene) :  翻译为消息队列，通过典型的生产者和消费�
 
 适用场景：为金融互联网领域、可靠性要求很高的场景，电商。
 
-## RabbitMQ
+**RabbitMQ：**
 
 2007 年发布，是一个在AMQP(高级消息队列协议)基础上完成的，可复用的企业消息系统，是当前最主流的消息中间件之一。
 
@@ -82,7 +80,7 @@ RabbitMQ，一个消息中间件，负责消息数据的接收、存储和转发
 
 ## Linux下安装
 
-### **Erlang环境安装：**
+### Erlang环境安装：
 
 在`https://www.rabbitmq.com/which-erlang.html`可查看erlang、rabbitmq的对应版本。erlang下载：（rabbitMQ是3.9.11，对应的erlang就得23.2版本）。(`https://packagecloud.io/rabbitmq/erlang/packages/el/8/erlang-24.1-1.el8.x86_64.rpm`)；（在`http://erlang.org/download/otp_src_23.2.tar.gz`可下载绿色安装压缩包）。
 
@@ -114,7 +112,7 @@ RabbitMQ，一个消息中间件，负责消息数据的接收、存储和转发
 
 9. 如果需要卸载重装，那就先执行`whereis erlang`找到erlang安装在的目录，然后删除那个文件夹即可`rm -rf erlang`。
 
-### **rabbitMQ安装：**
+### RabbitMQ安装：
 
 rabbitMQ下载，下载()包，更多版本可在`https://github.com/rabbitmq/rabbitmq-server/releases/tag/v3.9.11`查看。
 
@@ -214,7 +212,7 @@ else：
 
 ![](img/rabbitmq-model.png)
 
-# 1.简单队列
+## 1.简单队列
 
 ```xml
 <!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->
@@ -235,7 +233,7 @@ else：
 
 ![](img/直连模型.png)
 
-## 消息生产者：
+### 消息生产者：
 
 ```java
 public class Producer {
@@ -275,7 +273,7 @@ public class Producer {
 3. 参数3：传递消息的额外设置，设置为`MessageProperties.PERSISTENT_TEXT_PLAIN`就可以把发送后的消息进行持久化。
 4. 参数4：要传递的消息的具体内容，字节型。
 
-## 消息消费者：
+### 消息消费者：
 
 ```java
 public class Consumer {
@@ -307,7 +305,7 @@ public class Consumer {
 }
 ```
 
-# 封装工具类
+## 封装工具类
 
 ```java
 public class RabbitmqConnectionUtil {
@@ -344,13 +342,13 @@ public class RabbitmqConnectionUtil {
 }
 ```
 
-# 2.工作队列
+## 2.工作队列
 
 Work queues，也被称为Task queues、任务模型。用于解决“当消息处理比较耗时的时候，可能生产消息的速度会远远大于消息的消费速度，长此以往，消息就会堆积越来越多，无法及时处理消息”的问题。使用任务模型，可以让多个消费者绑定到一个队列，共同消费队列中的消息，并且队列中的消息一旦被消费，就会消失，因此任务不会被重复执行。[RabbitMQ tutorial - Work Queues — RabbitMQ](https://www.rabbitmq.com/tutorials/tutorial-two-java.html)
 
 ![](img/workqueues.png)
 
-## 循环分发
+### 循环分发
 
 生产者：
 
@@ -403,7 +401,7 @@ public class Customer2 {
 
 ![](img/auto-confirm.png)
 
-## 消息确认机制
+### 消息确认机制
 
 ![](img/message-acknowledgment.png)
 
@@ -462,7 +460,7 @@ public class Customer2 {
 - 使用自动确认时，RabbitMQ默认为消费者平均分配消息，此时若某一个消费者消费消息的能力慢，但因为RabbitMQ已经为其分发了一定量的消息，分发的消息会从队列中标记为删除，此时该消费者宕机（而有一些消息还没有处理），此时就会导致消息的缺失；那有没有办法使其他能力强的消费者来处理消息，并且还能保留该消费者？
 - 方法就是，使用手动应答，并且限制通道的消费能力。设置通道每次应答前只能传送一个消息，当消费者处理完消息后手动应答，告诉RabbitMQ我消费完这条消息了，可以处理下一个消息了，然后再送入下一个消息给消费者进行处理。这样就能保证，速度越快的消费者处理的消息越多，也就是所谓的“能者多劳”。
 
-# 3.fanout
+## 3.fanout
 
 ![](img/fanout.png)
 
@@ -474,7 +472,7 @@ public class Customer2 {
 - 交换机把消息发送给绑定过的所有队列。
 - 队列的消费者都能拿到消息。实现一条消息被多个消费者消费。
 
-## 实现
+**广播（扇出）模型实现：**
 
 1.生产者
 
@@ -520,9 +518,9 @@ public class Customer1 {
 
 广播模式的交换机，绑定该交换机后的消费者都能获取交换机的消息。
 
-# 4.路由模型Routing
+## 4.路由模型Routing
 
-## 4.1Routing之订阅模型-Direct
+### 4.1Routing之订阅模型-Direct
 
 在fanout模式中，一条消息，会被所有订阅的队列都消费。但是，在某些场景下，我们希望不同的消息被不同的队列消费。这时就要用到direct类型的Exchange。
 
@@ -611,7 +609,7 @@ public class Customer2 {
 
 消费者的临时队列与路由绑定了，才能接收到该路由发送的消息。
 
-## 4.2Routing之订阅模型-Topic
+### 4.2Routing之订阅模型-Topic
 
 Topic类型的Exchange与Direct相比，都是可以根据RoutingKey把消息路由到不同的队列。只不过Topic类型Exchange可以让队列在绑定Routing key的时候使用通配符！这种模型Routingkey 一般都是由一个或多个单词组成，多个单词之间以`.`分割，例如：` item.insert`。 
 
@@ -693,9 +691,9 @@ public class Customer2 {
 }
 ```
 
-# SpringBoot整合
+## SpringBoot整合
 
-## 整合
+### 整合
 
 场景启动器：
 
@@ -750,11 +748,11 @@ public class Customer {
 }
 ```
 
-## 操作
+### 操作
 
 通过自动配置好的`RabbitTemplate rabbitTemplate`进行操作。
 
-### **简单队列：**
+#### **简单队列：**
 
 ```java
 @Test 
@@ -774,7 +772,7 @@ public class HelloCustomer {
 }
 ```
 
-### **工作队列：**
+#### **工作队列：**
 
 ```java
 @Test
@@ -802,7 +800,7 @@ public class WorkCustomer {
 
 如果需要实现能者多劳的效果，需要额外的配置。
 
-### Fanout：
+#### Fanout：
 
 ```java
 @Component
@@ -825,7 +823,7 @@ void testFanout(){ // 生产者
 }
 ```
 
-### Routing：
+#### Routing：
 
 **routing-direct：**
 
@@ -893,9 +891,9 @@ public class TopicCustomer {
 }
 ```
 
-# 应用场景
+## 应用场景
 
-## 异步处理
+### 异步处理
 
 场景说明：用户注册后，需要发注册邮件和注册短信,传统的做法有两种 1.串行的方式 2.并行的方式。
 
@@ -915,7 +913,7 @@ public class TopicCustomer {
 
 由此可以看出，引入消息队列后，用户的响应时间就等于写入数据库的时间+写入消息队列的时间(可以忽略不计)，引入消息队列后处理后，响应时间是串行的3倍,是并行的2倍。
 
-## 应用解耦
+### 应用解耦
 
 场景：双11是购物狂节，用户下单后，订单系统需要通知库存系统，传统的做法就是订单系统调用库存系统的接口。
 
@@ -930,7 +928,7 @@ public class TopicCustomer {
 - 库存系统：订阅下单的消息，获取下单消息，进行库操作。就算库存系统出现故障，消息队列也能保证消息的可靠投递，
   不会导致消息丢失。
 
-## 流量削峰
+### 流量削峰
 
 场景: 秒杀活动，一般会因为流量过大，导致应用挂掉，为了解决这个问题，一般在应用前端加入消息队列。  
 
@@ -944,4 +942,4 @@ public class TopicCustomer {
 1. 服务器收到用户的请求之后，首先将请求写入消息队列，当加入消息队列的超过最大值时，则直接抛弃用户请求或跳转到错误页面。
 2. 秒杀业务根据消息队列中的请求信息，再做后续处理。
 
-# RabbitMQ的集群
+## RabbitMQ的集群
