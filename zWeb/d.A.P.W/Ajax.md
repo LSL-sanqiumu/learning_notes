@@ -34,8 +34,6 @@ Ajax（Asynchronous JavaScript and XML，异步JavaScript与XML技术），是�
 1. 页面全部刷新导致了用户的体验较差。
 2. 传统的请求导致用户的体验有空白期。（用户的体验是不连贯的）
 
-
-
 # XMLHttpRequest对象
 
 XMLHttpRequest对象是AJAX的核心对象，发送请求以及接收服务器数据的返回，全靠它了。XMLHttpRequest对象，现代浏览器都是支持的，都内置了该对象。直接用即可。

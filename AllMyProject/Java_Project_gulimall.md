@@ -736,6 +736,12 @@ spring:
             - Query=url,baidu
 ```
 
+## JavaScript
+
+let、const变量、解构表达式、字符串拓展特性、箭头函数、ES6对象优化、Map、reduce、promise、模块化
+
+## VUE
+
 
 
 
