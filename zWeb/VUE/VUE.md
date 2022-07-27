@@ -2342,11 +2342,143 @@ new Vue({
 
 使用脚手架配合解析。
 
-# vue-cli
+# vue-cli—脚手架
 
+cli——command line interface，命令行接口工具。
 
+## vue-cli使用及项目结构
 
+1. 安装NodeJS，并配置npm淘宝镜像：`npm config set registry http://registry.npm.taobao.org`。
+2. 全局安装vue-cli：`npm install -g @vue/cli`。
+3. 切换到创建项目的目录，使用命令创建项目`vue create my_first_vuecli_project`，然后在界面中选择需要使用的vue的版本。
+4. 进入vue create my_first_vuecli_project启动项目：`npm run serve`。*（启动成功后访问： http://localhost:8080/）
+5. 进入vue create my_first_vuecli_project打包项目：`npm run build`。
+6. 暂停项目：`Ctrl+C`。
+7. 注意：Vue脚手架隐藏了所有webpack相关的配置，若想查看具体的webpack配置，请执行`vue inspect > output.js`。
 
+```properties
+.文件目录 my_first_vuecli_project
+├── node_modules 
+├── public
+│   ├── favicon.ico: 页签图标
+│   └── index.html: 主页面
+├── src
+│   ├── assets: 存放静态资源
+│   │   └── logo.png
+│   │── component: 存放组件
+│   │   └── HelloWorld.vue
+│   │── App.vue: 汇总所有组件
+│   └── main.js: 入口文件
+├── .gitignore: 配置git版本管理需要忽略的文件
+├── babel.config.js: babel的配置文件
+├── package.json: 应用包配置文件 
+├── README.md: 应用描述文件
+└── package-lock.json: 包版本控制文件
+```
+
+如果main.js、App.vue文件里首行报错：`Parsing error: No Babel config file detected for D:\learning_coding\frontend_learning\veu-cli-project\my_first_vuecli_project\src\main.js. Either disable config file checking with requireConfigFile: false, or configure Babel so that it can find the config files`，那就需要去`package.json`文件里添加一个配置：（找到如下添加requireConfigFile配置）
+
+```json
+"parserOptions": {
+	"parser": "@babel/eslint-parser",
+	"requireConfigFile":false
+},
+```
+
+main.js是入口文件，其内容说明如下：
+
+```js
+// main.js——项目入口文件
+// 引入vue
+import Vue from 'vue'
+// 引入组件，App.vue是所有组件的父组件
+import App from './App.vue'
+// 关闭vue的生产提示
+Vue.config.productionTip = false
+// 创建vue实例对象
+new Vue({
+    // 将App组件放入容器中
+  render: h => h(App),
+}).$mount('#app')
+```
+
+```js
+// 上面的new Vue等同于：
+new Vue({
+    el:'#app'
+    // 将App组件放入容器中
+  render: h => h(App),
+})
+```
+
+public目录的index.html的说明：
+
+```html
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <!-- 针对IE浏览器的特殊配置，含义是让IE浏览器以最高渲染级别渲染页面 -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+     <!-- 开启移动端的理想端口 -->
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!-- 配置页签图标 <%= BASE_URL %>是public所在路径，使用绝对路径 -->
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+    <!-- 配置网页标题，使用webpack的插件从package.json取得name来作为标题 -->
+    <title><%= htmlWebpackPlugin.options.title %></title>
+  </head>
+  <body>
+      <!-- 当浏览器不支持js时，noscript中的元素就会被渲染 -->
+    <noscript>
+      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+      <!-- 容器 -->
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
+```
+
+## 单文件组件放入脚手架
+
+1、将单文件组件的School.vue、Student.vue放入项目的components目录里；将App.vue替换掉脚手架自动生成App.vue，并更改组件引入路径，如下：
+
+```html
+<template>
+	<div>
+		<School></School>
+		<Student></Student>
+	</div>
+</template>
+
+<script>
+	// 更改为以下
+	import School from './components/School.vue'
+	import Student from './components/Student.vue'
+
+	export default {
+		name:'App',
+		components:{
+			School,
+			Student
+		}
+	}
+</script>
+```
+
+2、找到vue.config.js文件，配置关闭语法检查，否则运行会出错，操作如下：
+
+```js
+const { defineConfig } = require('@vue/cli-service')
+module.exports = defineConfig({
+  transpileDependencies: true,
+  lintOnSave:false  // 关闭语法检查
+})
+```
+
+3、`npm run serve`。
+
+## main.js里的render函数
 
 
 
